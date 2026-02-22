@@ -1,8 +1,8 @@
-import { useState, useMemo, useCallback } from 'react';
+import { useState, useMemo, useCallback, useEffect } from 'react';
 import { ArrowLeft, RefreshCw, Building2, Leaf, MapPin, Search } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { usePharmaciesWithOrders } from '@/hooks/usePharmacyOperations';
+import { usePharmacyOperations } from '@/hooks/usePharmacyOperations';
 import { OperationsFilters, SortField, SortDirection, PharmacyWithOrders } from '@/types/operations';
 import { OperationsTable } from '@/components/operations/OperationsTable';
 import { OperationsFiltersBar } from '@/components/operations/OperationsFiltersBar';
@@ -31,43 +31,50 @@ export default function PharmacyOperations({ clientType = 'pharmacy' }: Props) {
   const [sortField, setSortField] = useState<SortField>('name');
   const [sortDirection, setSortDirection] = useState<SortDirection>('asc');
   const [selectedPharmacy, setSelectedPharmacy] = useState<PharmacyWithOrders | null>(null);
+  const [page, setPage] = useState(0);
+  const pageSize = 50;
+  const [searchDebounced, setSearchDebounced] = useState('');
 
-  // Only fetch saved pharmacies (savedOnly = true)
-  const { data: pharmacies = [], isLoading } = usePharmaciesWithOrders(true, clientType);
+  useEffect(() => {
+    const timer = setTimeout(() => setSearchDebounced(filters.search), 300);
+    return () => clearTimeout(timer);
+  }, [filters.search]);
+
+  const serverFilters = useMemo(
+    () => ({
+      country: filters.country || undefined,
+      province: filters.province || undefined,
+      city: filters.city || undefined,
+      commercialStatus: filters.commercialStatus,
+      paymentStatus: filters.paymentStatus,
+      search: searchDebounced || undefined,
+      clientType,
+    }),
+    [
+      filters.country,
+      filters.province,
+      filters.city,
+      filters.commercialStatus,
+      filters.paymentStatus,
+      searchDebounced,
+      clientType,
+    ]
+  );
+
+  // Server-side filtered pharmacies with pagination
+  const { pharmacies = [], totalCount = 0, isLoading, refetch } = usePharmacyOperations(
+    serverFilters,
+    page,
+    pageSize
+  );
   const queryClient = useQueryClient();
 
   // Geography options from unified normalized tables
   const { countries, provinces, cities } = useGeographyOptions(filters.country, filters.province);
 
-  // Filter and sort pharmacies
+  // Sort current page (filtering is server-side)
   const displayedPharmacies = useMemo(() => {
-    let result = pharmacies.filter(pharmacy => {
-      // Text search
-      if (filters.search) {
-        const searchLower = filters.search.toLowerCase();
-        const matchesSearch =
-          pharmacy.name.toLowerCase().includes(searchLower) ||
-          pharmacy.address?.toLowerCase().includes(searchLower) ||
-          pharmacy.email?.toLowerCase().includes(searchLower);
-        if (!matchesSearch) return false;
-      }
-
-      // Geographic filters - exact match from normalized data
-      if (filters.country && pharmacy.country !== filters.country) return false;
-      if (filters.province && pharmacy.province !== filters.province) return false;
-      if (filters.city && pharmacy.city !== filters.city) return false;
-
-      // Commercial status
-      if (filters.commercialStatus !== 'all' && pharmacy.commercialStatus !== filters.commercialStatus) return false;
-
-      // Payment status (based on last order)
-      if (filters.paymentStatus !== 'all') {
-        if (!pharmacy.lastOrder) return false;
-        if (pharmacy.lastOrder.paymentStatus !== filters.paymentStatus) return false;
-      }
-
-      return true;
-    });
+    const result = [...pharmacies];
 
     // Sort
     const str = (s: string | null | undefined) => (s ?? '').toString().trim();
@@ -135,18 +142,21 @@ export default function PharmacyOperations({ clientType = 'pharmacy' }: Props) {
     });
 
     return result;
-  }, [pharmacies, filters, sortField, sortDirection]);
+  }, [pharmacies, sortField, sortDirection]);
 
   const handleFiltersChange = useCallback((newFilters: OperationsFilters) => {
     // Enforce hierarchy
     if (newFilters.country !== filters.country) {
+      setPage(0);
       setFilters({ ...newFilters, province: '', city: '' });
       return;
     }
     if (newFilters.province !== filters.province) {
+      setPage(0);
       setFilters({ ...newFilters, city: '' });
       return;
     }
+    setPage(0);
     setFilters(newFilters);
   }, [filters.country, filters.province]);
 
@@ -160,13 +170,15 @@ export default function PharmacyOperations({ clientType = 'pharmacy' }: Props) {
   }, [sortField]);
 
   const handleRefresh = useCallback(() => {
+    refetch();
+    queryClient.invalidateQueries({ queryKey: ['pharmacy-operations'] });
     queryClient.invalidateQueries({ queryKey: ['pharmacies'] });
     queryClient.invalidateQueries({ queryKey: ['detailed-orders'] });
     queryClient.invalidateQueries({ queryKey: ['pharmacy-documents'] });
-  }, [queryClient]);
+  }, [queryClient, refetch]);
 
   // Empty state when no saved pharmacies
-  const showEmptyState = !isLoading && pharmacies.length === 0;
+  const showEmptyState = !isLoading && totalCount === 0;
 
   return (
     <div className="min-h-screen bg-white text-gray-900">
@@ -192,7 +204,7 @@ export default function PharmacyOperations({ clientType = 'pharmacy' }: Props) {
           </div>
           {!showEmptyState && (
             <span className="text-xs text-gray-500 bg-gray-100 px-2 py-0.5 rounded">
-              {displayedPharmacies.length} of {pharmacies.length} saved {clientType === 'pharmacy' ? 'pharmacies' : 'herbalists'}
+              {totalCount} {clientType === 'pharmacy' ? 'pharmacies' : 'herbalists'}
             </span>
           )}
         </div>
@@ -250,7 +262,10 @@ export default function PharmacyOperations({ clientType = 'pharmacy' }: Props) {
           <OperationsFiltersBar
             filters={filters}
             onFiltersChange={handleFiltersChange}
-            onClearFilters={() => setFilters(initialFilters)}
+            onClearFilters={() => {
+              setFilters(initialFilters);
+              setPage(0);
+            }}
             countries={countries}
             provinces={provinces}
             cities={cities}
@@ -269,6 +284,31 @@ export default function PharmacyOperations({ clientType = 'pharmacy' }: Props) {
                 selectedPharmacyId={selectedPharmacy?.id || null}
                 onSelectPharmacy={setSelectedPharmacy}
               />
+              <div className="flex items-center justify-between p-4 border-t border-gray-200">
+                <span className="text-sm text-gray-500">
+                  {totalCount > 0
+                    ? `Showing ${page * pageSize + 1}-${Math.min((page + 1) * pageSize, totalCount)} of ${totalCount}`
+                    : 'Showing 0 of 0'}
+                </span>
+                <div className="flex gap-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setPage(p => p - 1)}
+                    disabled={page === 0}
+                  >
+                    Previous
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setPage(p => p + 1)}
+                    disabled={(page + 1) * pageSize >= totalCount}
+                  >
+                    Next
+                  </Button>
+                </div>
+              </div>
             </div>
 
             {/* Detail Panel */}
