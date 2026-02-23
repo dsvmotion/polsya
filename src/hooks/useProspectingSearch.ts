@@ -187,12 +187,6 @@ export function useProspectingSearch() {
 
         if (existing) {
           cachedPharmacies.push(existing as Pharmacy);
-          if (cachedPharmacies.length === 1) {
-            setDetectedLocation({
-              country: (existing as Pharmacy).country ?? '',
-              province: (existing as Pharmacy).province ?? '',
-            });
-          }
           setProgress((prev) => ({ ...prev, cached: cachedPharmacies.length }));
           setResults([...cachedPharmacies]);
           continue;
@@ -232,12 +226,6 @@ export function useProspectingSearch() {
 
           if (existingByPlaceId) {
             cachedPharmacies.push(existingByPlaceId as Pharmacy);
-            if (cachedPharmacies.length === 1) {
-              setDetectedLocation({
-                country: (existingByPlaceId as Pharmacy).country ?? '',
-                province: (existingByPlaceId as Pharmacy).province ?? '',
-              });
-            }
             setProgress((prev) => ({ ...prev, cached: cachedPharmacies.length }));
             setResults([...cachedPharmacies]);
             continue;
@@ -282,10 +270,6 @@ export function useProspectingSearch() {
             } else {
               cachedPharmacies.push(existingByName as Pharmacy);
             }
-            if (cachedPharmacies.length === 1) {
-              const first = (cachedPharmacies[0] as Pharmacy);
-              setDetectedLocation({ country: first.country ?? '', province: first.province ?? '' });
-            }
           } else {
             // No match found - insert new
             const { data: inserted, error: insertError } = await supabase
@@ -322,10 +306,6 @@ export function useProspectingSearch() {
             } else if (inserted) {
               cachedPharmacies.push(inserted as Pharmacy);
             }
-            if (cachedPharmacies.length === 1) {
-              const first = cachedPharmacies[0] as Pharmacy;
-              setDetectedLocation({ country: first.country ?? '', province: first.province ?? '' });
-            }
           }
 
           setProgress((prev) => ({ ...prev, cached: cachedPharmacies.length }));
@@ -336,6 +316,15 @@ export function useProspectingSearch() {
         } catch (detailError) {
           console.warn(`Error fetching details for ${basic.google_place_id}:`, detailError);
         }
+      }
+
+      // Auto-detect location from first result with country data
+      const firstWithCountry = cachedPharmacies.find(p => p.country);
+      if (firstWithCountry) {
+        setDetectedLocation({
+          country: firstWithCountry.country ?? '',
+          province: firstWithCountry.province ?? '',
+        });
       }
 
       console.log(`Caching complete: ${cachedPharmacies.length} pharmacies cached`);

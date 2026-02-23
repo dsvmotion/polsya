@@ -54,7 +54,7 @@ export default function PharmacyProspecting({ clientType = 'pharmacy' }: Props) 
 
   // Auto-fill country/province from first Google Places result when user had not set country
   useEffect(() => {
-    if (detectedLocation && !filters.country) {
+    if (detectedLocation && !filters.country && !filters.city) {
       setFilters((prev) => ({
         ...prev,
         country: detectedLocation.country || prev.country,
