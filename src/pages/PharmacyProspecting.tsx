@@ -180,7 +180,7 @@ export default function PharmacyProspecting({ clientType = 'pharmacy' }: Props) 
               <Leaf className="h-5 w-5 text-gray-600" />
             )}
             <h1 className="font-semibold text-lg text-gray-900">
-              {clientType === 'pharmacy' ? 'Pharmacy Prospecting Map' : 'Herbalist Prospecting Map'}
+              {clientType === 'pharmacy' ? 'Search Pharmacies Map' : 'Search Herbalists Map'}
             </h1>
           </div>
           {hasSearched && (

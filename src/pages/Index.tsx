@@ -221,7 +221,7 @@ const Index = () => {
                 className="gap-2 bg-white border-gray-300 text-gray-700 hover:bg-gray-100 hover:text-gray-900"
               >
                 <ClipboardList className="h-4 w-4" />
-                Pharmacy Operations
+                Saved Pharmacies
               </Button>
             </Link>
             <Link to="/prospecting">
@@ -230,7 +230,7 @@ const Index = () => {
                 className="gap-2 bg-white border-gray-300 text-gray-700 hover:bg-gray-100 hover:text-gray-900"
               >
                 <MapPin className="h-4 w-4" />
-                Pharmacy Prospecting
+                Search Pharmacies
               </Button>
             </Link>
             <Link to="/operations/herbalists">
@@ -239,7 +239,7 @@ const Index = () => {
                 className="gap-2 bg-white border-gray-300 text-gray-700 hover:bg-gray-100 hover:text-gray-900"
               >
                 <ClipboardList className="h-4 w-4" />
-                Herbalist Operations
+                Saved Herbalists
               </Button>
             </Link>
             <Link to="/prospecting/herbalists">
@@ -248,7 +248,7 @@ const Index = () => {
                 className="gap-2 bg-white border-gray-300 text-gray-700 hover:bg-gray-100 hover:text-gray-900"
               >
                 <MapPin className="h-4 w-4" />
-                Herbalist Prospecting
+                Search Herbalists
               </Button>
             </Link>
             <UserMenu />

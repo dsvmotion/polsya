@@ -199,7 +199,7 @@ export default function PharmacyOperations({ clientType = 'pharmacy' }: Props) {
               <Leaf className="h-5 w-5 text-gray-700" />
             )}
             <h1 className="font-semibold text-lg">
-              {clientType === 'pharmacy' ? 'Pharmacy Operations' : 'Herbalist Operations'}
+              {clientType === 'pharmacy' ? 'Saved Pharmacies' : 'Saved Herbalists'}
             </h1>
           </div>
           {!showEmptyState && (
@@ -214,7 +214,7 @@ export default function PharmacyOperations({ clientType = 'pharmacy' }: Props) {
           <Link to={clientType === 'pharmacy' ? '/prospecting' : '/prospecting/herbalists'}>
             <Button variant="outline" size="sm" className="border-gray-300">
               <MapPin className="h-4 w-4 mr-2" />
-              {clientType === 'pharmacy' ? 'Find Pharmacies' : 'Find Herbalists'}
+              {clientType === 'pharmacy' ? 'Search Pharmacies' : 'Search Herbalists'}
             </Button>
           </Link>
           <Button
@@ -246,13 +246,13 @@ export default function PharmacyOperations({ clientType = 'pharmacy' }: Props) {
           </h2>
           <p className="text-gray-500 text-center max-w-md mb-6">
             {clientType === 'pharmacy'
-              ? "You haven't saved any pharmacies yet. Use the Prospecting Map to discover pharmacies and save them here for management."
-              : "You haven't saved any herbalists yet. Use the Prospecting Map to discover herbalists and save them here for management."}
+              ? "You haven't saved any pharmacies yet. Use Search Pharmacies Map to discover pharmacies and save them here for management."
+              : "You haven't saved any herbalists yet. Use Search Herbalists Map to discover herbalists and save them here for management."}
           </p>
           <Link to={clientType === 'pharmacy' ? '/prospecting' : '/prospecting/herbalists'}>
             <Button className="bg-primary hover:bg-primary/90">
               <Search className="h-4 w-4 mr-2" />
-              {clientType === 'pharmacy' ? 'Go to Pharmacy Prospecting' : 'Go to Herbalist Prospecting'}
+              {clientType === 'pharmacy' ? 'Go to Search Pharmacies' : 'Go to Search Herbalists'}
             </Button>
           </Link>
         </div>
@@ -272,7 +272,7 @@ export default function PharmacyOperations({ clientType = 'pharmacy' }: Props) {
           />
 
           {/* Main Content */}
-          <div className="flex">
+          <div className="flex items-start">
             {/* Table */}
             <div className={`flex-1 overflow-auto ${selectedPharmacy ? 'max-w-[calc(100%-400px)]' : ''}`}>
               <OperationsTable
@@ -313,7 +313,7 @@ export default function PharmacyOperations({ clientType = 'pharmacy' }: Props) {
 
             {/* Detail Panel */}
             {selectedPharmacy && (
-              <div className="w-[400px] border-l border-gray-200 bg-gray-50">
+              <div className="w-[400px] border-l border-gray-200 bg-gray-50 sticky top-20">
                 <PharmacyOperationsDetail
                   pharmacy={selectedPharmacy}
                   onClose={() => setSelectedPharmacy(null)}
