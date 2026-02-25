@@ -1,15 +1,67 @@
 import { serve } from 'https://deno.land/std@0.168.0/http/server.ts';
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-};
+const ALLOWED_ORIGINS = [
+  'https://moodlycrm.com',
+  'https://www.moodlycrm.com',
+  'http://localhost:8080',
+  'http://localhost:5173',
+  'http://localhost:3000',
+];
 
 serve(async (req) => {
+  const origin = req.headers.get('Origin') || '';
+  const corsHeaders = {
+    'Access-Control-Allow-Origin': origin || ALLOWED_ORIGINS[0],
+  };
+
   if (req.method === 'OPTIONS') {
-    return new Response('ok', { headers: corsHeaders });
+    if (!ALLOWED_ORIGINS.includes(origin)) {
+      return new Response(null, { status: 403 });
+    }
+    return new Response(null, {
+      status: 204,
+      headers: {
+        'Access-Control-Allow-Origin': origin,
+        'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+        'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+      },
+    });
   }
+
+  // For non-OPTIONS requests, check origin
+  if (origin && !ALLOWED_ORIGINS.includes(origin)) {
+    return new Response(JSON.stringify({ error: 'Origin not allowed' }), {
+      status: 403,
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    });
+  }
+
+  // After the CORS check, verify admin role
+  const authHeader = req.headers.get('Authorization');
+  if (!authHeader) {
+    return new Response(JSON.stringify({ error: 'Missing authorization' }), {
+      status: 401,
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    });
+  }
+
+  const supabaseAdmin = createClient(
+    Deno.env.get('SUPABASE_URL') ?? '',
+    Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
+  );
+
+  const token = authHeader.replace('Bearer ', '');
+  const { data: { user }, error: authError } = await supabaseAdmin.auth.getUser(token);
+  if (authError || !user) {
+    return new Response(JSON.stringify({ error: 'Invalid token' }), {
+      status: 401,
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    });
+  }
+
+  // For now, allow any authenticated user. TODO: add admin role check when roles are implemented.
+  // Future: check user.app_metadata.role === 'admin'
 
   try {
     const GOOGLE_API_KEY = Deno.env.get('GOOGLE_MAPS_API_KEY');

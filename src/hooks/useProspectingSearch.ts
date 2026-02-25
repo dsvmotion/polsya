@@ -5,7 +5,6 @@ import { toast } from 'sonner';
 import type { Json } from '@/integrations/supabase/types';
 
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
-const SUPABASE_KEY = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
 
 interface SearchFilters {
   country: string;
@@ -82,6 +81,7 @@ export function useProspectingSearch() {
     setResults([]);
     setProgress({ found: 0, cached: 0 });
     setDetectedLocation(null);
+    const { data: { session } } = await supabase.auth.getSession();
 
     try {
       // Build search query for Google Places
@@ -129,8 +129,7 @@ export function useProspectingSearch() {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
-            Authorization: `Bearer ${SUPABASE_KEY}`,
-            apikey: SUPABASE_KEY,
+            Authorization: `Bearer ${session?.access_token}`,
           },
           signal,
           body: JSON.stringify({
@@ -198,8 +197,7 @@ export function useProspectingSearch() {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
-              Authorization: `Bearer ${SUPABASE_KEY}`,
-              apikey: SUPABASE_KEY,
+              Authorization: `Bearer ${session?.access_token}`,
             },
             signal,
             body: JSON.stringify({

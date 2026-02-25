@@ -1,16 +1,16 @@
 project_id = "taetxohwuuzufmkzpzhb"
 
 [functions.woocommerce-orders]
-verify_jwt = false
+verify_jwt = true
 
 [functions.woocommerce-orders-detailed]
-verify_jwt = false
+verify_jwt = true
 
 [functions.google-places-pharmacies]
-verify_jwt = false
+verify_jwt = true
 
 [functions.populate-geography]
-verify_jwt = false
+verify_jwt = true
 
 [functions.geocode-pharmacies]
-verify_jwt = false
+verify_jwt = true

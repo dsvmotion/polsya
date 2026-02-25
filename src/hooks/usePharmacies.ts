@@ -4,7 +4,6 @@ import { Pharmacy, type ClientType } from '@/types/pharmacy';
 import type { Json } from '@/integrations/supabase/types';
 
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
-const SUPABASE_KEY = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
 
 export function usePharmacies(clientType?: ClientType) {
   return useQuery({
@@ -206,13 +205,13 @@ export function useSearchGooglePlaces() {
       signal?: AbortSignal;
     }) => {
       console.log('Searching Google Places for pharmacies at:', location);
+      const { data: { session } } = await supabase.auth.getSession();
       
       const response = await fetch(`${SUPABASE_URL}/functions/v1/google-places-pharmacies`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${SUPABASE_KEY}`,
-          'apikey': SUPABASE_KEY,
+          'Authorization': `Bearer ${session?.access_token}`,
         },
         signal,
         body: JSON.stringify({
@@ -240,13 +239,13 @@ export function useGetPharmacyDetails() {
   return useMutation({
     mutationFn: async (placeId: string) => {
       console.log('Fetching pharmacy details for:', placeId);
+      const { data: { session } } = await supabase.auth.getSession();
       
       const response = await fetch(`${SUPABASE_URL}/functions/v1/google-places-pharmacies`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${SUPABASE_KEY}`,
-          'apikey': SUPABASE_KEY,
+          'Authorization': `Bearer ${session?.access_token}`,
         },
         body: JSON.stringify({
           action: 'details',

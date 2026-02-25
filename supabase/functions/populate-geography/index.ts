@@ -1,10 +1,13 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
-};
+const ALLOWED_ORIGINS = [
+  'https://moodlycrm.com',
+  'https://www.moodlycrm.com',
+  'http://localhost:8080',
+  'http://localhost:5173',
+  'http://localhost:3000',
+];
 
 // Complete European countries list with ISO codes
 const EUROPEAN_COUNTRIES = [
@@ -290,8 +293,31 @@ const ITALY_DATA = {
 };
 
 serve(async (req) => {
+  const origin = req.headers.get('Origin') || '';
+  const corsHeaders = {
+    'Access-Control-Allow-Origin': origin || ALLOWED_ORIGINS[0],
+  };
+
   if (req.method === "OPTIONS") {
-    return new Response(null, { headers: corsHeaders });
+    if (!ALLOWED_ORIGINS.includes(origin)) {
+      return new Response(null, { status: 403, headers: corsHeaders });
+    }
+    return new Response(null, {
+      status: 204,
+      headers: {
+        'Access-Control-Allow-Origin': origin,
+        'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+        'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+      },
+    });
+  }
+
+  // For non-OPTIONS requests, check origin
+  if (origin && !ALLOWED_ORIGINS.includes(origin)) {
+    return new Response(JSON.stringify({ error: 'Origin not allowed' }), {
+      status: 403,
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    });
   }
 
   try {
