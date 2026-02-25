@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { ShoppingCart, Building2, Users, MapPin, RefreshCw, AlertCircle, ClipboardList, X, Leaf } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { SalesMap } from '@/components/SalesMap';
@@ -6,6 +6,7 @@ import { useWooCommerceOrders } from '@/hooks/useWooCommerceOrders';
 import { usePharmaciesWithOrders } from '@/hooks/usePharmacyOperations';
 import { Sale } from '@/types/sale';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { SearchableSelect } from '@/components/ui/searchable-select';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -61,6 +62,9 @@ const Index = () => {
     city: '',
     customerType: 'all' as 'pharmacy' | 'client' | 'herbalist' | 'all',
   });
+  const [dateFrom, setDateFrom] = useState<string>('');
+  const [dateTo, setDateTo] = useState<string>('');
+  const [showAll, setShowAll] = useState(false);
 
   const { data: sales = [], isLoading, error, refetch } = useWooCommerceOrders();
   const { data: savedPharmacies = [] } = usePharmaciesWithOrders(true);
@@ -136,7 +140,7 @@ const Index = () => {
     return cities;
   }, [allSales, filters.country, filters.province]);
 
-  const filteredSales = useMemo(() => {
+  const baseFilteredSales = useMemo(() => {
     return allSales.filter(sale => {
       if (filters.country && sale.country !== filters.country) return false;
       if (filters.province && sale.province !== filters.province) return false;
@@ -145,6 +149,30 @@ const Index = () => {
       return true;
     });
   }, [allSales, filters]);
+
+  const filteredSales = useMemo(() => {
+    let result = baseFilteredSales;
+    if (dateFrom) {
+      result = result.filter(s => s.date >= dateFrom);
+    }
+    if (dateTo) {
+      result = result.filter(s => s.date <= dateTo);
+    }
+    return result;
+  }, [baseFilteredSales, dateFrom, dateTo]);
+
+  const displayedSales = useMemo(() => {
+    const sorted = [...filteredSales].sort((a, b) => b.date.localeCompare(a.date));
+    if (!dateFrom && !dateTo && !showAll) {
+      return sorted.slice(0, 100);
+    }
+    return sorted;
+  }, [filteredSales, dateFrom, dateTo, showAll]);
+
+  const mapSales = useMemo(
+    () => displayedSales.filter(s => s.lat !== 0 || s.lng !== 0),
+    [displayedSales]
+  );
 
   const stats = useMemo(() => {
     // WooCommerce orders filtered by geography
@@ -177,9 +205,17 @@ const Index = () => {
 
   const clearFilters = () => {
     setFilters({ country: '', province: '', city: '', customerType: 'all' });
+    setDateFrom('');
+    setDateTo('');
+    setShowAll(false);
   };
 
-  const hasActiveFilters = filters.country || filters.province || filters.city || filters.customerType !== 'all';
+  useEffect(() => {
+    setShowAll(false);
+  }, [dateFrom, dateTo]);
+
+  const hasActiveFilters =
+    filters.country || filters.province || filters.city || filters.customerType !== 'all' || dateFrom || dateTo;
 
   const handleCountryChange = (value: string) => {
     setFilters(prev => ({
@@ -337,6 +373,19 @@ const Index = () => {
                 disabled={!filters.province}
                 className="w-40"
               />
+
+              <Input
+                type="date"
+                value={dateFrom}
+                onChange={e => setDateFrom(e.target.value)}
+                className="w-36"
+              />
+              <Input
+                type="date"
+                value={dateTo}
+                onChange={e => setDateTo(e.target.value)}
+                className="w-36"
+              />
               
               {/* Customer Type */}
               <Select
@@ -361,6 +410,16 @@ const Index = () => {
                 <Button variant="ghost" size="sm" onClick={clearFilters} className="text-gray-500">
                   <X className="h-4 w-4 mr-1" />
                   Clear
+                </Button>
+              )}
+
+              <span className="text-sm text-gray-500">
+                Showing {displayedSales.length} of {filteredSales.length} orders
+              </span>
+
+              {!dateFrom && !dateTo && filteredSales.length > 100 && !showAll && (
+                <Button variant="outline" size="sm" onClick={() => setShowAll(true)}>
+                  Show all {filteredSales.length}
                 </Button>
               )}
             </div>
@@ -404,7 +463,7 @@ const Index = () => {
               <div className="flex items-center justify-between mb-4">
                 <h2 className="font-semibold text-gray-900">Sales Locations</h2>
                 <span className="text-xs text-gray-500">
-                  {filteredSales.length} orders
+                  {displayedSales.length} orders
                 </span>
               </div>
               <div style={{ height: '500px' }} className="rounded-lg overflow-hidden border border-gray-200">
@@ -427,7 +486,7 @@ const Index = () => {
                   </div>
                 ) : (
                   <SalesMap 
-                    sales={filteredSales} 
+                    sales={mapSales} 
                     onSaleSelect={setSelectedSale}
                     selectedSaleId={selectedSale?.id}
                   />
@@ -447,14 +506,14 @@ const Index = () => {
               </div>
               <ScrollArea className="h-[500px]">
                 <div className="space-y-2 pr-4">
-                  {filteredSales.length === 0 ? (
+                  {displayedSales.length === 0 ? (
                     <div className="text-center py-8 text-gray-500">
                       {sales.length === 0 
                         ? 'No sales data available.'
                         : 'No sales match the current filters.'}
                     </div>
                   ) : (
-                    filteredSales.map((sale) => (
+                    displayedSales.map((sale) => (
                       <div
                         key={sale.id}
                         className={`p-3 rounded-lg border transition-all cursor-pointer ${
@@ -524,7 +583,7 @@ const Index = () => {
                 <div className="flex items-center gap-2 text-gray-600">
                   <div className="w-2 h-2 rounded-full bg-gray-400" />
                   <span className="text-sm">
-                    {sales.length} orders loaded • Showing {filteredSales.length}
+                    {sales.length} orders loaded • Showing {displayedSales.length}
                   </span>
                 </div>
               )}
