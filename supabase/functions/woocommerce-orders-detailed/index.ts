@@ -171,34 +171,44 @@ serve(async (req) => {
     }
 
     const url = new URL(req.url);
-    const perPage = url.searchParams.get('per_page') || '100';
-    const page = url.searchParams.get('page') || '1';
     // Include all relevant statuses for operations view
     const status = url.searchParams.get('status') || 'completed,processing,on-hold,pending';
 
     const baseUrl = wooUrl.endsWith('/') ? wooUrl.slice(0, -1) : wooUrl;
-    const apiUrl = `${baseUrl}/wp-json/wc/v3/orders?per_page=${perPage}&page=${page}&status=${status}`;
-    
     const wooAuthHeader = 'Basic ' + btoa(`${consumerKey}:${consumerSecret}`);
-    
-    const wooResponse = await fetch(apiUrl, {
-      headers: {
-        'Authorization': wooAuthHeader,
-        'Content-Type': 'application/json'
+
+    const allOrders: WooCommerceOrder[] = [];
+    let currentPage = 1;
+    let totalPages = 1;
+
+    do {
+      const apiUrl = `${baseUrl}/wp-json/wc/v3/orders?per_page=100&page=${currentPage}&status=${status}`;
+      const wooResponse = await fetch(apiUrl, {
+        headers: { 'Authorization': wooAuthHeader, 'Content-Type': 'application/json' }
+      });
+
+      if (!wooResponse.ok) {
+        console.error(`WooCommerce API error on page ${currentPage}:`, wooResponse.status);
+        if (currentPage === 1) {
+          return new Response(
+            JSON.stringify({ error: 'Failed to fetch orders from WooCommerce' }),
+            { status: wooResponse.status, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+          );
+        }
+        break;
       }
-    });
 
-    if (!wooResponse.ok) {
-      console.error('WooCommerce API error');
-      return new Response(
-        JSON.stringify({ error: 'Failed to fetch orders from WooCommerce' }),
-        { status: wooResponse.status, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
-    }
+      const pageOrders: WooCommerceOrder[] = await wooResponse.json();
+      allOrders.push(...pageOrders);
 
-    const orders: WooCommerceOrder[] = await wooResponse.json();
-    
-    const detailedOrders: DetailedOrder[] = orders.map(order => {
+      if (currentPage === 1) {
+        totalPages = parseInt(wooResponse.headers.get('X-WP-TotalPages') || '1');
+      }
+
+      currentPage++;
+    } while (currentPage <= totalPages);
+
+    const detailedOrders: DetailedOrder[] = allOrders.map(order => {
       const customerName = order.billing.company || 
         `${order.billing.first_name} ${order.billing.last_name}`.trim();
 
@@ -234,17 +244,14 @@ serve(async (req) => {
       };
     });
 
-    const totalOrders = wooResponse.headers.get('X-WP-Total') || '0';
-    const totalPages = wooResponse.headers.get('X-WP-TotalPages') || '1';
-
     return new Response(
       JSON.stringify({
         orders: detailedOrders,
         pagination: {
-          total: parseInt(totalOrders),
-          totalPages: parseInt(totalPages),
-          currentPage: parseInt(page),
-          perPage: parseInt(perPage)
+          total: allOrders.length,
+          totalPages,
+          currentPage: Math.max(1, Math.min(currentPage - 1, totalPages)),
+          perPage: 100
         }
       }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }

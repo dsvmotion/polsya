@@ -108,8 +108,8 @@ async function geocodeFullAddress(address: string): Promise<GeocodeResult | null
     return null;
   }
 
-  // Strict reliability gate: accept only precise-ish results.
-  const allowed = new Set(['ROOFTOP', 'RANGE_INTERPOLATED']);
+  // Reliability gate: allow less precise geocoding to avoid losing orders.
+  const allowed = new Set(['ROOFTOP', 'RANGE_INTERPOLATED', 'GEOMETRIC_CENTER', 'APPROXIMATE']);
   if (locationType && !allowed.has(String(locationType))) {
     geocodeCache.set(key, null);
     return null;
@@ -187,38 +187,48 @@ serve(async (req) => {
 
     // Parse query parameters
     const url = new URL(req.url);
-    const perPage = url.searchParams.get('per_page') || '50';
-    const page = url.searchParams.get('page') || '1';
     const status = url.searchParams.get('status') || 'completed,processing';
 
-    // Fetch orders from WooCommerce
+    // Fetch ALL orders from WooCommerce with automatic pagination
     const baseUrl = wooUrl.endsWith('/') ? wooUrl.slice(0, -1) : wooUrl;
-    const apiUrl = `${baseUrl}/wp-json/wc/v3/orders?per_page=${perPage}&page=${page}&status=${status}`;
-    
     const wooAuthHeader = 'Basic ' + btoa(`${consumerKey}:${consumerSecret}`);
-    
-    const wooResponse = await fetch(apiUrl, {
-      headers: {
-        'Authorization': wooAuthHeader,
-        'Content-Type': 'application/json'
+
+    const allOrders: WooCommerceOrder[] = [];
+    let currentPage = 1;
+    let totalPages = 1;
+
+    do {
+      const apiUrl = `${baseUrl}/wp-json/wc/v3/orders?per_page=100&page=${currentPage}&status=${status}`;
+      const wooResponse = await fetch(apiUrl, {
+        headers: { 'Authorization': wooAuthHeader, 'Content-Type': 'application/json' }
+      });
+
+      if (!wooResponse.ok) {
+        console.error(`WooCommerce API error on page ${currentPage}:`, wooResponse.status);
+        if (currentPage === 1) {
+          return new Response(
+            JSON.stringify({ error: 'Failed to fetch orders from WooCommerce' }),
+            { status: wooResponse.status, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+          );
+        }
+        break;
       }
-    });
 
-    if (!wooResponse.ok) {
-      console.error('WooCommerce API error');
-      return new Response(
-        JSON.stringify({ error: 'Failed to fetch orders from WooCommerce' }),
-        { status: wooResponse.status, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
-    }
+      const pageOrders: WooCommerceOrder[] = await wooResponse.json();
+      allOrders.push(...pageOrders);
 
-    const orders: WooCommerceOrder[] = await wooResponse.json();
+      if (currentPage === 1) {
+        totalPages = parseInt(wooResponse.headers.get('X-WP-TotalPages') || '1');
+      }
+
+      currentPage++;
+    } while (currentPage <= totalPages);
     
     // Transform and geocode orders
     const geocodedOrders: GeocodedOrder[] = [];
     let skippedNoGeocode = 0;
     
-    for (const order of orders) {
+    for (const order of allOrders) {
       const customerName = order.billing.company || 
         `${order.billing.first_name} ${order.billing.last_name}`.trim();
 
@@ -235,6 +245,21 @@ serve(async (req) => {
       const geo = await geocodeFullAddress(fullAddress);
       if (!geo) {
         skippedNoGeocode++;
+        geocodedOrders.push({
+          id: order.id.toString(),
+          customerName,
+          customerType: isPharmacy(order) ? 'pharmacy' : 'client',
+          address: order.billing.address_1,
+          city: order.billing.city,
+          country: order.billing.country || '',
+          province: order.billing.state || '',
+          lat: 0,
+          lng: 0,
+          amount: parseFloat(order.total),
+          date: order.date_created.split('T')[0],
+          products: order.line_items.reduce((sum, item) => sum + item.quantity, 0),
+          orderId: `WC-${order.number}`
+        });
         continue;
       }
       
@@ -255,10 +280,6 @@ serve(async (req) => {
       });
     }
 
-    // Get total count from headers
-    const totalOrders = wooResponse.headers.get('X-WP-Total') || '0';
-    const totalPages = wooResponse.headers.get('X-WP-TotalPages') || '1';
-
     return new Response(
       JSON.stringify({
         orders: geocodedOrders,
@@ -266,10 +287,10 @@ serve(async (req) => {
           no_geocode: skippedNoGeocode,
         },
         pagination: {
-          total: parseInt(totalOrders),
-          totalPages: parseInt(totalPages),
-          currentPage: parseInt(page),
-          perPage: parseInt(perPage)
+          total: allOrders.length,
+          totalPages,
+          currentPage: Math.max(1, Math.min(currentPage - 1, totalPages)),
+          perPage: 100
         }
       }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }

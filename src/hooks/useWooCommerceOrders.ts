@@ -76,9 +76,9 @@ export function useWooCommerceOrders() {
         });
         
         if (!response.ok) {
-          console.error('WooCommerce API failed:', response.status);
-          // Return empty array - NO mock data fallback
-          return [];
+          const errorText = await response.text();
+          console.error('WooCommerce API failed:', response.status, errorText);
+          throw new Error(`WooCommerce API failed: ${response.status}`);
         }
         
         const data = await response.json();
@@ -105,8 +105,7 @@ export function useWooCommerceOrders() {
         return [];
       } catch (error) {
         console.error('Error fetching WooCommerce orders:', error);
-        // Return empty array - NO mock data fallback
-        return [];
+        throw error instanceof Error ? error : new Error('Unknown WooCommerce fetch error');
       }
     },
     staleTime: 5 * 60 * 1000, // 5 minutes
