@@ -20,6 +20,16 @@ const STATUS_PIN_COLORS = {
   client: '#22c55e', // Green
 };
 
+function escapeHtml(text: string | null | undefined): string {
+  if (!text) return '';
+  return text
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#039;');
+}
+
 export function ProspectingMap({
   pharmacies,
   selectedPharmacyId,
@@ -173,12 +183,12 @@ export function ProspectingMap({
                   background: #f3f4f6;
                   color: #374151;
                 ">
-                  ${statusLabels[pharmacy.commercial_status]}
+                  ${escapeHtml(statusLabels[pharmacy.commercial_status])}
                 </span>
               </div>
-              <h3 style="font-weight: 600; font-size: 14px; margin-bottom: 4px; color: #111827;">${pharmacy.name}</h3>
-              ${pharmacy.address ? `<p style="font-size: 12px; color: #6b7280; margin-bottom: 4px;">${pharmacy.address}</p>` : ''}
-              ${pharmacy.phone ? `<p style="font-size: 12px; color: #6b7280;">📞 ${pharmacy.phone}</p>` : ''}
+              <h3 style="font-weight: 600; font-size: 14px; margin-bottom: 4px; color: #111827;">${escapeHtml(pharmacy.name)}</h3>
+              ${pharmacy.address ? `<p style="font-size: 12px; color: #6b7280; margin-bottom: 4px;">${escapeHtml(pharmacy.address)}</p>` : ''}
+              ${pharmacy.phone ? `<p style="font-size: 12px; color: #6b7280;">📞 ${escapeHtml(pharmacy.phone)}</p>` : ''}
             </div>
           `);
           infoWindowRef.current.open(map, marker);

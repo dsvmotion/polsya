@@ -19,8 +19,9 @@ export function useDetailedOrders() {
       });
 
       if (!response.ok) {
-        console.error('Failed to fetch detailed orders:', response.status);
-        return [];
+        const errorText = await response.text();
+        console.error('Failed to fetch detailed orders:', response.status, errorText);
+        throw new Error(`Failed to fetch detailed orders: ${response.status}`);
       }
 
       const data = await response.json();
@@ -42,7 +43,7 @@ export function usePharmacyDocuments() {
 
       if (error) {
         console.error('Error fetching documents:', error);
-        return [];
+        throw new Error(`Error fetching documents: ${error.message}`);
       }
 
       return (data || []).map(doc => ({
