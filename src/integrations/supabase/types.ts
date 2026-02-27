@@ -208,7 +208,7 @@ export type Database = {
           file_path: string
           id: string
           notes: string | null
-          order_id: string
+          order_id: string | null
           pharmacy_id: string
           uploaded_at: string
         }
@@ -218,7 +218,7 @@ export type Database = {
           file_path: string
           id?: string
           notes?: string | null
-          order_id: string
+          order_id?: string | null
           pharmacy_id: string
           uploaded_at?: string
         }
@@ -228,7 +228,7 @@ export type Database = {
           file_path?: string
           id?: string
           notes?: string | null
-          order_id?: string
+          order_id?: string | null
           pharmacy_id?: string
           uploaded_at?: string
         }
