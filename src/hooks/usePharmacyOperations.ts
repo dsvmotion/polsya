@@ -75,6 +75,8 @@ export function usePharmacyOperations(
   page: number = 0,
   pageSize: number = 50
 ) {
+  const hasPaymentFilter = !!(filters?.paymentStatus && filters.paymentStatus !== 'all');
+
   const {
     data: pageData = { pharmacies: [] as Pharmacy[], totalCount: 0 },
     isLoading: pharmaciesLoading,
@@ -100,9 +102,14 @@ export function usePharmacyOperations(
         query = query.or(`name.ilike.%${term}%,address.ilike.%${term}%,phone.ilike.%${term}%`);
       }
 
-      query = query
-        .order('name', { ascending: true })
-        .range(page * pageSize, (page + 1) * pageSize - 1);
+      query = query.order('name', { ascending: true });
+
+      // paymentStatus is derived from WooCommerce data after mapping, so we
+      // cannot filter it in SQL. When active, fetch the full result set and
+      // paginate in memory after the filter is applied.
+      if (!hasPaymentFilter) {
+        query = query.range(page * pageSize, (page + 1) * pageSize - 1);
+      }
 
       const { data, error, count } = await query;
       if (error) throw error;
@@ -118,12 +125,8 @@ export function usePharmacyOperations(
   const { data: documents = [], isLoading: docsLoading } = usePharmacyDocuments();
 
   let pharmaciesWithOrders: PharmacyWithOrders[] = pageData.pharmacies.map((pharmacy) => {
-    // STRICT matching: Only match orders if the pharmacy is marked as 'client'
-    // AND the order customer name matches the pharmacy name with high confidence
     let pharmacyOrders: DetailedOrder[] = [];
 
-    // Only attempt to match orders for pharmacies that are clients
-    // Non-contacted and contacted pharmacies should NEVER have orders
     if (pharmacy.commercial_status === 'client') {
       pharmacyOrders = orders.filter(order => {
         const orderName = order.customerName.toLowerCase().trim();
@@ -179,16 +182,22 @@ export function usePharmacyOperations(
     };
   });
 
-  // paymentStatus depends on WooCommerce order data, not pharmacies table columns
-  if (filters?.paymentStatus && filters.paymentStatus !== 'all') {
+  if (hasPaymentFilter) {
     pharmaciesWithOrders = pharmaciesWithOrders.filter(
-      (pharmacy) => pharmacy.lastOrder?.paymentStatus === filters.paymentStatus
+      (pharmacy) => pharmacy.lastOrder?.paymentStatus === filters!.paymentStatus
     );
   }
 
+  // When paymentStatus is active the full set was fetched (no SQL range), so
+  // totalCount and pagination must be computed from the filtered result.
+  const finalTotalCount = hasPaymentFilter ? pharmaciesWithOrders.length : pageData.totalCount;
+  const finalPharmacies = hasPaymentFilter
+    ? pharmaciesWithOrders.slice(page * pageSize, (page + 1) * pageSize)
+    : pharmaciesWithOrders;
+
   return {
-    pharmacies: pharmaciesWithOrders,
-    totalCount: pageData.totalCount,
+    pharmacies: finalPharmacies,
+    totalCount: finalTotalCount,
     isLoading: pharmaciesLoading || ordersLoading || docsLoading,
     error,
     refetch,
