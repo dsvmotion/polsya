@@ -278,13 +278,9 @@ export function BulkImportDialog({ defaultClientType, onSuccess }: BulkImportDia
     }
     setResult({ imported, errors });
     setImporting(false);
+    // saved_at is set per-row in the insert payload — never do a global update here
     if (imported > 0) {
       onSuccess?.();
-      await supabase
-        .from('pharmacies')
-        .update({ saved_at: new Date().toISOString() })
-        .is('saved_at', null)
-        .is('google_place_id', null);
     }
   }, [headers, mapping, rows, defaultType, onSuccess]);
 
