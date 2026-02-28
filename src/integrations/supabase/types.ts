@@ -559,6 +559,39 @@ export type Database = {
           },
         ]
       }
+      bulk_import_runs: {
+        Row: {
+          id: string
+          file_hash: string
+          file_name: string
+          total_rows: number
+          imported_rows: number
+          skipped_duplicates: number
+          status: string
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          file_hash: string
+          file_name: string
+          total_rows?: number
+          imported_rows?: number
+          skipped_duplicates?: number
+          status?: string
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          file_hash?: string
+          file_name?: string
+          total_rows?: number
+          imported_rows?: number
+          skipped_duplicates?: number
+          status?: string
+          created_at?: string
+        }
+        Relationships: []
+      }
       pharmacy_order_documents: {
         Row: {
           document_type: string

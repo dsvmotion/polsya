@@ -23,6 +23,13 @@ import type { ClientType } from '@/types/pharmacy';
 import { cn } from '@/lib/utils';
 import { normalizeText, sanitizeTextInput, buildDedupeKey } from '@/lib/import-utils';
 
+async function computeFileHash(file: File): Promise<string> {
+  const buffer = await file.arrayBuffer();
+  const hashBuffer = await crypto.subtle.digest('SHA-256', buffer);
+  const hashArray = Array.from(new Uint8Array(hashBuffer));
+  return hashArray.map((b) => b.toString(16).padStart(2, '0')).join('');
+}
+
 const FIELDS = [
   { key: 'name', label: 'Name', required: true },
   { key: 'address', label: 'Address', required: false },
@@ -163,7 +170,7 @@ export function BulkImportDialog({ defaultClientType, onSuccess }: BulkImportDia
   const [defaultType, setDefaultType] = useState<ClientType>(defaultClientType);
   const [importing, setImporting] = useState(false);
   const [progress, setProgress] = useState({ imported: 0, errors: 0 });
-  const [result, setResult] = useState<{ imported: number; errors: number; skippedDuplicates: number } | null>(null);
+  const [result, setResult] = useState<{ imported: number; errors: number; skippedDuplicates: number; errorMessage?: string } | null>(null);
   const [isDryRunning, setIsDryRunning] = useState(false);
   const [dryRunResult, setDryRunResult] = useState<DryRunResult | null>(null);
 
@@ -230,9 +237,39 @@ export function BulkImportDialog({ defaultClientType, onSuccess }: BulkImportDia
   );
 
   const handleImport = useCallback(async () => {
-    if (!headers.length || !mapping.name || mapping.name === '__skip__') return;
+    if (!file || !headers.length || !mapping.name || mapping.name === '__skip__') return;
     setImporting(true);
     setProgress({ imported: 0, errors: 0 });
+
+    // Idempotency: check if this exact file was already imported
+    let fileHash: string;
+    try {
+      fileHash = await computeFileHash(file);
+    } catch {
+      setResult({ imported: 0, errors: 1, skippedDuplicates: 0 });
+      setImporting(false);
+      return;
+    }
+
+    try {
+      const { data: existingRun } = await supabase
+        .from('bulk_import_runs')
+        .select('created_at')
+        .eq('file_hash', fileHash)
+        .eq('status', 'success')
+        .limit(1)
+        .maybeSingle();
+
+      if (existingRun) {
+        const importedDate = new Date(existingRun.created_at).toLocaleString();
+        setResult({ imported: 0, errors: 1, skippedDuplicates: 0, errorMessage: `This file was already imported on ${importedDate}.` });
+        setImporting(false);
+        return;
+      }
+    } catch {
+      // If the idempotency check fails, proceed with import rather than blocking
+    }
+
     let imported = 0;
     let errors = 0;
     let skippedDuplicates = 0;
@@ -347,11 +384,26 @@ export function BulkImportDialog({ defaultClientType, onSuccess }: BulkImportDia
     }
     setResult({ imported, errors, skippedDuplicates });
     setImporting(false);
+
+    // Log the import run for idempotency tracking
+    try {
+      await supabase.from('bulk_import_runs').insert({
+        file_hash: fileHash,
+        file_name: file.name,
+        total_rows: rows.length,
+        imported_rows: imported,
+        skipped_duplicates: skippedDuplicates,
+        status: imported > 0 ? 'success' : 'failed',
+      });
+    } catch {
+      // Best-effort logging — do not block the user
+    }
+
     // saved_at is set per-row in the insert payload — never do a global update here
     if (imported > 0) {
       onSuccess?.();
     }
-  }, [headers, mapping, rows, defaultType, onSuccess]);
+  }, [file, headers, mapping, rows, defaultType, onSuccess]);
 
   const handleDryRun = useCallback(async () => {
     if (!headers.length || !mapping.name || mapping.name === '__skip__') return;
@@ -573,9 +625,11 @@ export function BulkImportDialog({ defaultClientType, onSuccess }: BulkImportDia
             )}
 
             {result && (
-              <p className="text-sm text-gray-700">
-                Done: {result.imported} imported, {result.errors} errors
-                {result.skippedDuplicates > 0 && `, ${result.skippedDuplicates} duplicates skipped`}.
+              <p className={cn('text-sm', result.errorMessage ? 'text-red-700' : 'text-gray-700')}>
+                {result.errorMessage
+                  ? result.errorMessage
+                  : <>Done: {result.imported} imported, {result.errors} errors{result.skippedDuplicates > 0 && `, ${result.skippedDuplicates} duplicates skipped`}.</>
+                }
               </p>
             )}
 
