@@ -35,7 +35,7 @@ export function useCreateIntegration() {
         .insert({
           provider: input.provider,
           display_name: input.displayName,
-          ...(input.metadata ? { metadata: input.metadata } : {}),
+          ...(input.metadata ? { metadata: input.metadata as unknown as import('@/integrations/supabase/types').Json } : {}),
         })
         .select()
         .single();
@@ -66,9 +66,14 @@ export function useUpdateIntegration() {
 
   return useMutation({
     mutationFn: async (input: UpdateIntegrationInput) => {
+      const { metadata, ...rest } = input.updates;
+      const payload: Record<string, unknown> = { ...rest };
+      if (metadata !== undefined) {
+        payload.metadata = metadata as unknown as import('@/integrations/supabase/types').Json;
+      }
       const { data, error } = await supabase
         .from('integration_connections')
-        .update(input.updates)
+        .update(payload as typeof rest & { metadata?: import('@/integrations/supabase/types').Json })
         .eq('id', input.id)
         .select()
         .single();

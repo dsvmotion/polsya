@@ -13,7 +13,11 @@
     "lint": "eslint .",
     "preview": "vite preview",
     "test": "vitest run",
-    "test:watch": "vitest"
+    "test:watch": "vitest",
+    "typecheck": "tsc --noEmit -p tsconfig.app.json && tsc --noEmit -p tsconfig.node.json",
+    "check:migrations": "node scripts/check-migrations-order.mjs",
+    "check:security": "node scripts/check-security-invariants.mjs",
+    "test:contracts": "vitest run src/test/edge-cors-contract.test.ts"
   },
   "dependencies": {
     "@googlemaps/markerclusterer": "^2.6.2",

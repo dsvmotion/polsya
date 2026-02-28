@@ -49,7 +49,7 @@ export function useCreateAgentAction() {
           action_type: input.actionType,
           target_type: input.targetType,
           target_id: input.targetId ?? null,
-          payload: input.payload ?? {},
+          payload: (input.payload ?? {}) as unknown as import('@/integrations/supabase/types').Json,
           status: input.status ?? 'queued',
           error_message: input.errorMessage ?? null,
           requested_by: input.requestedBy ?? null,

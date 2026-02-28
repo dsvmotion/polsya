@@ -18,7 +18,7 @@ export function useSavedSegments(scope: SegmentScope = 'operations') {
         .order('updated_at', { ascending: false });
 
       if (error) throw new Error(error.message);
-      return (data ?? []) as SavedSegment[];
+      return (data ?? []) as unknown as SavedSegment[];
     },
   });
 }
@@ -40,14 +40,14 @@ export function useCreateSavedSegment() {
         .insert({
           name: input.name,
           scope: input.scope,
-          filters: input.filters as unknown as Record<string, unknown>,
+          filters: input.filters as unknown as import('@/integrations/supabase/types').Json,
           description: input.description ?? null,
         })
         .select()
         .single();
 
       if (error) throw new Error(error.message);
-      return data as SavedSegment;
+      return data as unknown as SavedSegment;
     },
     onSuccess: (_data, variables) => {
       qc.invalidateQueries({ queryKey: segmentsKey(variables.scope) });
@@ -85,7 +85,7 @@ export function useUpdateSavedSegment() {
         .single();
 
       if (error) throw new Error(error.message);
-      return data as SavedSegment;
+      return data as unknown as SavedSegment;
     },
     onSuccess: (_data, variables) => {
       qc.invalidateQueries({ queryKey: segmentsKey(variables.scope) });
@@ -125,7 +125,7 @@ export function useToggleFavoriteSegment() {
         .single();
 
       if (error) throw new Error(error.message);
-      return { data: data as SavedSegment, scope };
+      return { data: data as unknown as SavedSegment, scope };
     },
     onSuccess: (result) => {
       qc.invalidateQueries({ queryKey: segmentsKey(result.scope) });
