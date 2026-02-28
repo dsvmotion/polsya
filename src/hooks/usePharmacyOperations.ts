@@ -70,12 +70,31 @@ type PharmacyOperationsFilters = {
   clientType?: ClientType;
 };
 
+const DB_SORT_COLUMNS: Record<string, string> = {
+  name: 'name',
+  address: 'address',
+  postal_code: 'postal_code',
+  city: 'city',
+  province: 'province',
+  autonomous_community: 'autonomous_community',
+  phone: 'phone',
+  secondary_phone: 'secondary_phone',
+  email: 'email',
+  activity: 'activity',
+  subsector: 'subsector',
+  legal_form: 'legal_form',
+  commercialStatus: 'commercial_status',
+};
+
 export function usePharmacyOperations(
   filters?: PharmacyOperationsFilters,
   page: number = 0,
-  pageSize: number = 50
+  pageSize: number = 50,
+  sortField: string = 'name',
+  sortDirection: 'asc' | 'desc' = 'asc'
 ) {
   const hasPaymentFilter = !!(filters?.paymentStatus && filters.paymentStatus !== 'all');
+  const dbColumn = DB_SORT_COLUMNS[sortField];
 
   const {
     data: pageData = { pharmacies: [] as Pharmacy[], totalCount: 0 },
@@ -83,7 +102,7 @@ export function usePharmacyOperations(
     error,
     refetch,
   } = useQuery({
-    queryKey: ['pharmacy-operations', filters ?? {}, page, pageSize],
+    queryKey: ['pharmacy-operations', filters ?? {}, page, pageSize, sortField, sortDirection],
     queryFn: async (): Promise<{ pharmacies: Pharmacy[]; totalCount: number }> => {
       let query = supabase
         .from('pharmacies')
@@ -102,7 +121,11 @@ export function usePharmacyOperations(
         query = query.or(`name.ilike.%${term}%,address.ilike.%${term}%,phone.ilike.%${term}%`);
       }
 
-      query = query.order('name', { ascending: true });
+      if (dbColumn) {
+        query = query.order(dbColumn, { ascending: sortDirection === 'asc' });
+      } else {
+        query = query.order('name', { ascending: true });
+      }
 
       // paymentStatus is derived from WooCommerce data after mapping, so we
       // cannot filter it in SQL. When active, fetch the full result set and

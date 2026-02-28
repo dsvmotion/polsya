@@ -17,6 +17,8 @@ interface Props {
   clientType?: ClientType;
 }
 
+const DERIVED_SORT_FIELDS = new Set(['totalRevenue', 'paymentStatus', 'lastOrderDate']);
+
 const initialFilters: OperationsFilters = {
   search: '',
   country: '',
@@ -61,66 +63,26 @@ export default function PharmacyOperations({ clientType = 'pharmacy' }: Props) {
     ]
   );
 
-  // Server-side filtered pharmacies with pagination
+  // Server-side filtered pharmacies with pagination and sorting
   const { pharmacies = [], totalCount = 0, isLoading, refetch } = usePharmacyOperations(
     serverFilters,
     page,
-    pageSize
+    pageSize,
+    sortField,
+    sortDirection
   );
   const queryClient = useQueryClient();
 
   // Geography options from unified normalized tables
   const { countries, provinces, cities } = useGeographyOptions(filters.country, filters.province);
 
-  // Sort current page (filtering is server-side)
   const displayedPharmacies = useMemo(() => {
-    const result = [...pharmacies];
+    if (!DERIVED_SORT_FIELDS.has(sortField)) return pharmacies;
 
-    // Sort
-    const str = (s: string | null | undefined) => (s ?? '').toString().trim();
+    const result = [...pharmacies];
     result.sort((a, b) => {
       let comparison = 0;
-
       switch (sortField) {
-        case 'name':
-          comparison = a.name.localeCompare(b.name);
-          break;
-        case 'address':
-          comparison = str(a.address).localeCompare(str(b.address));
-          break;
-        case 'postal_code':
-          comparison = str(a.postal_code).localeCompare(str(b.postal_code), undefined, { numeric: true });
-          break;
-        case 'city':
-          comparison = str(a.city).localeCompare(str(b.city));
-          break;
-        case 'province':
-          comparison = str(a.province).localeCompare(str(b.province));
-          break;
-        case 'autonomous_community':
-          comparison = str(a.autonomous_community).localeCompare(str(b.autonomous_community));
-          break;
-        case 'phone':
-          comparison = str(a.phone).localeCompare(str(b.phone));
-          break;
-        case 'secondary_phone':
-          comparison = str(a.secondary_phone).localeCompare(str(b.secondary_phone));
-          break;
-        case 'email':
-          comparison = str(a.email).localeCompare(str(b.email));
-          break;
-        case 'activity':
-          comparison = str(a.activity).localeCompare(str(b.activity));
-          break;
-        case 'subsector':
-          comparison = str(a.subsector).localeCompare(str(b.subsector));
-          break;
-        case 'legal_form':
-          comparison = str(a.legal_form).localeCompare(str(b.legal_form));
-          break;
-        case 'commercialStatus':
-          comparison = a.commercialStatus.localeCompare(b.commercialStatus);
-          break;
         case 'totalRevenue':
           comparison = a.totalRevenue - b.totalRevenue;
           break;
@@ -137,10 +99,8 @@ export default function PharmacyOperations({ clientType = 'pharmacy' }: Props) {
           break;
         }
       }
-
       return sortDirection === 'asc' ? comparison : -comparison;
     });
-
     return result;
   }, [pharmacies, sortField, sortDirection]);
 
@@ -161,6 +121,7 @@ export default function PharmacyOperations({ clientType = 'pharmacy' }: Props) {
   }, [filters.country, filters.province]);
 
   const handleSort = useCallback((field: SortField) => {
+    setPage(0);
     if (sortField === field) {
       setSortDirection(prev => prev === 'asc' ? 'desc' : 'asc');
     } else {
