@@ -1,41 +1,13 @@
 import { serve } from 'https://deno.land/std@0.168.0/http/server.ts';
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
-
-const ALLOWED_ORIGINS = [
-  'https://moodlycrm.com',
-  'https://www.moodlycrm.com',
-  'http://localhost:8080',
-  'http://localhost:5173',
-  'http://localhost:3000',
-];
+import { handleCors, corsHeaders as makeCorsHeaders } from '../_shared/cors.ts';
 
 serve(async (req) => {
+  const corsResponse = handleCors(req);
+  if (corsResponse) return corsResponse;
+
   const origin = req.headers.get('Origin') || '';
-  const corsHeaders = {
-    'Access-Control-Allow-Origin': origin || ALLOWED_ORIGINS[0],
-  };
-
-  if (req.method === 'OPTIONS') {
-    if (!ALLOWED_ORIGINS.includes(origin)) {
-      return new Response(null, { status: 403 });
-    }
-    return new Response(null, {
-      status: 204,
-      headers: {
-        'Access-Control-Allow-Origin': origin,
-        'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
-        'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-      },
-    });
-  }
-
-  // For non-OPTIONS requests, check origin
-  if (origin && !ALLOWED_ORIGINS.includes(origin)) {
-    return new Response(JSON.stringify({ error: 'Origin not allowed' }), {
-      status: 403,
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-    });
-  }
+  const cors = makeCorsHeaders(origin);
 
   // --- Authorization: require valid JWT + privileged role/allowlist ---
   const authHeader = req.headers.get('Authorization');
@@ -43,7 +15,7 @@ serve(async (req) => {
     console.log(JSON.stringify({ action: 'geocode_pharmacies', allowed: false, reason: 'missing_token' }));
     return new Response(JSON.stringify({ error: 'Missing authorization' }), {
       status: 401,
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      headers: { ...cors, 'Content-Type': 'application/json' },
     });
   }
 
@@ -54,7 +26,7 @@ serve(async (req) => {
     console.error(JSON.stringify({ action: 'geocode_pharmacies', error: 'missing_service_config' }));
     return new Response(JSON.stringify({ error: 'Server misconfiguration: missing service role key or URL' }), {
       status: 500,
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      headers: { ...cors, 'Content-Type': 'application/json' },
     });
   }
 
@@ -66,7 +38,7 @@ serve(async (req) => {
     console.log(JSON.stringify({ action: 'geocode_pharmacies', allowed: false, reason: 'invalid_token' }));
     return new Response(JSON.stringify({ error: 'Invalid token' }), {
       status: 401,
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      headers: { ...cors, 'Content-Type': 'application/json' },
     });
   }
 
@@ -85,7 +57,7 @@ serve(async (req) => {
     console.log(JSON.stringify({ action: 'geocode_pharmacies', user_id: user.id, allowed: false, reason: 'forbidden' }));
     return new Response(JSON.stringify({ error: 'Forbidden: insufficient privileges' }), {
       status: 403,
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      headers: { ...cors, 'Content-Type': 'application/json' },
     });
   }
 
@@ -116,7 +88,7 @@ serve(async (req) => {
     if (!pharmacies || pharmacies.length === 0) {
       return new Response(
         JSON.stringify({ message: 'No pharmacies to geocode', remaining: 0 }),
-        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        { headers: { ...cors, 'Content-Type': 'application/json' } }
       );
     }
 
@@ -184,12 +156,12 @@ serve(async (req) => {
         batchSize: pharmacies.length,
         message: `Geocoded ${geocoded}/${pharmacies.length}. ${remaining} remaining.`
       }),
-      { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      { headers: { ...cors, 'Content-Type': 'application/json' } }
     );
   } catch (err) {
     return new Response(
       JSON.stringify({ error: String(err) }),
-      { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      { status: 500, headers: { ...cors, 'Content-Type': 'application/json' } }
     );
   }
 });
