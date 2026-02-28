@@ -295,6 +295,53 @@ export type Database = {
           },
         ]
       }
+      pharmacy_opportunities: {
+        Row: {
+          id: string
+          pharmacy_id: string
+          title: string
+          stage: string
+          amount: number
+          probability: number
+          expected_close_date: string | null
+          notes: string | null
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          pharmacy_id: string
+          title: string
+          stage: string
+          amount?: number
+          probability?: number
+          expected_close_date?: string | null
+          notes?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          pharmacy_id?: string
+          title?: string
+          stage?: string
+          amount?: number
+          probability?: number
+          expected_close_date?: string | null
+          notes?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "pharmacy_opportunities_pharmacy_id_fkey"
+            columns: ["pharmacy_id"]
+            isOneToOne: false
+            referencedRelation: "pharmacies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       pharmacy_order_documents: {
         Row: {
           document_type: string

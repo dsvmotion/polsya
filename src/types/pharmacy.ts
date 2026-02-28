@@ -85,6 +85,37 @@ export interface PharmacyActivity {
   updated_at: string;
 }
 
+export type OpportunityStage = 'qualified' | 'proposal' | 'negotiation' | 'won' | 'lost';
+
+export const OPPORTUNITY_STAGE_LABELS: Record<OpportunityStage, string> = {
+  qualified: 'Qualified',
+  proposal: 'Proposal',
+  negotiation: 'Negotiation',
+  won: 'Won',
+  lost: 'Lost',
+};
+
+export const OPPORTUNITY_STAGE_COLORS: Record<OpportunityStage, { bg: string; text: string }> = {
+  qualified: { bg: 'bg-indigo-100', text: 'text-indigo-800' },
+  proposal: { bg: 'bg-purple-100', text: 'text-purple-800' },
+  negotiation: { bg: 'bg-amber-100', text: 'text-amber-800' },
+  won: { bg: 'bg-green-100', text: 'text-green-800' },
+  lost: { bg: 'bg-red-100', text: 'text-red-800' },
+};
+
+export interface PharmacyOpportunity {
+  id: string;
+  pharmacy_id: string;
+  title: string;
+  stage: OpportunityStage;
+  amount: number;
+  probability: number;
+  expected_close_date: string | null;
+  notes: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
 export interface PharmacyFilters {
   city: string;
   province: string;

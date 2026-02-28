@@ -1,8 +1,9 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { 
   X, MapPin, Phone, Globe, Clock, Copy, Check, 
   ExternalLink, Mail, FileText, Save, ShoppingCart, Package,
-  Building2, ImageIcon, Users, Plus, Trash2, Star, Activity, CheckCircle2, Circle, Calendar
+  Building2, ImageIcon, Users, Plus, Trash2, Star, Activity, CheckCircle2, Circle, Calendar,
+  TrendingUp
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
@@ -19,6 +20,7 @@ import {
   Pharmacy, PharmacyStatus, STATUS_LABELS, STATUS_COLORS,
   ContactRole, CONTACT_ROLE_LABELS,
   ActivityType, ACTIVITY_TYPE_LABELS, ACTIVITY_TYPE_ICONS,
+  OpportunityStage, OPPORTUNITY_STAGE_LABELS, OPPORTUNITY_STAGE_COLORS,
 } from '@/types/pharmacy';
 import { useUpdatePharmacy } from '@/hooks/usePharmacies';
 import { usePharmacyPhoto } from '@/hooks/usePharmacyPhoto';
@@ -35,6 +37,11 @@ import {
   useCompletePharmacyActivity,
   useDeletePharmacyActivity,
 } from '@/hooks/usePharmacyActivities';
+import {
+  usePharmacyOpportunities,
+  useCreatePharmacyOpportunity,
+  useDeletePharmacyOpportunity,
+} from '@/hooks/usePharmacyOpportunities';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 
@@ -430,6 +437,208 @@ function ActivitiesSection({ pharmacyId }: { pharmacyId: string }) {
   );
 }
 
+function OpportunitiesSection({ pharmacyId }: { pharmacyId: string }) {
+  const { data: opportunities = [], isLoading } = usePharmacyOpportunities(pharmacyId);
+  const createOpportunity = useCreatePharmacyOpportunity();
+  const deleteOpportunity = useDeletePharmacyOpportunity();
+
+  const [showForm, setShowForm] = useState(false);
+  const [newTitle, setNewTitle] = useState('');
+  const [newStage, setNewStage] = useState<OpportunityStage>('qualified');
+  const [newAmount, setNewAmount] = useState('');
+  const [newProbability, setNewProbability] = useState('50');
+  const [newCloseDate, setNewCloseDate] = useState('');
+
+  const resetForm = () => {
+    setNewTitle('');
+    setNewStage('qualified');
+    setNewAmount('');
+    setNewProbability('50');
+    setNewCloseDate('');
+    setShowForm(false);
+  };
+
+  const handleAdd = async () => {
+    const trimmed = newTitle.trim();
+    if (!trimmed) {
+      toast.error('Opportunity title is required');
+      return;
+    }
+    const amount = parseFloat(newAmount) || 0;
+    const prob = Math.min(100, Math.max(0, parseInt(newProbability) || 50));
+    try {
+      await createOpportunity.mutateAsync({
+        pharmacyId,
+        title: trimmed,
+        stage: newStage,
+        amount,
+        probability: prob,
+        expectedCloseDate: newCloseDate || null,
+      });
+      toast.success('Opportunity added');
+      resetForm();
+    } catch {
+      toast.error('Failed to add opportunity');
+    }
+  };
+
+  const handleDelete = async (id: string) => {
+    try {
+      await deleteOpportunity.mutateAsync({ id, pharmacyId });
+      toast.success('Opportunity deleted');
+    } catch {
+      toast.error('Failed to delete opportunity');
+    }
+  };
+
+  const { totalPipeline, weightedForecast } = useMemo(() => {
+    const open = opportunities.filter((o) => o.stage !== 'won' && o.stage !== 'lost');
+    return {
+      totalPipeline: open.reduce((sum, o) => sum + o.amount, 0),
+      weightedForecast: open.reduce((sum, o) => sum + (o.amount * o.probability) / 100, 0),
+    };
+  }, [opportunities]);
+
+  return (
+    <div className="space-y-3">
+      <div className="flex items-center justify-between">
+        <h3 className="text-sm font-medium text-gray-500 flex items-center gap-2">
+          <TrendingUp className="h-4 w-4" />
+          Opportunities ({opportunities.length})
+        </h3>
+        {!showForm && (
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => setShowForm(true)}
+            className="h-7 px-2 text-gray-500"
+          >
+            <Plus className="h-3.5 w-3.5 mr-1" />
+            Add
+          </Button>
+        )}
+      </div>
+
+      {opportunities.length > 0 && (
+        <div className="grid grid-cols-2 gap-2">
+          <div className="bg-gray-50 border border-gray-200 rounded-lg p-2 text-center">
+            <p className="text-lg font-bold text-gray-900">
+              €{totalPipeline.toLocaleString('es-ES', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
+            </p>
+            <p className="text-[10px] text-gray-500">Pipeline</p>
+          </div>
+          <div className="bg-gray-50 border border-gray-200 rounded-lg p-2 text-center">
+            <p className="text-lg font-bold text-gray-900">
+              €{weightedForecast.toLocaleString('es-ES', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
+            </p>
+            <p className="text-[10px] text-gray-500">Weighted Forecast</p>
+          </div>
+        </div>
+      )}
+
+      {showForm && (
+        <div className="p-3 border border-gray-200 rounded-lg bg-gray-50 space-y-2">
+          <Input
+            placeholder="Title *"
+            value={newTitle}
+            onChange={(e) => setNewTitle(e.target.value)}
+            className="h-8 text-sm bg-white border-gray-300"
+          />
+          <Select value={newStage} onValueChange={(v) => setNewStage(v as OpportunityStage)}>
+            <SelectTrigger className="h-8 text-sm bg-white border-gray-300">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent className="bg-white border-gray-200">
+              {(Object.keys(OPPORTUNITY_STAGE_LABELS) as OpportunityStage[]).map((s) => (
+                <SelectItem key={s} value={s}>{OPPORTUNITY_STAGE_LABELS[s]}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          <div className="grid grid-cols-2 gap-2">
+            <Input
+              type="number"
+              placeholder="Amount (€)"
+              value={newAmount}
+              onChange={(e) => setNewAmount(e.target.value)}
+              className="h-8 text-sm bg-white border-gray-300"
+              min="0"
+              step="0.01"
+            />
+            <Input
+              type="number"
+              placeholder="Probability (%)"
+              value={newProbability}
+              onChange={(e) => setNewProbability(e.target.value)}
+              className="h-8 text-sm bg-white border-gray-300"
+              min="0"
+              max="100"
+            />
+          </div>
+          <Input
+            type="date"
+            value={newCloseDate}
+            onChange={(e) => setNewCloseDate(e.target.value)}
+            className="h-8 text-sm bg-white border-gray-300"
+          />
+          <div className="flex items-center gap-2 pt-1">
+            <Button size="sm" onClick={handleAdd} disabled={createOpportunity.isPending}>
+              {createOpportunity.isPending ? 'Adding...' : 'Add Opportunity'}
+            </Button>
+            <Button size="sm" variant="ghost" onClick={resetForm}>Cancel</Button>
+          </div>
+        </div>
+      )}
+
+      {isLoading ? (
+        <p className="text-xs text-gray-400">Loading opportunities...</p>
+      ) : opportunities.length === 0 && !showForm ? (
+        <p className="text-xs text-gray-400">No opportunities yet</p>
+      ) : (
+        <div className="space-y-2">
+          {opportunities.map((opp) => {
+            const stageColor = OPPORTUNITY_STAGE_COLORS[opp.stage];
+            const weighted = (opp.amount * opp.probability) / 100;
+            return (
+              <div
+                key={opp.id}
+                className="flex items-start justify-between gap-2 p-2 rounded border border-gray-100 bg-white"
+              >
+                <div className="min-w-0 flex-1">
+                  <div className="flex items-center gap-1.5 flex-wrap">
+                    <span className="text-sm font-medium text-gray-900 truncate">{opp.title}</span>
+                    <span className={cn('text-[10px] px-1.5 py-0.5 rounded font-medium', stageColor?.bg, stageColor?.text)}>
+                      {OPPORTUNITY_STAGE_LABELS[opp.stage]}
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-3 mt-1 text-xs text-gray-600">
+                    <span className="font-medium">€{opp.amount.toLocaleString('es-ES', { minimumFractionDigits: 2 })}</span>
+                    <span>{opp.probability}%</span>
+                    <span className="text-gray-400">→ €{weighted.toLocaleString('es-ES', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}</span>
+                  </div>
+                  <div className="flex items-center gap-2 mt-0.5 text-[10px] text-gray-400">
+                    {opp.expected_close_date && (
+                      <span>Close: {new Date(opp.expected_close_date + 'T00:00:00').toLocaleDateString()}</span>
+                    )}
+                    <span>{new Date(opp.created_at).toLocaleDateString()}</span>
+                  </div>
+                </div>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="h-7 px-1.5 text-gray-400 hover:text-red-600 shrink-0"
+                  onClick={() => handleDelete(opp.id)}
+                >
+                  <Trash2 className="h-3.5 w-3.5" />
+                </Button>
+              </div>
+            );
+          })}
+        </div>
+      )}
+    </div>
+  );
+}
+
 interface PharmacyDetailPanelProps {
   pharmacy: Pharmacy;
   onClose: () => void;
@@ -684,6 +893,9 @@ export function PharmacyDetailPanel({ pharmacy, onClose }: PharmacyDetailPanelPr
 
         {/* Activities */}
         <ActivitiesSection pharmacyId={pharmacy.id} />
+
+        {/* Opportunities */}
+        <OpportunitiesSection pharmacyId={pharmacy.id} />
 
         {/* Opening Hours */}
         {pharmacy.opening_hours && pharmacy.opening_hours.length > 0 && (
