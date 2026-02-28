@@ -46,6 +46,7 @@ export interface PharmacyWithOrders {
   totalRevenue: number;
   hasInvoice: boolean;
   hasReceipt: boolean;
+  documentCount?: number;
   lat: number;
   lng: number;
   savedAt: string | null;

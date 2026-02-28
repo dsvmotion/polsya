@@ -152,6 +152,7 @@ export function usePharmacyOperations(
     const pharmacyDocs = documents.filter(d => d.pharmacyId === pharmacy.id);
     const hasInvoice = pharmacyDocs.some(d => d.documentType === 'invoice');
     const hasReceipt = pharmacyDocs.some(d => d.documentType === 'receipt');
+    const documentCount = pharmacyDocs.length;
 
     return {
       id: pharmacy.id,
@@ -170,6 +171,7 @@ export function usePharmacyOperations(
       totalRevenue,
       hasInvoice,
       hasReceipt,
+      documentCount,
       lat: pharmacy.lat,
       lng: pharmacy.lng,
       savedAt: pharmacy.saved_at ?? null,
@@ -290,10 +292,10 @@ export function usePharmaciesWithOrders(savedOnly: boolean = true, clientType?: 
     const lastOrder = sortedOrders.length > 0 ? sortedOrders[0] : null;
     const totalRevenue = pharmacyOrders.reduce((sum, o) => sum + o.amount, 0);
 
-    // Check for documents
     const pharmacyDocs = documents.filter(d => d.pharmacyId === pharmacy.id);
     const hasInvoice = pharmacyDocs.some(d => d.documentType === 'invoice');
     const hasReceipt = pharmacyDocs.some(d => d.documentType === 'receipt');
+    const documentCount = pharmacyDocs.length;
 
     return {
       id: pharmacy.id,
@@ -312,6 +314,7 @@ export function usePharmaciesWithOrders(savedOnly: boolean = true, clientType?: 
       totalRevenue,
       hasInvoice,
       hasReceipt,
+      documentCount,
       lat: pharmacy.lat,
       lng: pharmacy.lng,
       savedAt: pharmacy.saved_at ?? null,

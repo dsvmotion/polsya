@@ -1,7 +1,6 @@
 import { ArrowUpDown, ArrowUp, ArrowDown, FileText, Loader2 } from 'lucide-react';
 import { PharmacyWithOrders, SortField, SortDirection } from '@/types/operations';
 import { cn } from '@/lib/utils';
-import { usePharmacyDocuments } from '@/hooks/usePharmacyOperations';
 
 interface OperationsTableProps {
   pharmacies: PharmacyWithOrders[];
@@ -66,8 +65,7 @@ interface DocCountCellProps {
 }
 
 function DocCountCell({ pharmacy }: DocCountCellProps) {
-  const { data: allDocuments = [] } = usePharmacyDocuments();
-  const count = allDocuments.filter((d) => d.pharmacyId === pharmacy.id).length;
+  const count = pharmacy.documentCount ?? 0;
 
   return (
     <div className="flex items-center justify-center">
