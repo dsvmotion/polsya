@@ -48,6 +48,26 @@ export const STATUS_COLORS: Record<IntegrationStatus, { bg: string; text: string
   error: { bg: 'bg-red-100', text: 'text-red-700', dot: 'bg-red-500' },
 };
 
+export interface WooCommerceMetadata { store_url: string }
+export interface ShopifyMetadata { store_domain: string }
+export interface GmailMetadata { workspace_email?: string }
+export interface NotionMetadata { workspace_id?: string }
+export interface OpenAIMetadata { project_id?: string }
+export interface AnthropicMetadata { workspace_id?: string }
+export interface CustomApiMetadata { base_url: string }
+
+export interface IntegrationMetadataByProvider {
+  woocommerce: WooCommerceMetadata;
+  shopify: ShopifyMetadata;
+  gmail: GmailMetadata;
+  notion: NotionMetadata;
+  openai: OpenAIMetadata;
+  anthropic: AnthropicMetadata;
+  custom_api: CustomApiMetadata;
+}
+
+export type IntegrationMetadata = IntegrationMetadataByProvider[IntegrationProvider];
+
 export type SyncRunType = 'manual' | 'scheduled' | 'webhook';
 
 export type SyncRunStatus = 'running' | 'success' | 'error';

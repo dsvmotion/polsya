@@ -22,6 +22,7 @@ export function useIntegrations() {
 interface CreateIntegrationInput {
   provider: IntegrationProvider;
   displayName: string;
+  metadata?: Record<string, unknown>;
 }
 
 export function useCreateIntegration() {
@@ -34,6 +35,7 @@ export function useCreateIntegration() {
         .insert({
           provider: input.provider,
           display_name: input.displayName,
+          ...(input.metadata ? { metadata: input.metadata } : {}),
         })
         .select()
         .single();

@@ -1,5 +1,5 @@
 import { useState, useMemo } from 'react';
-import { Plug, Plus, Trash2, RotateCw } from 'lucide-react';
+import { Plug, Plus, Trash2, RotateCw, Pencil } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import {
@@ -12,6 +12,7 @@ import {
 import {
   useIntegrations,
   useCreateIntegration,
+  useUpdateIntegration,
   useDeleteIntegration,
   useToggleIntegrationEnabled,
 } from '@/hooks/useIntegrations';
@@ -24,6 +25,11 @@ import {
   STATUS_COLORS,
   SYNC_RUN_STATUS_COLORS,
 } from '@/types/integrations';
+import {
+  PROVIDER_METADATA_SCHEMA,
+  validateIntegrationMetadata,
+  sanitizeIntegrationMetadata,
+} from '@/lib/integration-metadata';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 
@@ -40,6 +46,43 @@ function timeAgo(dateStr: string): string {
   return `${days}d ago`;
 }
 
+function MetadataFields({
+  provider,
+  values,
+  onChange,
+  errors,
+}: {
+  provider: IntegrationProvider;
+  values: Record<string, string>;
+  onChange: (key: string, value: string) => void;
+  errors: Record<string, string>;
+}) {
+  const schema = PROVIDER_METADATA_SCHEMA[provider];
+  if (schema.length === 0) return null;
+
+  return (
+    <div className="space-y-1.5">
+      {schema.map((field) => (
+        <div key={field.key}>
+          <Input
+            placeholder={`${field.label}${field.required ? ' *' : ''}`}
+            value={values[field.key] ?? ''}
+            onChange={(e) => onChange(field.key, e.target.value)}
+            className={cn(
+              'h-8 text-sm bg-white border-gray-300',
+              errors[field.key] && 'border-red-400'
+            )}
+            type={field.type === 'email' ? 'email' : 'text'}
+          />
+          {errors[field.key] && (
+            <p className="text-[10px] text-red-500 mt-0.5 pl-1">{errors[field.key]}</p>
+          )}
+        </div>
+      ))}
+    </div>
+  );
+}
+
 function IntegrationRow({
   intg,
   onDelete,
@@ -51,9 +94,15 @@ function IntegrationRow({
 }) {
   const { data: runs = [] } = useIntegrationRuns(intg.id, 3);
   const logSync = useLogManualSync();
+  const updateIntegration = useUpdateIntegration();
+
+  const [editing, setEditing] = useState(false);
+  const [editMeta, setEditMeta] = useState<Record<string, string>>({});
+  const [editErrors, setEditErrors] = useState<Record<string, string>>({});
 
   const lastRun = runs[0] ?? null;
   const statusColor = STATUS_COLORS[intg.status];
+  const schema = PROVIDER_METADATA_SCHEMA[intg.provider];
 
   const handleLogSync = async () => {
     try {
@@ -63,6 +112,44 @@ function IntegrationRow({
       toast.error('Failed to log sync');
     }
   };
+
+  const startEdit = () => {
+    const current: Record<string, string> = {};
+    for (const field of schema) {
+      const val = (intg.metadata as Record<string, unknown>)[field.key];
+      current[field.key] = typeof val === 'string' ? val : '';
+    }
+    setEditMeta(current);
+    setEditErrors({});
+    setEditing(true);
+  };
+
+  const handleSaveMeta = async () => {
+    const result = validateIntegrationMetadata(intg.provider, editMeta);
+    if (!result.valid) {
+      setEditErrors(result.errors);
+      return;
+    }
+    const sanitized = sanitizeIntegrationMetadata(intg.provider, editMeta);
+    try {
+      await updateIntegration.mutateAsync({
+        id: intg.id,
+        updates: { metadata: sanitized },
+      });
+      toast.success('Metadata updated');
+      setEditing(false);
+    } catch {
+      toast.error('Failed to update metadata');
+    }
+  };
+
+  const metaSummary = schema
+    .map((f) => {
+      const val = (intg.metadata as Record<string, unknown>)[f.key];
+      return typeof val === 'string' && val ? val : null;
+    })
+    .filter(Boolean)
+    .join(' · ');
 
   return (
     <div className="px-2 py-2 rounded border border-gray-100 bg-white space-y-1">
@@ -85,6 +172,17 @@ function IntegrationRow({
           >
             <RotateCw className={cn('h-3.5 w-3.5', logSync.isPending && 'animate-spin')} />
           </Button>
+          {schema.length > 0 && (
+            <Button
+              variant="ghost"
+              size="sm"
+              className="h-7 px-1.5 text-gray-400 hover:text-blue-600"
+              onClick={startEdit}
+              title="Edit metadata"
+            >
+              <Pencil className="h-3.5 w-3.5" />
+            </Button>
+          )}
           <button
             type="button"
             onClick={() => onToggle(intg.id, intg.is_enabled)}
@@ -112,6 +210,32 @@ function IntegrationRow({
         </div>
       </div>
 
+      {/* Metadata summary */}
+      {metaSummary && !editing && (
+        <p className="text-[10px] text-gray-400 pl-6 truncate">{metaSummary}</p>
+      )}
+
+      {/* Inline metadata edit */}
+      {editing && (
+        <div className="pl-6 pt-1 space-y-2">
+          <MetadataFields
+            provider={intg.provider}
+            values={editMeta}
+            onChange={(k, v) => {
+              setEditMeta((prev) => ({ ...prev, [k]: v }));
+              setEditErrors((prev) => { const next = { ...prev }; delete next[k]; return next; });
+            }}
+            errors={editErrors}
+          />
+          <div className="flex items-center gap-2">
+            <Button size="sm" onClick={handleSaveMeta} disabled={updateIntegration.isPending}>
+              {updateIntegration.isPending ? 'Saving...' : 'Save'}
+            </Button>
+            <Button size="sm" variant="ghost" onClick={() => setEditing(false)}>Cancel</Button>
+          </div>
+        </div>
+      )}
+
       {/* Last sync info + mini run history */}
       <div className="flex items-center gap-3 pl-6 text-[10px] text-gray-400">
         {lastRun ? (
@@ -135,7 +259,6 @@ function IntegrationRow({
         )}
       </div>
 
-      {/* Mini run history (remaining runs beyond the first) */}
       {runs.length > 1 && (
         <div className="flex items-center gap-1.5 pl-6">
           {runs.slice(1).map((run) => {
@@ -165,6 +288,8 @@ export function IntegrationsCard() {
   const [showForm, setShowForm] = useState(false);
   const [newProvider, setNewProvider] = useState<IntegrationProvider>('woocommerce');
   const [newName, setNewName] = useState('');
+  const [newMeta, setNewMeta] = useState<Record<string, string>>({});
+  const [formErrors, setFormErrors] = useState<Record<string, string>>({});
 
   const counts = useMemo(() => {
     let connected = 0;
@@ -178,17 +303,45 @@ export function IntegrationsCard() {
     return { connected, disconnected, error };
   }, [integrations]);
 
+  const resetForm = () => {
+    setNewName('');
+    setNewMeta({});
+    setFormErrors({});
+    setShowForm(false);
+  };
+
+  const handleProviderChange = (provider: IntegrationProvider) => {
+    setNewProvider(provider);
+    setNewMeta({});
+    setFormErrors({});
+  };
+
   const handleAdd = async () => {
     const trimmed = newName.trim();
+    const errs: Record<string, string> = {};
     if (!trimmed) {
-      toast.error('Display name is required');
+      errs._name = 'Display name is required';
+    }
+
+    const metaResult = validateIntegrationMetadata(newProvider, newMeta);
+    if (!metaResult.valid) {
+      Object.assign(errs, metaResult.errors);
+    }
+
+    if (Object.keys(errs).length > 0) {
+      setFormErrors(errs);
       return;
     }
+
+    const sanitized = sanitizeIntegrationMetadata(newProvider, newMeta);
     try {
-      await createIntegration.mutateAsync({ provider: newProvider, displayName: trimmed });
+      await createIntegration.mutateAsync({
+        provider: newProvider,
+        displayName: trimmed,
+        metadata: sanitized,
+      });
       toast.success('Integration added');
-      setNewName('');
-      setShowForm(false);
+      resetForm();
     } catch {
       toast.error('Failed to add integration');
     }
@@ -252,7 +405,7 @@ export function IntegrationsCard() {
       {/* Add form */}
       {showForm && (
         <div className="p-3 border border-gray-200 rounded-lg bg-gray-50 space-y-2 mb-3">
-          <Select value={newProvider} onValueChange={(v) => setNewProvider(v as IntegrationProvider)}>
+          <Select value={newProvider} onValueChange={(v) => handleProviderChange(v as IntegrationProvider)}>
             <SelectTrigger className="h-8 text-sm bg-white border-gray-300">
               <SelectValue />
             </SelectTrigger>
@@ -264,17 +417,34 @@ export function IntegrationsCard() {
               ))}
             </SelectContent>
           </Select>
-          <Input
-            placeholder="Display name *"
-            value={newName}
-            onChange={(e) => setNewName(e.target.value)}
-            className="h-8 text-sm bg-white border-gray-300"
+          <div>
+            <Input
+              placeholder="Display name *"
+              value={newName}
+              onChange={(e) => {
+                setNewName(e.target.value);
+                setFormErrors((prev) => { const next = { ...prev }; delete next._name; return next; });
+              }}
+              className={cn('h-8 text-sm bg-white border-gray-300', formErrors._name && 'border-red-400')}
+            />
+            {formErrors._name && (
+              <p className="text-[10px] text-red-500 mt-0.5 pl-1">{formErrors._name}</p>
+            )}
+          </div>
+          <MetadataFields
+            provider={newProvider}
+            values={newMeta}
+            onChange={(k, v) => {
+              setNewMeta((prev) => ({ ...prev, [k]: v }));
+              setFormErrors((prev) => { const next = { ...prev }; delete next[k]; return next; });
+            }}
+            errors={formErrors}
           />
           <div className="flex items-center gap-2 pt-1">
             <Button size="sm" onClick={handleAdd} disabled={createIntegration.isPending}>
               {createIntegration.isPending ? 'Adding...' : 'Add'}
             </Button>
-            <Button size="sm" variant="ghost" onClick={() => { setShowForm(false); setNewName(''); }}>
+            <Button size="sm" variant="ghost" onClick={resetForm}>
               Cancel
             </Button>
           </div>
