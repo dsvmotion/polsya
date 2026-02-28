@@ -1,6 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { handleCors, corsHeaders as makeCorsHeaders } from '../_shared/cors.ts';
-import { requireRoleAccess } from '../_shared/auth.ts';
+import { requireOrgRoleAccess } from '../_shared/auth.ts';
 import { fetchWithRetry } from '../_shared/fetchWithRetry.ts';
 
 interface WooCommerceOrder {
@@ -127,7 +127,7 @@ serve(async (req) => {
   const origin = req.headers.get('Origin') || '';
   const corsHeaders = makeCorsHeaders(origin);
 
-  const auth = await requireRoleAccess(req, {
+  const auth = await requireOrgRoleAccess(req, {
     action: 'woocommerce_orders_detailed',
     allowedRoles: ['admin', 'ops'],
     allowlistEnvKey: 'WOOCOMMERCE_ALLOWED_USER_IDS',

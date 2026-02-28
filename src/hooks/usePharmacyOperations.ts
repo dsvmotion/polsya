@@ -2,6 +2,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { DetailedOrder, PharmacyWithOrders, PharmacyDocument } from '@/types/operations';
 import { Pharmacy, type ClientType } from '@/types/pharmacy';
+import { buildEdgeFunctionHeaders } from '@/lib/edge-function-headers';
 
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
 
@@ -9,13 +10,10 @@ export function useDetailedOrders() {
   return useQuery({
     queryKey: ['detailed-orders'],
     queryFn: async (): Promise<DetailedOrder[]> => {
-      const { data: { session } } = await supabase.auth.getSession();
+      const headers = await buildEdgeFunctionHeaders({ 'Content-Type': 'application/json' });
       const response = await fetch(`${SUPABASE_URL}/functions/v1/woocommerce-orders-detailed`, {
         method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${session?.access_token}`,
-        },
+        headers,
       });
 
       if (!response.ok) {

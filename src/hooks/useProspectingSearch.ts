@@ -3,6 +3,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { Pharmacy, type ClientType } from '@/types/pharmacy';
 import { toast } from 'sonner';
 import type { Json } from '@/integrations/supabase/types';
+import { buildEdgeFunctionHeaders } from '@/lib/edge-function-headers';
 
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
 
@@ -127,7 +128,7 @@ export function useProspectingSearch() {
     setResults([]);
     setProgress({ found: 0, cached: 0, processed: 0, failed: 0 });
     setDetectedLocation(null);
-    const { data: { session } } = await supabase.auth.getSession();
+    const edgeHeaders = await buildEdgeFunctionHeaders({ 'Content-Type': 'application/json' });
 
     try {
       // Build search query for Google Places
@@ -173,10 +174,7 @@ export function useProspectingSearch() {
 
         const response = await fetch(`${SUPABASE_URL}/functions/v1/google-places-pharmacies`, {
           method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${session?.access_token}`,
-          },
+          headers: edgeHeaders,
           signal,
           body: JSON.stringify({
             action: 'textSearch',
@@ -243,10 +241,7 @@ export function useProspectingSearch() {
           // Fetch details from Google Places
           const detailsResponse = await fetch(`${SUPABASE_URL}/functions/v1/google-places-pharmacies`, {
             method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              Authorization: `Bearer ${session?.access_token}`,
-            },
+            headers: edgeHeaders,
             signal,
             body: JSON.stringify({
               action: 'details',

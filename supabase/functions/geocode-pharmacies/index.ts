@@ -1,6 +1,7 @@
 import { serve } from 'https://deno.land/std@0.168.0/http/server.ts';
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 import { handleCors, corsHeaders as makeCorsHeaders } from '../_shared/cors.ts';
+import { requireOrgRoleAccess } from '../_shared/auth.ts';
 
 serve(async (req) => {
   const corsResponse = handleCors(req);
@@ -9,64 +10,26 @@ serve(async (req) => {
   const origin = req.headers.get('Origin') || '';
   const cors = makeCorsHeaders(origin);
 
-  // --- Authorization: require valid JWT + privileged role/allowlist ---
-  const authHeader = req.headers.get('Authorization');
-  if (!authHeader || !authHeader.startsWith('Bearer ')) {
-    console.log(JSON.stringify({ action: 'geocode_pharmacies', allowed: false, reason: 'missing_token' }));
-    return new Response(JSON.stringify({ error: 'Missing authorization' }), {
-      status: 401,
-      headers: { ...cors, 'Content-Type': 'application/json' },
-    });
-  }
-
-  const serviceRoleKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? Deno.env.get('SB_SERVICE_ROLE_KEY');
-  const supabaseUrl = Deno.env.get('SUPABASE_URL') ?? '';
-
-  if (!serviceRoleKey || !supabaseUrl) {
-    console.error(JSON.stringify({ action: 'geocode_pharmacies', error: 'missing_service_config' }));
-    return new Response(JSON.stringify({ error: 'Server misconfiguration: missing service role key or URL' }), {
-      status: 500,
-      headers: { ...cors, 'Content-Type': 'application/json' },
-    });
-  }
-
-  const supabaseAdmin = createClient(supabaseUrl, serviceRoleKey);
-
-  const token = authHeader.replace('Bearer ', '');
-  const { data: { user }, error: authError } = await supabaseAdmin.auth.getUser(token);
-  if (authError || !user) {
-    console.log(JSON.stringify({ action: 'geocode_pharmacies', allowed: false, reason: 'invalid_token' }));
-    return new Response(JSON.stringify({ error: 'Invalid token' }), {
-      status: 401,
-      headers: { ...cors, 'Content-Type': 'application/json' },
-    });
-  }
-
-  const ALLOWED_ROLES = ['admin', 'ops'];
-  const userRole = (user.app_metadata?.role as string) ?? '';
-  const userRoles = (user.app_metadata?.roles as string[]) ?? [];
-  const hasPrivilegedRole = ALLOWED_ROLES.includes(userRole) || userRoles.some(r => ALLOWED_ROLES.includes(r));
-
-  const allowedUserIds = (Deno.env.get('GEOCODE_ALLOWED_USER_IDS') ?? '')
-    .split(',')
-    .map(id => id.trim())
-    .filter(Boolean);
-  const isInAllowlist = allowedUserIds.includes(user.id);
-
-  if (!hasPrivilegedRole && !isInAllowlist) {
-    console.log(JSON.stringify({ action: 'geocode_pharmacies', user_id: user.id, allowed: false, reason: 'forbidden' }));
-    return new Response(JSON.stringify({ error: 'Forbidden: insufficient privileges' }), {
-      status: 403,
-      headers: { ...cors, 'Content-Type': 'application/json' },
-    });
-  }
-
-  const authReason = hasPrivilegedRole ? 'role' : 'allowlist';
-  console.log(JSON.stringify({ action: 'geocode_pharmacies', user_id: user.id, allowed: true, reason: authReason }));
+  const auth = await requireOrgRoleAccess(req, {
+    action: 'geocode_pharmacies',
+    allowedRoles: ['admin', 'ops'],
+    allowlistEnvKey: 'GEOCODE_ALLOWED_USER_IDS',
+    corsHeaders: cors,
+  });
+  if (!auth.ok) return auth.response;
 
   try {
     const GOOGLE_API_KEY = Deno.env.get('GOOGLE_MAPS_API_KEY');
+    const serviceRoleKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? Deno.env.get('SB_SERVICE_ROLE_KEY');
+    const supabaseUrl = Deno.env.get('SUPABASE_URL') ?? '';
+    if (!serviceRoleKey || !supabaseUrl) {
+      return new Response(JSON.stringify({ error: 'Server misconfiguration: missing service role key or URL' }), {
+        status: 500,
+        headers: { ...cors, 'Content-Type': 'application/json' },
+      });
+    }
     const supabase = createClient(supabaseUrl, serviceRoleKey);
+    const organizationId = auth.organizationId;
 
     // Get batch size from request body (default 100)
     const { batchSize = 100, clientType } = await req.json().catch(() => ({}));
@@ -75,6 +38,7 @@ serve(async (req) => {
     let query = supabase
       .from('pharmacies')
       .select('id, name, address, city, province, postal_code, country')
+      .eq('organization_id', organizationId)
       .or('lat.is.null,lat.eq.0')
       .limit(batchSize);
 
@@ -120,7 +84,8 @@ serve(async (req) => {
           const { error: updateError } = await supabase
             .from('pharmacies')
             .update({ lat: location.lat, lng: location.lng })
-            .eq('id', pharmacy.id);
+            .eq('id', pharmacy.id)
+            .eq('organization_id', organizationId);
 
           if (updateError) {
             errors++;
@@ -146,6 +111,7 @@ serve(async (req) => {
     const { count: remaining } = await supabase
       .from('pharmacies')
       .select('id', { count: 'exact', head: true })
+      .eq('organization_id', organizationId)
       .or('lat.is.null,lat.eq.0');
 
     return new Response(

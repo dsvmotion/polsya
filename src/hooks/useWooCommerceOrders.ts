@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { Sale } from '@/types/sale';
-import { supabase } from '@/integrations/supabase/client';
+import { buildEdgeFunctionHeaders } from '@/lib/edge-function-headers';
 
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
 
@@ -64,14 +64,11 @@ export function useWooCommerceOrders() {
     queryFn: async (): Promise<Sale[]> => {
       try {
         console.log('Fetching WooCommerce orders...');
-        const { data: { session } } = await supabase.auth.getSession();
+        const headers = await buildEdgeFunctionHeaders({ 'Content-Type': 'application/json' });
         
         const response = await fetch(`${SUPABASE_URL}/functions/v1/woocommerce-orders`, {
           method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${session?.access_token}`,
-          },
+          headers,
           body: JSON.stringify({}),
         });
         

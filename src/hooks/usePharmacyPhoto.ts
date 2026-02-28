@@ -1,5 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
+import { buildEdgeFunctionHeaders } from '@/lib/edge-function-headers';
 
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
 
@@ -42,13 +43,10 @@ export function usePharmacyPhoto(pharmacyId: string | null): UsePharmacyPhotoRes
 
       // Request photo URL from edge function
       try {
-        const { data: { session } } = await supabase.auth.getSession();
+        const headers = await buildEdgeFunctionHeaders({ 'Content-Type': 'application/json' });
         const response = await fetch(`${SUPABASE_URL}/functions/v1/google-places-pharmacies`, {
           method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${session?.access_token}`,
-          },
+          headers,
           body: JSON.stringify({
             action: 'photo',
             photoReference,

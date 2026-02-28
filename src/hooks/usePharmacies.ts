@@ -2,6 +2,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { Pharmacy, type ClientType } from '@/types/pharmacy';
 import type { Json } from '@/integrations/supabase/types';
+import { buildEdgeFunctionHeaders } from '@/lib/edge-function-headers';
 
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
 
@@ -207,14 +208,11 @@ export function useSearchGooglePlaces() {
       signal?: AbortSignal;
     }) => {
       console.log('Searching Google Places for pharmacies at:', location);
-      const { data: { session } } = await supabase.auth.getSession();
+      const headers = await buildEdgeFunctionHeaders({ 'Content-Type': 'application/json' });
       
       const response = await fetch(`${SUPABASE_URL}/functions/v1/google-places-pharmacies`, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${session?.access_token}`,
-        },
+        headers,
         signal,
         body: JSON.stringify({
           action: 'search',
@@ -241,14 +239,11 @@ export function useGetPharmacyDetails() {
   return useMutation({
     mutationFn: async (placeId: string) => {
       console.log('Fetching pharmacy details for:', placeId);
-      const { data: { session } } = await supabase.auth.getSession();
+      const headers = await buildEdgeFunctionHeaders({ 'Content-Type': 'application/json' });
       
       const response = await fetch(`${SUPABASE_URL}/functions/v1/google-places-pharmacies`, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${session?.access_token}`,
-        },
+        headers,
         body: JSON.stringify({
           action: 'details',
           placeId,

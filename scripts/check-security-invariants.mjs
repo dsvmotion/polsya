@@ -61,14 +61,16 @@ for (const dir of functionDirs) {
   }
 }
 
-// 3. Check that sensitive functions use requireRoleAccess
-const REQUIRE_AUTHZ = [
+// 3. Check that sensitive functions use organization-aware authz helper
+const REQUIRE_ORG_AUTHZ = [
   'google-places-pharmacies',
   'woocommerce-orders',
   'woocommerce-orders-detailed',
+  'geocode-pharmacies',
+  'populate-geography',
 ];
 
-for (const dir of REQUIRE_AUTHZ) {
+for (const dir of REQUIRE_ORG_AUTHZ) {
   const indexPath = join(FUNCTIONS_DIR, dir, 'index.ts');
   let source;
   try {
@@ -77,13 +79,13 @@ for (const dir of REQUIRE_AUTHZ) {
     fail(`Cannot read ${dir}/index.ts for authz check`);
     continue;
   }
-  if (!source.includes('requireRoleAccess(')) {
-    fail(`${dir}/index.ts does not call requireRoleAccess()`);
+  if (!source.includes('requireOrgRoleAccess(')) {
+    fail(`${dir}/index.ts does not call requireOrgRoleAccess()`);
   }
 }
 
 if (exitCode === 0) {
-  console.log(`✅  Security invariants OK — ${functionDirs.length} edge functions checked, ${REQUIRE_AUTHZ.length} authz-gated`);
+  console.log(`✅  Security invariants OK — ${functionDirs.length} edge functions checked, ${REQUIRE_ORG_AUTHZ.length} org-authz-gated`);
 }
 
 process.exit(exitCode);

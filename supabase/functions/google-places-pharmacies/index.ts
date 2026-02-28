@@ -1,6 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { handleCors, corsHeaders as makeCorsHeaders } from '../_shared/cors.ts';
-import { requireRoleAccess } from '../_shared/auth.ts';
+import { requireOrgRoleAccess } from '../_shared/auth.ts';
 
 interface PlaceResult {
   place_id: string;
@@ -44,7 +44,7 @@ serve(async (req) => {
   const origin = req.headers.get('Origin') || '';
   const corsHeaders = makeCorsHeaders(origin);
 
-  const auth = await requireRoleAccess(req, {
+  const auth = await requireOrgRoleAccess(req, {
     action: 'google_places_pharmacies',
     allowedRoles: ['admin', 'ops'],
     allowlistEnvKey: 'GOOGLE_PLACES_ALLOWED_USER_IDS',
