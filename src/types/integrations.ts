@@ -11,6 +11,7 @@ export type IntegrationStatus = 'connected' | 'disconnected' | 'error';
 
 export interface IntegrationConnection {
   id: string;
+  organization_id?: string;
   provider: IntegrationProvider;
   display_name: string;
   status: IntegrationStatus;
@@ -74,6 +75,7 @@ export type SyncRunStatus = 'running' | 'success' | 'error';
 
 export interface IntegrationSyncRun {
   id: string;
+  organization_id?: string;
   integration_id: string;
   run_type: SyncRunType;
   status: SyncRunStatus;
@@ -97,6 +99,7 @@ export type IntegrationJobStatus = 'queued' | 'running' | 'success' | 'error' | 
 
 export interface IntegrationSyncJob {
   id: string;
+  organization_id?: string;
   integration_id: string;
   provider: string;
   job_type: IntegrationJobType;

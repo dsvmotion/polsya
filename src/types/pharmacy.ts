@@ -4,6 +4,7 @@ export type ClientType = 'pharmacy' | 'herbalist';
 
 export interface Pharmacy {
   id: string;
+  organization_id?: string;
   entity_type_id?: string | null;
   google_place_id: string | null;
   name: string;
@@ -44,6 +45,7 @@ export const CONTACT_ROLE_LABELS: Record<ContactRole, string> = {
 
 export interface PharmacyContact {
   id: string;
+  organization_id?: string;
   pharmacy_id: string;
   name: string;
   role: ContactRole | null;
@@ -75,6 +77,7 @@ export const ACTIVITY_TYPE_ICONS: Record<ActivityType, string> = {
 
 export interface PharmacyActivity {
   id: string;
+  organization_id?: string;
   pharmacy_id: string;
   activity_type: ActivityType;
   title: string;
@@ -106,6 +109,7 @@ export const OPPORTUNITY_STAGE_COLORS: Record<OpportunityStage, { bg: string; te
 
 export interface PharmacyOpportunity {
   id: string;
+  organization_id?: string;
   pharmacy_id: string;
   title: string;
   stage: OpportunityStage;

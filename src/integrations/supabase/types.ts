@@ -111,6 +111,68 @@ export type Database = {
           },
         ]
       }
+      organizations: {
+        Row: {
+          created_at: string
+          id: string
+          name: string
+          slug: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          name: string
+          slug: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          name?: string
+          slug?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      organization_members: {
+        Row: {
+          created_at: string
+          id: string
+          organization_id: string
+          role: string
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          organization_id: string
+          role: string
+          status?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          organization_id?: string
+          role?: string
+          status?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "organization_members_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       pharmacies: {
         Row: {
           address: string | null
@@ -131,6 +193,7 @@ export type Database = {
           name: string
           notes: string | null
           opening_hours: Json | null
+          organization_id: string
           phone: string | null
           postal_code: string | null
           province: string | null
@@ -161,6 +224,7 @@ export type Database = {
           name: string
           notes?: string | null
           opening_hours?: Json | null
+          organization_id?: string
           phone?: string | null
           postal_code?: string | null
           province?: string | null
@@ -191,6 +255,7 @@ export type Database = {
           name?: string
           notes?: string | null
           opening_hours?: Json | null
+          organization_id?: string
           phone?: string | null
           postal_code?: string | null
           province?: string | null
@@ -210,6 +275,13 @@ export type Database = {
             referencedRelation: "entity_types"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "pharmacies_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
         ]
       }
       entity_types: {
@@ -220,7 +292,7 @@ export type Database = {
           is_default: boolean
           key: string
           label: string
-          organization_id: string | null
+          organization_id: string
           updated_at: string
         }
         Insert: {
@@ -230,7 +302,7 @@ export type Database = {
           is_default?: boolean
           key: string
           label: string
-          organization_id?: string | null
+          organization_id?: string
           updated_at?: string
         }
         Update: {
@@ -240,14 +312,23 @@ export type Database = {
           is_default?: boolean
           key?: string
           label?: string
-          organization_id?: string | null
+          organization_id?: string
           updated_at?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "entity_types_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       integration_connections: {
         Row: {
           id: string
+          organization_id: string
           provider: string
           display_name: string
           status: string
@@ -260,6 +341,7 @@ export type Database = {
         }
         Insert: {
           id?: string
+          organization_id?: string
           provider: string
           display_name: string
           status?: string
@@ -272,6 +354,7 @@ export type Database = {
         }
         Update: {
           id?: string
+          organization_id?: string
           provider?: string
           display_name?: string
           status?: string
@@ -282,12 +365,21 @@ export type Database = {
           created_at?: string
           updated_at?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "integration_connections_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       integration_sync_jobs: {
         Row: {
           id: string
           integration_id: string
+          organization_id: string
           provider: string
           job_type: string
           status: string
@@ -302,6 +394,7 @@ export type Database = {
         Insert: {
           id?: string
           integration_id: string
+          organization_id?: string
           provider: string
           job_type: string
           status?: string
@@ -316,6 +409,7 @@ export type Database = {
         Update: {
           id?: string
           integration_id?: string
+          organization_id?: string
           provider?: string
           job_type?: string
           status?: string
@@ -335,12 +429,20 @@ export type Database = {
             referencedRelation: "integration_connections"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "integration_sync_jobs_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
         ]
       }
       integration_sync_runs: {
         Row: {
           id: string
           integration_id: string
+          organization_id: string
           run_type: string
           status: string
           started_at: string
@@ -353,6 +455,7 @@ export type Database = {
         Insert: {
           id?: string
           integration_id: string
+          organization_id?: string
           run_type: string
           status: string
           started_at?: string
@@ -365,6 +468,7 @@ export type Database = {
         Update: {
           id?: string
           integration_id?: string
+          organization_id?: string
           run_type?: string
           status?: string
           started_at?: string
@@ -382,11 +486,19 @@ export type Database = {
             referencedRelation: "integration_connections"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "integration_sync_runs_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
         ]
       }
       pharmacy_activities: {
         Row: {
           id: string
+          organization_id: string
           pharmacy_id: string
           activity_type: string
           title: string
@@ -399,6 +511,7 @@ export type Database = {
         }
         Insert: {
           id?: string
+          organization_id?: string
           pharmacy_id: string
           activity_type: string
           title: string
@@ -411,6 +524,7 @@ export type Database = {
         }
         Update: {
           id?: string
+          organization_id?: string
           pharmacy_id?: string
           activity_type?: string
           title?: string
@@ -429,11 +543,19 @@ export type Database = {
             referencedRelation: "pharmacies"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "pharmacy_activities_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
         ]
       }
       pharmacy_contacts: {
         Row: {
           id: string
+          organization_id: string
           pharmacy_id: string
           name: string
           role: string | null
@@ -446,6 +568,7 @@ export type Database = {
         }
         Insert: {
           id?: string
+          organization_id?: string
           pharmacy_id: string
           name: string
           role?: string | null
@@ -458,6 +581,7 @@ export type Database = {
         }
         Update: {
           id?: string
+          organization_id?: string
           pharmacy_id?: string
           name?: string
           role?: string | null
@@ -476,11 +600,19 @@ export type Database = {
             referencedRelation: "pharmacies"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "pharmacy_contacts_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
         ]
       }
       pharmacy_opportunities: {
         Row: {
           id: string
+          organization_id: string
           pharmacy_id: string
           title: string
           stage: string
@@ -493,6 +625,7 @@ export type Database = {
         }
         Insert: {
           id?: string
+          organization_id?: string
           pharmacy_id: string
           title: string
           stage: string
@@ -505,6 +638,7 @@ export type Database = {
         }
         Update: {
           id?: string
+          organization_id?: string
           pharmacy_id?: string
           title?: string
           stage?: string
@@ -523,6 +657,13 @@ export type Database = {
             referencedRelation: "pharmacies"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "pharmacy_opportunities_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
         ]
       }
       saved_segments: {
@@ -530,6 +671,7 @@ export type Database = {
           id: string
           name: string
           description: string | null
+          organization_id: string
           scope: string
           filters: Json
           is_favorite: boolean
@@ -540,6 +682,7 @@ export type Database = {
           id?: string
           name: string
           description?: string | null
+          organization_id?: string
           scope?: string
           filters?: Json
           is_favorite?: boolean
@@ -550,13 +693,22 @@ export type Database = {
           id?: string
           name?: string
           description?: string | null
+          organization_id?: string
           scope?: string
           filters?: Json
           is_favorite?: boolean
           created_at?: string
           updated_at?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "saved_segments_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       agent_actions_log: {
         Row: {
@@ -569,6 +721,7 @@ export type Database = {
           status: string
           error_message: string | null
           requested_by: string | null
+          organization_id: string
           created_at: string
           completed_at: string | null
           idempotency_key: string | null
@@ -586,6 +739,7 @@ export type Database = {
           status?: string
           error_message?: string | null
           requested_by?: string | null
+          organization_id?: string
           created_at?: string
           completed_at?: string | null
           idempotency_key?: string | null
@@ -603,6 +757,7 @@ export type Database = {
           status?: string
           error_message?: string | null
           requested_by?: string | null
+          organization_id?: string
           created_at?: string
           completed_at?: string | null
           idempotency_key?: string | null
@@ -610,12 +765,21 @@ export type Database = {
           approved_at?: string | null
           approval_note?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "agent_actions_log_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       agent_action_runs: {
         Row: {
           id: string
           action_id: string
+          organization_id: string
           run_status: string
           started_at: string
           finished_at: string | null
@@ -627,6 +791,7 @@ export type Database = {
         Insert: {
           id?: string
           action_id: string
+          organization_id?: string
           run_status: string
           started_at?: string
           finished_at?: string | null
@@ -638,6 +803,7 @@ export type Database = {
         Update: {
           id?: string
           action_id?: string
+          organization_id?: string
           run_status?: string
           started_at?: string
           finished_at?: string | null
@@ -654,6 +820,13 @@ export type Database = {
             referencedRelation: "agent_actions_log"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "agent_action_runs_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
         ]
       }
       bulk_import_runs: {
@@ -665,6 +838,7 @@ export type Database = {
           imported_rows: number
           skipped_duplicates: number
           status: string
+          organization_id: string
           created_at: string
         }
         Insert: {
@@ -675,6 +849,7 @@ export type Database = {
           imported_rows?: number
           skipped_duplicates?: number
           status?: string
+          organization_id?: string
           created_at?: string
         }
         Update: {
@@ -685,9 +860,18 @@ export type Database = {
           imported_rows?: number
           skipped_duplicates?: number
           status?: string
+          organization_id?: string
           created_at?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "bulk_import_runs_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       pharmacy_order_documents: {
         Row: {
@@ -696,6 +880,7 @@ export type Database = {
           file_path: string
           id: string
           notes: string | null
+          organization_id: string
           order_id: string | null
           pharmacy_id: string
           uploaded_at: string
@@ -706,6 +891,7 @@ export type Database = {
           file_path: string
           id?: string
           notes?: string | null
+          organization_id?: string
           order_id?: string | null
           pharmacy_id: string
           uploaded_at?: string
@@ -716,6 +902,7 @@ export type Database = {
           file_path?: string
           id?: string
           notes?: string | null
+          organization_id?: string
           order_id?: string | null
           pharmacy_id?: string
           uploaded_at?: string
@@ -726,6 +913,13 @@ export type Database = {
             columns: ["pharmacy_id"]
             isOneToOne: false
             referencedRelation: "pharmacies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "pharmacy_order_documents_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
             referencedColumns: ["id"]
           },
         ]
