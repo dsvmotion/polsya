@@ -3,7 +3,7 @@ import {
   X, MapPin, Phone, Globe, Clock, Copy, Check, 
   ExternalLink, Mail, FileText, Save, ShoppingCart, Package,
   Building2, ImageIcon, Users, Plus, Trash2, Star, Activity, CheckCircle2, Circle, Calendar,
-  TrendingUp
+  TrendingUp, Pencil, Trophy, XCircle
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
@@ -40,6 +40,7 @@ import {
 import {
   usePharmacyOpportunities,
   useCreatePharmacyOpportunity,
+  useUpdatePharmacyOpportunity,
   useDeletePharmacyOpportunity,
 } from '@/hooks/usePharmacyOpportunities';
 import { toast } from 'sonner';
@@ -437,6 +438,194 @@ function ActivitiesSection({ pharmacyId }: { pharmacyId: string }) {
   );
 }
 
+function OpportunityRow({ opp, pharmacyId, onDelete }: {
+  opp: { id: string; title: string; stage: OpportunityStage; amount: number; probability: number; expected_close_date: string | null; created_at: string };
+  pharmacyId: string;
+  onDelete: (id: string) => void;
+}) {
+  const updateOpportunity = useUpdatePharmacyOpportunity();
+  const [editing, setEditing] = useState(false);
+  const [editStage, setEditStage] = useState<OpportunityStage>(opp.stage);
+  const [editAmount, setEditAmount] = useState(String(opp.amount));
+  const [editProbability, setEditProbability] = useState(String(opp.probability));
+  const [editCloseDate, setEditCloseDate] = useState(opp.expected_close_date ?? '');
+
+  const startEdit = () => {
+    setEditStage(opp.stage);
+    setEditAmount(String(opp.amount));
+    setEditProbability(String(opp.probability));
+    setEditCloseDate(opp.expected_close_date ?? '');
+    setEditing(true);
+  };
+
+  const handleSave = async () => {
+    const amount = parseFloat(editAmount) || 0;
+    const probability = Math.min(100, Math.max(0, parseInt(editProbability) || 0));
+    try {
+      await updateOpportunity.mutateAsync({
+        id: opp.id,
+        pharmacyId,
+        updates: {
+          stage: editStage,
+          amount,
+          probability,
+          expected_close_date: editCloseDate || null,
+        },
+      });
+      toast.success('Opportunity updated');
+      setEditing(false);
+    } catch {
+      toast.error('Failed to update opportunity');
+    }
+  };
+
+  const handleQuickStage = async (stage: 'won' | 'lost') => {
+    const probability = stage === 'won' ? 100 : 0;
+    try {
+      await updateOpportunity.mutateAsync({
+        id: opp.id,
+        pharmacyId,
+        updates: { stage, probability },
+      });
+      toast.success(stage === 'won' ? 'Marked as won' : 'Marked as lost');
+      setEditing(false);
+    } catch {
+      toast.error('Failed to update opportunity');
+    }
+  };
+
+  const isSaving = updateOpportunity.isPending;
+  const stageColor = OPPORTUNITY_STAGE_COLORS[opp.stage];
+  const weighted = (opp.amount * opp.probability) / 100;
+  const isClosed = opp.stage === 'won' || opp.stage === 'lost';
+
+  if (editing) {
+    return (
+      <div className="p-2.5 rounded border border-blue-200 bg-blue-50/30 space-y-2">
+        <p className="text-sm font-medium text-gray-900 truncate">{opp.title}</p>
+        <Select value={editStage} onValueChange={(v) => setEditStage(v as OpportunityStage)}>
+          <SelectTrigger className="h-8 text-sm bg-white border-gray-300">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent className="bg-white border-gray-200">
+            {(Object.keys(OPPORTUNITY_STAGE_LABELS) as OpportunityStage[]).map((s) => (
+              <SelectItem key={s} value={s}>{OPPORTUNITY_STAGE_LABELS[s]}</SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+        <div className="grid grid-cols-2 gap-2">
+          <Input
+            type="number"
+            placeholder="Amount (€)"
+            value={editAmount}
+            onChange={(e) => setEditAmount(e.target.value)}
+            className="h-8 text-sm bg-white border-gray-300"
+            min="0"
+            step="0.01"
+          />
+          <Input
+            type="number"
+            placeholder="Prob (%)"
+            value={editProbability}
+            onChange={(e) => setEditProbability(e.target.value)}
+            className="h-8 text-sm bg-white border-gray-300"
+            min="0"
+            max="100"
+          />
+        </div>
+        <Input
+          type="date"
+          value={editCloseDate}
+          onChange={(e) => setEditCloseDate(e.target.value)}
+          className="h-8 text-sm bg-white border-gray-300"
+        />
+        <div className="flex items-center gap-2 pt-1 flex-wrap">
+          <Button size="sm" onClick={handleSave} disabled={isSaving}>
+            {isSaving ? 'Saving...' : 'Save'}
+          </Button>
+          <Button size="sm" variant="ghost" onClick={() => setEditing(false)} disabled={isSaving}>
+            Cancel
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div
+      className={cn(
+        'p-2 rounded border bg-white',
+        isClosed ? 'border-gray-100 opacity-70' : 'border-gray-100'
+      )}
+    >
+      <div className="flex items-start justify-between gap-2">
+        <div className="min-w-0 flex-1">
+          <div className="flex items-center gap-1.5 flex-wrap">
+            <span className="text-sm font-medium text-gray-900 truncate">{opp.title}</span>
+            <span className={cn('text-[10px] px-1.5 py-0.5 rounded font-medium', stageColor?.bg, stageColor?.text)}>
+              {OPPORTUNITY_STAGE_LABELS[opp.stage]}
+            </span>
+          </div>
+          <div className="flex items-center gap-3 mt-1 text-xs text-gray-600">
+            <span className="font-medium">€{opp.amount.toLocaleString('es-ES', { minimumFractionDigits: 2 })}</span>
+            <span>{opp.probability}%</span>
+            <span className="text-gray-400">→ €{weighted.toLocaleString('es-ES', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}</span>
+          </div>
+          <div className="flex items-center gap-2 mt-0.5 text-[10px] text-gray-400">
+            {opp.expected_close_date && (
+              <span>Close: {new Date(opp.expected_close_date + 'T00:00:00').toLocaleDateString()}</span>
+            )}
+            <span>{new Date(opp.created_at).toLocaleDateString()}</span>
+          </div>
+        </div>
+        <div className="flex items-center gap-0.5 shrink-0">
+          {!isClosed && (
+            <>
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-7 px-1.5 text-gray-400 hover:text-green-600"
+                onClick={() => handleQuickStage('won')}
+                title="Mark won"
+                disabled={isSaving}
+              >
+                <Trophy className="h-3.5 w-3.5" />
+              </Button>
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-7 px-1.5 text-gray-400 hover:text-red-600"
+                onClick={() => handleQuickStage('lost')}
+                title="Mark lost"
+                disabled={isSaving}
+              >
+                <XCircle className="h-3.5 w-3.5" />
+              </Button>
+            </>
+          )}
+          <Button
+            variant="ghost"
+            size="sm"
+            className="h-7 px-1.5 text-gray-400 hover:text-blue-600"
+            onClick={startEdit}
+            title="Edit"
+          >
+            <Pencil className="h-3.5 w-3.5" />
+          </Button>
+          <Button
+            variant="ghost"
+            size="sm"
+            className="h-7 px-1.5 text-gray-400 hover:text-red-600"
+            onClick={() => onDelete(opp.id)}
+          >
+            <Trash2 className="h-3.5 w-3.5" />
+          </Button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function OpportunitiesSection({ pharmacyId }: { pharmacyId: string }) {
   const { data: opportunities = [], isLoading } = usePharmacyOpportunities(pharmacyId);
   const createOpportunity = useCreatePharmacyOpportunity();
@@ -595,44 +784,14 @@ function OpportunitiesSection({ pharmacyId }: { pharmacyId: string }) {
         <p className="text-xs text-gray-400">No opportunities yet</p>
       ) : (
         <div className="space-y-2">
-          {opportunities.map((opp) => {
-            const stageColor = OPPORTUNITY_STAGE_COLORS[opp.stage];
-            const weighted = (opp.amount * opp.probability) / 100;
-            return (
-              <div
-                key={opp.id}
-                className="flex items-start justify-between gap-2 p-2 rounded border border-gray-100 bg-white"
-              >
-                <div className="min-w-0 flex-1">
-                  <div className="flex items-center gap-1.5 flex-wrap">
-                    <span className="text-sm font-medium text-gray-900 truncate">{opp.title}</span>
-                    <span className={cn('text-[10px] px-1.5 py-0.5 rounded font-medium', stageColor?.bg, stageColor?.text)}>
-                      {OPPORTUNITY_STAGE_LABELS[opp.stage]}
-                    </span>
-                  </div>
-                  <div className="flex items-center gap-3 mt-1 text-xs text-gray-600">
-                    <span className="font-medium">€{opp.amount.toLocaleString('es-ES', { minimumFractionDigits: 2 })}</span>
-                    <span>{opp.probability}%</span>
-                    <span className="text-gray-400">→ €{weighted.toLocaleString('es-ES', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}</span>
-                  </div>
-                  <div className="flex items-center gap-2 mt-0.5 text-[10px] text-gray-400">
-                    {opp.expected_close_date && (
-                      <span>Close: {new Date(opp.expected_close_date + 'T00:00:00').toLocaleDateString()}</span>
-                    )}
-                    <span>{new Date(opp.created_at).toLocaleDateString()}</span>
-                  </div>
-                </div>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="h-7 px-1.5 text-gray-400 hover:text-red-600 shrink-0"
-                  onClick={() => handleDelete(opp.id)}
-                >
-                  <Trash2 className="h-3.5 w-3.5" />
-                </Button>
-              </div>
-            );
-          })}
+          {opportunities.map((opp) => (
+            <OpportunityRow
+              key={opp.id}
+              opp={opp}
+              pharmacyId={pharmacyId}
+              onDelete={handleDelete}
+            />
+          ))}
         </div>
       )}
     </div>
