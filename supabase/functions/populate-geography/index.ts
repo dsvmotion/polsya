@@ -292,10 +292,62 @@ serve(async (req) => {
   const origin = req.headers.get('Origin') || '';
   const corsHeaders = makeCorsHeaders(origin);
 
+  const authHeader = req.headers.get('Authorization');
+  if (!authHeader || !authHeader.startsWith('Bearer ')) {
+    console.log(JSON.stringify({ action: 'populate_geography', allowed: false, reason: 'missing_token' }));
+    return new Response(JSON.stringify({ error: 'Missing authorization' }), {
+      status: 401,
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    });
+  }
+
+  const serviceRoleKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? Deno.env.get('SB_SERVICE_ROLE_KEY');
+  const supabaseUrl = Deno.env.get('SUPABASE_URL') ?? '';
+
+  if (!serviceRoleKey || !supabaseUrl) {
+    console.error(JSON.stringify({ action: 'populate_geography', error: 'missing_service_config' }));
+    return new Response(JSON.stringify({ error: 'Server misconfiguration: missing service role key or URL' }), {
+      status: 500,
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    });
+  }
+
+  const supabaseAdmin = createClient(supabaseUrl, serviceRoleKey);
+
+  const token = authHeader.replace('Bearer ', '');
+  const { data: { user }, error: authError } = await supabaseAdmin.auth.getUser(token);
+  if (authError || !user) {
+    console.log(JSON.stringify({ action: 'populate_geography', allowed: false, reason: 'invalid_token' }));
+    return new Response(JSON.stringify({ error: 'Invalid token' }), {
+      status: 401,
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    });
+  }
+
+  const ALLOWED_ROLES = ['admin', 'ops'];
+  const userRole = (user.app_metadata?.role as string) ?? '';
+  const userRoles = (user.app_metadata?.roles as string[]) ?? [];
+  const hasPrivilegedRole = ALLOWED_ROLES.includes(userRole) || userRoles.some(r => ALLOWED_ROLES.includes(r));
+
+  const allowedUserIds = (Deno.env.get('POPULATE_GEOGRAPHY_ALLOWED_USER_IDS') ?? '')
+    .split(',')
+    .map(id => id.trim())
+    .filter(Boolean);
+  const isInAllowlist = allowedUserIds.includes(user.id);
+
+  if (!hasPrivilegedRole && !isInAllowlist) {
+    console.log(JSON.stringify({ action: 'populate_geography', user_id: user.id, allowed: false, reason: 'forbidden' }));
+    return new Response(JSON.stringify({ error: 'Forbidden: insufficient privileges' }), {
+      status: 403,
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    });
+  }
+
+  const authReason = hasPrivilegedRole ? 'role' : 'allowlist';
+  console.log(JSON.stringify({ action: 'populate_geography', user_id: user.id, allowed: true, reason: authReason }));
+
   try {
-    const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
-    const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
-    const supabase = createClient(supabaseUrl, supabaseKey);
+    const supabase = createClient(supabaseUrl, serviceRoleKey);
 
     const results = {
       countries: 0,
