@@ -1,4 +1,4 @@
-import type { ClientType } from '@/types/pharmacy';
+import type { ClientType, PharmacyStatus } from '@/types/pharmacy';
 
 export interface DetailedOrder {
   id: string;
@@ -39,7 +39,7 @@ export interface PharmacyWithOrders {
   clientType: ClientType;
   phone: string | null;
   email: string | null;
-  commercialStatus: 'not_contacted' | 'contacted' | 'client';
+  commercialStatus: PharmacyStatus;
   notes: string | null;
   orders: DetailedOrder[];
   lastOrder: DetailedOrder | null;
@@ -63,7 +63,7 @@ export interface OperationsFilters {
   country: string;
   province: string;
   city: string;
-  commercialStatus: 'all' | 'not_contacted' | 'contacted' | 'client';
+  commercialStatus: 'all' | PharmacyStatus;
   paymentStatus: 'all' | 'paid' | 'pending' | 'failed' | 'refunded';
 }
 

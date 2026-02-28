@@ -1,4 +1,4 @@
-export type PharmacyStatus = 'not_contacted' | 'contacted' | 'client';
+export type PharmacyStatus = 'not_contacted' | 'contacted' | 'qualified' | 'proposal' | 'client' | 'retained' | 'lost';
 
 export type ClientType = 'pharmacy' | 'herbalist';
 
@@ -43,13 +43,21 @@ export interface PharmacyFilters {
 export const STATUS_LABELS: Record<PharmacyStatus, string> = {
   not_contacted: 'Not Contacted',
   contacted: 'Contacted',
+  qualified: 'Qualified',
+  proposal: 'Proposal',
   client: 'Client',
+  retained: 'Retained',
+  lost: 'Lost',
 };
 
 export const STATUS_COLORS: Record<PharmacyStatus, { bg: string; text: string; pin: string }> = {
-  not_contacted: { bg: 'bg-yellow-100', text: 'text-yellow-800', pin: '#eab308' }, // Yellow
-  contacted: { bg: 'bg-blue-100', text: 'text-blue-800', pin: '#3b82f6' }, // Blue
-  client: { bg: 'bg-green-100', text: 'text-green-800', pin: '#22c55e' }, // Green
+  not_contacted: { bg: 'bg-yellow-100', text: 'text-yellow-800', pin: '#eab308' },
+  contacted: { bg: 'bg-blue-100', text: 'text-blue-800', pin: '#3b82f6' },
+  qualified: { bg: 'bg-indigo-100', text: 'text-indigo-800', pin: '#6366f1' },
+  proposal: { bg: 'bg-purple-100', text: 'text-purple-800', pin: '#a855f7' },
+  client: { bg: 'bg-green-100', text: 'text-green-800', pin: '#22c55e' },
+  retained: { bg: 'bg-teal-100', text: 'text-teal-800', pin: '#14b8a6' },
+  lost: { bg: 'bg-red-100', text: 'text-red-800', pin: '#ef4444' },
 };
 
 export const CLIENT_TYPE_LABELS: Record<ClientType, string> = {

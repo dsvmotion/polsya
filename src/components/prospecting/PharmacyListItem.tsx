@@ -1,5 +1,5 @@
 import { MapPin, Phone, Globe, Check, Save } from 'lucide-react';
-import { Pharmacy } from '@/types/pharmacy';
+import { Pharmacy, PharmacyStatus, STATUS_LABELS, STATUS_COLORS } from '@/types/pharmacy';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
@@ -15,19 +15,8 @@ interface PharmacyListItemProps {
   isSaving?: boolean;
 }
 
-function StatusBadge({ status, isSaved }: { status: 'not_contacted' | 'contacted' | 'client'; isSaved: boolean }) {
-  const styles = {
-    not_contacted: 'bg-yellow-100 text-yellow-800',
-    contacted: 'bg-blue-100 text-blue-800',
-    client: 'bg-green-100 text-green-800',
-  };
-
-  const labels = {
-    not_contacted: 'Not Contacted',
-    contacted: 'Contacted',
-    client: 'Client',
-  };
-
+function StatusBadge({ status, isSaved }: { status: PharmacyStatus; isSaved: boolean }) {
+  const colors = STATUS_COLORS[status];
   return (
     <div className="flex items-center gap-1">
       {isSaved && (
@@ -36,8 +25,8 @@ function StatusBadge({ status, isSaved }: { status: 'not_contacted' | 'contacted
           Saved
         </span>
       )}
-      <span className={cn('px-1.5 py-0.5 rounded text-[10px] font-medium', styles[status])}>
-        {labels[status]}
+      <span className={cn('px-1.5 py-0.5 rounded text-[10px] font-medium', colors?.bg, colors?.text)}>
+        {STATUS_LABELS[status] ?? status}
       </span>
     </div>
   );

@@ -1,5 +1,6 @@
 import { ArrowUpDown, ArrowUp, ArrowDown, FileText, Loader2 } from 'lucide-react';
 import { PharmacyWithOrders, SortField, SortDirection } from '@/types/operations';
+import { PharmacyStatus, STATUS_LABELS, STATUS_COLORS } from '@/types/pharmacy';
 import { cn } from '@/lib/utils';
 
 interface OperationsTableProps {
@@ -21,22 +22,11 @@ function SortIcon({ field, currentField, direction }: { field: SortField; curren
     : <ArrowDown className="h-3 w-3 text-gray-700" />;
 }
 
-function StatusBadge({ status }: { status: 'not_contacted' | 'contacted' | 'client' }) {
-  const styles = {
-    not_contacted: 'bg-yellow-100 text-yellow-800', // Yellow
-    contacted: 'bg-blue-100 text-blue-800', // Blue
-    client: 'bg-green-100 text-green-800', // Green
-  };
-
-  const labels = {
-    not_contacted: 'Not Contacted',
-    contacted: 'Contacted',
-    client: 'Client',
-  };
-
+function StatusBadge({ status }: { status: PharmacyStatus }) {
+  const colors = STATUS_COLORS[status];
   return (
-    <span className={cn('px-2 py-0.5 rounded text-xs font-medium', styles[status])}>
-      {labels[status]}
+    <span className={cn('px-2 py-0.5 rounded text-xs font-medium', colors?.bg, colors?.text)}>
+      {STATUS_LABELS[status] ?? status}
     </span>
   );
 }

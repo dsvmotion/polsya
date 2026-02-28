@@ -9,6 +9,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { OperationsFilters } from '@/types/operations';
+import { PharmacyStatus, STATUS_LABELS } from '@/types/pharmacy';
 
 interface OperationsFiltersBarProps {
   filters: OperationsFilters;
@@ -123,9 +124,11 @@ export function OperationsFiltersBar({
         </SelectTrigger>
         <SelectContent className="bg-white border-gray-200 z-50">
           <SelectItem value="all">All Statuses</SelectItem>
-          <SelectItem value="not_contacted">Not Contacted</SelectItem>
-          <SelectItem value="contacted">Contacted</SelectItem>
-          <SelectItem value="client">Client</SelectItem>
+          {(Object.keys(STATUS_LABELS) as PharmacyStatus[]).map((s) => (
+            <SelectItem key={s} value={s}>
+              {STATUS_LABELS[s]}
+            </SelectItem>
+          ))}
         </SelectContent>
       </Select>
 

@@ -251,7 +251,7 @@ export type Database = {
     }
     Enums: {
       client_type: "pharmacy" | "herbalist";
-      pharmacy_status: "not_contacted" | "contacted" | "client";
+      pharmacy_status: "not_contacted" | "contacted" | "qualified" | "proposal" | "client" | "retained" | "lost";
     }
     CompositeTypes: {
       [_ in never]: never
@@ -380,7 +380,7 @@ export const Constants = {
   public: {
     Enums: {
       client_type: ["pharmacy", "herbalist"],
-      pharmacy_status: ["not_contacted", "contacted", "client"],
+      pharmacy_status: ["not_contacted", "contacted", "qualified", "proposal", "client", "retained", "lost"],
     },
   },
 } as const

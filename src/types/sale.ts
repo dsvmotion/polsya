@@ -13,7 +13,7 @@ export interface Sale {
   amount: number;
   date: string;
   products: string[];
-  commercialStatus?: 'not_contacted' | 'contacted' | 'client';
+  commercialStatus?: 'not_contacted' | 'contacted' | 'qualified' | 'proposal' | 'client' | 'retained' | 'lost';
   phone?: string;
   email?: string;
 }
