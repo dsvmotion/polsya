@@ -61,8 +61,29 @@ for (const dir of functionDirs) {
   }
 }
 
+// 3. Check that sensitive functions use requireRoleAccess
+const REQUIRE_AUTHZ = [
+  'google-places-pharmacies',
+  'woocommerce-orders',
+  'woocommerce-orders-detailed',
+];
+
+for (const dir of REQUIRE_AUTHZ) {
+  const indexPath = join(FUNCTIONS_DIR, dir, 'index.ts');
+  let source;
+  try {
+    source = readFileSync(indexPath, 'utf-8');
+  } catch {
+    fail(`Cannot read ${dir}/index.ts for authz check`);
+    continue;
+  }
+  if (!source.includes('requireRoleAccess(')) {
+    fail(`${dir}/index.ts does not call requireRoleAccess()`);
+  }
+}
+
 if (exitCode === 0) {
-  console.log(`✅  Security invariants OK — ${functionDirs.length} edge functions checked`);
+  console.log(`✅  Security invariants OK — ${functionDirs.length} edge functions checked, ${REQUIRE_AUTHZ.length} authz-gated`);
 }
 
 process.exit(exitCode);

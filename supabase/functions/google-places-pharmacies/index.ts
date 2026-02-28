@@ -1,6 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { handleCors, corsHeaders as makeCorsHeaders } from '../_shared/cors.ts';
+import { requireRoleAccess } from '../_shared/auth.ts';
 
 interface PlaceResult {
   place_id: string;
@@ -44,11 +44,15 @@ serve(async (req) => {
   const origin = req.headers.get('Origin') || '';
   const corsHeaders = makeCorsHeaders(origin);
 
-  try {
-    const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
-    const supabaseAnonKey = Deno.env.get('SUPABASE_ANON_KEY')!;
-    const supabase = createClient(supabaseUrl, supabaseAnonKey);
+  const auth = await requireRoleAccess(req, {
+    action: 'google_places_pharmacies',
+    allowedRoles: ['admin', 'ops'],
+    allowlistEnvKey: 'GOOGLE_PLACES_ALLOWED_USER_IDS',
+    corsHeaders,
+  });
+  if (!auth.ok) return auth.response;
 
+  try {
     const GOOGLE_MAPS_API_KEY = Deno.env.get('GOOGLE_MAPS_API_KEY');
     if (!GOOGLE_MAPS_API_KEY) {
       throw new Error('GOOGLE_MAPS_API_KEY is not configured');
