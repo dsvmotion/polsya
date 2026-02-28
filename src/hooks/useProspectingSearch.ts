@@ -36,6 +36,26 @@ interface GooglePlaceDetails {
   google_data: Record<string, unknown> | null;
 }
 
+async function runWithConcurrency<T, R>(
+  items: T[],
+  limit: number,
+  worker: (item: T, index: number) => Promise<R>
+): Promise<R[]> {
+  const results: R[] = new Array(items.length);
+  let nextIndex = 0;
+
+  async function runNext(): Promise<void> {
+    while (nextIndex < items.length) {
+      const i = nextIndex++;
+      results[i] = await worker(items[i], i);
+    }
+  }
+
+  const runners = Array.from({ length: Math.min(limit, items.length) }, () => runNext());
+  await Promise.all(runners);
+  return results;
+}
+
 /**
  * Hook for manual pharmacy search.
  * - Triggered only by explicit `executeSearch()` call.
@@ -166,33 +186,34 @@ export function useProspectingSearch() {
         return;
       }
 
-      // Fetch details and cache each pharmacy
+      // Fetch details and cache each pharmacy with controlled concurrency
       const cachedPharmacies: Pharmacy[] = [];
+      let processed = 0;
 
-      for (let i = 0; i < allBasicResults.length; i++) {
-        if (signal.aborted) {
-          console.log('Search aborted during details fetching');
-          return;
-        }
+      const flushProgress = () => {
+        setProgress({ found: allBasicResults.length, cached: cachedPharmacies.length });
+        setResults([...cachedPharmacies]);
+      };
 
-        const basic = allBasicResults[i];
+      await runWithConcurrency(allBasicResults, 5, async (basic) => {
+        if (signal.aborted) return;
 
-        // Check if already in database
-        const { data: existing } = await supabase
-          .from('pharmacies')
-          .select('*')
-          .eq('google_place_id', basic.google_place_id)
-          .maybeSingle();
-
-        if (existing) {
-          cachedPharmacies.push(existing as Pharmacy);
-          setProgress((prev) => ({ ...prev, cached: cachedPharmacies.length }));
-          setResults([...cachedPharmacies]);
-          continue;
-        }
-
-        // Fetch details from Google Places
         try {
+          // Check if already in database
+          const { data: existing } = await supabase
+            .from('pharmacies')
+            .select('*')
+            .eq('google_place_id', basic.google_place_id)
+            .maybeSingle();
+
+          if (existing) {
+            cachedPharmacies.push(existing as Pharmacy);
+            processed++;
+            flushProgress();
+            return;
+          }
+
+          // Fetch details from Google Places
           const detailsResponse = await fetch(`${SUPABASE_URL}/functions/v1/google-places-pharmacies`, {
             method: 'POST',
             headers: {
@@ -208,14 +229,14 @@ export function useProspectingSearch() {
 
           if (!detailsResponse.ok) {
             console.warn(`Failed to get details for ${basic.google_place_id}`);
-            continue;
+            processed++;
+            return;
           }
 
           const detailsData = await detailsResponse.json();
           const details: GooglePlaceDetails = detailsData.pharmacy;
 
-          // Insert into database - first check for existing CSV import by name+city
-          // Check if already exists by google_place_id
+          // Check if already exists by google_place_id (race-condition guard)
           const { data: existingByPlaceId } = await supabase
             .from('pharmacies')
             .select('*')
@@ -224,9 +245,9 @@ export function useProspectingSearch() {
 
           if (existingByPlaceId) {
             cachedPharmacies.push(existingByPlaceId as Pharmacy);
-            setProgress((prev) => ({ ...prev, cached: cachedPharmacies.length }));
-            setResults([...cachedPharmacies]);
-            continue;
+            processed++;
+            flushProgress();
+            return;
           }
 
           // Check if exists by similar name + same city (CSV imports without google_place_id)
@@ -246,8 +267,7 @@ export function useProspectingSearch() {
           }
 
           if (existingByName) {
-            // Merge: update CSV record with Google data
-            const { data: updated, error: updateError } = await supabase
+            const { data: updated } = await supabase
               .from('pharmacies')
               .update({
                 google_place_id: details.google_place_id,
@@ -263,13 +283,8 @@ export function useProspectingSearch() {
               .select()
               .single();
 
-            if (updated) {
-              cachedPharmacies.push(updated as Pharmacy);
-            } else {
-              cachedPharmacies.push(existingByName as Pharmacy);
-            }
+            cachedPharmacies.push((updated ?? existingByName) as Pharmacy);
           } else {
-            // No match found - insert new
             const { data: inserted, error: insertError } = await supabase
               .from('pharmacies')
               .insert([
@@ -306,15 +321,19 @@ export function useProspectingSearch() {
             }
           }
 
-          setProgress((prev) => ({ ...prev, cached: cachedPharmacies.length }));
-          setResults([...cachedPharmacies]);
-
-          // Small delay to avoid rate limiting
-          await new Promise((resolve) => setTimeout(resolve, 100));
+          processed++;
+          flushProgress();
         } catch (detailError) {
+          if ((detailError as Error).name === 'AbortError') return;
           console.warn(`Error fetching details for ${basic.google_place_id}:`, detailError);
+          processed++;
         }
-      }
+      });
+
+      if (signal.aborted) return;
+
+      // Final flush to ensure UI is up to date
+      flushProgress();
 
       // Auto-detect location from first result with country data
       const firstWithCountry = cachedPharmacies.find(p => p.country);
