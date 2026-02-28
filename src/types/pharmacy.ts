@@ -4,6 +4,7 @@ export type ClientType = 'pharmacy' | 'herbalist';
 
 export interface Pharmacy {
   id: string;
+  entity_type_id?: string | null;
   google_place_id: string | null;
   name: string;
   address: string | null;

@@ -5,16 +5,18 @@ import type { Json } from '@/integrations/supabase/types';
 
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
 
-export function usePharmacies(clientType?: ClientType) {
+export function usePharmacies(clientType?: ClientType, entityTypeId?: string) {
   return useQuery({
-    queryKey: ['pharmacies', clientType ?? 'all'],
+    queryKey: ['pharmacies', clientType ?? 'all', entityTypeId ?? 'all'],
     queryFn: async (): Promise<Pharmacy[]> => {
       let query = supabase
         .from('pharmacies')
         .select('*')
         .order('name');
 
-      if (clientType) {
+      if (entityTypeId) {
+        query = query.eq('entity_type_id', entityTypeId);
+      } else if (clientType) {
         query = query.eq('client_type', clientType);
       }
       
