@@ -4,7 +4,8 @@ import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { usePharmacyOperations } from '@/hooks/usePharmacyOperations';
 import { OperationsFilters, SortField, SortDirection, PharmacyWithOrders, SavedSegment, RISK_REASON_LABELS } from '@/types/operations';
-import type { RiskReason } from '@/types/operations';
+import type { RiskReason, SmartSegmentKey } from '@/types/operations';
+import { filterBySmartSegment, useSmartSegmentCounts } from '@/hooks/useSmartSegments';
 import { OperationsTable } from '@/components/operations/OperationsTable';
 import { OperationsFiltersBar } from '@/components/operations/OperationsFiltersBar';
 import { PharmacyOperationsDetail } from '@/components/operations/PharmacyOperationsDetail';
@@ -49,6 +50,7 @@ export default function PharmacyOperations({ clientType = 'pharmacy' }: Props) {
   const [searchDebounced, setSearchDebounced] = useState('');
   const [selectedSegmentId, setSelectedSegmentId] = useState<string | null>(null);
   const [pendingOpenPharmacyId, setPendingOpenPharmacyId] = useState<string | null>(null);
+  const [smartSegment, setSmartSegment] = useState<SmartSegmentKey>('none');
 
   const { data: segments = [] } = useSavedSegments('operations');
   const createSegment = useCreateSavedSegment();
@@ -122,6 +124,18 @@ export default function PharmacyOperations({ clientType = 'pharmacy' }: Props) {
     return result;
   }, [pharmacies, sortField, sortDirection]);
 
+  const smartFiltered = useMemo(
+    () => filterBySmartSegment(displayedPharmacies, smartSegment),
+    [displayedPharmacies, smartSegment],
+  );
+
+  const smartSegmentCounts = useSmartSegmentCounts(displayedPharmacies);
+
+  const handleSmartSegmentChange = useCallback((key: SmartSegmentKey) => {
+    setSmartSegment(key);
+    setPage(0);
+  }, []);
+
   const handleFiltersChange = useCallback((newFilters: OperationsFilters) => {
     // Enforce hierarchy
     if (newFilters.country !== filters.country) {
@@ -152,6 +166,7 @@ export default function PharmacyOperations({ clientType = 'pharmacy' }: Props) {
     if (segment) {
       setFilters(segment.filters);
       setSelectedSegmentId(segment.id);
+      setSmartSegment('none');
       setPage(0);
     } else {
       setSelectedSegmentId(null);
@@ -178,7 +193,7 @@ export default function PharmacyOperations({ clientType = 'pharmacy' }: Props) {
   const createActivity = useCreatePharmacyActivity();
 
   const handleOpenFromAlert = useCallback((pharmacyId: string, pharmacyName: string) => {
-    const found = displayedPharmacies.find((p) => p.id === pharmacyId)
+    const found = smartFiltered.find((p) => p.id === pharmacyId)
       ?? pharmacies.find((p) => p.id === pharmacyId);
     if (found) {
       setSelectedPharmacy(found);
@@ -187,19 +202,20 @@ export default function PharmacyOperations({ clientType = 'pharmacy' }: Props) {
     }
     // Not in current dataset — search by name so the server returns the right page
     setPendingOpenPharmacyId(pharmacyId);
+    setSmartSegment('none');
     setFilters({ ...initialFilters, search: pharmacyName });
     setPage(0);
-  }, [displayedPharmacies, pharmacies]);
+  }, [smartFiltered, pharmacies]);
 
   useEffect(() => {
     if (!pendingOpenPharmacyId) return;
-    const match = displayedPharmacies.find((p) => p.id === pendingOpenPharmacyId)
+    const match = smartFiltered.find((p) => p.id === pendingOpenPharmacyId)
       ?? pharmacies.find((p) => p.id === pendingOpenPharmacyId);
     if (match) {
       setSelectedPharmacy(match);
       setPendingOpenPharmacyId(null);
     }
-  }, [pendingOpenPharmacyId, displayedPharmacies, pharmacies]);
+  }, [pendingOpenPharmacyId, smartFiltered, pharmacies]);
 
   const handleCreateFollowUpTask = useCallback(async (
     pharmacyId: string,
@@ -330,6 +346,7 @@ export default function PharmacyOperations({ clientType = 'pharmacy' }: Props) {
             onClearFilters={() => {
               setFilters(initialFilters);
               setSelectedSegmentId(null);
+              setSmartSegment('none');
               setPage(0);
             }}
             countries={countries}
@@ -341,6 +358,9 @@ export default function PharmacyOperations({ clientType = 'pharmacy' }: Props) {
             onSaveSegment={handleSaveSegment}
             onDeleteSegment={handleDeleteSegment}
             onToggleFavorite={handleToggleFavorite}
+            smartSegment={smartSegment}
+            onSmartSegmentChange={handleSmartSegmentChange}
+            smartSegmentCounts={smartSegmentCounts}
           />
 
           {/* Main Content */}
@@ -348,7 +368,7 @@ export default function PharmacyOperations({ clientType = 'pharmacy' }: Props) {
             {/* Table */}
             <div className={`flex-1 overflow-auto ${selectedPharmacy ? 'max-w-[calc(100%-400px)]' : ''}`}>
               <OperationsTable
-                pharmacies={displayedPharmacies}
+                pharmacies={smartFiltered}
                 isLoading={isLoading}
                 sortField={sortField}
                 sortDirection={sortDirection}

@@ -9,8 +9,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { OperationsFilters } from '@/types/operations';
-import type { SavedSegment } from '@/types/operations';
+import { OperationsFilters, SMART_SEGMENT_LABELS } from '@/types/operations';
+import type { SavedSegment, SmartSegmentKey } from '@/types/operations';
+import type { SmartSegmentCounts } from '@/hooks/useSmartSegments';
 import { PharmacyStatus, STATUS_LABELS } from '@/types/pharmacy';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
@@ -28,6 +29,9 @@ interface OperationsFiltersBarProps {
   onSaveSegment: (name: string) => Promise<void>;
   onDeleteSegment: (id: string) => Promise<void>;
   onToggleFavorite: (id: string, current: boolean) => Promise<void>;
+  smartSegment: SmartSegmentKey;
+  onSmartSegmentChange: (key: SmartSegmentKey) => void;
+  smartSegmentCounts?: SmartSegmentCounts;
 }
 
 export function OperationsFiltersBar({
@@ -43,6 +47,9 @@ export function OperationsFiltersBar({
   onSaveSegment,
   onDeleteSegment,
   onToggleFavorite,
+  smartSegment,
+  onSmartSegmentChange,
+  smartSegmentCounts,
 }: OperationsFiltersBarProps) {
   const [showSaveInput, setShowSaveInput] = useState(false);
   const [segmentName, setSegmentName] = useState('');
@@ -129,6 +136,28 @@ export function OperationsFiltersBar({
             </Button>
           </>
         )}
+
+        <div className="h-5 w-px bg-gray-200" />
+
+        <Select
+          value={smartSegment}
+          onValueChange={(v) => onSmartSegmentChange(v as SmartSegmentKey)}
+        >
+          <SelectTrigger className="w-52 h-8 text-sm bg-white border-gray-300 text-gray-900">
+            <SelectValue placeholder="Smart segment" />
+          </SelectTrigger>
+          <SelectContent className="bg-white border-gray-200 z-50">
+            {(Object.keys(SMART_SEGMENT_LABELS) as SmartSegmentKey[]).map((key) => {
+              const count = key !== 'none' && smartSegmentCounts ? smartSegmentCounts[key] : undefined;
+              return (
+                <SelectItem key={key} value={key}>
+                  {SMART_SEGMENT_LABELS[key]}
+                  {count !== undefined ? ` (${count})` : ''}
+                </SelectItem>
+              );
+            })}
+          </SelectContent>
+        </Select>
 
         {hasActiveFilters && !showSaveInput && (
           <Button

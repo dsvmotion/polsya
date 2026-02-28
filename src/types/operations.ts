@@ -118,6 +118,21 @@ export interface RiskSummary {
   totalAtRisk: number;
 }
 
+export type SmartSegmentKey =
+  | 'none'
+  | 'at_risk'
+  | 'no_orders_client'
+  | 'payment_failed'
+  | 'no_recent_orders_60d';
+
+export const SMART_SEGMENT_LABELS: Record<SmartSegmentKey, string> = {
+  none: 'All pharmacies',
+  at_risk: 'At risk',
+  no_orders_client: 'Client — no orders',
+  payment_failed: 'Payment failed',
+  no_recent_orders_60d: 'No orders 60+ days',
+};
+
 export interface PharmacyDocument {
   id: string;
   pharmacyId: string;
