@@ -201,6 +201,45 @@ export type Database = {
         }
         Relationships: []
       }
+      integration_connections: {
+        Row: {
+          id: string
+          provider: string
+          display_name: string
+          status: string
+          is_enabled: boolean
+          metadata: Json
+          last_sync_at: string | null
+          last_error: string | null
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          provider: string
+          display_name: string
+          status?: string
+          is_enabled?: boolean
+          metadata?: Json
+          last_sync_at?: string | null
+          last_error?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          provider?: string
+          display_name?: string
+          status?: string
+          is_enabled?: boolean
+          metadata?: Json
+          last_sync_at?: string | null
+          last_error?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       pharmacy_activities: {
         Row: {
           id: string
