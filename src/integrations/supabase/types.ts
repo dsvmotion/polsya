@@ -461,6 +461,51 @@ export type Database = {
         }
         Relationships: []
       }
+      agent_actions_log: {
+        Row: {
+          id: string
+          agent_name: string
+          action_type: string
+          target_type: string
+          target_id: string | null
+          payload: Json
+          status: string
+          error_message: string | null
+          requested_by: string | null
+          created_at: string
+          completed_at: string | null
+          idempotency_key: string | null
+        }
+        Insert: {
+          id?: string
+          agent_name: string
+          action_type: string
+          target_type: string
+          target_id?: string | null
+          payload?: Json
+          status?: string
+          error_message?: string | null
+          requested_by?: string | null
+          created_at?: string
+          completed_at?: string | null
+          idempotency_key?: string | null
+        }
+        Update: {
+          id?: string
+          agent_name?: string
+          action_type?: string
+          target_type?: string
+          target_id?: string | null
+          payload?: Json
+          status?: string
+          error_message?: string | null
+          requested_by?: string | null
+          created_at?: string
+          completed_at?: string | null
+          idempotency_key?: string | null
+        }
+        Relationships: []
+      }
       pharmacy_order_documents: {
         Row: {
           document_type: string

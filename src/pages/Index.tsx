@@ -12,6 +12,7 @@ import { SearchableSelect } from '@/components/ui/searchable-select';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { UserMenu } from '@/components/auth/UserMenu';
 import { IntegrationsCard } from '@/components/dashboard/IntegrationsCard';
+import { AgentActionsCard } from '@/components/dashboard/AgentActionsCard';
 
 const normalizeCountry = (country: string): string => {
   if (!country) return '';
@@ -569,6 +570,11 @@ const Index = () => {
         {/* Integrations */}
         <div className="mt-6">
           <IntegrationsCard />
+        </div>
+
+        {/* Agent Actions */}
+        <div className="mt-6">
+          <AgentActionsCard />
         </div>
 
         {/* Status Bar */}
