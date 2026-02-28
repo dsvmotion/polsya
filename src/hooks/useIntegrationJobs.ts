@@ -6,13 +6,17 @@ import type {
   IntegrationJobStatus,
 } from '@/types/integrations';
 
-function jobsKey(integrationId: string) {
+function jobsKey(integrationId: string, limit: number) {
+  return ['integration-jobs', integrationId, limit] as const;
+}
+
+function jobsPrefixKey(integrationId: string) {
   return ['integration-jobs', integrationId] as const;
 }
 
 export function useIntegrationJobs(integrationId: string | null, limit = 5) {
   return useQuery<IntegrationSyncJob[]>({
-    queryKey: jobsKey(integrationId ?? ''),
+    queryKey: jobsKey(integrationId ?? '', limit),
     enabled: !!integrationId,
     queryFn: async () => {
       const { data, error } = await supabase
@@ -60,7 +64,7 @@ export function useEnqueueIntegrationJob() {
       return data as unknown as IntegrationSyncJob;
     },
     onSuccess: (_data, variables) => {
-      qc.invalidateQueries({ queryKey: jobsKey(variables.integrationId) });
+      qc.invalidateQueries({ queryKey: jobsPrefixKey(variables.integrationId) });
     },
   });
 }
@@ -92,7 +96,7 @@ export function useUpdateIntegrationJob() {
       return data as unknown as IntegrationSyncJob;
     },
     onSuccess: (_data, variables) => {
-      qc.invalidateQueries({ queryKey: jobsKey(variables.integrationId) });
+      qc.invalidateQueries({ queryKey: jobsPrefixKey(variables.integrationId) });
     },
   });
 }

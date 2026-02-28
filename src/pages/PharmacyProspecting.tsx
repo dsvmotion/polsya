@@ -24,6 +24,14 @@ const initialFilters: Filters = {
   status: 'all',
 };
 
+function pluralizeEntityLabel(label: string): string {
+  const trimmed = label.trim();
+  if (!trimmed) return 'Entities';
+  if (/[^aeiou]y$/i.test(trimmed)) return `${trimmed.slice(0, -1)}ies`;
+  if (/(s|x|z|ch|sh)$/i.test(trimmed)) return `${trimmed}es`;
+  return `${trimmed}s`;
+}
+
 export default function PharmacyProspecting({ clientType = 'pharmacy' }: Props) {
   const { data: entityTypes = [] } = useEntityTypes();
   const singularLabel = resolveEntityTypeLabel(
@@ -31,9 +39,7 @@ export default function PharmacyProspecting({ clientType = 'pharmacy' }: Props) 
     entityTypes,
     clientType === 'herbalist' ? 'Herbalist' : 'Pharmacy',
   );
-  const pluralLabel = singularLabel.toLowerCase().endsWith('s')
-    ? singularLabel
-    : `${singularLabel}s`;
+  const pluralLabel = pluralizeEntityLabel(singularLabel);
 
   const labels = useMemo(() => ({
     singular: singularLabel.toLowerCase(),
