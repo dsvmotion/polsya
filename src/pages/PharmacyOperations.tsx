@@ -48,6 +48,7 @@ export default function PharmacyOperations({ clientType = 'pharmacy' }: Props) {
   const pageSize = 50;
   const [searchDebounced, setSearchDebounced] = useState('');
   const [selectedSegmentId, setSelectedSegmentId] = useState<string | null>(null);
+  const [pendingOpenPharmacyId, setPendingOpenPharmacyId] = useState<string | null>(null);
 
   const { data: segments = [] } = useSavedSegments('operations');
   const createSegment = useCreateSavedSegment();
@@ -176,22 +177,29 @@ export default function PharmacyOperations({ clientType = 'pharmacy' }: Props) {
 
   const createActivity = useCreatePharmacyActivity();
 
-  const handleOpenFromAlert = useCallback((pharmacyId: string) => {
-    const found = displayedPharmacies.find((p) => p.id === pharmacyId);
+  const handleOpenFromAlert = useCallback((pharmacyId: string, pharmacyName: string) => {
+    const found = displayedPharmacies.find((p) => p.id === pharmacyId)
+      ?? pharmacies.find((p) => p.id === pharmacyId);
     if (found) {
       setSelectedPharmacy(found);
+      setPendingOpenPharmacyId(null);
       return;
     }
-    // Not on current page — search by name to navigate there
-    const allPage = pharmacies.find((p) => p.id === pharmacyId);
-    if (allPage) {
-      setSelectedPharmacy(allPage);
-      return;
-    }
-    // Pharmacy not in current dataset (different page/filters). Reset filters and search by ID prefix.
-    setFilters({ ...initialFilters, search: pharmacyId.slice(0, 8) });
+    // Not in current dataset — search by name so the server returns the right page
+    setPendingOpenPharmacyId(pharmacyId);
+    setFilters({ ...initialFilters, search: pharmacyName });
     setPage(0);
   }, [displayedPharmacies, pharmacies]);
+
+  useEffect(() => {
+    if (!pendingOpenPharmacyId) return;
+    const match = displayedPharmacies.find((p) => p.id === pendingOpenPharmacyId)
+      ?? pharmacies.find((p) => p.id === pendingOpenPharmacyId);
+    if (match) {
+      setSelectedPharmacy(match);
+      setPendingOpenPharmacyId(null);
+    }
+  }, [pendingOpenPharmacyId, displayedPharmacies, pharmacies]);
 
   const handleCreateFollowUpTask = useCallback(async (
     pharmacyId: string,

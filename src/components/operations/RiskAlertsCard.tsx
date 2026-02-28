@@ -15,7 +15,7 @@ const LEVEL_CONFIG: Record<RiskLevel, { bg: string; text: string; dot: string; l
 
 interface AlertRowProps {
   alert: RiskAlert;
-  onOpen: (pharmacyId: string) => void;
+  onOpen: (pharmacyId: string, pharmacyName: string) => void;
   onFollowUp: (pharmacyId: string, pharmacyName: string, reasons: RiskReason[]) => Promise<void>;
 }
 
@@ -49,7 +49,7 @@ function AlertRow({ alert, onOpen, onFollowUp }: AlertRowProps) {
           variant="ghost"
           size="sm"
           className="h-6 w-6 p-0 text-gray-400 hover:text-gray-700"
-          onClick={() => onOpen(alert.pharmacyId)}
+          onClick={() => onOpen(alert.pharmacyId, alert.pharmacyName)}
           title="Open pharmacy"
         >
           <ExternalLink className="h-3 w-3" />
@@ -74,7 +74,7 @@ function AlertRow({ alert, onOpen, onFollowUp }: AlertRowProps) {
 
 interface RiskAlertsCardProps {
   clientType?: ClientType;
-  onOpenPharmacy?: (pharmacyId: string) => void;
+  onOpenPharmacy?: (pharmacyId: string, pharmacyName: string) => void;
   onCreateFollowUpTask?: (pharmacyId: string, pharmacyName: string, reasons: RiskReason[]) => Promise<void>;
 }
 
@@ -109,8 +109,8 @@ export function RiskAlertsCard({
     );
   }
 
-  const handleOpen = (pharmacyId: string) => {
-    onOpenPharmacy?.(pharmacyId);
+  const handleOpen = (pharmacyId: string, pharmacyName: string) => {
+    onOpenPharmacy?.(pharmacyId, pharmacyName);
   };
 
   const handleFollowUp = async (pharmacyId: string, pharmacyName: string, reasons: RiskReason[]) => {
