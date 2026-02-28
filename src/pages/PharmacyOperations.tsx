@@ -11,6 +11,7 @@ import { useQueryClient } from '@tanstack/react-query';
 import { useGeographyOptions } from '@/hooks/useGeographyOptions';
 import { UserMenu } from '@/components/auth/UserMenu';
 import { BulkImportDialog } from '@/components/operations/BulkImportDialog';
+import { PipelineSummaryCards } from '@/components/operations/PipelineSummaryCards';
 import type { ClientType } from '@/types/pharmacy';
 
 interface Props {
@@ -219,6 +220,9 @@ export default function PharmacyOperations({ clientType = 'pharmacy' }: Props) {
         </div>
       ) : (
         <>
+          {/* Pipeline Summary */}
+          <PipelineSummaryCards />
+
           {/* Filters */}
           <OperationsFiltersBar
             filters={filters}
