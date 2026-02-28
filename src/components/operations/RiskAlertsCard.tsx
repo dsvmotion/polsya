@@ -1,8 +1,10 @@
-import { AlertTriangle, ShieldAlert, ShieldCheck } from 'lucide-react';
+import { useState } from 'react';
+import { AlertTriangle, ShieldAlert, ShieldCheck, ExternalLink, ListTodo, Loader2 } from 'lucide-react';
 import { useRiskAlerts } from '@/hooks/useRiskAlerts';
 import { RISK_REASON_LABELS } from '@/types/operations';
-import type { RiskLevel, RiskAlert } from '@/types/operations';
+import type { RiskLevel, RiskAlert, RiskReason } from '@/types/operations';
 import type { ClientType } from '@/types/pharmacy';
+import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 
 const LEVEL_CONFIG: Record<RiskLevel, { bg: string; text: string; dot: string; label: string }> = {
@@ -11,8 +13,25 @@ const LEVEL_CONFIG: Record<RiskLevel, { bg: string; text: string; dot: string; l
   low: { bg: 'bg-green-50', text: 'text-green-700', dot: 'bg-green-500', label: 'Low' },
 };
 
-function AlertRow({ alert }: { alert: RiskAlert }) {
+interface AlertRowProps {
+  alert: RiskAlert;
+  onOpen: (pharmacyId: string) => void;
+  onFollowUp: (pharmacyId: string, pharmacyName: string, reasons: RiskReason[]) => Promise<void>;
+}
+
+function AlertRow({ alert, onOpen, onFollowUp }: AlertRowProps) {
   const cfg = LEVEL_CONFIG[alert.riskLevel];
+  const [creating, setCreating] = useState(false);
+
+  const handleFollowUp = async () => {
+    setCreating(true);
+    try {
+      await onFollowUp(alert.pharmacyId, alert.pharmacyName, alert.reasons);
+    } finally {
+      setCreating(false);
+    }
+  };
+
   return (
     <div className="flex items-start gap-2 py-1.5">
       <span className={cn('mt-1.5 h-2 w-2 rounded-full shrink-0', cfg.dot)} />
@@ -25,18 +44,45 @@ function AlertRow({ alert }: { alert: RiskAlert }) {
           )}
         </p>
       </div>
-      <span className={cn('text-[10px] font-semibold px-1.5 py-0.5 rounded', cfg.bg, cfg.text)}>
-        {cfg.label}
-      </span>
+      <div className="flex items-center gap-1 shrink-0">
+        <Button
+          variant="ghost"
+          size="sm"
+          className="h-6 w-6 p-0 text-gray-400 hover:text-gray-700"
+          onClick={() => onOpen(alert.pharmacyId)}
+          title="Open pharmacy"
+        >
+          <ExternalLink className="h-3 w-3" />
+        </Button>
+        <Button
+          variant="ghost"
+          size="sm"
+          className="h-6 w-6 p-0 text-gray-400 hover:text-blue-600"
+          onClick={handleFollowUp}
+          disabled={creating}
+          title="Create follow-up task"
+        >
+          {creating ? <Loader2 className="h-3 w-3 animate-spin" /> : <ListTodo className="h-3 w-3" />}
+        </Button>
+        <span className={cn('text-[10px] font-semibold px-1.5 py-0.5 rounded', cfg.bg, cfg.text)}>
+          {cfg.label}
+        </span>
+      </div>
     </div>
   );
 }
 
 interface RiskAlertsCardProps {
   clientType?: ClientType;
+  onOpenPharmacy?: (pharmacyId: string) => void;
+  onCreateFollowUpTask?: (pharmacyId: string, pharmacyName: string, reasons: RiskReason[]) => Promise<void>;
 }
 
-export function RiskAlertsCard({ clientType = 'pharmacy' }: RiskAlertsCardProps) {
+export function RiskAlertsCard({
+  clientType = 'pharmacy',
+  onOpenPharmacy,
+  onCreateFollowUpTask,
+}: RiskAlertsCardProps) {
   const { alerts, summary, isLoading } = useRiskAlerts(clientType);
 
   if (isLoading) {
@@ -62,6 +108,14 @@ export function RiskAlertsCard({ clientType = 'pharmacy' }: RiskAlertsCardProps)
       </div>
     );
   }
+
+  const handleOpen = (pharmacyId: string) => {
+    onOpenPharmacy?.(pharmacyId);
+  };
+
+  const handleFollowUp = async (pharmacyId: string, pharmacyName: string, reasons: RiskReason[]) => {
+    await onCreateFollowUpTask?.(pharmacyId, pharmacyName, reasons);
+  };
 
   const top5 = alerts.slice(0, 5);
 
@@ -92,7 +146,12 @@ export function RiskAlertsCard({ clientType = 'pharmacy' }: RiskAlertsCardProps)
       {/* Top alerts */}
       <div className="divide-y divide-gray-100">
         {top5.map((alert) => (
-          <AlertRow key={alert.pharmacyId} alert={alert} />
+          <AlertRow
+            key={alert.pharmacyId}
+            alert={alert}
+            onOpen={handleOpen}
+            onFollowUp={handleFollowUp}
+          />
         ))}
       </div>
 

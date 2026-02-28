@@ -3,7 +3,8 @@ import { ArrowLeft, RefreshCw, Building2, Leaf, MapPin, Search } from 'lucide-re
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { usePharmacyOperations } from '@/hooks/usePharmacyOperations';
-import { OperationsFilters, SortField, SortDirection, PharmacyWithOrders, SavedSegment } from '@/types/operations';
+import { OperationsFilters, SortField, SortDirection, PharmacyWithOrders, SavedSegment, RISK_REASON_LABELS } from '@/types/operations';
+import type { RiskReason } from '@/types/operations';
 import { OperationsTable } from '@/components/operations/OperationsTable';
 import { OperationsFiltersBar } from '@/components/operations/OperationsFiltersBar';
 import { PharmacyOperationsDetail } from '@/components/operations/PharmacyOperationsDetail';
@@ -19,6 +20,8 @@ import {
   useDeleteSavedSegment,
   useToggleFavoriteSegment,
 } from '@/hooks/useSavedSegments';
+import { useCreatePharmacyActivity } from '@/hooks/usePharmacyActivities';
+import { toast } from 'sonner';
 import type { ClientType } from '@/types/pharmacy';
 
 interface Props {
@@ -171,6 +174,48 @@ export default function PharmacyOperations({ clientType = 'pharmacy' }: Props) {
     await toggleFavorite.mutateAsync({ id, scope: 'operations', is_favorite: !current });
   }, [toggleFavorite]);
 
+  const createActivity = useCreatePharmacyActivity();
+
+  const handleOpenFromAlert = useCallback((pharmacyId: string) => {
+    const found = displayedPharmacies.find((p) => p.id === pharmacyId);
+    if (found) {
+      setSelectedPharmacy(found);
+      return;
+    }
+    // Not on current page — search by name to navigate there
+    const allPage = pharmacies.find((p) => p.id === pharmacyId);
+    if (allPage) {
+      setSelectedPharmacy(allPage);
+      return;
+    }
+    // Pharmacy not in current dataset (different page/filters). Reset filters and search by ID prefix.
+    setFilters({ ...initialFilters, search: pharmacyId.slice(0, 8) });
+    setPage(0);
+  }, [displayedPharmacies, pharmacies]);
+
+  const handleCreateFollowUpTask = useCallback(async (
+    pharmacyId: string,
+    pharmacyName: string,
+    reasons: RiskReason[],
+  ) => {
+    const reasonText = reasons.map((r) => RISK_REASON_LABELS[r]).join(', ');
+    const dueAt = new Date();
+    dueAt.setDate(dueAt.getDate() + 3);
+
+    try {
+      await createActivity.mutateAsync({
+        pharmacyId,
+        activityType: 'task',
+        title: 'Follow-up: At-risk account',
+        description: `Risk reasons: ${reasonText}.\nGenerated on ${new Date().toLocaleDateString()}.`,
+        dueAt: dueAt.toISOString(),
+      });
+      toast.success(`Follow-up task created for ${pharmacyName}`);
+    } catch {
+      toast.error('Failed to create follow-up task');
+    }
+  }, [createActivity]);
+
   const handleRefresh = useCallback(() => {
     refetch();
     queryClient.invalidateQueries({ queryKey: ['pharmacy-operations'] });
@@ -263,7 +308,11 @@ export default function PharmacyOperations({ clientType = 'pharmacy' }: Props) {
           {/* Pipeline Summary + Risk Alerts */}
           <div className="grid grid-cols-[1fr_320px] gap-4 px-6 py-4 border-b border-gray-200 bg-gray-50/50">
             <PipelineSummaryCards />
-            <RiskAlertsCard clientType={clientType} />
+            <RiskAlertsCard
+              clientType={clientType}
+              onOpenPharmacy={handleOpenFromAlert}
+              onCreateFollowUpTask={handleCreateFollowUpTask}
+            />
           </div>
 
           {/* Filters */}
