@@ -3,7 +3,7 @@ import { ArrowLeft, RefreshCw, Building2, Leaf, MapPin, Search } from 'lucide-re
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { usePharmacyOperations } from '@/hooks/usePharmacyOperations';
-import { OperationsFilters, SortField, SortDirection, PharmacyWithOrders } from '@/types/operations';
+import { OperationsFilters, SortField, SortDirection, PharmacyWithOrders, SavedSegment } from '@/types/operations';
 import { OperationsTable } from '@/components/operations/OperationsTable';
 import { OperationsFiltersBar } from '@/components/operations/OperationsFiltersBar';
 import { PharmacyOperationsDetail } from '@/components/operations/PharmacyOperationsDetail';
@@ -12,6 +12,12 @@ import { useGeographyOptions } from '@/hooks/useGeographyOptions';
 import { UserMenu } from '@/components/auth/UserMenu';
 import { BulkImportDialog } from '@/components/operations/BulkImportDialog';
 import { PipelineSummaryCards } from '@/components/operations/PipelineSummaryCards';
+import {
+  useSavedSegments,
+  useCreateSavedSegment,
+  useDeleteSavedSegment,
+  useToggleFavoriteSegment,
+} from '@/hooks/useSavedSegments';
 import type { ClientType } from '@/types/pharmacy';
 
 interface Props {
@@ -37,6 +43,12 @@ export default function PharmacyOperations({ clientType = 'pharmacy' }: Props) {
   const [page, setPage] = useState(0);
   const pageSize = 50;
   const [searchDebounced, setSearchDebounced] = useState('');
+  const [selectedSegmentId, setSelectedSegmentId] = useState<string | null>(null);
+
+  const { data: segments = [] } = useSavedSegments('operations');
+  const createSegment = useCreateSavedSegment();
+  const deleteSegment = useDeleteSavedSegment();
+  const toggleFavorite = useToggleFavoriteSegment();
 
   useEffect(() => {
     const timer = setTimeout(() => setSearchDebounced(filters.search), 300);
@@ -130,6 +142,33 @@ export default function PharmacyOperations({ clientType = 'pharmacy' }: Props) {
       setSortDirection('asc');
     }
   }, [sortField]);
+
+  const handleSelectSegment = useCallback((segment: SavedSegment | null) => {
+    if (segment) {
+      setFilters(segment.filters);
+      setSelectedSegmentId(segment.id);
+      setPage(0);
+    } else {
+      setSelectedSegmentId(null);
+    }
+  }, []);
+
+  const handleSaveSegment = useCallback(async (name: string) => {
+    await createSegment.mutateAsync({
+      name,
+      scope: 'operations',
+      filters,
+    });
+  }, [createSegment, filters]);
+
+  const handleDeleteSegment = useCallback(async (id: string) => {
+    await deleteSegment.mutateAsync({ id, scope: 'operations' });
+    if (selectedSegmentId === id) setSelectedSegmentId(null);
+  }, [deleteSegment, selectedSegmentId]);
+
+  const handleToggleFavorite = useCallback(async (id: string, current: boolean) => {
+    await toggleFavorite.mutateAsync({ id, scope: 'operations', is_favorite: !current });
+  }, [toggleFavorite]);
 
   const handleRefresh = useCallback(() => {
     refetch();
@@ -229,11 +268,18 @@ export default function PharmacyOperations({ clientType = 'pharmacy' }: Props) {
             onFiltersChange={handleFiltersChange}
             onClearFilters={() => {
               setFilters(initialFilters);
+              setSelectedSegmentId(null);
               setPage(0);
             }}
             countries={countries}
             provinces={provinces}
             cities={cities}
+            segments={segments}
+            selectedSegmentId={selectedSegmentId}
+            onSelectSegment={handleSelectSegment}
+            onSaveSegment={handleSaveSegment}
+            onDeleteSegment={handleDeleteSegment}
+            onToggleFavorite={handleToggleFavorite}
           />
 
           {/* Main Content */}

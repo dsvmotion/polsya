@@ -80,6 +80,19 @@ export const DOCUMENT_TYPE_LABELS: Record<DocumentType, string> = {
   other: 'Other',
 };
 
+export type SegmentScope = 'operations' | 'prospecting';
+
+export interface SavedSegment {
+  id: string;
+  name: string;
+  description: string | null;
+  scope: SegmentScope;
+  filters: OperationsFilters;
+  is_favorite: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
 export interface PharmacyDocument {
   id: string;
   pharmacyId: string;

@@ -428,6 +428,39 @@ export type Database = {
           },
         ]
       }
+      saved_segments: {
+        Row: {
+          id: string
+          name: string
+          description: string | null
+          scope: string
+          filters: Json
+          is_favorite: boolean
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          name: string
+          description?: string | null
+          scope?: string
+          filters?: Json
+          is_favorite?: boolean
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          name?: string
+          description?: string | null
+          scope?: string
+          filters?: Json
+          is_favorite?: boolean
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       pharmacy_order_documents: {
         Row: {
           document_type: string
