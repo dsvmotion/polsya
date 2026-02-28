@@ -1,9 +1,11 @@
 import { useState } from 'react';
-import { Bot, Plus, Loader2 } from 'lucide-react';
+import { Bot, Plus, Loader2, Check, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   useAgentActions,
   useCreateAgentAction,
+  useApproveAgentAction,
+  useRejectAgentAction,
   createIdempotencyKey,
 } from '@/hooks/useAgentActions';
 import {
@@ -26,7 +28,16 @@ function timeAgo(dateStr: string): string {
   return `${days}d ago`;
 }
 
-function ActionRow({ action }: { action: AgentActionLog }) {
+interface ActionRowProps {
+  action: AgentActionLog;
+  onApprove: (id: string) => void;
+  onReject: (id: string) => void;
+  busyId: string | null;
+}
+
+function ActionRow({ action, onApprove, onReject, busyId }: ActionRowProps) {
+  const isBusy = busyId === action.id;
+
   return (
     <div className="flex items-start gap-2 py-2 border-b border-gray-100 last:border-0">
       <div className="flex-1 min-w-0">
@@ -46,8 +57,38 @@ function ActionRow({ action }: { action: AgentActionLog }) {
         {action.status === 'error' && action.error_message && (
           <p className="text-xs text-red-600 mt-0.5 truncate">{action.error_message}</p>
         )}
+        {action.approved_by && (
+          <p className="text-[10px] text-gray-400 mt-0.5">
+            {action.status === 'rejected' ? 'Rejected' : 'Approved'} by {action.approved_by}
+            {action.approved_at ? ` · ${timeAgo(action.approved_at)}` : ''}
+          </p>
+        )}
       </div>
       <div className="flex items-center gap-1.5 shrink-0">
+        {action.status === 'queued' && (
+          <>
+            <Button
+              variant="ghost"
+              size="sm"
+              className="h-6 px-1.5 text-green-600 hover:text-green-800 hover:bg-green-50"
+              onClick={() => onApprove(action.id)}
+              disabled={isBusy}
+              title="Approve"
+            >
+              {isBusy ? <Loader2 className="h-3 w-3 animate-spin" /> : <Check className="h-3 w-3" />}
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              className="h-6 px-1.5 text-red-500 hover:text-red-700 hover:bg-red-50"
+              onClick={() => onReject(action.id)}
+              disabled={isBusy}
+              title="Reject"
+            >
+              <X className="h-3 w-3" />
+            </Button>
+          </>
+        )}
         <span
           className={cn(
             'text-[10px] font-medium px-1.5 py-0.5 rounded',
@@ -67,7 +108,10 @@ function ActionRow({ action }: { action: AgentActionLog }) {
 export function AgentActionsCard() {
   const { data: actions = [], isLoading } = useAgentActions(10);
   const createAction = useCreateAgentAction();
+  const approveAction = useApproveAgentAction();
+  const rejectAction = useRejectAgentAction();
   const [isSimulating, setIsSimulating] = useState(false);
+  const [busyActionId, setBusyActionId] = useState<string | null>(null);
 
   const handleSimulate = async () => {
     setIsSimulating(true);
@@ -83,14 +127,13 @@ export function AgentActionsCard() {
         agentName: 'openclaw',
         actionType: 'create_task',
         targetType: 'pharmacy',
-        status: 'success',
         payload: {
           description: 'Follow-up task created by OpenClaw agent',
           simulated: true,
         },
         idempotencyKey: key,
       });
-      toast.success('Demo action logged');
+      toast.success('Queued action created — approve or reject it');
     } catch (err) {
       const msg = err instanceof Error ? err.message : 'Unknown error';
       if (msg.includes('idempotency_key')) {
@@ -100,6 +143,38 @@ export function AgentActionsCard() {
       }
     } finally {
       setIsSimulating(false);
+    }
+  };
+
+  const handleApprove = async (id: string) => {
+    setBusyActionId(id);
+    try {
+      await approveAction.mutateAsync({
+        id,
+        approvedBy: 'manual-review',
+        approvalNote: 'Reviewed from dashboard',
+      });
+      toast.success('Action approved');
+    } catch {
+      toast.error('Failed to approve action');
+    } finally {
+      setBusyActionId(null);
+    }
+  };
+
+  const handleReject = async (id: string) => {
+    setBusyActionId(id);
+    try {
+      await rejectAction.mutateAsync({
+        id,
+        approvedBy: 'manual-review',
+        approvalNote: 'Reviewed from dashboard',
+      });
+      toast.success('Action rejected');
+    } catch {
+      toast.error('Failed to reject action');
+    } finally {
+      setBusyActionId(null);
     }
   };
 
@@ -155,7 +230,13 @@ export function AgentActionsCard() {
         {!isLoading && actions.length > 0 && (
           <div>
             {actions.map((action) => (
-              <ActionRow key={action.id} action={action} />
+              <ActionRow
+                key={action.id}
+                action={action}
+                onApprove={handleApprove}
+                onReject={handleReject}
+                busyId={busyActionId}
+              />
             ))}
           </div>
         )}

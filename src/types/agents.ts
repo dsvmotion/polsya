@@ -27,6 +27,9 @@ export interface AgentActionLog {
   created_at: string;
   completed_at: string | null;
   idempotency_key: string | null;
+  approved_by: string | null;
+  approved_at: string | null;
+  approval_note: string | null;
 }
 
 export const ACTION_TYPE_LABELS: Record<AgentActionType, string> = {

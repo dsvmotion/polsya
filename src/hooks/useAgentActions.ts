@@ -54,7 +54,10 @@ export function useCreateAgentAction() {
           error_message: input.errorMessage ?? null,
           requested_by: input.requestedBy ?? null,
           idempotency_key: input.idempotencyKey ?? null,
-          completed_at: input.status === 'success' || input.status === 'error'
+          completed_at: input.status && input.status !== 'queued'
+            ? new Date().toISOString()
+            : null,
+          approved_at: input.status && input.status !== 'queued'
             ? new Date().toISOString()
             : null,
         })
@@ -81,11 +84,13 @@ export function useUpdateAgentActionStatus() {
 
   return useMutation({
     mutationFn: async (input: UpdateAgentActionStatusInput) => {
+      const now = new Date().toISOString();
       const updates: Record<string, unknown> = {
         status: input.status,
       };
-      if (input.status === 'success' || input.status === 'error') {
-        updates.completed_at = new Date().toISOString();
+      if (input.status !== 'queued') {
+        updates.completed_at = now;
+        updates.approved_at = now;
       }
       if (input.errorMessage !== undefined) {
         updates.error_message = input.errorMessage;
@@ -94,6 +99,74 @@ export function useUpdateAgentActionStatus() {
       const { data, error } = await supabase
         .from('agent_actions_log')
         .update(updates)
+        .eq('id', input.id)
+        .select()
+        .single();
+
+      if (error) throw new Error(error.message);
+      return data as unknown as AgentActionLog;
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: QUERY_KEY });
+    },
+  });
+}
+
+interface ApproveAgentActionInput {
+  id: string;
+  approvedBy?: string;
+  approvalNote?: string;
+}
+
+export function useApproveAgentAction() {
+  const qc = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (input: ApproveAgentActionInput) => {
+      const now = new Date().toISOString();
+      const { data, error } = await supabase
+        .from('agent_actions_log')
+        .update({
+          status: 'success',
+          approved_by: input.approvedBy ?? 'manual-review',
+          approved_at: now,
+          approval_note: input.approvalNote ?? null,
+          completed_at: now,
+        })
+        .eq('id', input.id)
+        .select()
+        .single();
+
+      if (error) throw new Error(error.message);
+      return data as unknown as AgentActionLog;
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: QUERY_KEY });
+    },
+  });
+}
+
+interface RejectAgentActionInput {
+  id: string;
+  approvedBy?: string;
+  approvalNote?: string;
+}
+
+export function useRejectAgentAction() {
+  const qc = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (input: RejectAgentActionInput) => {
+      const now = new Date().toISOString();
+      const { data, error } = await supabase
+        .from('agent_actions_log')
+        .update({
+          status: 'rejected',
+          approved_by: input.approvedBy ?? 'manual-review',
+          approved_at: now,
+          approval_note: input.approvalNote ?? null,
+          completed_at: now,
+        })
         .eq('id', input.id)
         .select()
         .single();

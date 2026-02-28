@@ -475,6 +475,9 @@ export type Database = {
           created_at: string
           completed_at: string | null
           idempotency_key: string | null
+          approved_by: string | null
+          approved_at: string | null
+          approval_note: string | null
         }
         Insert: {
           id?: string
@@ -489,6 +492,9 @@ export type Database = {
           created_at?: string
           completed_at?: string | null
           idempotency_key?: string | null
+          approved_by?: string | null
+          approved_at?: string | null
+          approval_note?: string | null
         }
         Update: {
           id?: string
@@ -503,6 +509,9 @@ export type Database = {
           created_at?: string
           completed_at?: string | null
           idempotency_key?: string | null
+          approved_by?: string | null
+          approved_at?: string | null
+          approval_note?: string | null
         }
         Relationships: []
       }
