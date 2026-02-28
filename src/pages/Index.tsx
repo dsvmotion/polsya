@@ -13,6 +13,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { UserMenu } from '@/components/auth/UserMenu';
 import { IntegrationsCard } from '@/components/dashboard/IntegrationsCard';
 import { AgentActionsCard } from '@/components/dashboard/AgentActionsCard';
+import { KpiStrip } from '@/components/dashboard/KpiStrip';
 
 const normalizeCountry = (country: string): string => {
   if (!country) return '';
@@ -292,6 +293,9 @@ const Index = () => {
             <UserMenu />
           </div>
         </div>
+
+        {/* KPI Strip */}
+        <KpiStrip />
 
         {/* Stats Grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
