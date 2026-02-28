@@ -201,6 +201,53 @@ export type Database = {
         }
         Relationships: []
       }
+      pharmacy_contacts: {
+        Row: {
+          id: string
+          pharmacy_id: string
+          name: string
+          role: string | null
+          email: string | null
+          phone: string | null
+          is_primary: boolean
+          notes: string | null
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          pharmacy_id: string
+          name: string
+          role?: string | null
+          email?: string | null
+          phone?: string | null
+          is_primary?: boolean
+          notes?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          pharmacy_id?: string
+          name?: string
+          role?: string | null
+          email?: string | null
+          phone?: string | null
+          is_primary?: boolean
+          notes?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "pharmacy_contacts_pharmacy_id_fkey"
+            columns: ["pharmacy_id"]
+            isOneToOne: false
+            referencedRelation: "pharmacies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       pharmacy_order_documents: {
         Row: {
           document_type: string

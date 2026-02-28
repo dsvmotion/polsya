@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { 
   X, MapPin, Phone, Globe, Clock, Copy, Check, 
   ExternalLink, Mail, FileText, Save, ShoppingCart, Package,
-  Building2, ImageIcon
+  Building2, ImageIcon, Users, Plus, Trash2, Star
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
@@ -15,12 +15,210 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Pharmacy, PharmacyStatus, STATUS_LABELS, STATUS_COLORS } from '@/types/pharmacy';
+import { Pharmacy, PharmacyStatus, STATUS_LABELS, STATUS_COLORS, ContactRole, CONTACT_ROLE_LABELS } from '@/types/pharmacy';
 import { useUpdatePharmacy } from '@/hooks/usePharmacies';
 import { usePharmacyPhoto } from '@/hooks/usePharmacyPhoto';
 import { useOrdersByPharmacy } from '@/hooks/useWooCommerceOrders';
+import {
+  usePharmacyContacts,
+  useCreatePharmacyContact,
+  useUpdatePharmacyContact,
+  useDeletePharmacyContact,
+} from '@/hooks/usePharmacyContacts';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
+
+function ContactsSection({ pharmacyId }: { pharmacyId: string }) {
+  const { data: contacts = [], isLoading } = usePharmacyContacts(pharmacyId);
+  const createContact = useCreatePharmacyContact();
+  const updateContact = useUpdatePharmacyContact();
+  const deleteContact = useDeletePharmacyContact();
+
+  const [showForm, setShowForm] = useState(false);
+  const [newName, setNewName] = useState('');
+  const [newRole, setNewRole] = useState<ContactRole | ''>('');
+  const [newEmail, setNewEmail] = useState('');
+  const [newPhone, setNewPhone] = useState('');
+
+  const resetForm = () => {
+    setNewName('');
+    setNewRole('');
+    setNewEmail('');
+    setNewPhone('');
+    setShowForm(false);
+  };
+
+  const handleAdd = async () => {
+    const trimmed = newName.trim();
+    if (!trimmed) {
+      toast.error('Contact name is required');
+      return;
+    }
+    try {
+      await createContact.mutateAsync({
+        pharmacyId,
+        name: trimmed,
+        role: newRole || null,
+        email: newEmail.trim() || null,
+        phone: newPhone.trim() || null,
+        isPrimary: contacts.length === 0,
+      });
+      toast.success('Contact added');
+      resetForm();
+    } catch {
+      toast.error('Failed to add contact');
+    }
+  };
+
+  const handleDelete = async (id: string) => {
+    try {
+      await deleteContact.mutateAsync({ id, pharmacyId });
+      toast.success('Contact deleted');
+    } catch {
+      toast.error('Failed to delete contact');
+    }
+  };
+
+  const handleSetPrimary = async (id: string) => {
+    try {
+      for (const c of contacts) {
+        if (c.is_primary && c.id !== id) {
+          await updateContact.mutateAsync({
+            id: c.id,
+            pharmacyId,
+            updates: { is_primary: false },
+          });
+        }
+      }
+      await updateContact.mutateAsync({
+        id,
+        pharmacyId,
+        updates: { is_primary: true },
+      });
+      toast.success('Primary contact updated');
+    } catch {
+      toast.error('Failed to update primary contact');
+    }
+  };
+
+  return (
+    <div className="space-y-3">
+      <div className="flex items-center justify-between">
+        <h3 className="text-sm font-medium text-gray-500 flex items-center gap-2">
+          <Users className="h-4 w-4" />
+          Contacts ({contacts.length})
+        </h3>
+        {!showForm && (
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => setShowForm(true)}
+            className="h-7 px-2 text-gray-500"
+          >
+            <Plus className="h-3.5 w-3.5 mr-1" />
+            Add
+          </Button>
+        )}
+      </div>
+
+      {showForm && (
+        <div className="p-3 border border-gray-200 rounded-lg bg-gray-50 space-y-2">
+          <Input
+            placeholder="Name *"
+            value={newName}
+            onChange={(e) => setNewName(e.target.value)}
+            className="h-8 text-sm bg-white border-gray-300"
+          />
+          <Select value={newRole} onValueChange={(v) => setNewRole(v as ContactRole)}>
+            <SelectTrigger className="h-8 text-sm bg-white border-gray-300">
+              <SelectValue placeholder="Role (optional)" />
+            </SelectTrigger>
+            <SelectContent className="bg-white border-gray-200">
+              {(Object.keys(CONTACT_ROLE_LABELS) as ContactRole[]).map((r) => (
+                <SelectItem key={r} value={r}>{CONTACT_ROLE_LABELS[r]}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          <Input
+            placeholder="Email"
+            type="email"
+            value={newEmail}
+            onChange={(e) => setNewEmail(e.target.value)}
+            className="h-8 text-sm bg-white border-gray-300"
+          />
+          <Input
+            placeholder="Phone"
+            value={newPhone}
+            onChange={(e) => setNewPhone(e.target.value)}
+            className="h-8 text-sm bg-white border-gray-300"
+          />
+          <div className="flex items-center gap-2 pt-1">
+            <Button size="sm" onClick={handleAdd} disabled={createContact.isPending}>
+              {createContact.isPending ? 'Adding...' : 'Add Contact'}
+            </Button>
+            <Button size="sm" variant="ghost" onClick={resetForm}>Cancel</Button>
+          </div>
+        </div>
+      )}
+
+      {isLoading ? (
+        <p className="text-xs text-gray-400">Loading contacts...</p>
+      ) : contacts.length === 0 && !showForm ? (
+        <p className="text-xs text-gray-400">No contacts yet</p>
+      ) : (
+        <div className="space-y-2">
+          {contacts.map((contact) => (
+            <div
+              key={contact.id}
+              className="flex items-start justify-between gap-2 p-2 rounded border border-gray-100 bg-white"
+            >
+              <div className="min-w-0 flex-1">
+                <div className="flex items-center gap-1.5">
+                  <span className="text-sm font-medium text-gray-900 truncate">{contact.name}</span>
+                  {contact.is_primary && (
+                    <Star className="h-3 w-3 text-yellow-500 fill-yellow-500 shrink-0" />
+                  )}
+                  {contact.role && (
+                    <span className="text-[10px] px-1.5 py-0.5 rounded bg-gray-100 text-gray-600 shrink-0">
+                      {CONTACT_ROLE_LABELS[contact.role] ?? contact.role}
+                    </span>
+                  )}
+                </div>
+                {contact.email && (
+                  <p className="text-xs text-gray-500 truncate">{contact.email}</p>
+                )}
+                {contact.phone && (
+                  <p className="text-xs text-gray-500">{contact.phone}</p>
+                )}
+              </div>
+              <div className="flex items-center gap-0.5 shrink-0">
+                {!contact.is_primary && (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="h-7 px-1.5 text-gray-400 hover:text-yellow-600"
+                    onClick={() => handleSetPrimary(contact.id)}
+                    title="Set as primary"
+                  >
+                    <Star className="h-3.5 w-3.5" />
+                  </Button>
+                )}
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="h-7 px-1.5 text-gray-400 hover:text-red-600"
+                  onClick={() => handleDelete(contact.id)}
+                >
+                  <Trash2 className="h-3.5 w-3.5" />
+                </Button>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
 
 interface PharmacyDetailPanelProps {
   pharmacy: Pharmacy;
@@ -270,6 +468,9 @@ export function PharmacyDetailPanel({ pharmacy, onClose }: PharmacyDetailPanelPr
             </div>
           </div>
         </div>
+
+        {/* Contacts */}
+        <ContactsSection pharmacyId={pharmacy.id} />
 
         {/* Opening Hours */}
         {pharmacy.opening_hours && pharmacy.opening_hours.length > 0 && (

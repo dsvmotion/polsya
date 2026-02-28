@@ -16,7 +16,9 @@ import {
   StickyNote,
   Globe,
   Save,
-  ImageIcon
+  ImageIcon,
+  Users,
+  Star
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -31,7 +33,8 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { PharmacyWithOrders, DetailedOrder, DocumentType, DOCUMENT_TYPE_LABELS } from '@/types/operations';
-import { PharmacyStatus, STATUS_LABELS, STATUS_COLORS } from '@/types/pharmacy';
+import { PharmacyStatus, STATUS_LABELS, STATUS_COLORS, CONTACT_ROLE_LABELS } from '@/types/pharmacy';
+import { usePharmacyContacts } from '@/hooks/usePharmacyContacts';
 import { 
   usePharmacyDocuments, 
   useUploadDocument, 
@@ -451,6 +454,7 @@ export function PharmacyOperationsDetail({ pharmacy, onClose, onStatusUpdate }: 
 
   const updateStatus = useUpdatePharmacyStatus();
   const { photoUrl, isLoading: photoLoading } = usePharmacyPhoto(pharmacy.id);
+  const { data: contacts = [] } = usePharmacyContacts(pharmacy.id);
 
   const handleStatusChange = (newStatus: PharmacyStatus) => {
     setStatus(newStatus);
@@ -577,6 +581,47 @@ export function PharmacyOperationsDetail({ pharmacy, onClose, onStatusUpdate }: 
           </div>
 
           <Separator />
+
+          {/* Contacts (read-only) */}
+          {contacts.length > 0 && (
+            <>
+              <div className="space-y-2">
+                <h3 className="text-xs font-medium text-gray-500 uppercase tracking-wide flex items-center gap-1">
+                  <Users className="h-3.5 w-3.5" />
+                  Contacts ({contacts.length})
+                </h3>
+                <div className="space-y-2">
+                  {contacts.map((contact) => (
+                    <div
+                      key={contact.id}
+                      className="flex items-start gap-2 p-2 rounded border border-gray-100 bg-white text-sm"
+                    >
+                      <div className="min-w-0 flex-1">
+                        <div className="flex items-center gap-1.5">
+                          <span className="font-medium text-gray-900 truncate">{contact.name}</span>
+                          {contact.is_primary && (
+                            <Star className="h-3 w-3 text-yellow-500 fill-yellow-500 shrink-0" />
+                          )}
+                          {contact.role && (
+                            <span className="text-[10px] px-1.5 py-0.5 rounded bg-gray-100 text-gray-600 shrink-0">
+                              {CONTACT_ROLE_LABELS[contact.role as keyof typeof CONTACT_ROLE_LABELS] ?? contact.role}
+                            </span>
+                          )}
+                        </div>
+                        {contact.email && (
+                          <p className="text-xs text-gray-500 truncate">{contact.email}</p>
+                        )}
+                        {contact.phone && (
+                          <p className="text-xs text-gray-500">{contact.phone}</p>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+              <Separator />
+            </>
+          )}
 
           {/* Documents */}
           <DocumentsSection pharmacyId={pharmacy.id} />

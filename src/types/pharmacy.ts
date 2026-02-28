@@ -32,6 +32,28 @@ export interface Pharmacy {
   sub_locality?: string | null;
 }
 
+export type ContactRole = 'owner' | 'buyer' | 'finance' | 'other';
+
+export const CONTACT_ROLE_LABELS: Record<ContactRole, string> = {
+  owner: 'Owner',
+  buyer: 'Buyer',
+  finance: 'Finance',
+  other: 'Other',
+};
+
+export interface PharmacyContact {
+  id: string;
+  pharmacy_id: string;
+  name: string;
+  role: ContactRole | null;
+  email: string | null;
+  phone: string | null;
+  is_primary: boolean;
+  notes: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
 export interface PharmacyFilters {
   city: string;
   province: string;
