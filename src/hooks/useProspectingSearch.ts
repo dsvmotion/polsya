@@ -36,6 +36,32 @@ interface GooglePlaceDetails {
   google_data: Record<string, unknown> | null;
 }
 
+function isAbortError(err: unknown): boolean {
+  return err instanceof Error && (err.name === 'AbortError' || err.name === 'DOMException');
+}
+
+function toUserError(error: unknown, context: string): string {
+  if (isAbortError(error)) return '';
+
+  if (error instanceof Response || (error instanceof Error && 'status' in error)) {
+    const status = (error as Response).status;
+    if (status === 401 || status === 403) return `${context}: authentication expired. Please log in again.`;
+    if (status === 429) return `${context}: too many requests. Please wait a moment and retry.`;
+    if (status >= 500) return `${context}: server error (${status}). Please try again later.`;
+    return `${context}: request failed (${status}).`;
+  }
+
+  if (error instanceof Error) {
+    const msg = error.message;
+    if (/401|403/.test(msg)) return `${context}: authentication expired. Please log in again.`;
+    if (/429/.test(msg)) return `${context}: too many requests. Please wait and retry.`;
+    if (/5\d{2}/.test(msg)) return `${context}: server error. Please try again later.`;
+    if (/fetch|network|ERR_/i.test(msg)) return `${context}: network error. Check your connection.`;
+  }
+
+  return `${context}: unexpected error. Please try again.`;
+}
+
 async function runWithConcurrency<T, R>(
   items: T[],
   limit: number,
@@ -67,14 +93,14 @@ export function useProspectingSearch() {
   const [results, setResults] = useState<Pharmacy[]>([]);
   const [isSearching, setIsSearching] = useState(false);
   const [hasSearched, setHasSearched] = useState(false);
-  const [progress, setProgress] = useState({ found: 0, cached: 0 });
+  const [progress, setProgress] = useState({ found: 0, cached: 0, processed: 0, failed: 0 });
   const [detectedLocation, setDetectedLocation] = useState<{ country: string; province: string } | null>(null);
   const abortRef = useRef<AbortController | null>(null);
 
   const clearResults = useCallback(() => {
     setResults([]);
     setHasSearched(false);
-    setProgress({ found: 0, cached: 0 });
+    setProgress({ found: 0, cached: 0, processed: 0, failed: 0 });
     setDetectedLocation(null);
   }, []);
 
@@ -99,7 +125,7 @@ export function useProspectingSearch() {
     setIsSearching(true);
     setHasSearched(true);
     setResults([]);
-    setProgress({ found: 0, cached: 0 });
+    setProgress({ found: 0, cached: 0, processed: 0, failed: 0 });
     setDetectedLocation(null);
     const { data: { session } } = await supabase.auth.getSession();
 
@@ -162,7 +188,7 @@ export function useProspectingSearch() {
         if (!response.ok) {
           const errorText = await response.text();
           console.error('Google Places search error:', response.status, errorText);
-          throw new Error(`Search failed: ${response.status}`);
+          throw new Error(`Search failed: ${response.status} — ${errorText}`);
         }
 
         const data = await response.json();
@@ -189,9 +215,10 @@ export function useProspectingSearch() {
       // Fetch details and cache each pharmacy with controlled concurrency
       const cachedPharmacies: Pharmacy[] = [];
       let processed = 0;
+      let failed = 0;
 
       const flushProgress = () => {
-        setProgress({ found: allBasicResults.length, cached: cachedPharmacies.length });
+        setProgress({ found: allBasicResults.length, cached: cachedPharmacies.length, processed, failed });
         setResults([...cachedPharmacies]);
       };
 
@@ -228,8 +255,10 @@ export function useProspectingSearch() {
           });
 
           if (!detailsResponse.ok) {
-            console.warn(`Failed to get details for ${basic.google_place_id}`);
+            console.warn(`Failed to get details for ${basic.google_place_id}: ${detailsResponse.status}`);
             processed++;
+            failed++;
+            flushProgress();
             return;
           }
 
@@ -315,6 +344,8 @@ export function useProspectingSearch() {
                 .maybeSingle();
               if (refetched) {
                 cachedPharmacies.push(refetched as Pharmacy);
+              } else {
+                failed++;
               }
             } else if (inserted) {
               cachedPharmacies.push(inserted as Pharmacy);
@@ -324,9 +355,11 @@ export function useProspectingSearch() {
           processed++;
           flushProgress();
         } catch (detailError) {
-          if ((detailError as Error).name === 'AbortError') return;
+          if (isAbortError(detailError)) return;
           console.warn(`Error fetching details for ${basic.google_place_id}:`, detailError);
           processed++;
+          failed++;
+          flushProgress();
         }
       });
 
@@ -344,15 +377,22 @@ export function useProspectingSearch() {
         });
       }
 
-      console.log(`Caching complete: ${cachedPharmacies.length} pharmacies cached`);
-      toast.success(`Found ${cachedPharmacies.length} pharmacies`);
+      console.log(`Caching complete: ${cachedPharmacies.length} pharmacies cached, ${failed} failed`);
+      if (failed > 0 && cachedPharmacies.length > 0) {
+        toast.success(`Found ${cachedPharmacies.length} pharmacies (${failed} failed)`);
+      } else if (cachedPharmacies.length > 0) {
+        toast.success(`Found ${cachedPharmacies.length} pharmacies`);
+      } else if (failed > 0) {
+        toast.error(`All ${failed} pharmacy lookups failed. Please try again.`);
+      }
     } catch (error) {
-      if ((error as Error).name === 'AbortError') {
-        console.log('Search was aborted');
+      if (isAbortError(error)) {
+        console.log('Search was cancelled');
         return;
       }
       console.error('Search error:', error);
-      toast.error('Search failed. Please try again.');
+      const msg = toUserError(error, 'Search');
+      if (msg) toast.error(msg);
     } finally {
       setIsSearching(false);
     }
