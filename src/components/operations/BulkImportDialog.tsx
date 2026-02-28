@@ -87,6 +87,15 @@ function normalizeHeader(h: string): string {
   return h.trim().toLowerCase().replace(/\s+/g, ' ');
 }
 
+function normalizeText(str: string | null | undefined): string {
+  if (!str) return '';
+  return str.trim().toLowerCase().replace(/\s+/g, ' ');
+}
+
+function buildDedupeKey(name: string, city: string | null, address: string | null): string {
+  return `${normalizeText(name)}|${normalizeText(city)}|${normalizeText(address)}`;
+}
+
 function parseCSVLine(line: string, sep: string): string[] {
   const row: string[] = [];
   let current = '';
@@ -154,7 +163,7 @@ export function BulkImportDialog({ defaultClientType, onSuccess }: BulkImportDia
   const [defaultType, setDefaultType] = useState<ClientType>(defaultClientType);
   const [importing, setImporting] = useState(false);
   const [progress, setProgress] = useState({ imported: 0, errors: 0 });
-  const [result, setResult] = useState<{ imported: number; errors: number } | null>(null);
+  const [result, setResult] = useState<{ imported: number; errors: number; skippedDuplicates: number } | null>(null);
 
   const reset = useCallback(() => {
     setFile(null);
@@ -222,6 +231,7 @@ export function BulkImportDialog({ defaultClientType, onSuccess }: BulkImportDia
     setProgress({ imported: 0, errors: 0 });
     let imported = 0;
     let errors = 0;
+    let skippedDuplicates = 0;
     const getVal = (row: string[], key: FieldKey): string => {
       const col = mapping[key];
       if (!col || col === '__skip__') return '';
@@ -231,10 +241,12 @@ export function BulkImportDialog({ defaultClientType, onSuccess }: BulkImportDia
       return (v == null ? '' : String(v)).trim();
     };
 
+    const seenKeys = new Set<string>();
+
     const BATCH = 100;
     for (let i = 0; i < rows.length; i += BATCH) {
       const chunk = rows.slice(i, i + BATCH);
-      const payloads = chunk
+      const payloadsRaw = chunk
         .filter((row) => getVal(row, 'name'))
         .map((row) => {
           const clientTypeRaw = (getVal(row, 'client_type') || getVal(row, 'activity') || getVal(row, 'subsector') || '').toLowerCase();
@@ -268,15 +280,65 @@ export function BulkImportDialog({ defaultClientType, onSuccess }: BulkImportDia
           };
         });
 
-      const { error } = await supabase.from('pharmacies').insert(payloads);
+      // Intra-file dedup: skip rows already seen in previous batches or this batch
+      const uniqueInBatch: typeof payloadsRaw = [];
+      for (const p of payloadsRaw) {
+        const key = buildDedupeKey(p.name, p.city, p.address);
+        if (seenKeys.has(key)) {
+          skippedDuplicates++;
+        } else {
+          seenKeys.add(key);
+          uniqueInBatch.push(p);
+        }
+      }
+
+      if (uniqueInBatch.length === 0) {
+        setProgress({ imported, errors });
+        continue;
+      }
+
+      // DB dedup: check which records already exist by name+city approximate match
+      const uniqueNames = [...new Set(uniqueInBatch.map(p => p.name))];
+      const uniqueCities = [...new Set(uniqueInBatch.map(p => p.city).filter(Boolean))] as string[];
+
+      let dbKeys = new Set<string>();
+      try {
+        let query = supabase.from('pharmacies').select('name, city, address');
+        query = query.in('name', uniqueNames);
+        if (uniqueCities.length > 0) {
+          query = query.in('city', uniqueCities);
+        }
+        const { data: existing } = await query;
+        if (existing) {
+          dbKeys = new Set(existing.map(r => buildDedupeKey(r.name, r.city, r.address)));
+        }
+      } catch {
+        // If DB check fails, proceed without dedup to avoid blocking import
+      }
+
+      const toInsert = uniqueInBatch.filter(p => {
+        const key = buildDedupeKey(p.name, p.city, p.address);
+        if (dbKeys.has(key)) {
+          skippedDuplicates++;
+          return false;
+        }
+        return true;
+      });
+
+      if (toInsert.length === 0) {
+        setProgress({ imported, errors });
+        continue;
+      }
+
+      const { error } = await supabase.from('pharmacies').insert(toInsert);
       if (error) {
-        errors += payloads.length;
+        errors += toInsert.length;
       } else {
-        imported += payloads.length;
+        imported += toInsert.length;
       }
       setProgress({ imported, errors });
     }
-    setResult({ imported, errors });
+    setResult({ imported, errors, skippedDuplicates });
     setImporting(false);
     // saved_at is set per-row in the insert payload — never do a global update here
     if (imported > 0) {
@@ -413,7 +475,8 @@ export function BulkImportDialog({ defaultClientType, onSuccess }: BulkImportDia
 
             {result && (
               <p className="text-sm text-gray-700">
-                Done: {result.imported} imported, {result.errors} errors.
+                Done: {result.imported} imported, {result.errors} errors
+                {result.skippedDuplicates > 0 && `, ${result.skippedDuplicates} duplicates skipped`}.
               </p>
             )}
 
