@@ -96,6 +96,16 @@ function buildDedupeKey(name: string, city: string | null, address: string | nul
   return `${normalizeText(name)}|${normalizeText(city)}|${normalizeText(address)}`;
 }
 
+function sanitizeTextInput(value: string): string | null {
+  let s = value
+    .trim()
+    // eslint-disable-next-line no-control-regex
+    .replace(/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/g, '')
+    .replace(/<[^>]*>/g, '');
+  s = s.trim();
+  return s.length > 0 ? s : null;
+}
+
 function parseCSVLine(line: string, sep: string): string[] {
   const row: string[] = [];
   let current = '';
@@ -259,8 +269,10 @@ export function BulkImportDialog({ defaultClientType, onSuccess }: BulkImportDia
     for (let i = 0; i < rows.length; i += BATCH) {
       const chunk = rows.slice(i, i + BATCH);
       const payloadsRaw = chunk
-        .filter((row) => getVal(row, 'name'))
         .map((row) => {
+          const name = sanitizeTextInput(getVal(row, 'name'));
+          if (!name) return null;
+
           const clientTypeRaw = (getVal(row, 'client_type') || getVal(row, 'activity') || getVal(row, 'subsector') || '').toLowerCase();
           let clientType: ClientType = defaultType;
           if (clientTypeRaw.includes('herbol') || clientTypeRaw.includes('herbor') || clientTypeRaw.includes('erborist')) {
@@ -269,28 +281,29 @@ export function BulkImportDialog({ defaultClientType, onSuccess }: BulkImportDia
             clientType = 'pharmacy';
           }
           return {
-            name: getVal(row, 'name'),
-            address: getVal(row, 'address') || null,
-            postal_code: getVal(row, 'postal_code') || null,
-            city: getVal(row, 'city') || null,
-            sub_locality: getVal(row, 'sub_locality') || null,
-            province: getVal(row, 'province') || null,
-            autonomous_community: getVal(row, 'autonomous_community') || null,
-            country: getVal(row, 'country') || 'Spain',
+            name,
+            address: sanitizeTextInput(getVal(row, 'address')),
+            postal_code: sanitizeTextInput(getVal(row, 'postal_code')),
+            city: sanitizeTextInput(getVal(row, 'city')),
+            sub_locality: sanitizeTextInput(getVal(row, 'sub_locality')),
+            province: sanitizeTextInput(getVal(row, 'province')),
+            autonomous_community: sanitizeTextInput(getVal(row, 'autonomous_community')),
+            country: sanitizeTextInput(getVal(row, 'country')) || 'Spain',
             lat: parseFloat(getVal(row, 'lat')) || 0,
             lng: parseFloat(getVal(row, 'lng')) || 0,
-            phone: getVal(row, 'phone') || null,
-            secondary_phone: getVal(row, 'secondary_phone') || null,
-            email: getVal(row, 'email') || null,
-            website: getVal(row, 'website') || null,
-            activity: getVal(row, 'activity') || null,
-            subsector: getVal(row, 'subsector') || null,
-            legal_form: getVal(row, 'legal_form') || null,
+            phone: sanitizeTextInput(getVal(row, 'phone')),
+            secondary_phone: sanitizeTextInput(getVal(row, 'secondary_phone')),
+            email: sanitizeTextInput(getVal(row, 'email')),
+            website: sanitizeTextInput(getVal(row, 'website')),
+            activity: sanitizeTextInput(getVal(row, 'activity')),
+            subsector: sanitizeTextInput(getVal(row, 'subsector')),
+            legal_form: sanitizeTextInput(getVal(row, 'legal_form')),
             client_type: clientType,
             google_place_id: null,
             saved_at: new Date().toISOString(),
           };
-        });
+        })
+        .filter((p): p is NonNullable<typeof p> => p !== null);
 
       // Intra-file dedup: skip rows already seen in previous batches or this batch
       const uniqueInBatch: typeof payloadsRaw = [];
@@ -383,13 +396,13 @@ export function BulkImportDialog({ defaultClientType, onSuccess }: BulkImportDia
     const candidateKeys: string[] = [];
 
     for (const row of rows) {
-      const name = getVal(row, 'name');
+      const name = sanitizeTextInput(getVal(row, 'name'));
       if (!name) {
         rowsMissingName++;
         continue;
       }
-      const city = getVal(row, 'city') || null;
-      const address = getVal(row, 'address') || null;
+      const city = sanitizeTextInput(getVal(row, 'city'));
+      const address = sanitizeTextInput(getVal(row, 'address'));
       const key = buildDedupeKey(name, city, address);
       if (seenKeys.has(key)) {
         duplicatesInFile++;
