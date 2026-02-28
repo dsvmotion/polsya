@@ -93,6 +93,31 @@ export interface SavedSegment {
   updated_at: string;
 }
 
+export type RiskLevel = 'low' | 'medium' | 'high';
+export type RiskReason = 'no_recent_orders' | 'payment_failures' | 'no_orders_client';
+
+export const RISK_REASON_LABELS: Record<RiskReason, string> = {
+  no_recent_orders: 'No recent orders (60+ days)',
+  payment_failures: 'Last payment failed',
+  no_orders_client: 'Client with no orders',
+};
+
+export interface RiskAlert {
+  pharmacyId: string;
+  pharmacyName: string;
+  riskLevel: RiskLevel;
+  reasons: RiskReason[];
+  lastOrderDate: string | null;
+  daysSinceLastOrder: number | null;
+  lastPaymentStatus: string | null;
+}
+
+export interface RiskSummary {
+  highCount: number;
+  mediumCount: number;
+  totalAtRisk: number;
+}
+
 export interface PharmacyDocument {
   id: string;
   pharmacyId: string;

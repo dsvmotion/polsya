@@ -12,6 +12,7 @@ import { useGeographyOptions } from '@/hooks/useGeographyOptions';
 import { UserMenu } from '@/components/auth/UserMenu';
 import { BulkImportDialog } from '@/components/operations/BulkImportDialog';
 import { PipelineSummaryCards } from '@/components/operations/PipelineSummaryCards';
+import { RiskAlertsCard } from '@/components/operations/RiskAlertsCard';
 import {
   useSavedSegments,
   useCreateSavedSegment,
@@ -259,8 +260,11 @@ export default function PharmacyOperations({ clientType = 'pharmacy' }: Props) {
         </div>
       ) : (
         <>
-          {/* Pipeline Summary */}
-          <PipelineSummaryCards />
+          {/* Pipeline Summary + Risk Alerts */}
+          <div className="grid grid-cols-[1fr_320px] gap-4 px-6 py-4 border-b border-gray-200 bg-gray-50/50">
+            <PipelineSummaryCards />
+            <RiskAlertsCard clientType={clientType} />
+          </div>
 
           {/* Filters */}
           <OperationsFiltersBar

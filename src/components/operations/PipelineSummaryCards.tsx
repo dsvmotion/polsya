@@ -6,7 +6,7 @@ export function PipelineSummaryCards() {
 
   if (isLoading) {
     return (
-      <div className="grid grid-cols-4 gap-4 px-6 py-4 border-b border-gray-200 bg-gray-50/50">
+      <div className="grid grid-cols-2 gap-3">
         {Array.from({ length: 4 }).map((_, i) => (
           <div key={i} className="bg-white border border-gray-200 rounded-lg p-4 animate-pulse">
             <div className="h-3 w-20 bg-gray-200 rounded mb-2" />
@@ -47,7 +47,7 @@ export function PipelineSummaryCards() {
   ];
 
   return (
-    <div className="grid grid-cols-4 gap-4 px-6 py-4 border-b border-gray-200 bg-gray-50/50">
+    <div className="grid grid-cols-2 gap-3">
       {cards.map((card) => (
         <div
           key={card.label}
