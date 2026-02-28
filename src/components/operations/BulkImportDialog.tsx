@@ -149,6 +149,14 @@ function autoDetectMapping(headers: string[]): Partial<Record<FieldKey, string>>
   return mapping;
 }
 
+interface DryRunResult {
+  totalRows: number;
+  rowsMissingName: number;
+  duplicatesInFile: number;
+  duplicatesInDb: number;
+  wouldInsert: number;
+}
+
 interface BulkImportDialogProps {
   defaultClientType: ClientType;
   onSuccess?: () => void;
@@ -164,6 +172,8 @@ export function BulkImportDialog({ defaultClientType, onSuccess }: BulkImportDia
   const [importing, setImporting] = useState(false);
   const [progress, setProgress] = useState({ imported: 0, errors: 0 });
   const [result, setResult] = useState<{ imported: number; errors: number; skippedDuplicates: number } | null>(null);
+  const [isDryRunning, setIsDryRunning] = useState(false);
+  const [dryRunResult, setDryRunResult] = useState<DryRunResult | null>(null);
 
   const reset = useCallback(() => {
     setFile(null);
@@ -172,12 +182,14 @@ export function BulkImportDialog({ defaultClientType, onSuccess }: BulkImportDia
     setMapping({});
     setDefaultType(defaultClientType);
     setResult(null);
+    setDryRunResult(null);
   }, [defaultClientType]);
 
   const handleFile = useCallback(
     (f: File) => {
       setFile(f);
       setResult(null);
+      setDryRunResult(null);
       const ext = f.name.split('.').pop()?.toLowerCase();
       const reader = new FileReader();
       reader.onload = () => {
@@ -346,6 +358,82 @@ export function BulkImportDialog({ defaultClientType, onSuccess }: BulkImportDia
     }
   }, [headers, mapping, rows, defaultType, onSuccess]);
 
+  const handleDryRun = useCallback(async () => {
+    if (!headers.length || !mapping.name || mapping.name === '__skip__') return;
+    setIsDryRunning(true);
+    setDryRunResult(null);
+
+    const getVal = (row: string[], key: FieldKey): string => {
+      const col = mapping[key];
+      if (!col || col === '__skip__') return '';
+      const idx = headers.indexOf(col);
+      if (idx < 0) return '';
+      const v = row[idx];
+      return (v == null ? '' : String(v)).trim();
+    };
+
+    const totalRows = rows.length;
+    let rowsMissingName = 0;
+    let duplicatesInFile = 0;
+    let duplicatesInDb = 0;
+
+    const seenKeys = new Set<string>();
+    const candidateNames: string[] = [];
+    const candidateCities: string[] = [];
+    const candidateKeys: string[] = [];
+
+    for (const row of rows) {
+      const name = getVal(row, 'name');
+      if (!name) {
+        rowsMissingName++;
+        continue;
+      }
+      const city = getVal(row, 'city') || null;
+      const address = getVal(row, 'address') || null;
+      const key = buildDedupeKey(name, city, address);
+      if (seenKeys.has(key)) {
+        duplicatesInFile++;
+      } else {
+        seenKeys.add(key);
+        candidateKeys.push(key);
+        candidateNames.push(name);
+        if (city) candidateCities.push(city);
+      }
+    }
+
+    const uniqueNames = [...new Set(candidateNames)];
+    const uniqueCities = [...new Set(candidateCities)];
+    const dbKeys = new Set<string>();
+
+    const DB_BATCH = 500;
+    try {
+      for (let i = 0; i < uniqueNames.length; i += DB_BATCH) {
+        const nameBatch = uniqueNames.slice(i, i + DB_BATCH);
+        let query = supabase.from('pharmacies').select('name, city, address').in('name', nameBatch);
+        if (uniqueCities.length > 0) {
+          query = query.in('city', uniqueCities);
+        }
+        const { data: existing } = await query;
+        if (existing) {
+          for (const r of existing) {
+            dbKeys.add(buildDedupeKey(r.name, r.city, r.address));
+          }
+        }
+      }
+    } catch {
+      // DB check failed — report 0 DB duplicates rather than blocking
+    }
+
+    for (const key of candidateKeys) {
+      if (dbKeys.has(key)) duplicatesInDb++;
+    }
+
+    const wouldInsert = candidateKeys.length - duplicatesInDb;
+
+    setDryRunResult({ totalRows, rowsMissingName, duplicatesInFile, duplicatesInDb, wouldInsert });
+    setIsDryRunning(false);
+  }, [headers, mapping, rows]);
+
   const previewRows = rows.slice(0, 5);
   const canImport = headers.length > 0 && mapping.name && mapping.name !== '__skip__' && rows.length > 0 && !importing;
 
@@ -427,7 +515,7 @@ export function BulkImportDialog({ defaultClientType, onSuccess }: BulkImportDia
                   </Label>
                   <Select
                     value={mapping[key] ?? '__skip__'}
-                    onValueChange={(v) => setMapping((m) => ({ ...m, [key]: v === '__skip__' ? undefined : v }))}
+                    onValueChange={(v) => { setMapping((m) => ({ ...m, [key]: v === '__skip__' ? undefined : v })); setDryRunResult(null); }}
                   >
                     <SelectTrigger className="flex-1 h-8 bg-white border-gray-300 text-xs">
                       <SelectValue placeholder={required ? 'Select column' : '—'} />
@@ -473,6 +561,22 @@ export function BulkImportDialog({ defaultClientType, onSuccess }: BulkImportDia
               </div>
             </ScrollArea>
 
+            {dryRunResult && (
+              <div className="rounded-md border border-blue-200 bg-blue-50 p-3 text-sm space-y-1">
+                <p className="font-medium text-blue-900">Dry-run summary</p>
+                <div className="grid grid-cols-2 gap-x-4 gap-y-0.5 text-blue-800 text-xs">
+                  <span>Total rows:</span><span className="font-medium">{dryRunResult.totalRows}</span>
+                  <span>Missing name:</span><span className="font-medium">{dryRunResult.rowsMissingName}</span>
+                  <span>Duplicates in file:</span><span className="font-medium">{dryRunResult.duplicatesInFile}</span>
+                  <span>Duplicates in DB:</span><span className="font-medium">{dryRunResult.duplicatesInDb}</span>
+                  <span>Would insert:</span><span className="font-semibold">{dryRunResult.wouldInsert}</span>
+                </div>
+                {dryRunResult.wouldInsert === 0 && (
+                  <p className="text-amber-700 text-xs font-medium mt-1">Nothing to import — all rows are duplicates or missing name.</p>
+                )}
+              </div>
+            )}
+
             {result && (
               <p className="text-sm text-gray-700">
                 Done: {result.imported} imported, {result.errors} errors
@@ -481,14 +585,29 @@ export function BulkImportDialog({ defaultClientType, onSuccess }: BulkImportDia
             )}
 
             <div className="flex items-center justify-end gap-2 pt-2 border-t border-gray-200">
-              {importing && (
+              {(importing || isDryRunning) && (
                 <span className="text-xs text-gray-500">
-                  Importing... {progress.imported + progress.errors}/{rows.length} rows
+                  {isDryRunning ? 'Validating...' : `Importing... ${progress.imported + progress.errors}/${rows.length} rows`}
                 </span>
               )}
               <Button
+                variant="outline"
+                onClick={handleDryRun}
+                disabled={!canImport || isDryRunning}
+                className="border-gray-300"
+              >
+                {isDryRunning ? (
+                  <>
+                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                    Validating…
+                  </>
+                ) : (
+                  'Validate (dry-run)'
+                )}
+              </Button>
+              <Button
                 onClick={handleImport}
-                disabled={!canImport}
+                disabled={!canImport || (dryRunResult !== null && dryRunResult.wouldInsert === 0)}
                 className="bg-gray-900 hover:bg-gray-800 text-white"
               >
                 {importing ? (
