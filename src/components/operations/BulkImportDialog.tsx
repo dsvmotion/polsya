@@ -21,6 +21,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { supabase } from '@/integrations/supabase/client';
 import type { ClientType } from '@/types/pharmacy';
 import { cn } from '@/lib/utils';
+import { normalizeText, sanitizeTextInput, buildDedupeKey } from '@/lib/import-utils';
 
 const FIELDS = [
   { key: 'name', label: 'Name', required: true },
@@ -85,25 +86,6 @@ const AUTO_DETECT: Record<string, FieldKey> = {
 
 function normalizeHeader(h: string): string {
   return h.trim().toLowerCase().replace(/\s+/g, ' ');
-}
-
-function normalizeText(str: string | null | undefined): string {
-  if (!str) return '';
-  return str.trim().toLowerCase().replace(/\s+/g, ' ');
-}
-
-function buildDedupeKey(name: string, city: string | null, address: string | null): string {
-  return `${normalizeText(name)}|${normalizeText(city)}|${normalizeText(address)}`;
-}
-
-function sanitizeTextInput(value: string): string | null {
-  let s = value
-    .trim()
-    // eslint-disable-next-line no-control-regex
-    .replace(/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/g, '')
-    .replace(/<[^>]*>/g, '');
-  s = s.trim();
-  return s.length > 0 ? s : null;
 }
 
 function parseCSVLine(line: string, sep: string): string[] {
