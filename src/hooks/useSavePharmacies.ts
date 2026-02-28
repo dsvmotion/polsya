@@ -72,10 +72,3 @@ export function useSavePharmacies(clientType?: string) {
     },
   });
 }
-
-/**
- * Hook for fetching only saved pharmacies (for Operations view).
- */
-export function useSavedPharmacies() {
-  return useQueryClient();
-}

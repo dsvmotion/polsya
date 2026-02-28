@@ -27,11 +27,6 @@ interface PharmacyDetailPanelProps {
   onClose: () => void;
 }
 
-interface PharmacyDetailPanelProps {
-  pharmacy: Pharmacy;
-  onClose: () => void;
-}
-
 export function PharmacyDetailPanel({ pharmacy, onClose }: PharmacyDetailPanelProps) {
   const [copiedField, setCopiedField] = useState<string | null>(null);
   const [notes, setNotes] = useState(pharmacy.notes || '');
