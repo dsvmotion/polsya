@@ -12,8 +12,16 @@ import {
   ACTION_TYPE_LABELS,
   ACTION_STATUS_COLORS,
   TARGET_TYPE_LABELS,
+  RUN_STATUS_COLORS,
 } from '@/types/agents';
-import type { AgentActionLog } from '@/types/agents';
+import type { AgentActionLog, AgentActionRun } from '@/types/agents';
+import {
+  logRunStart,
+  logRunSuccess,
+  logRunError,
+} from '@/hooks/useAgentActionRuns';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 
@@ -30,77 +38,103 @@ function timeAgo(dateStr: string): string {
 
 interface ActionRowProps {
   action: AgentActionLog;
+  runs: AgentActionRun[];
   onApprove: (id: string) => void;
   onReject: (id: string) => void;
   busyId: string | null;
 }
 
-function ActionRow({ action, onApprove, onReject, busyId }: ActionRowProps) {
+function ActionRow({ action, runs, onApprove, onReject, busyId }: ActionRowProps) {
   const isBusy = busyId === action.id;
 
   return (
-    <div className="flex items-start gap-2 py-2 border-b border-gray-100 last:border-0">
-      <div className="flex-1 min-w-0">
-        <div className="flex items-center gap-1.5">
-          <span className="text-xs font-medium text-gray-700 truncate">
-            {action.agent_name}
+    <div className="py-2 border-b border-gray-100 last:border-0">
+      <div className="flex items-start gap-2">
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center gap-1.5">
+            <span className="text-xs font-medium text-gray-700 truncate">
+              {action.agent_name}
+            </span>
+            <span className="text-gray-300">·</span>
+            <span className="text-xs text-gray-500">
+              {ACTION_TYPE_LABELS[action.action_type] ?? action.action_type}
+            </span>
+            <span className="text-gray-300">→</span>
+            <span className="text-xs text-gray-500">
+              {TARGET_TYPE_LABELS[action.target_type] ?? action.target_type}
+            </span>
+          </div>
+          {action.status === 'error' && action.error_message && (
+            <p className="text-xs text-red-600 mt-0.5 truncate">{action.error_message}</p>
+          )}
+          {action.approved_by && (
+            <p className="text-[10px] text-gray-400 mt-0.5">
+              {action.status === 'rejected' ? 'Rejected' : 'Approved'} by {action.approved_by}
+              {action.approved_at ? ` · ${timeAgo(action.approved_at)}` : ''}
+            </p>
+          )}
+        </div>
+        <div className="flex items-center gap-1.5 shrink-0">
+          {action.status === 'queued' && (
+            <>
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-6 px-1.5 text-green-600 hover:text-green-800 hover:bg-green-50"
+                onClick={() => onApprove(action.id)}
+                disabled={isBusy}
+                title="Approve"
+              >
+                {isBusy ? <Loader2 className="h-3 w-3 animate-spin" /> : <Check className="h-3 w-3" />}
+              </Button>
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-6 px-1.5 text-red-500 hover:text-red-700 hover:bg-red-50"
+                onClick={() => onReject(action.id)}
+                disabled={isBusy}
+                title="Reject"
+              >
+                <X className="h-3 w-3" />
+              </Button>
+            </>
+          )}
+          <span
+            className={cn(
+              'text-[10px] font-medium px-1.5 py-0.5 rounded',
+              ACTION_STATUS_COLORS[action.status] ?? 'bg-gray-100 text-gray-600',
+            )}
+          >
+            {action.status}
           </span>
-          <span className="text-gray-300">·</span>
-          <span className="text-xs text-gray-500">
-            {ACTION_TYPE_LABELS[action.action_type] ?? action.action_type}
-          </span>
-          <span className="text-gray-300">→</span>
-          <span className="text-xs text-gray-500">
-            {TARGET_TYPE_LABELS[action.target_type] ?? action.target_type}
+          <span className="text-[10px] text-gray-400 whitespace-nowrap">
+            {timeAgo(action.created_at)}
           </span>
         </div>
-        {action.status === 'error' && action.error_message && (
-          <p className="text-xs text-red-600 mt-0.5 truncate">{action.error_message}</p>
-        )}
-        {action.approved_by && (
-          <p className="text-[10px] text-gray-400 mt-0.5">
-            {action.status === 'rejected' ? 'Rejected' : 'Approved'} by {action.approved_by}
-            {action.approved_at ? ` · ${timeAgo(action.approved_at)}` : ''}
-          </p>
-        )}
       </div>
-      <div className="flex items-center gap-1.5 shrink-0">
-        {action.status === 'queued' && (
-          <>
-            <Button
-              variant="ghost"
-              size="sm"
-              className="h-6 px-1.5 text-green-600 hover:text-green-800 hover:bg-green-50"
-              onClick={() => onApprove(action.id)}
-              disabled={isBusy}
-              title="Approve"
-            >
-              {isBusy ? <Loader2 className="h-3 w-3 animate-spin" /> : <Check className="h-3 w-3" />}
-            </Button>
-            <Button
-              variant="ghost"
-              size="sm"
-              className="h-6 px-1.5 text-red-500 hover:text-red-700 hover:bg-red-50"
-              onClick={() => onReject(action.id)}
-              disabled={isBusy}
-              title="Reject"
-            >
-              <X className="h-3 w-3" />
-            </Button>
-          </>
-        )}
-        <span
-          className={cn(
-            'text-[10px] font-medium px-1.5 py-0.5 rounded',
-            ACTION_STATUS_COLORS[action.status] ?? 'bg-gray-100 text-gray-600',
-          )}
-        >
-          {action.status}
-        </span>
-        <span className="text-[10px] text-gray-400 whitespace-nowrap">
-          {timeAgo(action.created_at)}
-        </span>
-      </div>
+      {runs.length > 0 && (
+        <div className="mt-1 ml-3 flex flex-col gap-0.5">
+          {runs.slice(0, 2).map((run) => (
+            <div key={run.id} className="flex items-center gap-1.5">
+              <span
+                className={cn(
+                  'text-[9px] font-medium px-1 py-px rounded',
+                  RUN_STATUS_COLORS[run.run_status] ?? 'bg-gray-100 text-gray-500',
+                )}
+              >
+                {run.run_status}
+              </span>
+              {run.operation_summary && (
+                <span className="text-[9px] text-gray-400 truncate max-w-[180px]">{run.operation_summary}</span>
+              )}
+              {run.error_message && (
+                <span className="text-[9px] text-red-500 truncate max-w-[180px]">{run.error_message}</span>
+              )}
+              <span className="text-[9px] text-gray-300">{timeAgo(run.started_at)}</span>
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 }
@@ -112,6 +146,36 @@ export function AgentActionsCard() {
   const rejectAction = useRejectAgentAction();
   const [isSimulating, setIsSimulating] = useState(false);
   const [busyActionId, setBusyActionId] = useState<string | null>(null);
+  const qc = useQueryClient();
+
+  const actionIds = actions.map((a) => a.id);
+  const runsQueryKey = ['agent-action-runs-bulk', actionIds.join(',')];
+
+  const { data: allRuns = [] } = useQuery<AgentActionRun[]>({
+    queryKey: runsQueryKey,
+    enabled: actionIds.length > 0,
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('agent_action_runs')
+        .select('*')
+        .in('action_id', actionIds)
+        .order('started_at', { ascending: false });
+      if (error) throw new Error(error.message);
+      return (data ?? []) as unknown as AgentActionRun[];
+    },
+  });
+
+  const runsPerAction: Record<string, AgentActionRun[]> = {};
+  for (const id of actionIds) runsPerAction[id] = [];
+  for (const run of allRuns) {
+    if (runsPerAction[run.action_id]) {
+      runsPerAction[run.action_id].push(run);
+    }
+  }
+
+  const invalidateRuns = () => {
+    qc.invalidateQueries({ queryKey: ['agent-action-runs-bulk'] });
+  };
 
   const handleSimulate = async () => {
     setIsSimulating(true);
@@ -148,14 +212,22 @@ export function AgentActionsCard() {
 
   const handleApprove = async (id: string) => {
     setBusyActionId(id);
+    let runId: string | null = null;
     try {
+      runId = await logRunStart(id);
       await approveAction.mutateAsync({
         id,
         approvedBy: 'manual-review',
         approvalNote: 'Reviewed from dashboard',
       });
+      await logRunSuccess(runId, 'Approved from dashboard');
+      invalidateRuns();
       toast.success('Action approved');
-    } catch {
+    } catch (err) {
+      if (runId) {
+        try { await logRunError(runId, err instanceof Error ? err.message : 'Unknown error'); } catch { /* best-effort */ }
+        invalidateRuns();
+      }
       toast.error('Failed to approve action');
     } finally {
       setBusyActionId(null);
@@ -164,14 +236,22 @@ export function AgentActionsCard() {
 
   const handleReject = async (id: string) => {
     setBusyActionId(id);
+    let runId: string | null = null;
     try {
+      runId = await logRunStart(id);
       await rejectAction.mutateAsync({
         id,
         approvedBy: 'manual-review',
         approvalNote: 'Reviewed from dashboard',
       });
+      await logRunSuccess(runId, 'Rejected from dashboard');
+      invalidateRuns();
       toast.success('Action rejected');
-    } catch {
+    } catch (err) {
+      if (runId) {
+        try { await logRunError(runId, err instanceof Error ? err.message : 'Unknown error'); } catch { /* best-effort */ }
+        invalidateRuns();
+      }
       toast.error('Failed to reject action');
     } finally {
       setBusyActionId(null);
@@ -233,6 +313,7 @@ export function AgentActionsCard() {
               <ActionRow
                 key={action.id}
                 action={action}
+                runs={runsPerAction[action.id] ?? []}
                 onApprove={handleApprove}
                 onReject={handleReject}
                 busyId={busyActionId}

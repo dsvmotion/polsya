@@ -54,3 +54,24 @@ export const TARGET_TYPE_LABELS: Record<AgentTargetType, string> = {
   activity: 'Activity',
   integration: 'Integration',
 };
+
+export type AgentActionRunStatus = 'started' | 'success' | 'error' | 'rolled_back';
+
+export interface AgentActionRun {
+  id: string;
+  action_id: string;
+  run_status: AgentActionRunStatus;
+  started_at: string;
+  finished_at: string | null;
+  operation_summary: string | null;
+  error_message: string | null;
+  rollback_summary: string | null;
+  created_at: string;
+}
+
+export const RUN_STATUS_COLORS: Record<AgentActionRunStatus, string> = {
+  started: 'bg-blue-100 text-blue-700',
+  success: 'bg-green-100 text-green-800',
+  error: 'bg-red-100 text-red-800',
+  rolled_back: 'bg-orange-100 text-orange-700',
+};

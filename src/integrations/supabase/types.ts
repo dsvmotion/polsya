@@ -515,6 +515,50 @@ export type Database = {
         }
         Relationships: []
       }
+      agent_action_runs: {
+        Row: {
+          id: string
+          action_id: string
+          run_status: string
+          started_at: string
+          finished_at: string | null
+          operation_summary: string | null
+          error_message: string | null
+          rollback_summary: string | null
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          action_id: string
+          run_status: string
+          started_at?: string
+          finished_at?: string | null
+          operation_summary?: string | null
+          error_message?: string | null
+          rollback_summary?: string | null
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          action_id?: string
+          run_status?: string
+          started_at?: string
+          finished_at?: string | null
+          operation_summary?: string | null
+          error_message?: string | null
+          rollback_summary?: string | null
+          created_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "agent_action_runs_action_id_fkey"
+            columns: ["action_id"]
+            isOneToOne: false
+            referencedRelation: "agent_actions_log"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       pharmacy_order_documents: {
         Row: {
           document_type: string
