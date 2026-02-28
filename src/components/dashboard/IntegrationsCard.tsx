@@ -1,5 +1,5 @@
 import { useState, useMemo } from 'react';
-import { Plug, Plus, Trash2 } from 'lucide-react';
+import { Plug, Plus, Trash2, RotateCw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import {
@@ -15,16 +15,146 @@ import {
   useDeleteIntegration,
   useToggleIntegrationEnabled,
 } from '@/hooks/useIntegrations';
+import { useIntegrationRuns, useLogManualSync } from '@/hooks/useIntegrationRuns';
 import {
   IntegrationProvider,
+  IntegrationConnection,
   PROVIDER_LABELS,
   PROVIDER_ICONS,
   STATUS_COLORS,
+  SYNC_RUN_STATUS_COLORS,
 } from '@/types/integrations';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 
 const PROVIDERS = Object.keys(PROVIDER_LABELS) as IntegrationProvider[];
+
+function timeAgo(dateStr: string): string {
+  const diff = Date.now() - new Date(dateStr).getTime();
+  const mins = Math.floor(diff / 60_000);
+  if (mins < 1) return 'just now';
+  if (mins < 60) return `${mins}m ago`;
+  const hrs = Math.floor(mins / 60);
+  if (hrs < 24) return `${hrs}h ago`;
+  const days = Math.floor(hrs / 24);
+  return `${days}d ago`;
+}
+
+function IntegrationRow({
+  intg,
+  onDelete,
+  onToggle,
+}: {
+  intg: IntegrationConnection;
+  onDelete: (id: string) => void;
+  onToggle: (id: string, current: boolean) => void;
+}) {
+  const { data: runs = [] } = useIntegrationRuns(intg.id, 3);
+  const logSync = useLogManualSync();
+
+  const lastRun = runs[0] ?? null;
+  const statusColor = STATUS_COLORS[intg.status];
+
+  const handleLogSync = async () => {
+    try {
+      await logSync.mutateAsync(intg.id);
+      toast.success('Manual sync logged');
+    } catch {
+      toast.error('Failed to log sync');
+    }
+  };
+
+  return (
+    <div className="px-2 py-2 rounded border border-gray-100 bg-white space-y-1">
+      <div className="flex items-center justify-between gap-2">
+        <div className="flex items-center gap-2 min-w-0 flex-1">
+          <span className="text-sm shrink-0">{PROVIDER_ICONS[intg.provider]}</span>
+          <span className="text-sm text-gray-900 truncate">{intg.display_name}</span>
+          <span className={cn('text-[10px] px-1.5 py-0.5 rounded font-medium shrink-0', statusColor.bg, statusColor.text)}>
+            {intg.status}
+          </span>
+        </div>
+        <div className="flex items-center gap-1 shrink-0">
+          <Button
+            variant="ghost"
+            size="sm"
+            className="h-7 px-1.5 text-gray-400 hover:text-blue-600"
+            onClick={handleLogSync}
+            disabled={logSync.isPending}
+            title="Log manual sync"
+          >
+            <RotateCw className={cn('h-3.5 w-3.5', logSync.isPending && 'animate-spin')} />
+          </Button>
+          <button
+            type="button"
+            onClick={() => onToggle(intg.id, intg.is_enabled)}
+            className={cn(
+              'relative inline-flex h-5 w-9 items-center rounded-full transition-colors',
+              intg.is_enabled ? 'bg-green-500' : 'bg-gray-300'
+            )}
+            title={intg.is_enabled ? 'Disable' : 'Enable'}
+          >
+            <span
+              className={cn(
+                'inline-block h-3.5 w-3.5 rounded-full bg-white transition-transform',
+                intg.is_enabled ? 'translate-x-4' : 'translate-x-0.5'
+              )}
+            />
+          </button>
+          <Button
+            variant="ghost"
+            size="sm"
+            className="h-7 px-1.5 text-gray-400 hover:text-red-600"
+            onClick={() => onDelete(intg.id)}
+          >
+            <Trash2 className="h-3.5 w-3.5" />
+          </Button>
+        </div>
+      </div>
+
+      {/* Last sync info + mini run history */}
+      <div className="flex items-center gap-3 pl-6 text-[10px] text-gray-400">
+        {lastRun ? (
+          <>
+            <span className="flex items-center gap-1">
+              last sync:
+              <span className={cn('px-1 py-0.5 rounded font-medium', SYNC_RUN_STATUS_COLORS[lastRun.status].bg, SYNC_RUN_STATUS_COLORS[lastRun.status].text)}>
+                {lastRun.status}
+              </span>
+            </span>
+            <span>{timeAgo(lastRun.started_at)}</span>
+            {lastRun.records_processed > 0 && (
+              <span>{lastRun.records_processed} processed</span>
+            )}
+            {lastRun.records_failed > 0 && (
+              <span className="text-red-500">{lastRun.records_failed} failed</span>
+            )}
+          </>
+        ) : (
+          <span>no syncs yet</span>
+        )}
+      </div>
+
+      {/* Mini run history (remaining runs beyond the first) */}
+      {runs.length > 1 && (
+        <div className="flex items-center gap-1.5 pl-6">
+          {runs.slice(1).map((run) => {
+            const rc = SYNC_RUN_STATUS_COLORS[run.status];
+            return (
+              <span
+                key={run.id}
+                className={cn('text-[9px] px-1 py-0.5 rounded', rc.bg, rc.text)}
+                title={`${run.run_type} — ${run.status} — ${new Date(run.started_at).toLocaleString()}`}
+              >
+                {run.status === 'success' ? '✓' : run.status === 'error' ? '✗' : '…'}
+              </span>
+            );
+          })}
+        </div>
+      )}
+    </div>
+  );
+}
 
 export function IntegrationsCard() {
   const { data: integrations = [], isLoading } = useIntegrations();
@@ -158,49 +288,14 @@ export function IntegrationsCard() {
         <p className="text-xs text-gray-400">No integrations configured</p>
       ) : (
         <div className="space-y-1.5">
-          {integrations.map((intg) => {
-            const statusColor = STATUS_COLORS[intg.status];
-            return (
-              <div
-                key={intg.id}
-                className="flex items-center justify-between gap-2 px-2 py-1.5 rounded border border-gray-100 bg-white"
-              >
-                <div className="flex items-center gap-2 min-w-0 flex-1">
-                  <span className="text-sm shrink-0">{PROVIDER_ICONS[intg.provider]}</span>
-                  <span className="text-sm text-gray-900 truncate">{intg.display_name}</span>
-                  <span className={cn('text-[10px] px-1.5 py-0.5 rounded font-medium shrink-0', statusColor.bg, statusColor.text)}>
-                    {intg.status}
-                  </span>
-                </div>
-                <div className="flex items-center gap-1 shrink-0">
-                  <button
-                    type="button"
-                    onClick={() => handleToggle(intg.id, intg.is_enabled)}
-                    className={cn(
-                      'relative inline-flex h-5 w-9 items-center rounded-full transition-colors',
-                      intg.is_enabled ? 'bg-green-500' : 'bg-gray-300'
-                    )}
-                    title={intg.is_enabled ? 'Disable' : 'Enable'}
-                  >
-                    <span
-                      className={cn(
-                        'inline-block h-3.5 w-3.5 rounded-full bg-white transition-transform',
-                        intg.is_enabled ? 'translate-x-4' : 'translate-x-0.5'
-                      )}
-                    />
-                  </button>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="h-7 px-1.5 text-gray-400 hover:text-red-600"
-                    onClick={() => handleDelete(intg.id)}
-                  >
-                    <Trash2 className="h-3.5 w-3.5" />
-                  </Button>
-                </div>
-              </div>
-            );
-          })}
+          {integrations.map((intg) => (
+            <IntegrationRow
+              key={intg.id}
+              intg={intg}
+              onDelete={handleDelete}
+              onToggle={handleToggle}
+            />
+          ))}
         </div>
       )}
     </div>

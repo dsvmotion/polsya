@@ -47,3 +47,26 @@ export const STATUS_COLORS: Record<IntegrationStatus, { bg: string; text: string
   disconnected: { bg: 'bg-gray-100', text: 'text-gray-600', dot: 'bg-gray-400' },
   error: { bg: 'bg-red-100', text: 'text-red-700', dot: 'bg-red-500' },
 };
+
+export type SyncRunType = 'manual' | 'scheduled' | 'webhook';
+
+export type SyncRunStatus = 'running' | 'success' | 'error';
+
+export interface IntegrationSyncRun {
+  id: string;
+  integration_id: string;
+  run_type: SyncRunType;
+  status: SyncRunStatus;
+  started_at: string;
+  finished_at: string | null;
+  records_processed: number;
+  records_failed: number;
+  error_message: string | null;
+  created_at: string;
+}
+
+export const SYNC_RUN_STATUS_COLORS: Record<SyncRunStatus, { bg: string; text: string }> = {
+  running: { bg: 'bg-blue-100', text: 'text-blue-700' },
+  success: { bg: 'bg-green-100', text: 'text-green-700' },
+  error: { bg: 'bg-red-100', text: 'text-red-700' },
+};

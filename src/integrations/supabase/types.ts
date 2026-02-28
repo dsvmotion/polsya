@@ -240,6 +240,53 @@ export type Database = {
         }
         Relationships: []
       }
+      integration_sync_runs: {
+        Row: {
+          id: string
+          integration_id: string
+          run_type: string
+          status: string
+          started_at: string
+          finished_at: string | null
+          records_processed: number
+          records_failed: number
+          error_message: string | null
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          integration_id: string
+          run_type: string
+          status: string
+          started_at?: string
+          finished_at?: string | null
+          records_processed?: number
+          records_failed?: number
+          error_message?: string | null
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          integration_id?: string
+          run_type?: string
+          status?: string
+          started_at?: string
+          finished_at?: string | null
+          records_processed?: number
+          records_failed?: number
+          error_message?: string | null
+          created_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "integration_sync_runs_integration_id_fkey"
+            columns: ["integration_id"]
+            isOneToOne: false
+            referencedRelation: "integration_connections"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       pharmacy_activities: {
         Row: {
           id: string
