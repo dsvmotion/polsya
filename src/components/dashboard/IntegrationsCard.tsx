@@ -16,7 +16,8 @@ import {
   useDeleteIntegration,
   useToggleIntegrationEnabled,
 } from '@/hooks/useIntegrations';
-import { useIntegrationRuns, useLogManualSync } from '@/hooks/useIntegrationRuns';
+import { useIntegrationRuns, useCreateIntegrationRun } from '@/hooks/useIntegrationRuns';
+import { useIntegrationJobs, useEnqueueIntegrationJob, createJobIdempotencyKey } from '@/hooks/useIntegrationJobs';
 import {
   IntegrationProvider,
   IntegrationConnection,
@@ -24,6 +25,7 @@ import {
   PROVIDER_ICONS,
   STATUS_COLORS,
   SYNC_RUN_STATUS_COLORS,
+  INTEGRATION_JOB_STATUS_COLORS,
 } from '@/types/integrations';
 import {
   PROVIDER_METADATA_SCHEMA,
@@ -93,7 +95,9 @@ function IntegrationRow({
   onToggle: (id: string, current: boolean) => void;
 }) {
   const { data: runs = [] } = useIntegrationRuns(intg.id, 3);
-  const logSync = useLogManualSync();
+  const { data: jobs = [] } = useIntegrationJobs(intg.id, 1);
+  const enqueueJob = useEnqueueIntegrationJob();
+  const createRun = useCreateIntegrationRun();
   const updateIntegration = useUpdateIntegration();
 
   const [editing, setEditing] = useState(false);
@@ -101,15 +105,29 @@ function IntegrationRow({
   const [editErrors, setEditErrors] = useState<Record<string, string>>({});
 
   const lastRun = runs[0] ?? null;
+  const latestJob = jobs[0] ?? null;
   const statusColor = STATUS_COLORS[intg.status];
   const schema = PROVIDER_METADATA_SCHEMA[intg.provider];
+  const isSyncing = enqueueJob.isPending || createRun.isPending;
 
-  const handleLogSync = async () => {
+  const handleQueueSync = async () => {
     try {
-      await logSync.mutateAsync(intg.id);
-      toast.success('Manual sync logged');
+      const idempotencyKey = createJobIdempotencyKey(intg.id, 'manual');
+      await enqueueJob.mutateAsync({
+        integrationId: intg.id,
+        provider: intg.provider,
+        jobType: 'manual',
+        requestedBy: 'dashboard',
+        idempotencyKey,
+      });
+      await createRun.mutateAsync({
+        integrationId: intg.id,
+        runType: 'manual',
+        status: 'running',
+      });
+      toast.success('Sync job queued');
     } catch {
-      toast.error('Failed to log sync');
+      toast.error('Failed to queue sync');
     }
   };
 
@@ -166,11 +184,11 @@ function IntegrationRow({
             variant="ghost"
             size="sm"
             className="h-7 px-1.5 text-gray-400 hover:text-blue-600"
-            onClick={handleLogSync}
-            disabled={logSync.isPending}
-            title="Log manual sync"
+            onClick={handleQueueSync}
+            disabled={isSyncing}
+            title="Queue sync"
           >
-            <RotateCw className={cn('h-3.5 w-3.5', logSync.isPending && 'animate-spin')} />
+            <RotateCw className={cn('h-3.5 w-3.5', isSyncing && 'animate-spin')} />
           </Button>
           {schema.length > 0 && (
             <Button
@@ -233,6 +251,17 @@ function IntegrationRow({
             </Button>
             <Button size="sm" variant="ghost" onClick={() => setEditing(false)}>Cancel</Button>
           </div>
+        </div>
+      )}
+
+      {/* Latest job status */}
+      {latestJob && (latestJob.status === 'queued' || latestJob.status === 'running') && (
+        <div className="flex items-center gap-1.5 pl-6 text-[10px] text-gray-400">
+          <span>job:</span>
+          <span className={cn('px-1 py-0.5 rounded font-medium', INTEGRATION_JOB_STATUS_COLORS[latestJob.status].bg, INTEGRATION_JOB_STATUS_COLORS[latestJob.status].text)}>
+            {latestJob.status}
+          </span>
+          <span>{timeAgo(latestJob.created_at)}</span>
         </div>
       )}
 

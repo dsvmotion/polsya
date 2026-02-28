@@ -121,6 +121,7 @@ export type Database = {
           country: string | null
           created_at: string
           email: string | null
+          entity_type_id: string | null
           google_data: Json | null
           google_place_id: string | null
           id: string
@@ -150,6 +151,7 @@ export type Database = {
           country?: string | null
           created_at?: string
           email?: string | null
+          entity_type_id?: string | null
           google_data?: Json | null
           google_place_id?: string | null
           id?: string
@@ -179,6 +181,7 @@ export type Database = {
           country?: string | null
           created_at?: string
           email?: string | null
+          entity_type_id?: string | null
           google_data?: Json | null
           google_place_id?: string | null
           id?: string
@@ -198,6 +201,47 @@ export type Database = {
           activity?: string | null
           updated_at?: string
           website?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "pharmacies_entity_type_id_fkey"
+            columns: ["entity_type_id"]
+            isOneToOne: false
+            referencedRelation: "entity_types"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      entity_types: {
+        Row: {
+          color: string | null
+          created_at: string
+          id: string
+          is_default: boolean
+          key: string
+          label: string
+          organization_id: string | null
+          updated_at: string
+        }
+        Insert: {
+          color?: string | null
+          created_at?: string
+          id?: string
+          is_default?: boolean
+          key: string
+          label: string
+          organization_id?: string | null
+          updated_at?: string
+        }
+        Update: {
+          color?: string | null
+          created_at?: string
+          id?: string
+          is_default?: boolean
+          key?: string
+          label?: string
+          organization_id?: string | null
+          updated_at?: string
         }
         Relationships: []
       }
@@ -239,6 +283,59 @@ export type Database = {
           updated_at?: string
         }
         Relationships: []
+      }
+      integration_sync_jobs: {
+        Row: {
+          id: string
+          integration_id: string
+          provider: string
+          job_type: string
+          status: string
+          payload: Json
+          requested_by: string | null
+          idempotency_key: string | null
+          error_message: string | null
+          created_at: string
+          started_at: string | null
+          finished_at: string | null
+        }
+        Insert: {
+          id?: string
+          integration_id: string
+          provider: string
+          job_type: string
+          status?: string
+          payload?: Json
+          requested_by?: string | null
+          idempotency_key?: string | null
+          error_message?: string | null
+          created_at?: string
+          started_at?: string | null
+          finished_at?: string | null
+        }
+        Update: {
+          id?: string
+          integration_id?: string
+          provider?: string
+          job_type?: string
+          status?: string
+          payload?: Json
+          requested_by?: string | null
+          idempotency_key?: string | null
+          error_message?: string | null
+          created_at?: string
+          started_at?: string | null
+          finished_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "integration_sync_jobs_integration_id_fkey"
+            columns: ["integration_id"]
+            isOneToOne: false
+            referencedRelation: "integration_connections"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       integration_sync_runs: {
         Row: {

@@ -90,3 +90,30 @@ export const SYNC_RUN_STATUS_COLORS: Record<SyncRunStatus, { bg: string; text: s
   success: { bg: 'bg-green-100', text: 'text-green-700' },
   error: { bg: 'bg-red-100', text: 'text-red-700' },
 };
+
+export type IntegrationJobType = 'manual' | 'scheduled' | 'webhook';
+
+export type IntegrationJobStatus = 'queued' | 'running' | 'success' | 'error' | 'cancelled';
+
+export interface IntegrationSyncJob {
+  id: string;
+  integration_id: string;
+  provider: string;
+  job_type: IntegrationJobType;
+  status: IntegrationJobStatus;
+  payload: Record<string, unknown>;
+  requested_by: string | null;
+  idempotency_key: string | null;
+  error_message: string | null;
+  created_at: string;
+  started_at: string | null;
+  finished_at: string | null;
+}
+
+export const INTEGRATION_JOB_STATUS_COLORS: Record<IntegrationJobStatus, { bg: string; text: string }> = {
+  queued: { bg: 'bg-yellow-100', text: 'text-yellow-700' },
+  running: { bg: 'bg-blue-100', text: 'text-blue-700' },
+  success: { bg: 'bg-green-100', text: 'text-green-700' },
+  error: { bg: 'bg-red-100', text: 'text-red-700' },
+  cancelled: { bg: 'bg-gray-100', text: 'text-gray-600' },
+};
