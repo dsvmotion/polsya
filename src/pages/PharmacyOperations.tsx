@@ -24,6 +24,7 @@ import {
 import { useCreatePharmacyActivity } from '@/hooks/usePharmacyActivities';
 import { toast } from 'sonner';
 import type { ClientType } from '@/types/pharmacy';
+import { useEntityTypes, resolveEntityTypeLabel } from '@/hooks/useEntityTypes';
 
 interface Props {
   clientType?: ClientType;
@@ -53,6 +54,7 @@ export default function PharmacyOperations({ clientType = 'pharmacy' }: Props) {
   const [smartSegment, setSmartSegment] = useState<SmartSegmentKey>('none');
 
   const { data: segments = [] } = useSavedSegments('operations');
+  const { data: entityTypes = [] } = useEntityTypes();
   const createSegment = useCreateSavedSegment();
   const deleteSegment = useDeleteSavedSegment();
   const toggleFavorite = useToggleFavoriteSegment();
@@ -130,6 +132,14 @@ export default function PharmacyOperations({ clientType = 'pharmacy' }: Props) {
   );
 
   const smartSegmentCounts = useSmartSegmentCounts(displayedPharmacies);
+  const entityLabelSingular = resolveEntityTypeLabel(
+    clientType,
+    entityTypes,
+    clientType === 'pharmacy' ? 'Pharmacy' : 'Herbalist',
+  );
+  const entityLabelPlural = entityLabelSingular.toLowerCase().endsWith('s')
+    ? entityLabelSingular
+    : `${entityLabelSingular}s`;
 
   const handleSmartSegmentChange = useCallback((key: SmartSegmentKey) => {
     setSmartSegment(key);
@@ -270,22 +280,22 @@ export default function PharmacyOperations({ clientType = 'pharmacy' }: Props) {
               <Leaf className="h-5 w-5 text-gray-700" />
             )}
             <h1 className="font-semibold text-lg">
-              {clientType === 'pharmacy' ? 'Saved Pharmacies' : 'Saved Herbalists'}
+              {`Saved ${entityLabelPlural}`}
             </h1>
           </div>
           {!showEmptyState && (
             <span className="text-xs text-gray-500 bg-gray-100 px-2 py-0.5 rounded">
-              {totalCount} {clientType === 'pharmacy' ? 'pharmacies' : 'herbalists'}
+              {totalCount} {entityLabelPlural.toLowerCase()}
             </span>
           )}
         </div>
 
         <div className="flex items-center gap-2">
           <BulkImportDialog defaultClientType={clientType} onSuccess={handleRefresh} />
-          <Link to={clientType === 'pharmacy' ? '/prospecting' : '/prospecting/herbalists'}>
+          <Link to={clientType === 'pharmacy' ? '/prospecting/entities' : '/prospecting/entities/herbalists'}>
             <Button variant="outline" size="sm" className="border-gray-300">
               <MapPin className="h-4 w-4 mr-2" />
-              {clientType === 'pharmacy' ? 'Search Pharmacies' : 'Search Herbalists'}
+              {`Search ${entityLabelPlural}`}
             </Button>
           </Link>
           <Button
@@ -313,17 +323,15 @@ export default function PharmacyOperations({ clientType = 'pharmacy' }: Props) {
             )}
           </div>
           <h2 className="text-xl font-semibold text-gray-900 mb-2">
-            {clientType === 'pharmacy' ? 'No Saved Pharmacies' : 'No Saved Herbalists'}
+            {`No Saved ${entityLabelPlural}`}
           </h2>
           <p className="text-gray-500 text-center max-w-md mb-6">
-            {clientType === 'pharmacy'
-              ? "You haven't saved any pharmacies yet. Use Search Pharmacies Map to discover pharmacies and save them here for management."
-              : "You haven't saved any herbalists yet. Use Search Herbalists Map to discover herbalists and save them here for management."}
+            {`You haven't saved any ${entityLabelPlural.toLowerCase()} yet. Use Search ${entityLabelPlural} to discover and save them here for management.`}
           </p>
-          <Link to={clientType === 'pharmacy' ? '/prospecting' : '/prospecting/herbalists'}>
+          <Link to={clientType === 'pharmacy' ? '/prospecting/entities' : '/prospecting/entities/herbalists'}>
             <Button className="bg-primary hover:bg-primary/90">
               <Search className="h-4 w-4 mr-2" />
-              {clientType === 'pharmacy' ? 'Go to Search Pharmacies' : 'Go to Search Herbalists'}
+              {`Go to Search ${entityLabelPlural}`}
             </Button>
           </Link>
         </div>

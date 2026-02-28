@@ -3,7 +3,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
 import { PageLoader } from "@/components/ui/page-loader";
@@ -37,26 +37,36 @@ const App = () => (
                   <Index />
                 </ProtectedRoute>
               } />
-              <Route path="/prospecting" element={
+
+              {/* Canonical entity routes */}
+              <Route path="/prospecting/entities" element={
                 <ProtectedRoute>
                   <PharmacyProspecting />
                 </ProtectedRoute>
               } />
-              <Route path="/prospecting/herbalists" element={
+              <Route path="/prospecting/entities/herbalists" element={
                 <ProtectedRoute>
                   <PharmacyProspecting clientType="herbalist" />
                 </ProtectedRoute>
               } />
-              <Route path="/operations" element={
+
+              <Route path="/operations/entities" element={
                 <ProtectedRoute>
                   <PharmacyOperations />
                 </ProtectedRoute>
               } />
-              <Route path="/operations/herbalists" element={
+              <Route path="/operations/entities/herbalists" element={
                 <ProtectedRoute>
                   <PharmacyOperations clientType="herbalist" />
                 </ProtectedRoute>
               } />
+
+              {/* Legacy route redirects */}
+              <Route path="/prospecting" element={<Navigate to="/prospecting/entities" replace />} />
+              <Route path="/prospecting/herbalists" element={<Navigate to="/prospecting/entities/herbalists" replace />} />
+              <Route path="/operations" element={<Navigate to="/operations/entities" replace />} />
+              <Route path="/operations/herbalists" element={<Navigate to="/operations/entities/herbalists" replace />} />
+
               <Route path="/profile" element={
                 <ProtectedRoute>
                   <Profile />

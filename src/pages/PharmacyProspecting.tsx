@@ -10,6 +10,7 @@ import { useProspectingSearch } from '@/hooks/useProspectingSearch';
 import { useSavePharmacies } from '@/hooks/useSavePharmacies';
 import { Pharmacy, PharmacyFilters as Filters, type ClientType } from '@/types/pharmacy';
 import { UserMenu } from '@/components/auth/UserMenu';
+import { useEntityTypes, resolveEntityTypeLabel } from '@/hooks/useEntityTypes';
 
 interface Props {
   clientType?: ClientType;
@@ -24,14 +25,24 @@ const initialFilters: Filters = {
 };
 
 export default function PharmacyProspecting({ clientType = 'pharmacy' }: Props) {
+  const { data: entityTypes = [] } = useEntityTypes();
+  const singularLabel = resolveEntityTypeLabel(
+    clientType,
+    entityTypes,
+    clientType === 'herbalist' ? 'Herbalist' : 'Pharmacy',
+  );
+  const pluralLabel = singularLabel.toLowerCase().endsWith('s')
+    ? singularLabel
+    : `${singularLabel}s`;
+
   const labels = useMemo(() => ({
-    singular: clientType === 'herbalist' ? 'herbalist' : 'pharmacy',
-    plural: clientType === 'herbalist' ? 'herbalists' : 'pharmacies',
-    sidebarTitle: clientType === 'herbalist' ? 'Herbalists' : 'Pharmacies',
-    searchButton: clientType === 'herbalist' ? 'Search Herbalists' : 'Search Pharmacies',
-    noFound: clientType === 'herbalist' ? 'No herbalists found' : 'No pharmacies found',
-    foundCount: (n: number) => clientType === 'herbalist' ? `Found ${n} herbalists` : `Found ${n} pharmacies`,
-  }), [clientType]);
+    singular: singularLabel.toLowerCase(),
+    plural: pluralLabel.toLowerCase(),
+    sidebarTitle: pluralLabel,
+    searchButton: `Search ${pluralLabel}`,
+    noFound: `No ${pluralLabel.toLowerCase()} found`,
+    foundCount: (n: number) => `Found ${n} ${pluralLabel.toLowerCase()}`,
+  }), [pluralLabel, singularLabel]);
 
   const [selectedPharmacy, setSelectedPharmacy] = useState<Pharmacy | null>(null);
   const [filters, setFilters] = useState<Filters>(initialFilters);
@@ -180,7 +191,7 @@ export default function PharmacyProspecting({ clientType = 'pharmacy' }: Props) 
               <Leaf className="h-5 w-5 text-gray-600" />
             )}
             <h1 className="font-semibold text-lg text-gray-900">
-              {clientType === 'pharmacy' ? 'Search Pharmacies Map' : 'Search Herbalists Map'}
+              {`${labels.searchButton} Map`}
             </h1>
           </div>
           {hasSearched && (

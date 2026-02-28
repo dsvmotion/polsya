@@ -254,7 +254,7 @@ const Index = () => {
             <p className="text-sm text-gray-500">Global overview of sales and revenue</p>
           </div>
           <div className="flex items-center gap-2">
-            <Link to="/operations">
+            <Link to="/operations/entities">
               <Button 
                 variant="outline" 
                 className="gap-2 bg-white border-gray-300 text-gray-700 hover:bg-gray-100 hover:text-gray-900"
@@ -263,7 +263,7 @@ const Index = () => {
                 Saved Pharmacies
               </Button>
             </Link>
-            <Link to="/prospecting">
+            <Link to="/prospecting/entities">
               <Button 
                 variant="outline" 
                 className="gap-2 bg-white border-gray-300 text-gray-700 hover:bg-gray-100 hover:text-gray-900"
@@ -272,7 +272,7 @@ const Index = () => {
                 Search Pharmacies
               </Button>
             </Link>
-            <Link to="/operations/herbalists">
+            <Link to="/operations/entities/herbalists">
               <Button 
                 variant="outline" 
                 className="gap-2 bg-white border-gray-300 text-gray-700 hover:bg-gray-100 hover:text-gray-900"
@@ -281,7 +281,7 @@ const Index = () => {
                 Saved Herbalists
               </Button>
             </Link>
-            <Link to="/prospecting/herbalists">
+            <Link to="/prospecting/entities/herbalists">
               <Button 
                 variant="outline" 
                 className="gap-2 bg-white border-gray-300 text-gray-700 hover:bg-gray-100 hover:text-gray-900"
