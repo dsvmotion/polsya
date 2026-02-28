@@ -1,30 +1,30 @@
 import { useMemo } from 'react';
 import type { PharmacyWithOrders, SmartSegmentKey } from '@/types/operations';
 
-const STALE_THRESHOLD_DAYS = 60;
+export const STALE_THRESHOLD_DAYS = 60;
 
-function daysSince(dateStr: string): number {
+export function daysSince(dateStr: string): number {
   return Math.floor((Date.now() - new Date(dateStr).getTime()) / (1000 * 60 * 60 * 24));
 }
 
-function isClient(p: PharmacyWithOrders): boolean {
+export function isClient(p: PharmacyWithOrders): boolean {
   return p.commercialStatus === 'client';
 }
 
-function isNoOrdersClient(p: PharmacyWithOrders): boolean {
+export function isNoOrdersClient(p: PharmacyWithOrders): boolean {
   return isClient(p) && !p.lastOrder;
 }
 
-function isPaymentFailed(p: PharmacyWithOrders): boolean {
+export function isPaymentFailed(p: PharmacyWithOrders): boolean {
   return isClient(p) && p.lastOrder?.paymentStatus === 'failed';
 }
 
-function isNoRecentOrders(p: PharmacyWithOrders): boolean {
+export function isNoRecentOrders(p: PharmacyWithOrders): boolean {
   if (!isClient(p) || !p.lastOrder) return false;
   return daysSince(p.lastOrder.dateCreated) > STALE_THRESHOLD_DAYS;
 }
 
-function isAtRisk(p: PharmacyWithOrders): boolean {
+export function isAtRisk(p: PharmacyWithOrders): boolean {
   return isNoOrdersClient(p) || isPaymentFailed(p) || isNoRecentOrders(p);
 }
 
@@ -51,29 +51,31 @@ export interface SmartSegmentCounts {
   no_recent_orders_60d: number;
 }
 
+export function computeSmartSegmentCounts(pharmacies: PharmacyWithOrders[]): SmartSegmentCounts {
+  let atRisk = 0;
+  let noOrders = 0;
+  let payFailed = 0;
+  let noRecent = 0;
+
+  for (const p of pharmacies) {
+    const noc = isNoOrdersClient(p);
+    const pf = isPaymentFailed(p);
+    const nr = isNoRecentOrders(p);
+
+    if (noc) noOrders++;
+    if (pf) payFailed++;
+    if (nr) noRecent++;
+    if (noc || pf || nr) atRisk++;
+  }
+
+  return {
+    at_risk: atRisk,
+    no_orders_client: noOrders,
+    payment_failed: payFailed,
+    no_recent_orders_60d: noRecent,
+  };
+}
+
 export function useSmartSegmentCounts(pharmacies: PharmacyWithOrders[]): SmartSegmentCounts {
-  return useMemo(() => {
-    let atRisk = 0;
-    let noOrders = 0;
-    let payFailed = 0;
-    let noRecent = 0;
-
-    for (const p of pharmacies) {
-      const noc = isNoOrdersClient(p);
-      const pf = isPaymentFailed(p);
-      const nr = isNoRecentOrders(p);
-
-      if (noc) noOrders++;
-      if (pf) payFailed++;
-      if (nr) noRecent++;
-      if (noc || pf || nr) atRisk++;
-    }
-
-    return {
-      at_risk: atRisk,
-      no_orders_client: noOrders,
-      payment_failed: payFailed,
-      no_recent_orders_60d: noRecent,
-    };
-  }, [pharmacies]);
+  return useMemo(() => computeSmartSegmentCounts(pharmacies), [pharmacies]);
 }
