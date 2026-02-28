@@ -1,6 +1,7 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { handleCors, corsHeaders as makeCorsHeaders } from '../_shared/cors.ts';
 import { requireRoleAccess } from '../_shared/auth.ts';
+import { fetchWithRetry } from '../_shared/fetchWithRetry.ts';
 
 interface WooCommerceOrder {
   id: number;
@@ -153,32 +154,36 @@ serve(async (req) => {
     const baseUrl = wooUrl.endsWith('/') ? wooUrl.slice(0, -1) : wooUrl;
     const wooAuthHeader = 'Basic ' + btoa(`${consumerKey}:${consumerSecret}`);
 
+    const MAX_PAGES = 100;
     const allOrders: WooCommerceOrder[] = [];
     let currentPage = 1;
     let totalPages = 1;
 
     do {
       const apiUrl = `${baseUrl}/wp-json/wc/v3/orders?per_page=100&page=${currentPage}&status=${status}`;
-      const wooResponse = await fetch(apiUrl, {
+      const wooResponse = await fetchWithRetry(apiUrl, {
         headers: { 'Authorization': wooAuthHeader, 'Content-Type': 'application/json' }
-      });
+      }, { action: 'woocommerce_orders_detailed_page' });
 
       if (!wooResponse.ok) {
         console.error(`WooCommerce API error on page ${currentPage}:`, wooResponse.status);
-        if (currentPage === 1) {
-          return new Response(
-            JSON.stringify({ error: 'Failed to fetch orders from WooCommerce' }),
-            { status: wooResponse.status, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-          );
-        }
-        break;
+        return new Response(
+          JSON.stringify({
+            error: `Failed to fetch orders from WooCommerce (page ${currentPage}, status ${wooResponse.status})`,
+            code: 'WOO_FETCH_FAILED',
+            page: currentPage,
+            totalPagesKnown: totalPages,
+          }),
+          { status: 502, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
       }
 
       const pageOrders: WooCommerceOrder[] = await wooResponse.json();
       allOrders.push(...pageOrders);
 
       if (currentPage === 1) {
-        totalPages = parseInt(wooResponse.headers.get('X-WP-TotalPages') || '1');
+        const raw = parseInt(wooResponse.headers.get('X-WP-TotalPages') || '');
+        totalPages = Number.isFinite(raw) && raw > 0 ? Math.min(raw, MAX_PAGES) : 1;
       }
 
       currentPage++;

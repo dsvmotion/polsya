@@ -76,9 +76,17 @@ export function useWooCommerceOrders() {
         });
         
         if (!response.ok) {
-          const errorText = await response.text();
-          console.error('WooCommerce API failed:', response.status, errorText);
-          throw new Error(`WooCommerce API failed: ${response.status}`);
+          let detail = '';
+          try {
+            const body = await response.json();
+            const code = body.code ? ` [${body.code}]` : '';
+            const page = body.page ? ` (page ${body.page})` : '';
+            detail = `WooCommerce API failed${code}${page}: ${body.error || response.status}`;
+          } catch {
+            detail = `WooCommerce API failed: ${response.status}`;
+          }
+          console.error(detail);
+          throw new Error(detail);
         }
         
         const data = await response.json();

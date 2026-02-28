@@ -19,9 +19,17 @@ export function useDetailedOrders() {
       });
 
       if (!response.ok) {
-        const errorText = await response.text();
-        console.error('Failed to fetch detailed orders:', response.status, errorText);
-        throw new Error(`Failed to fetch detailed orders: ${response.status}`);
+        let detail = '';
+        try {
+          const body = await response.json();
+          const code = body.code ? ` [${body.code}]` : '';
+          const page = body.page ? ` (page ${body.page})` : '';
+          detail = `WooCommerce API failed${code}${page}: ${body.error || response.status}`;
+        } catch {
+          detail = `Failed to fetch detailed orders: ${response.status}`;
+        }
+        console.error(detail);
+        throw new Error(detail);
       }
 
       const data = await response.json();
