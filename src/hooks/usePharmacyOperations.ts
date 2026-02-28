@@ -145,7 +145,31 @@ export function usePharmacyOperations(
   });
 
   const { data: orders = [], isLoading: ordersLoading } = useDetailedOrders();
-  const { data: documents = [], isLoading: docsLoading } = usePharmacyDocuments();
+
+  const pageIds = pageData.pharmacies.map(p => p.id);
+
+  const { data: docSummaryMap = new Map<string, { count: number; hasInvoice: boolean; hasReceipt: boolean }>(), isLoading: docsLoading } = useQuery({
+    queryKey: ['pharmacy-doc-summary', pageIds],
+    enabled: pageIds.length > 0,
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('pharmacy_order_documents')
+        .select('pharmacy_id, document_type')
+        .in('pharmacy_id', pageIds);
+
+      if (error) throw new Error(`Error fetching doc summary: ${error.message}`);
+
+      const map = new Map<string, { count: number; hasInvoice: boolean; hasReceipt: boolean }>();
+      for (const row of data || []) {
+        const entry = map.get(row.pharmacy_id) ?? { count: 0, hasInvoice: false, hasReceipt: false };
+        entry.count++;
+        if (row.document_type === 'invoice') entry.hasInvoice = true;
+        if (row.document_type === 'receipt') entry.hasReceipt = true;
+        map.set(row.pharmacy_id, entry);
+      }
+      return map;
+    },
+  });
 
   let pharmaciesWithOrders: PharmacyWithOrders[] = pageData.pharmacies.map((pharmacy) => {
     let pharmacyOrders: DetailedOrder[] = [];
@@ -172,10 +196,10 @@ export function usePharmacyOperations(
     const lastOrder = sortedOrders.length > 0 ? sortedOrders[0] : null;
     const totalRevenue = pharmacyOrders.reduce((sum, o) => sum + o.amount, 0);
 
-    const pharmacyDocs = documents.filter(d => d.pharmacyId === pharmacy.id);
-    const hasInvoice = pharmacyDocs.some(d => d.documentType === 'invoice');
-    const hasReceipt = pharmacyDocs.some(d => d.documentType === 'receipt');
-    const documentCount = pharmacyDocs.length;
+    const docInfo = docSummaryMap.get(pharmacy.id);
+    const documentCount = docInfo?.count ?? 0;
+    const hasInvoice = docInfo?.hasInvoice ?? false;
+    const hasReceipt = docInfo?.hasReceipt ?? false;
 
     return {
       id: pharmacy.id,
