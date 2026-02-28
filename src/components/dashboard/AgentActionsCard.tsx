@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useCallback, useRef } from 'react';
 import { Bot, Plus, Loader2, Check, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
@@ -41,11 +41,10 @@ interface ActionRowProps {
   runs: AgentActionRun[];
   onApprove: (id: string) => void;
   onReject: (id: string) => void;
-  busyId: string | null;
+  isPending: boolean;
 }
 
-function ActionRow({ action, runs, onApprove, onReject, busyId }: ActionRowProps) {
-  const isBusy = busyId === action.id;
+function ActionRow({ action, runs, onApprove, onReject, isPending }: ActionRowProps) {
 
   return (
     <div className="py-2 border-b border-gray-100 last:border-0">
@@ -82,17 +81,17 @@ function ActionRow({ action, runs, onApprove, onReject, busyId }: ActionRowProps
                 size="sm"
                 className="h-6 px-1.5 text-green-600 hover:text-green-800 hover:bg-green-50"
                 onClick={() => onApprove(action.id)}
-                disabled={isBusy}
+                disabled={isPending}
                 title="Approve"
               >
-                {isBusy ? <Loader2 className="h-3 w-3 animate-spin" /> : <Check className="h-3 w-3" />}
+                {isPending ? <Loader2 className="h-3 w-3 animate-spin" /> : <Check className="h-3 w-3" />}
               </Button>
               <Button
                 variant="ghost"
                 size="sm"
                 className="h-6 px-1.5 text-red-500 hover:text-red-700 hover:bg-red-50"
                 onClick={() => onReject(action.id)}
-                disabled={isBusy}
+                disabled={isPending}
                 title="Reject"
               >
                 <X className="h-3 w-3" />
@@ -145,7 +144,9 @@ export function AgentActionsCard() {
   const approveAction = useApproveAgentAction();
   const rejectAction = useRejectAgentAction();
   const [isSimulating, setIsSimulating] = useState(false);
-  const [busyActionId, setBusyActionId] = useState<string | null>(null);
+  const [pendingActionIds, setPendingActionIds] = useState<Set<string>>(new Set());
+  const pendingRef = useRef(pendingActionIds);
+  pendingRef.current = pendingActionIds;
   const qc = useQueryClient();
 
   const actionIds = actions.map((a) => a.id);
@@ -173,9 +174,9 @@ export function AgentActionsCard() {
     }
   }
 
-  const invalidateRuns = () => {
+  const invalidateRuns = useCallback(() => {
     qc.invalidateQueries({ queryKey: ['agent-action-runs-bulk'] });
-  };
+  }, [qc]);
 
   const handleSimulate = async () => {
     setIsSimulating(true);
@@ -210,8 +211,24 @@ export function AgentActionsCard() {
     }
   };
 
-  const handleApprove = async (id: string) => {
-    setBusyActionId(id);
+  const addPending = useCallback((id: string) => {
+    setPendingActionIds((prev) => new Set(prev).add(id));
+  }, []);
+
+  const removePending = useCallback((id: string) => {
+    setPendingActionIds((prev) => {
+      const next = new Set(prev);
+      next.delete(id);
+      return next;
+    });
+  }, []);
+
+  const handleApprove = useCallback(async (id: string) => {
+    if (pendingRef.current.has(id)) return;
+    const action = actions.find((a) => a.id === id);
+    if (!action || action.status !== 'queued') return;
+
+    addPending(id);
     let runId: string | null = null;
     try {
       runId = await logRunStart(id);
@@ -230,12 +247,16 @@ export function AgentActionsCard() {
       }
       toast.error('Failed to approve action');
     } finally {
-      setBusyActionId(null);
+      removePending(id);
     }
-  };
+  }, [actions, addPending, removePending, approveAction, invalidateRuns]);
 
-  const handleReject = async (id: string) => {
-    setBusyActionId(id);
+  const handleReject = useCallback(async (id: string) => {
+    if (pendingRef.current.has(id)) return;
+    const action = actions.find((a) => a.id === id);
+    if (!action || action.status !== 'queued') return;
+
+    addPending(id);
     let runId: string | null = null;
     try {
       runId = await logRunStart(id);
@@ -254,9 +275,9 @@ export function AgentActionsCard() {
       }
       toast.error('Failed to reject action');
     } finally {
-      setBusyActionId(null);
+      removePending(id);
     }
-  };
+  }, [actions, addPending, removePending, rejectAction, invalidateRuns]);
 
   const statusCounts = actions.reduce(
     (acc, a) => {
@@ -316,7 +337,7 @@ export function AgentActionsCard() {
                 runs={runsPerAction[action.id] ?? []}
                 onApprove={handleApprove}
                 onReject={handleReject}
-                busyId={busyActionId}
+                isPending={pendingActionIds.has(action.id)}
               />
             ))}
           </div>
