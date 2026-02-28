@@ -201,6 +201,53 @@ export type Database = {
         }
         Relationships: []
       }
+      pharmacy_activities: {
+        Row: {
+          id: string
+          pharmacy_id: string
+          activity_type: string
+          title: string
+          description: string | null
+          due_at: string | null
+          completed_at: string | null
+          owner: string | null
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          pharmacy_id: string
+          activity_type: string
+          title: string
+          description?: string | null
+          due_at?: string | null
+          completed_at?: string | null
+          owner?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          pharmacy_id?: string
+          activity_type?: string
+          title?: string
+          description?: string | null
+          due_at?: string | null
+          completed_at?: string | null
+          owner?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "pharmacy_activities_pharmacy_id_fkey"
+            columns: ["pharmacy_id"]
+            isOneToOne: false
+            referencedRelation: "pharmacies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       pharmacy_contacts: {
         Row: {
           id: string

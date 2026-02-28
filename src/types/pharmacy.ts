@@ -54,6 +54,37 @@ export interface PharmacyContact {
   updated_at: string;
 }
 
+export type ActivityType = 'call' | 'email' | 'visit' | 'note' | 'task';
+
+export const ACTIVITY_TYPE_LABELS: Record<ActivityType, string> = {
+  call: 'Call',
+  email: 'Email',
+  visit: 'Visit',
+  note: 'Note',
+  task: 'Task',
+};
+
+export const ACTIVITY_TYPE_ICONS: Record<ActivityType, string> = {
+  call: '📞',
+  email: '✉️',
+  visit: '🏢',
+  note: '📝',
+  task: '✅',
+};
+
+export interface PharmacyActivity {
+  id: string;
+  pharmacy_id: string;
+  activity_type: ActivityType;
+  title: string;
+  description: string | null;
+  due_at: string | null;
+  completed_at: string | null;
+  owner: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
 export interface PharmacyFilters {
   city: string;
   province: string;

@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { 
   X, MapPin, Phone, Globe, Clock, Copy, Check, 
   ExternalLink, Mail, FileText, Save, ShoppingCart, Package,
-  Building2, ImageIcon, Users, Plus, Trash2, Star
+  Building2, ImageIcon, Users, Plus, Trash2, Star, Activity, CheckCircle2, Circle, Calendar
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
@@ -15,7 +15,11 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Pharmacy, PharmacyStatus, STATUS_LABELS, STATUS_COLORS, ContactRole, CONTACT_ROLE_LABELS } from '@/types/pharmacy';
+import {
+  Pharmacy, PharmacyStatus, STATUS_LABELS, STATUS_COLORS,
+  ContactRole, CONTACT_ROLE_LABELS,
+  ActivityType, ACTIVITY_TYPE_LABELS, ACTIVITY_TYPE_ICONS,
+} from '@/types/pharmacy';
 import { useUpdatePharmacy } from '@/hooks/usePharmacies';
 import { usePharmacyPhoto } from '@/hooks/usePharmacyPhoto';
 import { useOrdersByPharmacy } from '@/hooks/useWooCommerceOrders';
@@ -25,6 +29,12 @@ import {
   useUpdatePharmacyContact,
   useDeletePharmacyContact,
 } from '@/hooks/usePharmacyContacts';
+import {
+  usePharmacyActivities,
+  useCreatePharmacyActivity,
+  useCompletePharmacyActivity,
+  useDeletePharmacyActivity,
+} from '@/hooks/usePharmacyActivities';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 
@@ -214,6 +224,206 @@ function ContactsSection({ pharmacyId }: { pharmacyId: string }) {
               </div>
             </div>
           ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function ActivitiesSection({ pharmacyId }: { pharmacyId: string }) {
+  const { data: activities = [], isLoading } = usePharmacyActivities(pharmacyId);
+  const createActivity = useCreatePharmacyActivity();
+  const completeActivity = useCompletePharmacyActivity();
+  const deleteActivity = useDeletePharmacyActivity();
+
+  const [showForm, setShowForm] = useState(false);
+  const [newType, setNewType] = useState<ActivityType>('call');
+  const [newTitle, setNewTitle] = useState('');
+  const [newDescription, setNewDescription] = useState('');
+  const [newDueAt, setNewDueAt] = useState('');
+
+  const resetForm = () => {
+    setNewType('call');
+    setNewTitle('');
+    setNewDescription('');
+    setNewDueAt('');
+    setShowForm(false);
+  };
+
+  const handleAdd = async () => {
+    const trimmed = newTitle.trim();
+    if (!trimmed) {
+      toast.error('Activity title is required');
+      return;
+    }
+    try {
+      await createActivity.mutateAsync({
+        pharmacyId,
+        activityType: newType,
+        title: trimmed,
+        description: newDescription.trim() || null,
+        dueAt: newDueAt || null,
+      });
+      toast.success('Activity added');
+      resetForm();
+    } catch {
+      toast.error('Failed to add activity');
+    }
+  };
+
+  const handleComplete = async (id: string) => {
+    try {
+      await completeActivity.mutateAsync({ id, pharmacyId });
+      toast.success('Activity completed');
+    } catch {
+      toast.error('Failed to complete activity');
+    }
+  };
+
+  const handleDelete = async (id: string) => {
+    try {
+      await deleteActivity.mutateAsync({ id, pharmacyId });
+      toast.success('Activity deleted');
+    } catch {
+      toast.error('Failed to delete activity');
+    }
+  };
+
+  const pendingCount = activities.filter((a) => !a.completed_at).length;
+
+  return (
+    <div className="space-y-3">
+      <div className="flex items-center justify-between">
+        <h3 className="text-sm font-medium text-gray-500 flex items-center gap-2">
+          <Activity className="h-4 w-4" />
+          Activities ({activities.length})
+          {pendingCount > 0 && (
+            <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-orange-100 text-orange-700 font-medium">
+              {pendingCount} pending
+            </span>
+          )}
+        </h3>
+        {!showForm && (
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => setShowForm(true)}
+            className="h-7 px-2 text-gray-500"
+          >
+            <Plus className="h-3.5 w-3.5 mr-1" />
+            Add
+          </Button>
+        )}
+      </div>
+
+      {showForm && (
+        <div className="p-3 border border-gray-200 rounded-lg bg-gray-50 space-y-2">
+          <Select value={newType} onValueChange={(v) => setNewType(v as ActivityType)}>
+            <SelectTrigger className="h-8 text-sm bg-white border-gray-300">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent className="bg-white border-gray-200">
+              {(Object.keys(ACTIVITY_TYPE_LABELS) as ActivityType[]).map((t) => (
+                <SelectItem key={t} value={t}>
+                  {ACTIVITY_TYPE_ICONS[t]} {ACTIVITY_TYPE_LABELS[t]}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          <Input
+            placeholder="Title *"
+            value={newTitle}
+            onChange={(e) => setNewTitle(e.target.value)}
+            className="h-8 text-sm bg-white border-gray-300"
+          />
+          <Textarea
+            placeholder="Description (optional)"
+            value={newDescription}
+            onChange={(e) => setNewDescription(e.target.value)}
+            className="min-h-[60px] text-sm bg-white border-gray-300 resize-none"
+          />
+          <div className="flex items-center gap-2">
+            <Calendar className="h-3.5 w-3.5 text-gray-400 shrink-0" />
+            <Input
+              type="datetime-local"
+              value={newDueAt}
+              onChange={(e) => setNewDueAt(e.target.value)}
+              className="h-8 text-sm bg-white border-gray-300"
+            />
+          </div>
+          <div className="flex items-center gap-2 pt-1">
+            <Button size="sm" onClick={handleAdd} disabled={createActivity.isPending}>
+              {createActivity.isPending ? 'Adding...' : 'Add Activity'}
+            </Button>
+            <Button size="sm" variant="ghost" onClick={resetForm}>Cancel</Button>
+          </div>
+        </div>
+      )}
+
+      {isLoading ? (
+        <p className="text-xs text-gray-400">Loading activities...</p>
+      ) : activities.length === 0 && !showForm ? (
+        <p className="text-xs text-gray-400">No activities yet</p>
+      ) : (
+        <div className="space-y-2">
+          {activities.map((act) => {
+            const isDone = !!act.completed_at;
+            const isOverdue = !isDone && act.due_at && new Date(act.due_at) < new Date();
+            return (
+              <div
+                key={act.id}
+                className={cn(
+                  'flex items-start gap-2 p-2 rounded border bg-white',
+                  isDone ? 'border-gray-100 opacity-60' : isOverdue ? 'border-red-200' : 'border-gray-100'
+                )}
+              >
+                <button
+                  type="button"
+                  className="mt-0.5 shrink-0"
+                  onClick={() => !isDone && handleComplete(act.id)}
+                  disabled={isDone}
+                >
+                  {isDone ? (
+                    <CheckCircle2 className="h-4 w-4 text-green-500" />
+                  ) : (
+                    <Circle className="h-4 w-4 text-gray-300 hover:text-green-400" />
+                  )}
+                </button>
+                <div className="min-w-0 flex-1">
+                  <div className="flex items-center gap-1.5">
+                    <span className="text-xs">{ACTIVITY_TYPE_ICONS[act.activity_type]}</span>
+                    <span className={cn('text-sm font-medium truncate', isDone ? 'line-through text-gray-400' : 'text-gray-900')}>
+                      {act.title}
+                    </span>
+                  </div>
+                  {act.description && (
+                    <p className="text-xs text-gray-500 mt-0.5 line-clamp-2">{act.description}</p>
+                  )}
+                  <div className="flex items-center gap-2 mt-1 text-[10px] text-gray-400">
+                    <span>{new Date(act.created_at).toLocaleDateString()}</span>
+                    {act.due_at && (
+                      <span className={cn(isOverdue ? 'text-red-500 font-medium' : '')}>
+                        Due: {new Date(act.due_at).toLocaleDateString()}
+                      </span>
+                    )}
+                    {isDone && act.completed_at && (
+                      <span className="text-green-600">
+                        Done: {new Date(act.completed_at).toLocaleDateString()}
+                      </span>
+                    )}
+                  </div>
+                </div>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="h-7 px-1.5 text-gray-400 hover:text-red-600 shrink-0"
+                  onClick={() => handleDelete(act.id)}
+                >
+                  <Trash2 className="h-3.5 w-3.5" />
+                </Button>
+              </div>
+            );
+          })}
         </div>
       )}
     </div>
@@ -471,6 +681,9 @@ export function PharmacyDetailPanel({ pharmacy, onClose }: PharmacyDetailPanelPr
 
         {/* Contacts */}
         <ContactsSection pharmacyId={pharmacy.id} />
+
+        {/* Activities */}
+        <ActivitiesSection pharmacyId={pharmacy.id} />
 
         {/* Opening Hours */}
         {pharmacy.opening_hours && pharmacy.opening_hours.length > 0 && (
