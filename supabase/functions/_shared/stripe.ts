@@ -10,6 +10,27 @@ function getStripeSecretKey(): string | null {
   return Deno.env.get('STRIPE_SECRET_KEY') ?? Deno.env.get('STRIPE_API_KEY') ?? null;
 }
 
+async function parseStripeResponse<T>(response: Response): Promise<StripeCallResult<T>> {
+  const raw = await response.text();
+  let parsed: unknown = null;
+  try {
+    parsed = raw ? JSON.parse(raw) : null;
+  } catch {
+    parsed = null;
+  }
+
+  if (!response.ok) {
+    const apiErr =
+      typeof parsed === 'object' && parsed !== null && 'error' in parsed
+        ? (parsed as { error?: { message?: string } }).error?.message
+        : null;
+    const message = apiErr || `Stripe API error (${response.status})`;
+    return { ok: false, status: response.status, error: message };
+  }
+
+  return { ok: true, data: (parsed ?? {}) as T };
+}
+
 export async function stripeFormPost<T>(
   path: string,
   params: URLSearchParams,
@@ -36,23 +57,32 @@ export async function stripeFormPost<T>(
       retryOnStatus: [429, 500, 502, 503, 504],
     },
   );
+  return parseStripeResponse<T>(response);
+}
 
-  const raw = await response.text();
-  let parsed: unknown = null;
-  try {
-    parsed = raw ? JSON.parse(raw) : null;
-  } catch {
-    parsed = null;
+export async function stripeGet<T>(
+  path: string,
+  action: string,
+): Promise<StripeCallResult<T>> {
+  const secretKey = getStripeSecretKey();
+  if (!secretKey) {
+    return { ok: false, status: 500, error: 'Stripe secret key is not configured' };
   }
 
-  if (!response.ok) {
-    const apiErr =
-      typeof parsed === 'object' && parsed !== null && 'error' in parsed
-        ? (parsed as { error?: { message?: string } }).error?.message
-        : null;
-    const message = apiErr || `Stripe API error (${response.status})`;
-    return { ok: false, status: response.status, error: message };
-  }
+  const url = `${STRIPE_API_BASE}${path}`;
+  const response = await fetchWithRetry(
+    url,
+    {
+      method: 'GET',
+      headers: {
+        Authorization: `Bearer ${secretKey}`,
+      },
+    },
+    {
+      action,
+      retryOnStatus: [429, 500, 502, 503, 504],
+    },
+  );
 
-  return { ok: true, data: (parsed ?? {}) as T };
+  return parseStripeResponse<T>(response);
 }

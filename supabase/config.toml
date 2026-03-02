@@ -20,3 +20,6 @@ verify_jwt = true
 
 [functions.create-customer-portal-session]
 verify_jwt = true
+
+[functions.stripe-webhook]
+verify_jwt = false

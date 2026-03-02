@@ -13,11 +13,25 @@ function fail(msg) {
   exitCode = 1;
 }
 
-// 1. Check config.toml for verify_jwt = false
+// 1. Check config.toml for verify_jwt = false (allowlist explicit public endpoints)
+const ALLOWED_PUBLIC_FUNCTIONS = new Set(['stripe-webhook']);
 try {
   const config = readFileSync(CONFIG_PATH, 'utf-8');
-  if (/verify_jwt\s*=\s*false/i.test(config)) {
-    fail(`${CONFIG_PATH} contains "verify_jwt = false"`);
+  const lines = config.split(/\r?\n/);
+  let currentFn = null;
+
+  for (const rawLine of lines) {
+    const line = rawLine.trim();
+    const sectionMatch = line.match(/^\[functions\.([a-z0-9-]+)\]$/i);
+    if (sectionMatch) {
+      currentFn = sectionMatch[1];
+      continue;
+    }
+    if (/^verify_jwt\s*=\s*false$/i.test(line)) {
+      if (!currentFn || !ALLOWED_PUBLIC_FUNCTIONS.has(currentFn)) {
+        fail(`${CONFIG_PATH} has verify_jwt = false in disallowed function section: ${currentFn ?? 'unknown'}`);
+      }
+    }
   }
 } catch (err) {
   fail(`Cannot read ${CONFIG_PATH}: ${err.message}`);
@@ -83,6 +97,22 @@ for (const dir of REQUIRE_ORG_AUTHZ) {
   }
   if (!source.includes('requireOrgRoleAccess(')) {
     fail(`${dir}/index.ts does not call requireOrgRoleAccess()`);
+  }
+}
+
+// 4. Stripe webhook must verify Stripe signature explicitly.
+{
+  const webhookPath = join(FUNCTIONS_DIR, 'stripe-webhook', 'index.ts');
+  try {
+    const source = readFileSync(webhookPath, 'utf-8');
+    if (!source.includes('Stripe-Signature')) {
+      fail('stripe-webhook/index.ts does not read Stripe-Signature header');
+    }
+    if (!source.includes('verifyStripeWebhookSignature(')) {
+      fail('stripe-webhook/index.ts does not verify webhook signature');
+    }
+  } catch {
+    fail('Cannot read stripe-webhook/index.ts for signature check');
   }
 }
 

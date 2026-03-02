@@ -166,6 +166,8 @@ serve(async (req) => {
     params.set('allow_promotion_codes', 'true');
     params.set('metadata[organization_id]', auth.organizationId);
     params.set('metadata[requested_by]', auth.user.id);
+    params.set('subscription_data[metadata][organization_id]', auth.organizationId);
+    params.set('subscription_data[metadata][requested_by]', auth.user.id);
 
     const checkout = await stripeFormPost<CheckoutSessionResponse>(
       '/checkout/sessions',
