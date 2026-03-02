@@ -10,7 +10,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
-import { LogOut, User } from 'lucide-react';
+import { CreditCard, LogOut, User } from 'lucide-react';
 
 export function UserMenu() {
   const { user, signOut } = useAuth();
@@ -51,6 +51,12 @@ export function UserMenu() {
           <Link to="/profile" className="flex items-center">
             <User className="mr-2 h-4 w-4" />
             <span>Profile</span>
+          </Link>
+        </DropdownMenuItem>
+        <DropdownMenuItem asChild className="cursor-pointer text-gray-700 focus:bg-gray-100 focus:text-gray-900">
+          <Link to="/billing" className="flex items-center">
+            <CreditCard className="mr-2 h-4 w-4" />
+            <span>Billing</span>
           </Link>
         </DropdownMenuItem>
         <DropdownMenuSeparator className="bg-gray-100" />

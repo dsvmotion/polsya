@@ -13,7 +13,7 @@ interface OrgRoleAccessOptions extends RoleAccessOptions {
 
 interface AuthSuccess {
   ok: true;
-  user: { id: string; app_metadata: Record<string, unknown> };
+  user: { id: string; email?: string | null; app_metadata: Record<string, unknown> };
 }
 
 interface OrgAuthSuccess extends AuthSuccess {

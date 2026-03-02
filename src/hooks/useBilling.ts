@@ -1,6 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import type { Json } from '@/integrations/supabase/types';
+import { buildEdgeFunctionHeaders } from '@/lib/edge-function-headers';
 import type {
   BillingCustomer,
   BillingInvoice,
@@ -10,6 +11,14 @@ import type {
   BillingSubscriptionStatus,
   BillingInvoiceStatus,
 } from '@/types/billing';
+
+const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
+
+const BILLING_ACTIVE_STATUSES: BillingSubscriptionStatus[] = ['active', 'trialing', 'past_due', 'unpaid'];
+
+export function hasBillingAccess(status: BillingSubscriptionStatus | null | undefined): boolean {
+  return !!status && BILLING_ACTIVE_STATUSES.includes(status);
+}
 
 export function useBillingPlans() {
   return useQuery<BillingPlan[]>({
@@ -193,6 +202,50 @@ export function useUpsertBillingInvoice() {
     },
     onSuccess: (invoice) => {
       queryClient.invalidateQueries({ queryKey: ['billing-overview', invoice.organization_id] });
+    },
+  });
+}
+
+export function useCreateCheckoutSession() {
+  return useMutation({
+    mutationFn: async (input: {
+      planId: string;
+      successUrl?: string;
+      cancelUrl?: string;
+    }) => {
+      const headers = await buildEdgeFunctionHeaders({ 'Content-Type': 'application/json' });
+      const response = await fetch(`${SUPABASE_URL}/functions/v1/create-checkout-session`, {
+        method: 'POST',
+        headers,
+        body: JSON.stringify(input),
+      });
+
+      const body = await response.json().catch(() => ({}));
+      if (!response.ok) {
+        throw new Error(body.error ?? `Checkout session failed: ${response.status}`);
+      }
+
+      return body as { sessionId: string; url: string };
+    },
+  });
+}
+
+export function useCreateCustomerPortalSession() {
+  return useMutation({
+    mutationFn: async (input?: { returnUrl?: string }) => {
+      const headers = await buildEdgeFunctionHeaders({ 'Content-Type': 'application/json' });
+      const response = await fetch(`${SUPABASE_URL}/functions/v1/create-customer-portal-session`, {
+        method: 'POST',
+        headers,
+        body: JSON.stringify(input ?? {}),
+      });
+
+      const body = await response.json().catch(() => ({}));
+      if (!response.ok) {
+        throw new Error(body.error ?? `Customer portal session failed: ${response.status}`);
+      }
+
+      return body as { sessionId: string; url: string };
     },
   });
 }

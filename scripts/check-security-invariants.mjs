@@ -68,6 +68,8 @@ const REQUIRE_ORG_AUTHZ = [
   'woocommerce-orders-detailed',
   'geocode-pharmacies',
   'populate-geography',
+  'create-checkout-session',
+  'create-customer-portal-session',
 ];
 
 for (const dir of REQUIRE_ORG_AUTHZ) {
