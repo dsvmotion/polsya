@@ -173,6 +173,214 @@ export type Database = {
           },
         ]
       }
+      billing_plans: {
+        Row: {
+          amount_cents: number
+          code: string
+          created_at: string
+          currency: string
+          description: string | null
+          id: string
+          interval: string
+          is_active: boolean
+          name: string
+          stripe_price_id: string
+          updated_at: string
+        }
+        Insert: {
+          amount_cents: number
+          code: string
+          created_at?: string
+          currency?: string
+          description?: string | null
+          id?: string
+          interval?: string
+          is_active?: boolean
+          name: string
+          stripe_price_id: string
+          updated_at?: string
+        }
+        Update: {
+          amount_cents?: number
+          code?: string
+          created_at?: string
+          currency?: string
+          description?: string | null
+          id?: string
+          interval?: string
+          is_active?: boolean
+          name?: string
+          stripe_price_id?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      billing_customers: {
+        Row: {
+          created_at: string
+          email: string | null
+          id: string
+          name: string | null
+          organization_id: string
+          stripe_customer_id: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          email?: string | null
+          id?: string
+          name?: string | null
+          organization_id?: string
+          stripe_customer_id: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          email?: string | null
+          id?: string
+          name?: string | null
+          organization_id?: string
+          stripe_customer_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "billing_customers_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      billing_subscriptions: {
+        Row: {
+          cancel_at_period_end: boolean
+          canceled_at: string | null
+          created_at: string
+          current_period_end: string | null
+          current_period_start: string | null
+          id: string
+          metadata: Json
+          organization_id: string
+          status: string
+          stripe_price_id: string
+          stripe_subscription_id: string
+          trial_end: string | null
+          updated_at: string
+        }
+        Insert: {
+          cancel_at_period_end?: boolean
+          canceled_at?: string | null
+          created_at?: string
+          current_period_end?: string | null
+          current_period_start?: string | null
+          id?: string
+          metadata?: Json
+          organization_id?: string
+          status: string
+          stripe_price_id: string
+          stripe_subscription_id: string
+          trial_end?: string | null
+          updated_at?: string
+        }
+        Update: {
+          cancel_at_period_end?: boolean
+          canceled_at?: string | null
+          created_at?: string
+          current_period_end?: string | null
+          current_period_start?: string | null
+          id?: string
+          metadata?: Json
+          organization_id?: string
+          status?: string
+          stripe_price_id?: string
+          stripe_subscription_id?: string
+          trial_end?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "billing_subscriptions_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      billing_invoices: {
+        Row: {
+          amount_due_cents: number
+          amount_paid_cents: number
+          created_at: string
+          currency: string
+          due_date: string | null
+          hosted_invoice_url: string | null
+          id: string
+          invoice_number: string | null
+          invoice_pdf_url: string | null
+          organization_id: string
+          paid_at: string | null
+          period_end: string | null
+          period_start: string | null
+          status: string
+          stripe_invoice_id: string
+          subscription_id: string | null
+        }
+        Insert: {
+          amount_due_cents?: number
+          amount_paid_cents?: number
+          created_at?: string
+          currency?: string
+          due_date?: string | null
+          hosted_invoice_url?: string | null
+          id?: string
+          invoice_number?: string | null
+          invoice_pdf_url?: string | null
+          organization_id?: string
+          paid_at?: string | null
+          period_end?: string | null
+          period_start?: string | null
+          status: string
+          stripe_invoice_id: string
+          subscription_id?: string | null
+        }
+        Update: {
+          amount_due_cents?: number
+          amount_paid_cents?: number
+          created_at?: string
+          currency?: string
+          due_date?: string | null
+          hosted_invoice_url?: string | null
+          id?: string
+          invoice_number?: string | null
+          invoice_pdf_url?: string | null
+          organization_id?: string
+          paid_at?: string | null
+          period_end?: string | null
+          period_start?: string | null
+          status?: string
+          stripe_invoice_id?: string
+          subscription_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "billing_invoices_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "billing_invoices_subscription_id_fkey"
+            columns: ["subscription_id"]
+            isOneToOne: false
+            referencedRelation: "billing_subscriptions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       pharmacies: {
         Row: {
           address: string | null
