@@ -26,3 +26,9 @@ verify_jwt = false
 
 [functions.process-integration-sync-jobs]
 verify_jwt = true
+
+[functions.gmail-oauth-url]
+verify_jwt = true
+
+[functions.gmail-oauth-exchange]
+verify_jwt = true

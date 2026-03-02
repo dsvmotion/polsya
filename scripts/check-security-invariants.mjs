@@ -85,6 +85,8 @@ const REQUIRE_ORG_AUTHZ = [
   'create-checkout-session',
   'create-customer-portal-session',
   'process-integration-sync-jobs',
+  'gmail-oauth-url',
+  'gmail-oauth-exchange',
 ];
 
 for (const dir of REQUIRE_ORG_AUTHZ) {

@@ -583,6 +583,114 @@ export type Database = {
           },
         ]
       }
+      integration_oauth_states: {
+        Row: {
+          state: string
+          organization_id: string
+          integration_id: string
+          provider: string
+          created_by: string
+          created_at: string
+          expires_at: string
+          consumed_at: string | null
+        }
+        Insert: {
+          state: string
+          organization_id?: string
+          integration_id: string
+          provider: string
+          created_by: string
+          created_at?: string
+          expires_at: string
+          consumed_at?: string | null
+        }
+        Update: {
+          state?: string
+          organization_id?: string
+          integration_id?: string
+          provider?: string
+          created_by?: string
+          created_at?: string
+          expires_at?: string
+          consumed_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "integration_oauth_states_integration_id_fkey"
+            columns: ["integration_id"]
+            isOneToOne: false
+            referencedRelation: "integration_connections"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "integration_oauth_states_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      integration_oauth_tokens: {
+        Row: {
+          id: string
+          organization_id: string
+          integration_id: string
+          provider: string
+          provider_account_email: string | null
+          access_token: string
+          refresh_token: string | null
+          token_type: string | null
+          scope: string | null
+          expires_at: string | null
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          organization_id?: string
+          integration_id: string
+          provider: string
+          provider_account_email?: string | null
+          access_token: string
+          refresh_token?: string | null
+          token_type?: string | null
+          scope?: string | null
+          expires_at?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          organization_id?: string
+          integration_id?: string
+          provider?: string
+          provider_account_email?: string | null
+          access_token?: string
+          refresh_token?: string | null
+          token_type?: string | null
+          scope?: string | null
+          expires_at?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "integration_oauth_tokens_integration_id_fkey"
+            columns: ["integration_id"]
+            isOneToOne: false
+            referencedRelation: "integration_connections"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "integration_oauth_tokens_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       integration_sync_objects: {
         Row: {
           id: string

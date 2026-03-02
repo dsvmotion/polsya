@@ -18,6 +18,7 @@ import {
 } from '@/hooks/useIntegrations';
 import { useIntegrationRuns } from '@/hooks/useIntegrationRuns';
 import { useIntegrationJobs, useEnqueueIntegrationJob, useProcessIntegrationJob, createJobIdempotencyKey } from '@/hooks/useIntegrationJobs';
+import { useStartGmailOAuth } from '@/hooks/useGmailOAuth';
 import {
   IntegrationProvider,
   IntegrationConnection,
@@ -98,6 +99,7 @@ function IntegrationRow({
   const { data: jobs = [] } = useIntegrationJobs(intg.id, 1);
   const enqueueJob = useEnqueueIntegrationJob();
   const processJob = useProcessIntegrationJob();
+  const startGmailOAuth = useStartGmailOAuth();
   const updateIntegration = useUpdateIntegration();
 
   const [editing, setEditing] = useState(false);
@@ -109,6 +111,17 @@ function IntegrationRow({
   const statusColor = STATUS_COLORS[intg.status];
   const schema = PROVIDER_METADATA_SCHEMA[intg.provider];
   const isSyncing = enqueueJob.isPending || processJob.isPending;
+  const isConnectingGmail = startGmailOAuth.isPending;
+
+  const handleConnectGmail = async () => {
+    try {
+      const result = await startGmailOAuth.mutateAsync({ integrationId: intg.id });
+      window.location.assign(result.authUrl);
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Failed to start Gmail OAuth';
+      toast.error(message);
+    }
+  };
 
   const handleQueueSync = async () => {
     try {
@@ -199,6 +212,20 @@ function IntegrationRow({
           >
             <RotateCw className={cn('h-3.5 w-3.5', isSyncing && 'animate-spin')} />
           </Button>
+          {intg.provider === 'gmail' && (
+            <Button
+              variant="ghost"
+              size="sm"
+              className="h-7 px-1.5 text-gray-400 hover:text-blue-600"
+              onClick={handleConnectGmail}
+              disabled={isConnectingGmail}
+              title={intg.status === 'connected' ? 'Reconnect Gmail' : 'Connect Gmail'}
+            >
+              <span className="text-[10px] font-medium">
+                {isConnectingGmail ? '...' : intg.status === 'connected' ? 'Reconnect' : 'Connect'}
+              </span>
+            </Button>
+          )}
           {schema.length > 0 && (
             <Button
               variant="ghost"

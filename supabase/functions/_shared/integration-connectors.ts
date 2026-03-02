@@ -259,6 +259,147 @@ const shopifyConnector: IntegrationConnector = {
   },
 };
 
+function getGmailConfig(metadata: Record<string, unknown>) {
+  const accessToken = typeof metadata.gmail_access_token === 'string'
+    ? metadata.gmail_access_token
+    : '';
+
+  if (!accessToken) {
+    throw new Error('Gmail OAuth token not found. Connect Gmail first.');
+  }
+
+  return { accessToken };
+}
+
+function getHeaderValue(headers: Array<{ name?: string; value?: string }> | undefined, key: string): string | null {
+  if (!Array.isArray(headers)) return null;
+  const match = headers.find((h) => (h.name ?? '').toLowerCase() === key.toLowerCase());
+  const value = match?.value;
+  return typeof value === 'string' && value.length > 0 ? value : null;
+}
+
+async function fetchGmailMessageRecords(ctx: IntegrationConnectorContext): Promise<SyncRecord[]> {
+  const cfg = getGmailConfig(ctx.metadata);
+
+  const listRes = await fetchWithRetry(
+    'https://gmail.googleapis.com/gmail/v1/users/me/messages?maxResults=20&q=newer_than:14d',
+    {
+      method: 'GET',
+      headers: { Authorization: `Bearer ${cfg.accessToken}` },
+    },
+    { action: 'connector_gmail_messages_list' },
+  );
+
+  if (!listRes.ok) {
+    throw new Error(`Gmail message list failed with status ${listRes.status}`);
+  }
+
+  const listJson = await listRes.json() as { messages?: Array<{ id?: string }> };
+  const ids = (listJson.messages ?? [])
+    .map((m) => m.id)
+    .filter((id): id is string => typeof id === 'string' && id.length > 0);
+
+  const records: SyncRecord[] = [];
+  for (const id of ids) {
+    const msgRes = await fetchWithRetry(
+      `https://gmail.googleapis.com/gmail/v1/users/me/messages/${id}?format=metadata&metadataHeaders=From&metadataHeaders=To&metadataHeaders=Subject&metadataHeaders=Date`,
+      {
+        method: 'GET',
+        headers: { Authorization: `Bearer ${cfg.accessToken}` },
+      },
+      { action: 'connector_gmail_message_detail' },
+    );
+
+    if (!msgRes.ok) {
+      continue;
+    }
+
+    const msgJson = await msgRes.json() as {
+      id?: string;
+      internalDate?: string;
+      snippet?: string;
+      payload?: { headers?: Array<{ name?: string; value?: string }> };
+    };
+
+    const messageId = msgJson.id;
+    if (!messageId) continue;
+
+    const internalDateMs = Number(msgJson.internalDate ?? 0);
+    const internalIso = Number.isFinite(internalDateMs) && internalDateMs > 0
+      ? new Date(internalDateMs).toISOString()
+      : null;
+
+    const headers = msgJson.payload?.headers;
+    records.push({
+      externalId: messageId,
+      externalUpdatedAt: internalIso,
+      payload: {
+        id: messageId,
+        from: getHeaderValue(headers, 'From'),
+        to: getHeaderValue(headers, 'To'),
+        subject: getHeaderValue(headers, 'Subject'),
+        date: getHeaderValue(headers, 'Date'),
+        snippet: msgJson.snippet ?? null,
+        internalDate: msgJson.internalDate ?? null,
+      },
+    });
+  }
+
+  return dedupeRecords(records);
+}
+
+const gmailConnector: IntegrationConnector = {
+  provider: 'gmail',
+  async testConnection(ctx) {
+    const cfg = getGmailConfig(ctx.metadata);
+    const res = await fetchWithRetry(
+      'https://gmail.googleapis.com/gmail/v1/users/me/profile',
+      {
+        method: 'GET',
+        headers: { Authorization: `Bearer ${cfg.accessToken}` },
+      },
+      { action: 'connector_gmail_profile' },
+    );
+
+    if (!res.ok) {
+      throw new Error(`Gmail profile check failed with status ${res.status}`);
+    }
+  },
+  async syncEntities(ctx) {
+    const records = await fetchGmailMessageRecords(ctx);
+    return {
+      processed: records.length,
+      failed: 0,
+      summary: `entities: fetched ${records.length} recent messages`,
+      records,
+    };
+  },
+  async syncOrders() {
+    return {
+      processed: 0,
+      failed: 0,
+      summary: 'orders: not applicable for gmail',
+      records: [],
+    };
+  },
+  async syncProducts() {
+    return {
+      processed: 0,
+      failed: 0,
+      summary: 'products: not applicable for gmail',
+      records: [],
+    };
+  },
+  async syncInventory() {
+    return {
+      processed: 0,
+      failed: 0,
+      summary: 'inventory: not applicable for gmail',
+      records: [],
+    };
+  },
+};
+
 const unsupportedConnector: IntegrationConnector = {
   provider: 'unsupported',
   async testConnection(ctx) {
@@ -281,18 +422,35 @@ const unsupportedConnector: IntegrationConnector = {
 export function getIntegrationConnector(provider: string): IntegrationConnector {
   if (provider === 'woocommerce') return wooConnector;
   if (provider === 'shopify') return shopifyConnector;
+  if (provider === 'gmail') return gmailConnector;
   return unsupportedConnector;
 }
 
-export function parseSyncTargets(payload: Record<string, unknown>): SyncTarget[] {
-  const raw = payload.targets;
-  if (!Array.isArray(raw) || raw.length === 0) return ['orders'];
+export function parseSyncTargets(provider: string, payload: Record<string, unknown>): SyncTarget[] {
+  const allowedByProvider: Record<string, SyncTarget[]> = {
+    gmail: ['entities'],
+    woocommerce: ['entities', 'orders', 'products', 'inventory'],
+    shopify: ['entities', 'orders', 'products', 'inventory'],
+  };
 
-  const allowed = new Set<SyncTarget>(['entities', 'orders', 'products', 'inventory']);
+  const defaultByProvider: Record<string, SyncTarget[]> = {
+    gmail: ['entities'],
+    woocommerce: ['orders'],
+    shopify: ['orders'],
+  };
+
+  const allowed = new Set<SyncTarget>(
+    allowedByProvider[provider] ?? ['entities', 'orders', 'products', 'inventory'],
+  );
+  const defaults = defaultByProvider[provider] ?? ['orders'];
+
+  const raw = payload.targets;
+  if (!Array.isArray(raw) || raw.length === 0) return defaults;
+
   const targets = raw
     .filter((value): value is string => typeof value === 'string')
     .map((value) => value.toLowerCase())
     .filter((value): value is SyncTarget => allowed.has(value as SyncTarget));
 
-  return targets.length > 0 ? targets : ['orders'];
+  return targets.length > 0 ? targets : defaults;
 }
