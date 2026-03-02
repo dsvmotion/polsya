@@ -1,10 +1,13 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
+import { buildEdgeFunctionHeaders } from '@/lib/edge-function-headers';
 import type {
   IntegrationSyncJob,
   IntegrationJobType,
   IntegrationJobStatus,
 } from '@/types/integrations';
+
+const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
 
 function jobsKey(integrationId: string, limit: number) {
   return ['integration-jobs', integrationId, limit] as const;
@@ -97,6 +100,49 @@ export function useUpdateIntegrationJob() {
     },
     onSuccess: (_data, variables) => {
       qc.invalidateQueries({ queryKey: jobsPrefixKey(variables.integrationId) });
+    },
+  });
+}
+
+interface ProcessJobInput {
+  integrationId: string;
+  jobId?: string;
+}
+
+interface ProcessJobResponse {
+  processed: boolean;
+  jobId?: string;
+  runId?: string;
+  status?: string;
+  recordsProcessed?: number;
+  recordsFailed?: number;
+  summary?: string;
+  error?: string;
+}
+
+export function useProcessIntegrationJob() {
+  const qc = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (input: ProcessJobInput): Promise<ProcessJobResponse> => {
+      const headers = await buildEdgeFunctionHeaders({ 'Content-Type': 'application/json' });
+      const response = await fetch(`${SUPABASE_URL}/functions/v1/process-integration-sync-jobs`, {
+        method: 'POST',
+        headers,
+        body: JSON.stringify({ jobId: input.jobId ?? null }),
+      });
+
+      const body = await response.json().catch(() => ({}));
+      if (!response.ok) {
+        throw new Error(body.error ?? `Failed to process integration job (${response.status})`);
+      }
+
+      return body as ProcessJobResponse;
+    },
+    onSuccess: (_data, variables) => {
+      qc.invalidateQueries({ queryKey: jobsPrefixKey(variables.integrationId) });
+      qc.invalidateQueries({ queryKey: ['integration-runs', variables.integrationId] });
+      qc.invalidateQueries({ queryKey: ['integration-connections'] });
     },
   });
 }

@@ -84,6 +84,7 @@ const REQUIRE_ORG_AUTHZ = [
   'populate-geography',
   'create-checkout-session',
   'create-customer-portal-session',
+  'process-integration-sync-jobs',
 ];
 
 for (const dir of REQUIRE_ORG_AUTHZ) {

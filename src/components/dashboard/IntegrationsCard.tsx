@@ -16,8 +16,8 @@ import {
   useDeleteIntegration,
   useToggleIntegrationEnabled,
 } from '@/hooks/useIntegrations';
-import { useIntegrationRuns, useCreateIntegrationRun } from '@/hooks/useIntegrationRuns';
-import { useIntegrationJobs, useEnqueueIntegrationJob, createJobIdempotencyKey } from '@/hooks/useIntegrationJobs';
+import { useIntegrationRuns } from '@/hooks/useIntegrationRuns';
+import { useIntegrationJobs, useEnqueueIntegrationJob, useProcessIntegrationJob, createJobIdempotencyKey } from '@/hooks/useIntegrationJobs';
 import {
   IntegrationProvider,
   IntegrationConnection,
@@ -97,7 +97,7 @@ function IntegrationRow({
   const { data: runs = [] } = useIntegrationRuns(intg.id, 3);
   const { data: jobs = [] } = useIntegrationJobs(intg.id, 1);
   const enqueueJob = useEnqueueIntegrationJob();
-  const createRun = useCreateIntegrationRun();
+  const processJob = useProcessIntegrationJob();
   const updateIntegration = useUpdateIntegration();
 
   const [editing, setEditing] = useState(false);
@@ -108,7 +108,7 @@ function IntegrationRow({
   const latestJob = jobs[0] ?? null;
   const statusColor = STATUS_COLORS[intg.status];
   const schema = PROVIDER_METADATA_SCHEMA[intg.provider];
-  const isSyncing = enqueueJob.isPending || createRun.isPending;
+  const isSyncing = enqueueJob.isPending || processJob.isPending;
 
   const handleQueueSync = async () => {
     try {
@@ -120,12 +120,19 @@ function IntegrationRow({
         requestedBy: 'dashboard',
         idempotencyKey,
       });
-      await createRun.mutateAsync({
+      const result = await processJob.mutateAsync({
         integrationId: intg.id,
-        runType: 'manual',
-        status: 'running',
       });
-      toast.success('Sync job queued');
+
+      if (result.status === 'success') {
+        toast.success(`Sync completed (${result.recordsProcessed ?? 0} processed)`);
+      } else if (result.status === 'error') {
+        toast.error(result.error || result.summary || 'Sync finished with errors');
+      } else if (result.processed === false) {
+        toast.info(result.summary || 'No queued jobs to process');
+      } else {
+        toast.success('Sync job processed');
+      }
     } catch {
       toast.error('Failed to queue sync');
     }
