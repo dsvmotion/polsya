@@ -81,10 +81,27 @@ export interface IntegrationSyncRun {
   status: SyncRunStatus;
   started_at: string;
   finished_at: string | null;
+  duration_ms: number;
   records_processed: number;
   records_failed: number;
+  metrics: Record<string, unknown>;
   error_message: string | null;
   created_at: string;
+}
+
+export interface IntegrationSyncObject {
+  id: string;
+  organization_id?: string;
+  integration_id: string;
+  provider: string;
+  sync_target: 'entities' | 'orders' | 'products' | 'inventory';
+  external_id: string;
+  external_updated_at: string | null;
+  payload: Record<string, unknown>;
+  first_seen_at: string;
+  last_seen_at: string;
+  created_at: string;
+  updated_at: string;
 }
 
 export const SYNC_RUN_STATUS_COLORS: Record<SyncRunStatus, { bg: string; text: string }> = {

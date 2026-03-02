@@ -7,6 +7,7 @@ import {
   parseSyncTargets,
   type IntegrationConnectorContext,
   type SyncTarget,
+  type SyncRecord,
 } from '../_shared/integration-connectors.ts';
 
 type IntegrationSyncJobRow = {
@@ -35,6 +36,14 @@ type IntegrationConnectionRow = {
   metadata: Record<string, unknown> | null;
   last_sync_at: string | null;
   last_error: string | null;
+};
+
+type PersistResult = {
+  processed: number;
+  failed: number;
+  created: number;
+  updated: number;
+  summary: string;
 };
 
 function jsonResponse(
@@ -70,6 +79,99 @@ function runStep(
     default:
       return connector.syncOrders(ctx);
   }
+}
+
+function chunk<T>(items: T[], size: number): T[][] {
+  if (items.length === 0) return [];
+  const out: T[][] = [];
+  for (let i = 0; i < items.length; i += size) {
+    out.push(items.slice(i, i + size));
+  }
+  return out;
+}
+
+async function persistStepRecords(
+  supabaseAdmin: ReturnType<typeof createClient>,
+  params: {
+    organizationId: string;
+    integrationId: string;
+    provider: string;
+    target: SyncTarget;
+    records: SyncRecord[];
+  },
+): Promise<PersistResult> {
+  const nowIso = new Date().toISOString();
+
+  const dedupedMap = new Map<string, SyncRecord>();
+  for (const record of params.records) {
+    if (record.externalId) dedupedMap.set(record.externalId, record);
+  }
+  const deduped = Array.from(dedupedMap.values());
+
+  if (deduped.length === 0) {
+    return {
+      processed: 0,
+      failed: 0,
+      created: 0,
+      updated: 0,
+      summary: `${params.target}: no records to persist`,
+    };
+  }
+
+  const existingIds = new Set<string>();
+  for (const idsChunk of chunk(deduped.map((record) => record.externalId), 500)) {
+    const { data: existingRows, error: existingError } = await supabaseAdmin
+      .from('integration_sync_objects')
+      .select('external_id')
+      .eq('organization_id', params.organizationId)
+      .eq('integration_id', params.integrationId)
+      .eq('provider', params.provider)
+      .eq('sync_target', params.target)
+      .in('external_id', idsChunk);
+
+    if (existingError) {
+      throw new Error(`Failed reading existing sync objects: ${existingError.message}`);
+    }
+
+    for (const row of existingRows ?? []) {
+      const externalId = (row as { external_id?: string }).external_id;
+      if (externalId) existingIds.add(externalId);
+    }
+  }
+
+  const created = deduped.reduce((acc, record) => acc + (existingIds.has(record.externalId) ? 0 : 1), 0);
+  const updated = deduped.length - created;
+
+  const upsertRows = deduped.map((record) => ({
+    organization_id: params.organizationId,
+    integration_id: params.integrationId,
+    provider: params.provider,
+    sync_target: params.target,
+    external_id: record.externalId,
+    external_updated_at: record.externalUpdatedAt,
+    payload: record.payload,
+    last_seen_at: nowIso,
+    first_seen_at: existingIds.has(record.externalId) ? undefined : nowIso,
+  }));
+
+  const { error: upsertError } = await supabaseAdmin
+    .from('integration_sync_objects')
+    .upsert(upsertRows, {
+      onConflict: 'organization_id,integration_id,provider,sync_target,external_id',
+      ignoreDuplicates: false,
+    });
+
+  if (upsertError) {
+    throw new Error(`Failed persisting sync objects: ${upsertError.message}`);
+  }
+
+  return {
+    processed: deduped.length,
+    failed: 0,
+    created,
+    updated,
+    summary: `${params.target}: upserted ${deduped.length} (${created} new, ${updated} updated)`,
+  };
 }
 
 serve(async (req) => {
@@ -234,21 +336,61 @@ serve(async (req) => {
 
     let totalProcessed = 0;
     let totalFailed = 0;
+    let totalCreated = 0;
+    let totalUpdated = 0;
     const stepSummaries: string[] = [];
+    const perTarget: Record<string, { fetched: number; created: number; updated: number; failed: number }> = {};
 
     try {
       await connector.testConnection(connectorCtx);
 
       for (const target of targets) {
-        const result = await runStep(target, connectorCtx, connector);
-        totalProcessed += result.processed;
-        totalFailed += result.failed;
-        stepSummaries.push(`${target}: ${result.summary}`);
+        try {
+          const syncResult = await runStep(target, connectorCtx, connector);
+          const persisted = await persistStepRecords(supabaseAdmin, {
+            organizationId: auth.organizationId,
+            integrationId: integration.id,
+            provider: integration.provider,
+            target,
+            records: syncResult.records,
+          });
+
+          totalProcessed += persisted.processed;
+          totalFailed += syncResult.failed + persisted.failed;
+          totalCreated += persisted.created;
+          totalUpdated += persisted.updated;
+
+          perTarget[target] = {
+            fetched: syncResult.records.length,
+            created: persisted.created,
+            updated: persisted.updated,
+            failed: syncResult.failed + persisted.failed,
+          };
+
+          stepSummaries.push(`${target}: ${persisted.summary}`);
+        } catch (stepError) {
+          const stepMessage = safeErrorMessage(stepError);
+          totalFailed += 1;
+          perTarget[target] = {
+            fetched: 0,
+            created: 0,
+            updated: 0,
+            failed: 1,
+          };
+          stepSummaries.push(`${target}: failed (${stepMessage})`);
+        }
       }
 
       const finishedAt = new Date().toISOString();
+      const durationMs = Math.max(0, Date.now() - new Date(startedAt).getTime());
       const runStatus = totalFailed > 0 ? 'error' : 'success';
       const joinedSummary = stepSummaries.join(' | ');
+      const metrics = {
+        targets,
+        created: totalCreated,
+        updated: totalUpdated,
+        per_target: perTarget,
+      };
 
       await supabaseAdmin
         .from('integration_sync_runs')
@@ -257,7 +399,9 @@ serve(async (req) => {
           records_processed: totalProcessed,
           records_failed: totalFailed,
           finished_at: finishedAt,
-          error_message: totalFailed > 0 ? joinedSummary : null,
+          duration_ms: durationMs,
+          metrics,
+          error_message: runStatus === 'success' ? null : joinedSummary,
         })
         .eq('id', runId)
         .eq('organization_id', auth.organizationId);
@@ -267,7 +411,7 @@ serve(async (req) => {
         .update({
           status: runStatus,
           finished_at: finishedAt,
-          error_message: totalFailed > 0 ? joinedSummary : null,
+          error_message: runStatus === 'success' ? null : joinedSummary,
         })
         .eq('id', activeJob.id)
         .eq('organization_id', auth.organizationId);
@@ -289,8 +433,11 @@ serve(async (req) => {
           runId,
           status: runStatus,
           targets,
+          durationMs,
           recordsProcessed: totalProcessed,
           recordsFailed: totalFailed,
+          recordsCreated: totalCreated,
+          recordsUpdated: totalUpdated,
           summary: joinedSummary,
         },
         200,
@@ -299,6 +446,7 @@ serve(async (req) => {
     } catch (error) {
       const message = safeErrorMessage(error);
       const finishedAt = new Date().toISOString();
+      const durationMs = Math.max(0, Date.now() - new Date(startedAt).getTime());
 
       await supabaseAdmin
         .from('integration_sync_runs')
@@ -307,6 +455,13 @@ serve(async (req) => {
           records_processed: totalProcessed,
           records_failed: totalFailed + 1,
           finished_at: finishedAt,
+          duration_ms: durationMs,
+          metrics: {
+            targets,
+            created: totalCreated,
+            updated: totalUpdated,
+            per_target: perTarget,
+          },
           error_message: message,
         })
         .eq('id', runId)
@@ -339,8 +494,11 @@ serve(async (req) => {
           runId,
           status: 'error',
           targets,
+          durationMs,
           recordsProcessed: totalProcessed,
           recordsFailed: totalFailed + 1,
+          recordsCreated: totalCreated,
+          recordsUpdated: totalUpdated,
           error: message,
         },
         200,

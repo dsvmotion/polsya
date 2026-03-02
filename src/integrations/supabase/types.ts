@@ -583,6 +583,66 @@ export type Database = {
           },
         ]
       }
+      integration_sync_objects: {
+        Row: {
+          id: string
+          organization_id: string
+          integration_id: string
+          provider: string
+          sync_target: string
+          external_id: string
+          external_updated_at: string | null
+          payload: Json
+          first_seen_at: string
+          last_seen_at: string
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          organization_id?: string
+          integration_id: string
+          provider: string
+          sync_target: string
+          external_id: string
+          external_updated_at?: string | null
+          payload?: Json
+          first_seen_at?: string
+          last_seen_at?: string
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          organization_id?: string
+          integration_id?: string
+          provider?: string
+          sync_target?: string
+          external_id?: string
+          external_updated_at?: string | null
+          payload?: Json
+          first_seen_at?: string
+          last_seen_at?: string
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "integration_sync_objects_integration_id_fkey"
+            columns: ["integration_id"]
+            isOneToOne: false
+            referencedRelation: "integration_connections"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "integration_sync_objects_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       integration_sync_jobs: {
         Row: {
           id: string
@@ -655,8 +715,10 @@ export type Database = {
           status: string
           started_at: string
           finished_at: string | null
+          duration_ms: number
           records_processed: number
           records_failed: number
+          metrics: Json
           error_message: string | null
           created_at: string
         }
@@ -668,8 +730,10 @@ export type Database = {
           status: string
           started_at?: string
           finished_at?: string | null
+          duration_ms?: number
           records_processed?: number
           records_failed?: number
+          metrics?: Json
           error_message?: string | null
           created_at?: string
         }
@@ -681,8 +745,10 @@ export type Database = {
           status?: string
           started_at?: string
           finished_at?: string | null
+          duration_ms?: number
           records_processed?: number
           records_failed?: number
+          metrics?: Json
           error_message?: string | null
           created_at?: string
         }

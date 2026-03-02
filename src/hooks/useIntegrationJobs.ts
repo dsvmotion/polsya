@@ -114,8 +114,11 @@ interface ProcessJobResponse {
   jobId?: string;
   runId?: string;
   status?: string;
+  durationMs?: number;
   recordsProcessed?: number;
   recordsFailed?: number;
+  recordsCreated?: number;
+  recordsUpdated?: number;
   summary?: string;
   error?: string;
 }

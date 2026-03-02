@@ -125,7 +125,9 @@ function IntegrationRow({
       });
 
       if (result.status === 'success') {
-        toast.success(`Sync completed (${result.recordsProcessed ?? 0} processed)`);
+        toast.success(
+          `Sync completed (${result.recordsProcessed ?? 0} processed, ${result.recordsCreated ?? 0} new, ${result.recordsUpdated ?? 0} updated)`
+        );
       } else if (result.status === 'error') {
         toast.error(result.error || result.summary || 'Sync finished with errors');
       } else if (result.processed === false) {
@@ -285,6 +287,9 @@ function IntegrationRow({
             <span>{timeAgo(lastRun.started_at)}</span>
             {lastRun.records_processed > 0 && (
               <span>{lastRun.records_processed} processed</span>
+            )}
+            {lastRun.duration_ms > 0 && (
+              <span>{(lastRun.duration_ms / 1000).toFixed(1)}s</span>
             )}
             {lastRun.records_failed > 0 && (
               <span className="text-red-500">{lastRun.records_failed} failed</span>
