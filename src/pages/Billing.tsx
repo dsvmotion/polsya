@@ -7,7 +7,8 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { UserMenu } from '@/components/auth/UserMenu';
 import {
-  hasBillingAccess,
+  evaluateBillingAccess,
+  getBillingPastDueGraceDays,
   useBillingOverview,
   useBillingPlans,
   useCreateCheckoutSession,
@@ -62,7 +63,8 @@ export default function Billing() {
     return plans.find((p) => p.stripe_price_id === overview.subscription?.stripe_price_id) ?? null;
   }, [overview?.subscription, plans]);
 
-  const hasAccess = hasBillingAccess(overview?.subscription?.status);
+  const access = evaluateBillingAccess(overview?.subscription ?? null);
+  const hasAccess = access.hasAccess;
 
   const handleSubscribe = async (planId: string) => {
     try {
@@ -150,6 +152,16 @@ export default function Billing() {
             )}
             {!hasAccess && (
               <p className="text-sm text-amber-700">Your workspace needs an active subscription to use prospecting and operations modules.</p>
+            )}
+            {access.reason === 'past_due_grace' && access.graceEndsAt && (
+              <p className="text-sm text-amber-700">
+                Past due grace active until {new Date(access.graceEndsAt).toLocaleDateString('es-ES')} ({getBillingPastDueGraceDays()} days).
+              </p>
+            )}
+            {access.reason === 'past_due_expired' && access.graceEndsAt && (
+              <p className="text-sm text-red-700">
+                Grace period expired on {new Date(access.graceEndsAt).toLocaleDateString('es-ES')}. Update payment method to restore access.
+              </p>
             )}
             <div>
               <Button

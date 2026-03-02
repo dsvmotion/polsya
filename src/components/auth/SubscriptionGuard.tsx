@@ -2,7 +2,7 @@ import { ReactNode } from 'react';
 import { Navigate, useLocation } from 'react-router-dom';
 import { RefreshCw } from 'lucide-react';
 import { useCurrentOrganization } from '@/hooks/useOrganizationContext';
-import { hasBillingAccess, useBillingOverview } from '@/hooks/useBilling';
+import { evaluateBillingAccess, useBillingOverview } from '@/hooks/useBilling';
 
 interface SubscriptionGuardProps {
   children: ReactNode;
@@ -24,8 +24,8 @@ export function SubscriptionGuard({ children }: SubscriptionGuardProps) {
     );
   }
 
-  const subscriptionStatus = overview?.subscription?.status;
-  if (hasBillingAccess(subscriptionStatus)) {
+  const access = evaluateBillingAccess(overview?.subscription ?? null);
+  if (access.hasAccess) {
     return <>{children}</>;
   }
 

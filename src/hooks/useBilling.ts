@@ -14,10 +14,55 @@ import type {
 
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
 
-const BILLING_ACTIVE_STATUSES: BillingSubscriptionStatus[] = ['active', 'trialing', 'past_due', 'unpaid'];
+const BILLING_PAST_DUE_GRACE_DAYS = (() => {
+  const raw = Number(import.meta.env.VITE_BILLING_PAST_DUE_GRACE_DAYS ?? 7);
+  if (!Number.isFinite(raw) || raw < 0) return 7;
+  return Math.floor(raw);
+})();
+
+const DAY_MS = 24 * 60 * 60 * 1000;
+
+export interface BillingAccessDecision {
+  hasAccess: boolean;
+  reason: 'active' | 'trialing' | 'past_due_grace' | 'past_due_expired' | 'no_subscription' | 'blocked_status';
+  graceEndsAt: string | null;
+}
+
+export function getBillingPastDueGraceDays(): number {
+  return BILLING_PAST_DUE_GRACE_DAYS;
+}
+
+export function evaluateBillingAccess(
+  subscription: Pick<BillingSubscription, 'status' | 'current_period_end'> | null | undefined,
+  nowMs: number = Date.now(),
+): BillingAccessDecision {
+  if (!subscription) {
+    return { hasAccess: false, reason: 'no_subscription', graceEndsAt: null };
+  }
+
+  if (subscription.status === 'active') {
+    return { hasAccess: true, reason: 'active', graceEndsAt: null };
+  }
+
+  if (subscription.status === 'trialing') {
+    return { hasAccess: true, reason: 'trialing', graceEndsAt: null };
+  }
+
+  if (subscription.status === 'past_due') {
+    const endMs = subscription.current_period_end ? new Date(subscription.current_period_end).getTime() : nowMs;
+    const graceEndsMs = endMs + BILLING_PAST_DUE_GRACE_DAYS * DAY_MS;
+    const graceEndsAt = new Date(graceEndsMs).toISOString();
+    if (nowMs <= graceEndsMs) {
+      return { hasAccess: true, reason: 'past_due_grace', graceEndsAt };
+    }
+    return { hasAccess: false, reason: 'past_due_expired', graceEndsAt };
+  }
+
+  return { hasAccess: false, reason: 'blocked_status', graceEndsAt: null };
+}
 
 export function hasBillingAccess(status: BillingSubscriptionStatus | null | undefined): boolean {
-  return !!status && BILLING_ACTIVE_STATUSES.includes(status);
+  return evaluateBillingAccess(status ? { status, current_period_end: null } : null).hasAccess;
 }
 
 export function useBillingPlans() {

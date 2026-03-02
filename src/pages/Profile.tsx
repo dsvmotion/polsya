@@ -6,9 +6,13 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ArrowLeft, User, Mail, Calendar, Shield, Loader2 } from 'lucide-react';
 import { Link, Navigate } from 'react-router-dom';
 import { UserMenu } from '@/components/auth/UserMenu';
+import { useCurrentOrganization } from '@/hooks/useOrganizationContext';
+import { evaluateBillingAccess, useBillingOverview } from '@/hooks/useBilling';
 
 export default function Profile() {
   const { user, signOut, isLoading } = useAuth();
+  const { organization } = useCurrentOrganization();
+  const { data: billingOverview } = useBillingOverview(organization?.id ?? null);
 
   if (isLoading) {
     return (
@@ -45,6 +49,8 @@ export default function Profile() {
       })
     : '—';
   const userId = user.id;
+  const billingAccess = evaluateBillingAccess(billingOverview?.subscription ?? null);
+  const subscriptionStatus = billingOverview?.subscription?.status ?? 'none';
 
   return (
     <div className="min-h-screen bg-white text-gray-900">
@@ -137,6 +143,36 @@ export default function Profile() {
                   {userId}
                 </p>
               </div>
+            </CardContent>
+          </Card>
+
+          {/* Organization Billing */}
+          <Card className="border-gray-200 bg-white">
+            <CardHeader>
+              <CardTitle className="text-gray-900">Organization Billing</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              <div className="space-y-2">
+                <Label className="text-gray-600">Workspace</Label>
+                <Input
+                  readOnly
+                  value={organization?.name ?? '—'}
+                  className="bg-gray-50 border-gray-200 text-gray-900"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label className="text-gray-600">Subscription status</Label>
+                <Input
+                  readOnly
+                  value={`${subscriptionStatus}${billingAccess.reason === 'past_due_grace' ? ' (grace period)' : ''}`}
+                  className="bg-gray-50 border-gray-200 text-gray-900"
+                />
+              </div>
+              <Link to="/billing">
+                <Button variant="outline" className="border-gray-300 text-gray-700 hover:bg-gray-100">
+                  Open Billing
+                </Button>
+              </Link>
             </CardContent>
           </Card>
 
