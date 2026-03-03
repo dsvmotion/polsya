@@ -45,6 +45,7 @@ npm install
 | `npm run test:watch` | Tests en modo watch     |
 | `npm run check:migrations` | Verifica orden/duplicados de migraciones |
 | `npm run check:security` | Invariantes de seguridad edge/config |
+| `npm run check:integration-contracts` | Contratos de providers/targets entre frontend y conectores |
 | `npm run check:observability` | Invariantes de logs estructurados en jobs |
 | `npm run check:design-system` | Invariantes de patrones UI/tokens compartidos |
 | `npm run check:release-ops` | Runbooks operativos obligatorios |
