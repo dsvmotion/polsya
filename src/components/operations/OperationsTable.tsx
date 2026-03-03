@@ -102,7 +102,76 @@ export function OperationsTable({
   }
 
   return (
-    <div className="overflow-x-auto">
+    <>
+      <div className="lg:hidden p-3 space-y-2">
+        <div className="flex flex-wrap items-center gap-2 text-xs text-gray-500">
+          <span className="font-medium">Sort:</span>
+          <button
+            onClick={() => onSort('name')}
+            className={cn(
+              'px-2 py-1 rounded border',
+              sortField === 'name' ? 'border-gray-400 text-gray-900 bg-gray-50' : 'border-gray-200'
+            )}
+          >
+            Name {sortField === 'name' ? (sortDirection === 'asc' ? '↑' : '↓') : ''}
+          </button>
+          <button
+            onClick={() => onSort('totalRevenue')}
+            className={cn(
+              'px-2 py-1 rounded border',
+              sortField === 'totalRevenue' ? 'border-gray-400 text-gray-900 bg-gray-50' : 'border-gray-200'
+            )}
+          >
+            Revenue {sortField === 'totalRevenue' ? (sortDirection === 'asc' ? '↑' : '↓') : ''}
+          </button>
+          <button
+            onClick={() => onSort('lastOrderDate')}
+            className={cn(
+              'px-2 py-1 rounded border',
+              sortField === 'lastOrderDate' ? 'border-gray-400 text-gray-900 bg-gray-50' : 'border-gray-200'
+            )}
+          >
+            Last order {sortField === 'lastOrderDate' ? (sortDirection === 'asc' ? '↑' : '↓') : ''}
+          </button>
+        </div>
+
+        {pharmacies.map((pharmacy) => (
+          <button
+            key={pharmacy.id}
+            onClick={() => onSelectPharmacy(pharmacy)}
+            className={cn(
+              'w-full text-left rounded-lg border p-3 bg-white',
+              selectedPharmacyId === pharmacy.id ? 'border-gray-400 bg-gray-50' : 'border-gray-200'
+            )}
+          >
+            <div className="flex items-start justify-between gap-2">
+              <div className="min-w-0">
+                <p className="font-medium text-gray-900 truncate">{pharmacy.name}</p>
+                <p className="text-xs text-gray-500 truncate">
+                  {[pharmacy.city, pharmacy.province].filter(Boolean).join(' · ') || '—'}
+                </p>
+              </div>
+              <StatusBadge status={pharmacy.commercialStatus} />
+            </div>
+            <div className="mt-2 flex items-center justify-between text-xs">
+              <span className="text-gray-500">
+                {pharmacy.lastOrder
+                  ? `Last: ${new Date(pharmacy.lastOrder.dateCreated).toLocaleDateString()}`
+                  : 'No orders'}
+              </span>
+              <PaymentBadge status={pharmacy.lastOrder?.paymentStatus || null} />
+            </div>
+            <div className="mt-2 flex items-center justify-between text-sm">
+              <span className="font-medium text-gray-900">
+                €{pharmacy.totalRevenue.toLocaleString('es-ES', { minimumFractionDigits: 2 })}
+              </span>
+              <DocCountCell pharmacy={pharmacy} />
+            </div>
+          </button>
+        ))}
+      </div>
+
+      <div className="hidden lg:block overflow-x-auto">
       <table className="w-full text-sm min-w-[1600px]">
         <thead>
           <tr className="border-b border-gray-200 bg-gray-50">
@@ -305,5 +374,6 @@ export function OperationsTable({
         </tbody>
       </table>
     </div>
+    </>
   );
 }

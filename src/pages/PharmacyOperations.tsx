@@ -397,8 +397,8 @@ export default function PharmacyOperations({ clientType = 'pharmacy' }: Props) {
                 selectedPharmacyId={selectedPharmacy?.id || null}
                 onSelectPharmacy={setSelectedPharmacy}
               />
-              <div className="flex items-center justify-between p-4 border-t border-gray-200">
-                <span className="text-sm text-gray-500">
+              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 p-4 border-t border-gray-200">
+                <span className="text-xs sm:text-sm text-gray-500">
                   {totalCount > 0
                     ? `Showing ${page * pageSize + 1}-${Math.min((page + 1) * pageSize, totalCount)} of ${totalCount}`
                     : 'Showing 0 of 0'}
