@@ -230,11 +230,12 @@ export function ProspectingMap({
 
   // Cleanup on unmount
   useEffect(() => {
+    const markers = markersByIdRef.current;
     return () => {
-      for (const [, marker] of markersByIdRef.current.entries()) {
+      for (const [, marker] of markers.entries()) {
         marker.setMap(null);
       }
-      markersByIdRef.current.clear();
+      markers.clear();
     };
   }, []);
 

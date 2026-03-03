@@ -78,7 +78,7 @@ export default function PharmacyProspecting({ clientType = 'pharmacy' }: Props) 
         province: detectedLocation.province || prev.province,
       }));
     }
-  }, [detectedLocation]);
+  }, [detectedLocation, filters.country, filters.city]);
 
   // Save pharmacies mutation
   const savePharmacies = useSavePharmacies(clientType);
