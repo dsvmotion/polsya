@@ -1,5 +1,6 @@
 import { TrendingUp, Target, Trophy, XCircle } from 'lucide-react';
 import { usePipelineSummary } from '@/hooks/usePipelineSummary';
+import { EmptyState, LoadingState } from '@/components/ui/view-states';
 
 export function PipelineSummaryCards() {
   const { data, isLoading } = usePipelineSummary();
@@ -8,7 +9,7 @@ export function PipelineSummaryCards() {
     return (
       <div className="grid grid-cols-2 gap-3">
         {Array.from({ length: 4 }).map((_, i) => (
-          <div key={i} className="bg-white border border-gray-200 rounded-lg p-4 animate-pulse">
+          <div key={i} className="metric-card animate-pulse">
             <div className="h-3 w-20 bg-gray-200 rounded mb-2" />
             <div className="h-6 w-24 bg-gray-200 rounded" />
           </div>
@@ -17,7 +18,26 @@ export function PipelineSummaryCards() {
     );
   }
 
-  if (!data) return null;
+  if (!data) {
+    return (
+      <EmptyState
+        title="Pipeline unavailable"
+        description="Could not load opportunity metrics right now."
+        className="col-span-2"
+        tone="warning"
+      />
+    );
+  }
+
+  if (data.openCount === 0 && data.wonCount === 0 && data.lostCount === 0) {
+    return (
+      <EmptyState
+        title="No pipeline data yet"
+        description="Create opportunities to see pipeline and forecast metrics."
+        className="col-span-2"
+      />
+    );
+  }
 
   const cards = [
     {
@@ -51,7 +71,7 @@ export function PipelineSummaryCards() {
       {cards.map((card) => (
         <div
           key={card.label}
-          className="bg-white border border-gray-200 rounded-lg p-4 flex items-center gap-3"
+          className="metric-card flex items-center gap-3"
         >
           <card.icon className={`h-5 w-5 shrink-0 ${card.iconColor}`} />
           <div className="min-w-0">

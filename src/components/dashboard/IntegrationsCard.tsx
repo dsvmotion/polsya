@@ -38,6 +38,7 @@ import {
 } from '@/lib/integration-metadata';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
+import { EmptyState, LoadingState } from '@/components/ui/view-states';
 
 const PROVIDERS = Object.keys(PROVIDER_LABELS) as IntegrationProvider[];
 
@@ -685,7 +686,7 @@ export function IntegrationsCard() {
   };
 
   return (
-    <div className="p-4 rounded-lg border border-gray-200 bg-white">
+    <div className="surface-card p-4">
       <div className="flex items-center justify-between mb-3">
         <h2 className="font-semibold text-gray-900 flex items-center gap-2">
           <Plug className="h-4 w-4 text-gray-500" />
@@ -773,9 +774,15 @@ export function IntegrationsCard() {
 
       {/* List */}
       {isLoading ? (
-        <p className="text-xs text-gray-400">Loading integrations...</p>
+        <LoadingState
+          title="Loading integrations..."
+          description="Checking connectors and sync status."
+        />
       ) : integrations.length === 0 && !showForm ? (
-        <p className="text-xs text-gray-400">No integrations configured</p>
+        <EmptyState
+          title="No integrations configured"
+          description="Add a provider to enable automated sync jobs."
+        />
       ) : (
         <div className="space-y-1.5">
           {integrations.map((intg) => (

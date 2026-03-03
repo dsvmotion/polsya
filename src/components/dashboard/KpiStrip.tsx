@@ -47,7 +47,7 @@ interface KpiCardProps {
 
 function KpiCard({ label, value, icon, accent = 'text-gray-900' }: KpiCardProps) {
   return (
-    <div className="flex items-center gap-3 px-4 py-3 rounded-lg border border-gray-200 bg-white min-w-0">
+    <div className="metric-card flex items-center gap-3 min-w-0">
       <div className="p-1.5 rounded-md bg-gray-100 text-gray-500 shrink-0">
         {icon}
       </div>
@@ -61,7 +61,7 @@ function KpiCard({ label, value, icon, accent = 'text-gray-900' }: KpiCardProps)
 
 function SkeletonCard() {
   return (
-    <div className="flex items-center gap-3 px-4 py-3 rounded-lg border border-gray-200 bg-white animate-pulse">
+    <div className="metric-card flex items-center gap-3 animate-pulse">
       <div className="h-8 w-8 rounded-md bg-gray-200" />
       <div className="space-y-1.5">
         <div className="h-5 w-16 rounded bg-gray-200" />

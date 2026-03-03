@@ -24,6 +24,7 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
+import { EmptyState, LoadingState } from '@/components/ui/view-states';
 
 function timeAgo(dateStr: string): string {
   const diff = Date.now() - new Date(dateStr).getTime();
@@ -288,8 +289,8 @@ export function AgentActionsCard() {
   );
 
   return (
-    <div className="bg-white border border-gray-200 rounded-lg">
-      <div className="flex items-center justify-between px-4 py-3 border-b border-gray-200">
+    <div className="surface-card">
+      <div className="surface-card-header">
         <div className="flex items-center gap-2">
           <Bot className="h-4 w-4 text-gray-500" />
           <h3 className="text-sm font-semibold text-gray-900">Agent Actions</h3>
@@ -315,17 +316,19 @@ export function AgentActionsCard() {
         </Button>
       </div>
 
-      <div className="px-4 py-2">
+      <div className="surface-card-body pt-2">
         {isLoading && (
-          <div className="flex items-center justify-center py-6 text-gray-400">
-            <Loader2 className="h-4 w-4 animate-spin" />
-          </div>
+          <LoadingState
+            title="Loading agent actions..."
+            description="Fetching latest action approvals and runs."
+          />
         )}
 
         {!isLoading && actions.length === 0 && (
-          <p className="text-xs text-gray-400 text-center py-4">
-            No agent actions recorded yet
-          </p>
+          <EmptyState
+            title="No agent actions yet"
+            description="Simulate or trigger an action to start an approval trail."
+          />
         )}
 
         {!isLoading && actions.length > 0 && (
