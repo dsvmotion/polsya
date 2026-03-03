@@ -686,8 +686,8 @@ export function IntegrationsCard() {
   };
 
   return (
-    <div className="surface-card p-4">
-      <div className="flex items-center justify-between mb-3">
+    <div className="surface-card">
+      <div className="surface-card-header">
         <h2 className="font-semibold text-gray-900 flex items-center gap-2">
           <Plug className="h-4 w-4 text-gray-500" />
           Integrations
@@ -705,96 +705,98 @@ export function IntegrationsCard() {
         )}
       </div>
 
-      {/* Status summary */}
-      <div className="flex items-center gap-4 mb-3 text-xs">
-        <span className="flex items-center gap-1.5">
-          <span className="w-2 h-2 rounded-full bg-green-500" />
-          {counts.connected} connected
-        </span>
-        <span className="flex items-center gap-1.5">
-          <span className="w-2 h-2 rounded-full bg-gray-400" />
-          {counts.disconnected} disconnected
-        </span>
-        {counts.error > 0 && (
+      <div className="surface-card-body pt-3">
+        {/* Status summary */}
+        <div className="flex items-center gap-4 mb-3 text-xs flex-wrap">
           <span className="flex items-center gap-1.5">
-            <span className="w-2 h-2 rounded-full bg-red-500" />
-            {counts.error} error
+            <span className="w-2 h-2 rounded-full bg-green-500" />
+            {counts.connected} connected
           </span>
+          <span className="flex items-center gap-1.5">
+            <span className="w-2 h-2 rounded-full bg-gray-400" />
+            {counts.disconnected} disconnected
+          </span>
+          {counts.error > 0 && (
+            <span className="flex items-center gap-1.5">
+              <span className="w-2 h-2 rounded-full bg-red-500" />
+              {counts.error} error
+            </span>
+          )}
+        </div>
+
+        {/* Add form */}
+        {showForm && (
+          <div className="p-3 border border-gray-200 rounded-lg bg-gray-50 space-y-2 mb-3">
+            <Select value={newProvider} onValueChange={(v) => handleProviderChange(v as IntegrationProvider)}>
+              <SelectTrigger className="h-8 text-sm bg-white border-gray-300">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent className="bg-white border-gray-200">
+                {PROVIDERS.map((p) => (
+                  <SelectItem key={p} value={p}>
+                    {PROVIDER_ICONS[p]} {PROVIDER_LABELS[p]}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <div>
+              <Input
+                placeholder="Display name *"
+                value={newName}
+                onChange={(e) => {
+                  setNewName(e.target.value);
+                  setFormErrors((prev) => { const next = { ...prev }; delete next._name; return next; });
+                }}
+                className={cn('h-8 text-sm bg-white border-gray-300', formErrors._name && 'border-red-400')}
+              />
+              {formErrors._name && (
+                <p className="text-[10px] text-red-500 mt-0.5 pl-1">{formErrors._name}</p>
+              )}
+            </div>
+            <MetadataFields
+              provider={newProvider}
+              values={newMeta}
+              onChange={(k, v) => {
+                setNewMeta((prev) => ({ ...prev, [k]: v }));
+                setFormErrors((prev) => { const next = { ...prev }; delete next[k]; return next; });
+              }}
+              errors={formErrors}
+            />
+            <div className="flex items-center gap-2 pt-1">
+              <Button size="sm" onClick={handleAdd} disabled={createIntegration.isPending}>
+                {createIntegration.isPending ? 'Adding...' : 'Add'}
+              </Button>
+              <Button size="sm" variant="ghost" onClick={resetForm}>
+                Cancel
+              </Button>
+            </div>
+          </div>
+        )}
+
+        {/* List */}
+        {isLoading ? (
+          <LoadingState
+            title="Loading integrations..."
+            description="Checking connectors and sync status."
+          />
+        ) : integrations.length === 0 && !showForm ? (
+          <EmptyState
+            title="No integrations configured"
+            description="Add a provider to enable automated sync jobs."
+          />
+        ) : (
+          <div className="space-y-1.5">
+            {integrations.map((intg) => (
+              <IntegrationRow
+                key={intg.id}
+                intg={intg}
+                onDelete={handleDelete}
+                onToggle={handleToggle}
+              />
+            ))}
+          </div>
         )}
       </div>
-
-      {/* Add form */}
-      {showForm && (
-        <div className="p-3 border border-gray-200 rounded-lg bg-gray-50 space-y-2 mb-3">
-          <Select value={newProvider} onValueChange={(v) => handleProviderChange(v as IntegrationProvider)}>
-            <SelectTrigger className="h-8 text-sm bg-white border-gray-300">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent className="bg-white border-gray-200">
-              {PROVIDERS.map((p) => (
-                <SelectItem key={p} value={p}>
-                  {PROVIDER_ICONS[p]} {PROVIDER_LABELS[p]}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-          <div>
-            <Input
-              placeholder="Display name *"
-              value={newName}
-              onChange={(e) => {
-                setNewName(e.target.value);
-                setFormErrors((prev) => { const next = { ...prev }; delete next._name; return next; });
-              }}
-              className={cn('h-8 text-sm bg-white border-gray-300', formErrors._name && 'border-red-400')}
-            />
-            {formErrors._name && (
-              <p className="text-[10px] text-red-500 mt-0.5 pl-1">{formErrors._name}</p>
-            )}
-          </div>
-          <MetadataFields
-            provider={newProvider}
-            values={newMeta}
-            onChange={(k, v) => {
-              setNewMeta((prev) => ({ ...prev, [k]: v }));
-              setFormErrors((prev) => { const next = { ...prev }; delete next[k]; return next; });
-            }}
-            errors={formErrors}
-          />
-          <div className="flex items-center gap-2 pt-1">
-            <Button size="sm" onClick={handleAdd} disabled={createIntegration.isPending}>
-              {createIntegration.isPending ? 'Adding...' : 'Add'}
-            </Button>
-            <Button size="sm" variant="ghost" onClick={resetForm}>
-              Cancel
-            </Button>
-          </div>
-        </div>
-      )}
-
-      {/* List */}
-      {isLoading ? (
-        <LoadingState
-          title="Loading integrations..."
-          description="Checking connectors and sync status."
-        />
-      ) : integrations.length === 0 && !showForm ? (
-        <EmptyState
-          title="No integrations configured"
-          description="Add a provider to enable automated sync jobs."
-        />
-      ) : (
-        <div className="space-y-1.5">
-          {integrations.map((intg) => (
-            <IntegrationRow
-              key={intg.id}
-              intg={intg}
-              onDelete={handleDelete}
-              onToggle={handleToggle}
-            />
-          ))}
-        </div>
-      )}
     </div>
   );
 }

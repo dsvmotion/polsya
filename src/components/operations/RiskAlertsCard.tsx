@@ -86,28 +86,6 @@ export function RiskAlertsCard({
 }: RiskAlertsCardProps) {
   const { alerts, summary, isLoading } = useRiskAlerts(clientType);
 
-  if (isLoading) {
-    return (
-      <LoadingState
-        title="Loading risk alerts..."
-        description="Evaluating client health signals."
-        className="h-full"
-      />
-    );
-  }
-
-  if (summary.totalAtRisk === 0) {
-    return (
-      <EmptyState
-        title="No risk alerts"
-        description="All clients are in good standing."
-        icon={ShieldCheck}
-        tone="success"
-        className="h-full"
-      />
-    );
-  }
-
   const handleOpen = (pharmacyId: string, pharmacyName: string) => {
     onOpenPharmacy?.(pharmacyId, pharmacyName);
   };
@@ -119,44 +97,63 @@ export function RiskAlertsCard({
   const top5 = alerts.slice(0, 5);
 
   return (
-    <div className="surface-card p-4">
-      <div className="flex items-center gap-2 mb-3">
+    <div className="surface-card">
+      <div className="surface-card-header">
         <ShieldAlert className="h-4 w-4 text-red-500" />
         <h3 className="text-sm font-semibold text-gray-900">Risk Alerts</h3>
       </div>
-
-      {/* Summary badges */}
-      <div className="flex items-center gap-3 mb-3 flex-wrap">
-        {summary.highCount > 0 && (
-          <div className="flex items-center gap-1.5">
-            <AlertTriangle className="h-3.5 w-3.5 text-red-500" />
-            <span className="text-xs font-medium text-red-700">{summary.highCount} High</span>
-          </div>
-        )}
-        {summary.mediumCount > 0 && (
-          <div className="flex items-center gap-1.5">
-            <AlertTriangle className="h-3.5 w-3.5 text-amber-500" />
-            <span className="text-xs font-medium text-amber-700">{summary.mediumCount} Medium</span>
-          </div>
-        )}
-        <span className="text-xs text-gray-400">{summary.totalAtRisk} total at risk</span>
-      </div>
-
-      {/* Top alerts */}
-      <div className="divide-y divide-gray-100">
-        {top5.map((alert) => (
-          <AlertRow
-            key={alert.pharmacyId}
-            alert={alert}
-            onOpen={handleOpen}
-            onFollowUp={handleFollowUp}
+      <div className="surface-card-body pt-3">
+        {isLoading ? (
+          <LoadingState
+            title="Loading risk alerts..."
+            description="Evaluating client health signals."
+            className="h-full min-h-[180px]"
           />
-        ))}
-      </div>
+        ) : summary.totalAtRisk === 0 ? (
+          <EmptyState
+            title="No risk alerts"
+            description="All clients are in good standing."
+            icon={ShieldCheck}
+            tone="success"
+            className="h-full min-h-[180px]"
+          />
+        ) : (
+          <>
+            {/* Summary badges */}
+            <div className="flex items-center gap-3 mb-3 flex-wrap">
+              {summary.highCount > 0 && (
+                <div className="flex items-center gap-1.5">
+                  <AlertTriangle className="h-3.5 w-3.5 text-red-500" />
+                  <span className="text-xs font-medium text-red-700">{summary.highCount} High</span>
+                </div>
+              )}
+              {summary.mediumCount > 0 && (
+                <div className="flex items-center gap-1.5">
+                  <AlertTriangle className="h-3.5 w-3.5 text-amber-500" />
+                  <span className="text-xs font-medium text-amber-700">{summary.mediumCount} Medium</span>
+                </div>
+              )}
+              <span className="text-xs text-gray-400">{summary.totalAtRisk} total at risk</span>
+            </div>
 
-      {alerts.length > 5 && (
-        <p className="text-xs text-gray-400 mt-2">+{alerts.length - 5} more</p>
-      )}
+            {/* Top alerts */}
+            <div className="divide-y divide-gray-100">
+              {top5.map((alert) => (
+                <AlertRow
+                  key={alert.pharmacyId}
+                  alert={alert}
+                  onOpen={handleOpen}
+                  onFollowUp={handleFollowUp}
+                />
+              ))}
+            </div>
+
+            {alerts.length > 5 && (
+              <p className="text-xs text-gray-400 mt-2">+{alerts.length - 5} more</p>
+            )}
+          </>
+        )}
+      </div>
     </div>
   );
 }
