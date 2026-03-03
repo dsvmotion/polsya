@@ -179,7 +179,7 @@ export default function PharmacyProspecting({ clientType = 'pharmacy' }: Props) 
   );
 
   return (
-    <div className="h-screen flex flex-col app-shell">
+    <div className="min-h-screen flex flex-col app-shell">
       {/* Header */}
       <header className="app-header px-3 md:px-4 shrink-0">
         <div className="flex items-center gap-2 md:gap-4 min-w-0">
@@ -221,7 +221,7 @@ export default function PharmacyProspecting({ clientType = 'pharmacy' }: Props) 
       {/* Main Content */}
       <div className="flex-1 flex flex-col lg:flex-row overflow-hidden">
         {/* Sidebar */}
-        <div className="w-full lg:w-80 shrink-0 border-b lg:border-b-0 lg:border-r border-gray-200 bg-gray-50 overflow-auto max-h-[46vh] lg:max-h-none">
+        <div className="w-full lg:w-80 shrink-0 border-b lg:border-b-0 lg:border-r border-gray-200 bg-gray-50 overflow-auto max-h-[40vh] sm:max-h-[46vh] lg:max-h-none">
           <PharmacySidebar
             pharmacies={displayedPharmacies}
             isLoading={false}
@@ -250,7 +250,7 @@ export default function PharmacyProspecting({ clientType = 'pharmacy' }: Props) 
         </div>
 
         {/* Map */}
-        <div className="flex-1 relative min-h-[40vh]">
+        <div className="flex-1 relative min-h-[42vh] sm:min-h-[40vh]">
           <ProspectingMap
             pharmacies={displayedPharmacies}
             selectedPharmacyId={selectedPharmacy?.id || null}
@@ -261,7 +261,7 @@ export default function PharmacyProspecting({ clientType = 'pharmacy' }: Props) 
 
         {/* Detail Panel */}
         {selectedPharmacy && (
-          <div className="w-full lg:w-96 shrink-0 border-t lg:border-t-0 lg:border-l border-gray-200 bg-gray-50 overflow-auto max-h-[44vh] lg:max-h-none">
+          <div className="w-full lg:w-96 shrink-0 border-t lg:border-t-0 lg:border-l border-gray-200 bg-gray-50 overflow-auto max-h-[36vh] sm:max-h-[44vh] lg:max-h-none">
             <PharmacyDetailPanel pharmacy={selectedPharmacy} onClose={handleCloseDetail} />
           </div>
         )}

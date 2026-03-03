@@ -245,56 +245,62 @@ const Index = () => {
   };
 
   return (
-    <div className="app-shell p-4 md:p-6">
-      <div className="max-w-[1600px] mx-auto">
+    <div className="app-shell p-3 md:p-6">
+      <div className="max-w-[1600px] mx-auto w-full">
         {/* Header */}
         <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between mb-6">
           <div>
             <h1 className="text-2xl font-bold text-gray-900">Sales Tracker</h1>
             <p className="text-sm text-gray-500">Global overview of sales and revenue</p>
           </div>
-          <div className="flex flex-wrap items-center gap-2">
+          <div className="grid grid-cols-2 sm:flex sm:flex-wrap items-center gap-2 w-full sm:w-auto">
             <Link to="/operations/entities">
               <Button 
                 variant="outline" 
-                className="gap-2 bg-white border-gray-300 text-gray-700 hover:bg-gray-100 hover:text-gray-900"
+                className="w-full sm:w-auto gap-2 bg-white border-gray-300 text-gray-700 hover:bg-gray-100 hover:text-gray-900"
                 size="sm"
               >
                 <ClipboardList className="h-4 w-4" />
-                Saved Pharmacies
+                <span className="hidden md:inline">Saved Pharmacies</span>
+                <span className="md:hidden">Saved</span>
               </Button>
             </Link>
             <Link to="/prospecting/entities">
               <Button 
                 variant="outline" 
-                className="gap-2 bg-white border-gray-300 text-gray-700 hover:bg-gray-100 hover:text-gray-900"
+                className="w-full sm:w-auto gap-2 bg-white border-gray-300 text-gray-700 hover:bg-gray-100 hover:text-gray-900"
                 size="sm"
               >
                 <MapPin className="h-4 w-4" />
-                Search Pharmacies
+                <span className="hidden md:inline">Search Pharmacies</span>
+                <span className="md:hidden">Search</span>
               </Button>
             </Link>
             <Link to="/operations/entities/herbalists">
               <Button 
                 variant="outline" 
-                className="gap-2 bg-white border-gray-300 text-gray-700 hover:bg-gray-100 hover:text-gray-900"
+                className="w-full sm:w-auto gap-2 bg-white border-gray-300 text-gray-700 hover:bg-gray-100 hover:text-gray-900"
                 size="sm"
               >
                 <ClipboardList className="h-4 w-4" />
-                Saved Herbalists
+                <span className="hidden md:inline">Saved Herbalists</span>
+                <span className="md:hidden">Herbalists</span>
               </Button>
             </Link>
             <Link to="/prospecting/entities/herbalists">
               <Button 
                 variant="outline" 
-                className="gap-2 bg-white border-gray-300 text-gray-700 hover:bg-gray-100 hover:text-gray-900"
+                className="w-full sm:w-auto gap-2 bg-white border-gray-300 text-gray-700 hover:bg-gray-100 hover:text-gray-900"
                 size="sm"
               >
                 <MapPin className="h-4 w-4" />
-                Search Herbalists
+                <span className="hidden md:inline">Search Herbalists</span>
+                <span className="md:hidden">Search H.</span>
               </Button>
             </Link>
-            <UserMenu />
+            <div className="col-span-2 sm:col-span-1 justify-self-end">
+              <UserMenu />
+            </div>
           </div>
         </div>
 
@@ -351,7 +357,7 @@ const Index = () => {
 
         {/* Filter Bar */}
         <div className="p-4 mb-6 rounded-lg border border-gray-200 bg-white">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div className="grid grid-cols-1 xl:grid-cols-[1fr_auto] gap-4">
             <div className="flex flex-wrap items-center gap-3">
               <span className="text-sm font-medium text-gray-500">Filters:</span>
               
@@ -361,7 +367,7 @@ const Index = () => {
                 onValueChange={handleCountryChange}
                 options={uniqueCountries}
                 placeholder="All Countries"
-                className="w-40"
+                className="w-full sm:w-40"
               />
 
               {/* Province - from actual order data */}
@@ -371,7 +377,7 @@ const Index = () => {
                 options={uniqueProvinces}
                 placeholder={filters.country ? (uniqueProvinces.length > 0 ? 'All Provinces' : 'No provinces') : 'Select Country'}
                 disabled={!filters.country}
-                className="w-40"
+                className="w-full sm:w-40"
               />
 
               {/* City - from actual order data */}
@@ -381,20 +387,20 @@ const Index = () => {
                 options={uniqueCities}
                 placeholder={filters.province ? (uniqueCities.length > 0 ? 'All Cities' : 'No cities') : 'Select Province'}
                 disabled={!filters.province}
-                className="w-40"
+                className="w-full sm:w-40"
               />
 
               <Input
                 type="date"
                 value={dateFrom}
                 onChange={e => setDateFrom(e.target.value)}
-                className="w-36"
+                className="w-full sm:w-40"
               />
               <Input
                 type="date"
                 value={dateTo}
                 onChange={e => setDateTo(e.target.value)}
-                className="w-36"
+                className="w-full sm:w-40"
               />
               
               {/* Customer Type */}
@@ -405,7 +411,7 @@ const Index = () => {
                   customerType: value as 'pharmacy' | 'client' | 'herbalist' | 'all'
                 }))}
               >
-                <SelectTrigger className="w-40 bg-white border-gray-300 text-gray-900">
+                <SelectTrigger className="w-full sm:w-40 bg-white border-gray-300 text-gray-900">
                   <SelectValue placeholder="All Types" />
                 </SelectTrigger>
                 <SelectContent className="bg-white border-gray-200 z-50">
@@ -423,7 +429,7 @@ const Index = () => {
                 </Button>
               )}
 
-              <span className="text-sm text-gray-500">
+              <span className="text-sm text-gray-500 whitespace-nowrap">
                 Showing {displayedSales.length} of {filteredSales.length} orders
               </span>
 
@@ -466,7 +472,7 @@ const Index = () => {
         )}
 
         {/* Main Content Grid */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 lg:gap-6">
           {/* Map Section */}
           <div className="lg:col-span-2">
             <div className="p-4 rounded-lg border border-gray-200 bg-white">
@@ -476,7 +482,7 @@ const Index = () => {
                   {displayedSales.length} orders
                 </span>
               </div>
-              <div style={{ height: '500px' }} className="rounded-lg overflow-hidden border border-gray-200">
+              <div className="h-[360px] md:h-[500px] rounded-lg overflow-hidden border border-gray-200">
                 {isLoading ? (
                   <div className="h-full flex items-center justify-center bg-gray-50">
                     <div className="text-center">
@@ -514,7 +520,7 @@ const Index = () => {
                   €{stats.avgOrderValue.toFixed(0)} avg
                 </span>
               </div>
-              <ScrollArea className="h-[500px]">
+              <ScrollArea className="h-[360px] md:h-[500px]">
                 <div className="space-y-2 pr-4">
                   {displayedSales.length === 0 ? (
                     <div className="text-center py-8 text-gray-500">

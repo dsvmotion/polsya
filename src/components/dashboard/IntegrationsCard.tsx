@@ -405,7 +405,7 @@ function IntegrationRow({
 
       {configuringImap && intg.provider === 'email_imap' && (
         <div className="pl-6 pt-1 space-y-2">
-          <div className="grid grid-cols-2 gap-2">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
             <Input
               placeholder="Account email *"
               value={imapForm.accountEmail}
@@ -449,7 +449,7 @@ function IntegrationRow({
               placeholder="Password *"
               value={imapForm.password}
               onChange={(e) => setImapForm((prev) => ({ ...prev, password: e.target.value }))}
-              className="h-8 text-sm col-span-2"
+              className="h-8 text-sm sm:col-span-2"
               type="password"
             />
           </div>
