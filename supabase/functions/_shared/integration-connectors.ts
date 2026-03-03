@@ -572,6 +572,164 @@ const emailImapConnector: IntegrationConnector = {
   },
 };
 
+function getBrevoConfig(metadata: Record<string, unknown>) {
+  const apiBaseUrl = normalizeBaseUrl(
+    (typeof metadata.api_base_url === 'string' ? metadata.api_base_url : '') ||
+    (Deno.env.get('BREVO_API_BASE_URL') ?? 'https://api.brevo.com'),
+  );
+  const apiKey = typeof metadata.brevo_api_key === 'string'
+    ? metadata.brevo_api_key
+    : (Deno.env.get('BREVO_API_KEY') ?? '');
+
+  if (!apiBaseUrl || !apiKey) {
+    throw new Error('Brevo credentials are not configured. Save API key first.');
+  }
+
+  return { apiBaseUrl, apiKey };
+}
+
+async function fetchBrevoRecords(ctx: IntegrationConnectorContext): Promise<SyncRecord[]> {
+  const cfg = getBrevoConfig(ctx.metadata);
+  const headers = {
+    'api-key': cfg.apiKey,
+    'Content-Type': 'application/json',
+  };
+
+  const campaignsRes = await fetchWithRetry(
+    `${cfg.apiBaseUrl}/v3/emailCampaigns?limit=25&sort=desc`,
+    { method: 'GET', headers },
+    { action: 'connector_brevo_campaigns' },
+  );
+  if (!campaignsRes.ok) {
+    throw new Error(`Brevo campaigns fetch failed with status ${campaignsRes.status}`);
+  }
+  const campaignsJson = await campaignsRes.json() as { campaigns?: Array<Record<string, unknown>> };
+  const campaigns = Array.isArray(campaignsJson.campaigns) ? campaignsJson.campaigns : [];
+
+  const contactsRes = await fetchWithRetry(
+    `${cfg.apiBaseUrl}/v3/contacts?limit=25`,
+    { method: 'GET', headers },
+    { action: 'connector_brevo_contacts' },
+  );
+  if (!contactsRes.ok) {
+    throw new Error(`Brevo contacts fetch failed with status ${contactsRes.status}`);
+  }
+  const contactsJson = await contactsRes.json() as { contacts?: Array<Record<string, unknown>> };
+  const contacts = Array.isArray(contactsJson.contacts) ? contactsJson.contacts : [];
+
+  const campaignRecords: SyncRecord[] = campaigns
+    .map((campaign) => {
+      const id = campaign.id;
+      if (id === null || id === undefined) return null;
+      const sentDate = typeof campaign.sentDate === 'string' ? campaign.sentDate : null;
+      const modifiedDate = typeof campaign.modifiedDate === 'string' ? campaign.modifiedDate : null;
+      const createdAt = typeof campaign.createdAt === 'string' ? campaign.createdAt : null;
+      const externalUpdatedAt = modifiedDate ?? sentDate ?? createdAt;
+
+      return {
+        externalId: `campaign:${String(id)}`,
+        externalUpdatedAt,
+        payload: {
+          kind: 'campaign',
+          id,
+          name: typeof campaign.name === 'string' ? campaign.name : null,
+          subject: typeof campaign.subject === 'string' ? campaign.subject : null,
+          status: typeof campaign.status === 'string' ? campaign.status : null,
+          sentDate,
+          modifiedDate,
+          createdAt,
+        },
+      } as SyncRecord;
+    })
+    .filter((record): record is SyncRecord => record !== null);
+
+  const contactRecords: SyncRecord[] = contacts
+    .map((contact) => {
+      const email = typeof contact.email === 'string' ? contact.email.toLowerCase() : null;
+      const id = contact.id;
+      const externalId = email || (id === null || id === undefined ? null : `contact:${String(id)}`);
+      if (!externalId) return null;
+
+      const modifiedAt = typeof contact.modifiedAt === 'string' ? contact.modifiedAt : null;
+      const createdAt = typeof contact.createdAt === 'string' ? contact.createdAt : null;
+      const externalUpdatedAt = modifiedAt ?? createdAt;
+
+      return {
+        externalId,
+        externalUpdatedAt,
+        payload: {
+          kind: 'contact',
+          id: id ?? null,
+          email,
+          attributes: typeof contact.attributes === 'object' && contact.attributes !== null
+            ? contact.attributes
+            : null,
+          modifiedAt,
+          createdAt,
+          listIds: Array.isArray(contact.listIds) ? contact.listIds : [],
+        },
+      } as SyncRecord;
+    })
+    .filter((record): record is SyncRecord => record !== null);
+
+  return dedupeRecords([...campaignRecords, ...contactRecords]);
+}
+
+const brevoConnector: IntegrationConnector = {
+  provider: 'brevo',
+  async testConnection(ctx) {
+    const cfg = getBrevoConfig(ctx.metadata);
+    const res = await fetchWithRetry(
+      `${cfg.apiBaseUrl}/v3/account`,
+      {
+        method: 'GET',
+        headers: {
+          'api-key': cfg.apiKey,
+          'Content-Type': 'application/json',
+        },
+      },
+      { action: 'connector_brevo_account' },
+    );
+
+    if (!res.ok) {
+      throw new Error(`Brevo account check failed with status ${res.status}`);
+    }
+  },
+  async syncEntities(ctx) {
+    const records = await fetchBrevoRecords(ctx);
+    return {
+      processed: records.length,
+      failed: 0,
+      summary: `entities: fetched ${records.length} Brevo campaigns/contacts`,
+      records,
+    };
+  },
+  async syncOrders() {
+    return {
+      processed: 0,
+      failed: 0,
+      summary: 'orders: not applicable for brevo',
+      records: [],
+    };
+  },
+  async syncProducts() {
+    return {
+      processed: 0,
+      failed: 0,
+      summary: 'products: not applicable for brevo',
+      records: [],
+    };
+  },
+  async syncInventory() {
+    return {
+      processed: 0,
+      failed: 0,
+      summary: 'inventory: not applicable for brevo',
+      records: [],
+    };
+  },
+};
+
 const unsupportedConnector: IntegrationConnector = {
   provider: 'unsupported',
   async testConnection(ctx) {
@@ -597,6 +755,7 @@ export function getIntegrationConnector(provider: string): IntegrationConnector 
   if (provider === 'gmail') return gmailConnector;
   if (provider === 'outlook') return outlookConnector;
   if (provider === 'email_imap') return emailImapConnector;
+  if (provider === 'brevo') return brevoConnector;
   return unsupportedConnector;
 }
 
@@ -605,6 +764,7 @@ export function parseSyncTargets(provider: string, payload: Record<string, unkno
     gmail: ['entities'],
     outlook: ['entities'],
     email_imap: ['entities'],
+    brevo: ['entities'],
     woocommerce: ['entities', 'orders', 'products', 'inventory'],
     shopify: ['entities', 'orders', 'products', 'inventory'],
   };
@@ -613,6 +773,7 @@ export function parseSyncTargets(provider: string, payload: Record<string, unkno
     gmail: ['entities'],
     outlook: ['entities'],
     email_imap: ['entities'],
+    brevo: ['entities'],
     woocommerce: ['orders'],
     shopify: ['orders'],
   };

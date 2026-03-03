@@ -4,6 +4,7 @@ export type IntegrationProvider =
   | 'gmail'
   | 'outlook'
   | 'email_imap'
+  | 'brevo'
   | 'notion'
   | 'openai'
   | 'anthropic'
@@ -31,6 +32,7 @@ export const PROVIDER_LABELS: Record<IntegrationProvider, string> = {
   gmail: 'Gmail',
   outlook: 'Outlook',
   email_imap: 'IMAP/SMTP',
+  brevo: 'Brevo',
   notion: 'Notion',
   openai: 'OpenAI',
   anthropic: 'Anthropic',
@@ -43,6 +45,7 @@ export const PROVIDER_ICONS: Record<IntegrationProvider, string> = {
   gmail: '✉️',
   outlook: '📧',
   email_imap: '📮',
+  brevo: '📣',
   notion: '📓',
   openai: '🤖',
   anthropic: '🧠',
@@ -60,6 +63,7 @@ export interface ShopifyMetadata { store_domain: string }
 export interface GmailMetadata { workspace_email?: string }
 export interface OutlookMetadata { workspace_email?: string; tenant_id?: string }
 export interface EmailImapMetadata { account_email: string; sender_name?: string }
+export interface BrevoMetadata { api_base_url: string; sender_email?: string }
 export interface NotionMetadata { workspace_id?: string }
 export interface OpenAIMetadata { project_id?: string }
 export interface AnthropicMetadata { workspace_id?: string }
@@ -71,6 +75,7 @@ export interface IntegrationMetadataByProvider {
   gmail: GmailMetadata;
   outlook: OutlookMetadata;
   email_imap: EmailImapMetadata;
+  brevo: BrevoMetadata;
   notion: NotionMetadata;
   openai: OpenAIMetadata;
   anthropic: AnthropicMetadata;

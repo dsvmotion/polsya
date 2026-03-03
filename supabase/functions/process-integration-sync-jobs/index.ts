@@ -366,6 +366,28 @@ async function resolveConnectorMetadata(
     };
   }
 
+  if (integration.provider === 'brevo') {
+    const { data: credsRow, error: credsError } = await supabaseAdmin
+      .from('integration_api_credentials')
+      .select('api_key')
+      .eq('organization_id', integration.organization_id)
+      .eq('integration_id', integration.id)
+      .eq('provider', 'brevo')
+      .maybeSingle();
+
+    if (credsError) {
+      throw new Error(`Failed to load Brevo API credentials: ${credsError.message}`);
+    }
+    if (!credsRow) {
+      throw new Error('Brevo API key not found. Configure Brevo credentials first.');
+    }
+
+    return {
+      ...metadata,
+      brevo_api_key: (credsRow as Record<string, unknown>).api_key,
+    };
+  }
+
   if (integration.provider !== 'gmail' && integration.provider !== 'outlook') {
     return metadata;
   }

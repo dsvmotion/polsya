@@ -90,6 +90,7 @@ const REQUIRE_ORG_AUTHZ = [
   'outlook-oauth-url',
   'outlook-oauth-exchange',
   'email-imap-upsert',
+  'email-marketing-key-upsert',
 ];
 
 const REQUIRE_BILLING_GUARD = [
@@ -103,6 +104,7 @@ const REQUIRE_BILLING_GUARD = [
   'outlook-oauth-url',
   'outlook-oauth-exchange',
   'email-imap-upsert',
+  'email-marketing-key-upsert',
 ];
 
 for (const dir of REQUIRE_ORG_AUTHZ) {

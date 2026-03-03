@@ -21,6 +21,7 @@ import { useIntegrationJobs, useEnqueueIntegrationJob, useProcessIntegrationJob,
 import { useStartGmailOAuth } from '@/hooks/useGmailOAuth';
 import { useStartOutlookOAuth } from '@/hooks/useOutlookOAuth';
 import { useUpsertEmailImapCredentials } from '@/hooks/useEmailImapCredentials';
+import { useUpsertEmailMarketingCredentials } from '@/hooks/useEmailMarketingCredentials';
 import {
   IntegrationProvider,
   IntegrationConnection,
@@ -104,12 +105,15 @@ function IntegrationRow({
   const startGmailOAuth = useStartGmailOAuth();
   const startOutlookOAuth = useStartOutlookOAuth();
   const upsertEmailImap = useUpsertEmailImapCredentials();
+  const upsertEmailMarketing = useUpsertEmailMarketingCredentials();
   const updateIntegration = useUpdateIntegration();
 
   const [editing, setEditing] = useState(false);
   const [editMeta, setEditMeta] = useState<Record<string, string>>({});
   const [editErrors, setEditErrors] = useState<Record<string, string>>({});
   const [configuringImap, setConfiguringImap] = useState(false);
+  const [configuringBrevo, setConfiguringBrevo] = useState(false);
+  const [brevoApiKey, setBrevoApiKey] = useState('');
   const [imapForm, setImapForm] = useState({
     accountEmail: '',
     username: '',
@@ -192,6 +196,7 @@ function IntegrationRow({
   };
 
   const startImapConfig = () => {
+    setConfiguringBrevo(false);
     const meta = intg.metadata as Record<string, unknown>;
     setImapForm((prev) => ({
       ...prev,
@@ -199,6 +204,12 @@ function IntegrationRow({
       username: typeof meta.account_email === 'string' ? meta.account_email : prev.username,
     }));
     setConfiguringImap(true);
+  };
+
+  const startBrevoConfig = () => {
+    setConfiguringImap(false);
+    setBrevoApiKey('');
+    setConfiguringBrevo(true);
   };
 
   const handleSaveImap = async () => {
@@ -220,6 +231,21 @@ function IntegrationRow({
       setImapForm((prev) => ({ ...prev, password: '' }));
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Failed to save IMAP credentials';
+      toast.error(message);
+    }
+  };
+
+  const handleSaveBrevo = async () => {
+    try {
+      await upsertEmailMarketing.mutateAsync({
+        integrationId: intg.id,
+        apiKey: brevoApiKey.trim(),
+      });
+      toast.success('Brevo API key saved');
+      setConfiguringBrevo(false);
+      setBrevoApiKey('');
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Failed to save Brevo API key';
       toast.error(message);
     }
   };
@@ -318,6 +344,17 @@ function IntegrationRow({
               className="h-7 px-1.5 text-gray-400 hover:text-blue-600"
               onClick={startImapConfig}
               title="Configure IMAP/SMTP credentials"
+            >
+              <span className="text-[10px] font-medium">Configure</span>
+            </Button>
+          )}
+          {intg.provider === 'brevo' && (
+            <Button
+              variant="ghost"
+              size="sm"
+              className="h-7 px-1.5 text-gray-400 hover:text-blue-600"
+              onClick={startBrevoConfig}
+              title="Configure Brevo API key"
             >
               <span className="text-[10px] font-medium">Configure</span>
             </Button>
@@ -443,6 +480,33 @@ function IntegrationRow({
               onClick={() => {
                 setConfiguringImap(false);
                 setImapForm((prev) => ({ ...prev, password: '' }));
+              }}
+            >
+              Cancel
+            </Button>
+          </div>
+        </div>
+      )}
+
+      {configuringBrevo && intg.provider === 'brevo' && (
+        <div className="pl-6 pt-1 space-y-2">
+          <Input
+            placeholder="Brevo API key *"
+            value={brevoApiKey}
+            onChange={(e) => setBrevoApiKey(e.target.value)}
+            className="h-8 text-sm"
+            type="password"
+          />
+          <div className="flex items-center gap-2">
+            <Button size="sm" onClick={handleSaveBrevo} disabled={upsertEmailMarketing.isPending}>
+              {upsertEmailMarketing.isPending ? 'Saving...' : 'Save key'}
+            </Button>
+            <Button
+              size="sm"
+              variant="ghost"
+              onClick={() => {
+                setConfiguringBrevo(false);
+                setBrevoApiKey('');
               }}
             >
               Cancel

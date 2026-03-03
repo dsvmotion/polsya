@@ -32,6 +32,12 @@ describe('validateIntegrationMetadata', () => {
     expect(r.errors.base_url).toContain('required');
   });
 
+  it('rejects empty api_base_url for brevo', () => {
+    const r = validateIntegrationMetadata('brevo', { api_base_url: '' });
+    expect(r.valid).toBe(false);
+    expect(r.errors.api_base_url).toContain('required');
+  });
+
   // --- Optional fields pass when empty ---
 
   it('passes gmail with no metadata', () => {
@@ -78,6 +84,11 @@ describe('validateIntegrationMetadata', () => {
     expect(r.valid).toBe(true);
   });
 
+  it('accepts valid https URL for brevo', () => {
+    const r = validateIntegrationMetadata('brevo', { api_base_url: 'https://api.brevo.com' });
+    expect(r.valid).toBe(true);
+  });
+
   it('accepts valid shopify domain URL', () => {
     const r = validateIntegrationMetadata('shopify', { store_domain: 'https://mystore.myshopify.com' });
     expect(r.valid).toBe(true);
@@ -103,6 +114,12 @@ describe('validateIntegrationMetadata', () => {
     expect(r.errors.base_url).toContain('valid URL');
   });
 
+  it('rejects URL without protocol for brevo', () => {
+    const r = validateIntegrationMetadata('brevo', { api_base_url: 'api.brevo.com' });
+    expect(r.valid).toBe(false);
+    expect(r.errors.api_base_url).toContain('valid URL');
+  });
+
   // --- Valid emails ---
 
   it('accepts valid email for gmail', () => {
@@ -112,6 +129,14 @@ describe('validateIntegrationMetadata', () => {
 
   it('accepts valid account_email for email_imap', () => {
     const r = validateIntegrationMetadata('email_imap', { account_email: 'contact@company.com' });
+    expect(r.valid).toBe(true);
+  });
+
+  it('accepts valid sender_email for brevo', () => {
+    const r = validateIntegrationMetadata('brevo', {
+      api_base_url: 'https://api.brevo.com',
+      sender_email: 'contact@company.com',
+    });
     expect(r.valid).toBe(true);
   });
 
@@ -139,6 +164,15 @@ describe('validateIntegrationMetadata', () => {
     const r = validateIntegrationMetadata('email_imap', { account_email: 'not-an-email' });
     expect(r.valid).toBe(false);
     expect(r.errors.account_email).toContain('valid email');
+  });
+
+  it('rejects invalid sender_email for brevo', () => {
+    const r = validateIntegrationMetadata('brevo', {
+      api_base_url: 'https://api.brevo.com',
+      sender_email: 'not-an-email',
+    });
+    expect(r.valid).toBe(false);
+    expect(r.errors.sender_email).toContain('valid email');
   });
 
   // --- Forbidden keys ---
@@ -191,7 +225,7 @@ describe('validateIntegrationMetadata', () => {
   // --- Schema coverage ---
 
   it('has schema defined for every provider', () => {
-    const providers = ['woocommerce', 'shopify', 'gmail', 'outlook', 'email_imap', 'notion', 'openai', 'anthropic', 'custom_api'] as const;
+    const providers = ['woocommerce', 'shopify', 'gmail', 'outlook', 'email_imap', 'brevo', 'notion', 'openai', 'anthropic', 'custom_api'] as const;
     for (const p of providers) {
       expect(PROVIDER_METADATA_SCHEMA[p]).toBeDefined();
       expect(Array.isArray(PROVIDER_METADATA_SCHEMA[p])).toBe(true);
@@ -229,6 +263,11 @@ describe('sanitizeIntegrationMetadata', () => {
     expect(r.base_url).toBe('http://localhost:3000');
   });
 
+  it('preserves existing https:// for brevo', () => {
+    const r = sanitizeIntegrationMetadata('brevo', { api_base_url: 'https://api.brevo.com' });
+    expect(r.api_base_url).toBe('https://api.brevo.com');
+  });
+
   // --- URL: strip trailing slashes ---
 
   it('strips trailing slash from URL', () => {
@@ -239,6 +278,15 @@ describe('sanitizeIntegrationMetadata', () => {
   it('strips multiple trailing slashes from URL', () => {
     const r = sanitizeIntegrationMetadata('custom_api', { base_url: 'https://api.example.com///' });
     expect(r.base_url).toBe('https://api.example.com');
+  });
+
+  it('normalizes brevo api url and lowercases sender email', () => {
+    const r = sanitizeIntegrationMetadata('brevo', {
+      api_base_url: '  api.brevo.com/  ',
+      sender_email: 'SALES@COMPANY.COM',
+    });
+    expect(r.api_base_url).toBe('https://api.brevo.com');
+    expect(r.sender_email).toBe('sales@company.com');
   });
 
   // --- Email: lowercase ---

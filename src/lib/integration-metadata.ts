@@ -34,6 +34,10 @@ export const PROVIDER_METADATA_SCHEMA: Record<IntegrationProvider, MetadataField
     { key: 'account_email', label: 'Account Email', placeholder: 'contact@company.com', required: true, type: 'email' },
     { key: 'sender_name', label: 'Sender Name', placeholder: 'Sales Team', required: false, type: 'text' },
   ],
+  brevo: [
+    { key: 'api_base_url', label: 'API Base URL', placeholder: 'https://api.brevo.com', required: true, type: 'url' },
+    { key: 'sender_email', label: 'Sender Email', placeholder: 'contact@company.com', required: false, type: 'email' },
+  ],
   notion: [
     { key: 'workspace_id', label: 'Workspace ID', placeholder: 'abc123...', required: false, type: 'text' },
   ],
