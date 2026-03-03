@@ -41,7 +41,7 @@ function billingOverviewWithStatus(status: BillingOverview['subscription'] exten
   ? S extends { status: infer T }
     ? T
     : never
-  : never): BillingOverview {
+  : never, currentPeriodEnd: string | null = null): BillingOverview {
   return {
     customer: null,
     invoices: [],
@@ -52,7 +52,7 @@ function billingOverviewWithStatus(status: BillingOverview['subscription'] exten
       stripe_price_id: 'price-1',
       status,
       current_period_start: null,
-      current_period_end: null,
+      current_period_end: currentPeriodEnd,
       cancel_at_period_end: false,
       canceled_at: null,
       trial_end: null,
@@ -107,6 +107,58 @@ describe('SubscriptionGuard', () => {
 
     renderGuarded();
     expect(screen.getByText('Protected Content')).toBeInTheDocument();
+  });
+
+  it('renders protected content when subscription is trialing', () => {
+    mockUseCurrentOrganization.mockReturnValue({
+      organization: { id: 'org-1' },
+      isLoading: false,
+    });
+    mockUseBillingOverview.mockReturnValue({
+      data: billingOverviewWithStatus('trialing'),
+      isLoading: false,
+    });
+
+    renderGuarded();
+    expect(screen.getByText('Protected Content')).toBeInTheDocument();
+  });
+
+  it('renders protected content when subscription is past_due within grace', () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date('2026-03-03T12:00:00.000Z'));
+    const periodEnd = new Date('2026-02-28T12:00:00.000Z').toISOString();
+
+    mockUseCurrentOrganization.mockReturnValue({
+      organization: { id: 'org-1' },
+      isLoading: false,
+    });
+    mockUseBillingOverview.mockReturnValue({
+      data: billingOverviewWithStatus('past_due', periodEnd),
+      isLoading: false,
+    });
+
+    renderGuarded();
+    expect(screen.getByText('Protected Content')).toBeInTheDocument();
+    vi.useRealTimers();
+  });
+
+  it('redirects to billing when subscription is past_due after grace', () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date('2026-03-03T12:00:00.000Z'));
+    const periodEnd = new Date('2026-01-15T12:00:00.000Z').toISOString();
+
+    mockUseCurrentOrganization.mockReturnValue({
+      organization: { id: 'org-1' },
+      isLoading: false,
+    });
+    mockUseBillingOverview.mockReturnValue({
+      data: billingOverviewWithStatus('past_due', periodEnd),
+      isLoading: false,
+    });
+
+    renderGuarded();
+    expect(screen.getByText('Billing Page')).toBeInTheDocument();
+    vi.useRealTimers();
   });
 
   it('redirects to billing when subscription is blocked', () => {
