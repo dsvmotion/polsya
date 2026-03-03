@@ -400,6 +400,178 @@ const gmailConnector: IntegrationConnector = {
   },
 };
 
+function getOutlookConfig(metadata: Record<string, unknown>) {
+  const accessToken = typeof metadata.outlook_access_token === 'string'
+    ? metadata.outlook_access_token
+    : '';
+
+  if (!accessToken) {
+    throw new Error('Outlook OAuth token not found. Connect Outlook first.');
+  }
+
+  return { accessToken };
+}
+
+async function fetchOutlookMessageRecords(ctx: IntegrationConnectorContext): Promise<SyncRecord[]> {
+  const cfg = getOutlookConfig(ctx.metadata);
+
+  const listRes = await fetchWithRetry(
+    'https://graph.microsoft.com/v1.0/me/messages?$top=20&$select=id,subject,receivedDateTime,lastModifiedDateTime,bodyPreview,from,toRecipients,internetMessageId',
+    {
+      method: 'GET',
+      headers: { Authorization: `Bearer ${cfg.accessToken}` },
+    },
+    { action: 'connector_outlook_messages_list' },
+  );
+
+  if (!listRes.ok) {
+    throw new Error(`Outlook message list failed with status ${listRes.status}`);
+  }
+
+  const listJson = await listRes.json() as { value?: Array<Record<string, unknown>> };
+  const messages = Array.isArray(listJson.value) ? listJson.value : [];
+
+  return dedupeRecords(
+    messages
+      .map((message) => {
+        const id = typeof message.id === 'string' ? message.id : null;
+        if (!id) return null;
+
+        const from = (message.from as { emailAddress?: { address?: string; name?: string } } | undefined)
+          ?.emailAddress?.address ?? null;
+        const toRecipients = Array.isArray(message.toRecipients)
+          ? message.toRecipients
+            .map((r) => (r as { emailAddress?: { address?: string } })?.emailAddress?.address)
+            .filter((value): value is string => typeof value === 'string' && value.length > 0)
+          : [];
+
+        const updatedAt = typeof message.lastModifiedDateTime === 'string'
+          ? message.lastModifiedDateTime
+          : (typeof message.receivedDateTime === 'string' ? message.receivedDateTime : null);
+
+        return {
+          externalId: id,
+          externalUpdatedAt: updatedAt,
+          payload: {
+            id,
+            subject: typeof message.subject === 'string' ? message.subject : null,
+            from,
+            to: toRecipients,
+            bodyPreview: typeof message.bodyPreview === 'string' ? message.bodyPreview : null,
+            receivedDateTime: typeof message.receivedDateTime === 'string' ? message.receivedDateTime : null,
+            internetMessageId: typeof message.internetMessageId === 'string' ? message.internetMessageId : null,
+          },
+        } as SyncRecord;
+      })
+      .filter((record): record is SyncRecord => record !== null),
+  );
+}
+
+const outlookConnector: IntegrationConnector = {
+  provider: 'outlook',
+  async testConnection(ctx) {
+    const cfg = getOutlookConfig(ctx.metadata);
+    const res = await fetchWithRetry(
+      'https://graph.microsoft.com/v1.0/me?$select=id,mail,userPrincipalName',
+      {
+        method: 'GET',
+        headers: { Authorization: `Bearer ${cfg.accessToken}` },
+      },
+      { action: 'connector_outlook_profile' },
+    );
+
+    if (!res.ok) {
+      throw new Error(`Outlook profile check failed with status ${res.status}`);
+    }
+  },
+  async syncEntities(ctx) {
+    const records = await fetchOutlookMessageRecords(ctx);
+    return {
+      processed: records.length,
+      failed: 0,
+      summary: `entities: fetched ${records.length} recent messages`,
+      records,
+    };
+  },
+  async syncOrders() {
+    return {
+      processed: 0,
+      failed: 0,
+      summary: 'orders: not applicable for outlook',
+      records: [],
+    };
+  },
+  async syncProducts() {
+    return {
+      processed: 0,
+      failed: 0,
+      summary: 'products: not applicable for outlook',
+      records: [],
+    };
+  },
+  async syncInventory() {
+    return {
+      processed: 0,
+      failed: 0,
+      summary: 'inventory: not applicable for outlook',
+      records: [],
+    };
+  },
+};
+
+function getEmailImapConfig(metadata: Record<string, unknown>) {
+  const accountEmail = typeof metadata.account_email === 'string' ? metadata.account_email : '';
+  const username = typeof metadata.username === 'string' ? metadata.username : '';
+  const imapHost = typeof metadata.imap_host === 'string' ? metadata.imap_host : '';
+  const smtpHost = typeof metadata.smtp_host === 'string' ? metadata.smtp_host : '';
+
+  if (!accountEmail || !username || !imapHost || !smtpHost) {
+    throw new Error('IMAP/SMTP credentials are not configured. Save credentials first.');
+  }
+
+  return { accountEmail, username, imapHost, smtpHost };
+}
+
+const emailImapConnector: IntegrationConnector = {
+  provider: 'email_imap',
+  async testConnection(ctx) {
+    getEmailImapConfig(ctx.metadata);
+  },
+  async syncEntities(ctx) {
+    const cfg = getEmailImapConfig(ctx.metadata);
+    return {
+      processed: 0,
+      failed: 0,
+      summary: `entities: IMAP account ${cfg.accountEmail} configured (full mailbox sync pending)`,
+      records: [],
+    };
+  },
+  async syncOrders() {
+    return {
+      processed: 0,
+      failed: 0,
+      summary: 'orders: not applicable for email_imap',
+      records: [],
+    };
+  },
+  async syncProducts() {
+    return {
+      processed: 0,
+      failed: 0,
+      summary: 'products: not applicable for email_imap',
+      records: [],
+    };
+  },
+  async syncInventory() {
+    return {
+      processed: 0,
+      failed: 0,
+      summary: 'inventory: not applicable for email_imap',
+      records: [],
+    };
+  },
+};
+
 const unsupportedConnector: IntegrationConnector = {
   provider: 'unsupported',
   async testConnection(ctx) {
@@ -423,18 +595,24 @@ export function getIntegrationConnector(provider: string): IntegrationConnector 
   if (provider === 'woocommerce') return wooConnector;
   if (provider === 'shopify') return shopifyConnector;
   if (provider === 'gmail') return gmailConnector;
+  if (provider === 'outlook') return outlookConnector;
+  if (provider === 'email_imap') return emailImapConnector;
   return unsupportedConnector;
 }
 
 export function parseSyncTargets(provider: string, payload: Record<string, unknown>): SyncTarget[] {
   const allowedByProvider: Record<string, SyncTarget[]> = {
     gmail: ['entities'],
+    outlook: ['entities'],
+    email_imap: ['entities'],
     woocommerce: ['entities', 'orders', 'products', 'inventory'],
     shopify: ['entities', 'orders', 'products', 'inventory'],
   };
 
   const defaultByProvider: Record<string, SyncTarget[]> = {
     gmail: ['entities'],
+    outlook: ['entities'],
+    email_imap: ['entities'],
     woocommerce: ['orders'],
     shopify: ['orders'],
   };

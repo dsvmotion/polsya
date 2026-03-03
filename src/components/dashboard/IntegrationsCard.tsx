@@ -19,6 +19,8 @@ import {
 import { useIntegrationRuns } from '@/hooks/useIntegrationRuns';
 import { useIntegrationJobs, useEnqueueIntegrationJob, useProcessIntegrationJob, createJobIdempotencyKey } from '@/hooks/useIntegrationJobs';
 import { useStartGmailOAuth } from '@/hooks/useGmailOAuth';
+import { useStartOutlookOAuth } from '@/hooks/useOutlookOAuth';
+import { useUpsertEmailImapCredentials } from '@/hooks/useEmailImapCredentials';
 import {
   IntegrationProvider,
   IntegrationConnection,
@@ -100,11 +102,25 @@ function IntegrationRow({
   const enqueueJob = useEnqueueIntegrationJob();
   const processJob = useProcessIntegrationJob();
   const startGmailOAuth = useStartGmailOAuth();
+  const startOutlookOAuth = useStartOutlookOAuth();
+  const upsertEmailImap = useUpsertEmailImapCredentials();
   const updateIntegration = useUpdateIntegration();
 
   const [editing, setEditing] = useState(false);
   const [editMeta, setEditMeta] = useState<Record<string, string>>({});
   const [editErrors, setEditErrors] = useState<Record<string, string>>({});
+  const [configuringImap, setConfiguringImap] = useState(false);
+  const [imapForm, setImapForm] = useState({
+    accountEmail: '',
+    username: '',
+    password: '',
+    imapHost: '',
+    imapPort: '993',
+    imapSecure: true,
+    smtpHost: '',
+    smtpPort: '465',
+    smtpSecure: true,
+  });
 
   const lastRun = runs[0] ?? null;
   const latestJob = jobs[0] ?? null;
@@ -112,6 +128,7 @@ function IntegrationRow({
   const schema = PROVIDER_METADATA_SCHEMA[intg.provider];
   const isSyncing = enqueueJob.isPending || processJob.isPending;
   const isConnectingGmail = startGmailOAuth.isPending;
+  const isConnectingOutlook = startOutlookOAuth.isPending;
 
   const handleConnectGmail = async () => {
     try {
@@ -119,6 +136,16 @@ function IntegrationRow({
       window.location.assign(result.authUrl);
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Failed to start Gmail OAuth';
+      toast.error(message);
+    }
+  };
+
+  const handleConnectOutlook = async () => {
+    try {
+      const result = await startOutlookOAuth.mutateAsync({ integrationId: intg.id });
+      window.location.assign(result.authUrl);
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Failed to start Outlook OAuth';
       toast.error(message);
     }
   };
@@ -150,6 +177,39 @@ function IntegrationRow({
       }
     } catch {
       toast.error('Failed to queue sync');
+    }
+  };
+
+  const startImapConfig = () => {
+    const meta = intg.metadata as Record<string, unknown>;
+    setImapForm((prev) => ({
+      ...prev,
+      accountEmail: typeof meta.account_email === 'string' ? meta.account_email : '',
+      username: typeof meta.account_email === 'string' ? meta.account_email : prev.username,
+    }));
+    setConfiguringImap(true);
+  };
+
+  const handleSaveImap = async () => {
+    try {
+      await upsertEmailImap.mutateAsync({
+        integrationId: intg.id,
+        accountEmail: imapForm.accountEmail.trim(),
+        username: imapForm.username.trim(),
+        password: imapForm.password,
+        imapHost: imapForm.imapHost.trim(),
+        imapPort: Number(imapForm.imapPort),
+        imapSecure: imapForm.imapSecure,
+        smtpHost: imapForm.smtpHost.trim(),
+        smtpPort: Number(imapForm.smtpPort),
+        smtpSecure: imapForm.smtpSecure,
+      });
+      toast.success('IMAP/SMTP credentials saved');
+      setConfiguringImap(false);
+      setImapForm((prev) => ({ ...prev, password: '' }));
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Failed to save IMAP credentials';
+      toast.error(message);
     }
   };
 
@@ -226,6 +286,31 @@ function IntegrationRow({
               </span>
             </Button>
           )}
+          {intg.provider === 'outlook' && (
+            <Button
+              variant="ghost"
+              size="sm"
+              className="h-7 px-1.5 text-gray-400 hover:text-blue-600"
+              onClick={handleConnectOutlook}
+              disabled={isConnectingOutlook}
+              title={intg.status === 'connected' ? 'Reconnect Outlook' : 'Connect Outlook'}
+            >
+              <span className="text-[10px] font-medium">
+                {isConnectingOutlook ? '...' : intg.status === 'connected' ? 'Reconnect' : 'Connect'}
+              </span>
+            </Button>
+          )}
+          {intg.provider === 'email_imap' && (
+            <Button
+              variant="ghost"
+              size="sm"
+              className="h-7 px-1.5 text-gray-400 hover:text-blue-600"
+              onClick={startImapConfig}
+              title="Configure IMAP/SMTP credentials"
+            >
+              <span className="text-[10px] font-medium">Configure</span>
+            </Button>
+          )}
           {schema.length > 0 && (
             <Button
               variant="ghost"
@@ -267,6 +352,92 @@ function IntegrationRow({
       {/* Metadata summary */}
       {metaSummary && !editing && (
         <p className="text-[10px] text-gray-400 pl-6 truncate">{metaSummary}</p>
+      )}
+
+      {configuringImap && intg.provider === 'email_imap' && (
+        <div className="pl-6 pt-1 space-y-2">
+          <div className="grid grid-cols-2 gap-2">
+            <Input
+              placeholder="Account email *"
+              value={imapForm.accountEmail}
+              onChange={(e) => setImapForm((prev) => ({ ...prev, accountEmail: e.target.value }))}
+              className="h-8 text-sm"
+              type="email"
+            />
+            <Input
+              placeholder="Username *"
+              value={imapForm.username}
+              onChange={(e) => setImapForm((prev) => ({ ...prev, username: e.target.value }))}
+              className="h-8 text-sm"
+            />
+            <Input
+              placeholder="IMAP host *"
+              value={imapForm.imapHost}
+              onChange={(e) => setImapForm((prev) => ({ ...prev, imapHost: e.target.value }))}
+              className="h-8 text-sm"
+            />
+            <Input
+              placeholder="IMAP port"
+              value={imapForm.imapPort}
+              onChange={(e) => setImapForm((prev) => ({ ...prev, imapPort: e.target.value }))}
+              className="h-8 text-sm"
+              type="number"
+            />
+            <Input
+              placeholder="SMTP host *"
+              value={imapForm.smtpHost}
+              onChange={(e) => setImapForm((prev) => ({ ...prev, smtpHost: e.target.value }))}
+              className="h-8 text-sm"
+            />
+            <Input
+              placeholder="SMTP port"
+              value={imapForm.smtpPort}
+              onChange={(e) => setImapForm((prev) => ({ ...prev, smtpPort: e.target.value }))}
+              className="h-8 text-sm"
+              type="number"
+            />
+            <Input
+              placeholder="Password *"
+              value={imapForm.password}
+              onChange={(e) => setImapForm((prev) => ({ ...prev, password: e.target.value }))}
+              className="h-8 text-sm col-span-2"
+              type="password"
+            />
+          </div>
+          <div className="flex items-center gap-4 text-xs text-gray-600">
+            <label className="inline-flex items-center gap-1.5">
+              <input
+                type="checkbox"
+                checked={imapForm.imapSecure}
+                onChange={(e) => setImapForm((prev) => ({ ...prev, imapSecure: e.target.checked }))}
+              />
+              IMAP secure (TLS/SSL)
+            </label>
+            <label className="inline-flex items-center gap-1.5">
+              <input
+                type="checkbox"
+                checked={imapForm.smtpSecure}
+                onChange={(e) => setImapForm((prev) => ({ ...prev, smtpSecure: e.target.checked }))}
+              />
+              SMTP secure (TLS/SSL)
+            </label>
+          </div>
+          <div className="flex items-center gap-2">
+            <Button size="sm" onClick={handleSaveImap} disabled={upsertEmailImap.isPending}>
+              {upsertEmailImap.isPending ? 'Saving...' : 'Save credentials'}
+            </Button>
+            <Button
+              size="sm"
+              variant="ghost"
+              onClick={() => {
+                setConfiguringImap(false);
+                setImapForm((prev) => ({ ...prev, password: '' }));
+              }}
+            >
+              Cancel
+            </Button>
+          </div>
+        </div>
       )}
 
       {/* Inline metadata edit */}

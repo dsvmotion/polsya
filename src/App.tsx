@@ -14,6 +14,7 @@ import Signup from "./pages/Signup";
 import Profile from "./pages/Profile";
 import Billing from "./pages/Billing";
 import GmailOAuthCallback from "./pages/GmailOAuthCallback";
+import OutlookOAuthCallback from "./pages/OutlookOAuthCallback";
 import NotFound from "./pages/NotFound";
 
 const PharmacyProspecting = lazy(() => import("./pages/PharmacyProspecting"));
@@ -95,6 +96,12 @@ const App = () => (
               <Route path="/integrations/gmail/callback" element={
                 <ProtectedRoute>
                   <GmailOAuthCallback />
+                </ProtectedRoute>
+              } />
+
+              <Route path="/integrations/outlook/callback" element={
+                <ProtectedRoute>
+                  <OutlookOAuthCallback />
                 </ProtectedRoute>
               } />
               

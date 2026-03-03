@@ -2,6 +2,8 @@ export type IntegrationProvider =
   | 'woocommerce'
   | 'shopify'
   | 'gmail'
+  | 'outlook'
+  | 'email_imap'
   | 'notion'
   | 'openai'
   | 'anthropic'
@@ -27,6 +29,8 @@ export const PROVIDER_LABELS: Record<IntegrationProvider, string> = {
   woocommerce: 'WooCommerce',
   shopify: 'Shopify',
   gmail: 'Gmail',
+  outlook: 'Outlook',
+  email_imap: 'IMAP/SMTP',
   notion: 'Notion',
   openai: 'OpenAI',
   anthropic: 'Anthropic',
@@ -37,6 +41,8 @@ export const PROVIDER_ICONS: Record<IntegrationProvider, string> = {
   woocommerce: '🛒',
   shopify: '🏪',
   gmail: '✉️',
+  outlook: '📧',
+  email_imap: '📮',
   notion: '📓',
   openai: '🤖',
   anthropic: '🧠',
@@ -52,6 +58,8 @@ export const STATUS_COLORS: Record<IntegrationStatus, { bg: string; text: string
 export interface WooCommerceMetadata { store_url: string }
 export interface ShopifyMetadata { store_domain: string }
 export interface GmailMetadata { workspace_email?: string }
+export interface OutlookMetadata { workspace_email?: string; tenant_id?: string }
+export interface EmailImapMetadata { account_email: string; sender_name?: string }
 export interface NotionMetadata { workspace_id?: string }
 export interface OpenAIMetadata { project_id?: string }
 export interface AnthropicMetadata { workspace_id?: string }
@@ -61,6 +69,8 @@ export interface IntegrationMetadataByProvider {
   woocommerce: WooCommerceMetadata;
   shopify: ShopifyMetadata;
   gmail: GmailMetadata;
+  outlook: OutlookMetadata;
+  email_imap: EmailImapMetadata;
   notion: NotionMetadata;
   openai: OpenAIMetadata;
   anthropic: AnthropicMetadata;

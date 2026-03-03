@@ -26,6 +26,14 @@ export const PROVIDER_METADATA_SCHEMA: Record<IntegrationProvider, MetadataField
   gmail: [
     { key: 'workspace_email', label: 'Workspace Email', placeholder: 'user@company.com', required: false, type: 'email' },
   ],
+  outlook: [
+    { key: 'workspace_email', label: 'Workspace Email', placeholder: 'user@company.com', required: false, type: 'email' },
+    { key: 'tenant_id', label: 'Tenant ID', placeholder: 'common or tenant GUID', required: false, type: 'text' },
+  ],
+  email_imap: [
+    { key: 'account_email', label: 'Account Email', placeholder: 'contact@company.com', required: true, type: 'email' },
+    { key: 'sender_name', label: 'Sender Name', placeholder: 'Sales Team', required: false, type: 'text' },
+  ],
   notion: [
     { key: 'workspace_id', label: 'Workspace ID', placeholder: 'abc123...', required: false, type: 'text' },
   ],

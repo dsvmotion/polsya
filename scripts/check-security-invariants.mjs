@@ -87,6 +87,9 @@ const REQUIRE_ORG_AUTHZ = [
   'process-integration-sync-jobs',
   'gmail-oauth-url',
   'gmail-oauth-exchange',
+  'outlook-oauth-url',
+  'outlook-oauth-exchange',
+  'email-imap-upsert',
 ];
 
 for (const dir of REQUIRE_ORG_AUTHZ) {

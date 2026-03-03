@@ -55,6 +55,17 @@ describe('validateIntegrationMetadata', () => {
     expect(r.valid).toBe(true);
   });
 
+  it('passes outlook with no metadata', () => {
+    const r = validateIntegrationMetadata('outlook', {});
+    expect(r.valid).toBe(true);
+  });
+
+  it('rejects empty account_email for email_imap', () => {
+    const r = validateIntegrationMetadata('email_imap', {});
+    expect(r.valid).toBe(false);
+    expect(r.errors.account_email).toContain('required');
+  });
+
   // --- Valid URLs ---
 
   it('accepts valid https URL for woocommerce', () => {
@@ -99,6 +110,11 @@ describe('validateIntegrationMetadata', () => {
     expect(r.valid).toBe(true);
   });
 
+  it('accepts valid account_email for email_imap', () => {
+    const r = validateIntegrationMetadata('email_imap', { account_email: 'contact@company.com' });
+    expect(r.valid).toBe(true);
+  });
+
   // --- Invalid emails ---
 
   it('rejects email without @', () => {
@@ -117,6 +133,12 @@ describe('validateIntegrationMetadata', () => {
     const r = validateIntegrationMetadata('gmail', { workspace_email: 'user @company.com' });
     expect(r.valid).toBe(false);
     expect(r.errors.workspace_email).toContain('valid email');
+  });
+
+  it('rejects invalid account_email for email_imap', () => {
+    const r = validateIntegrationMetadata('email_imap', { account_email: 'not-an-email' });
+    expect(r.valid).toBe(false);
+    expect(r.errors.account_email).toContain('valid email');
   });
 
   // --- Forbidden keys ---
@@ -169,7 +191,7 @@ describe('validateIntegrationMetadata', () => {
   // --- Schema coverage ---
 
   it('has schema defined for every provider', () => {
-    const providers = ['woocommerce', 'shopify', 'gmail', 'notion', 'openai', 'anthropic', 'custom_api'] as const;
+    const providers = ['woocommerce', 'shopify', 'gmail', 'outlook', 'email_imap', 'notion', 'openai', 'anthropic', 'custom_api'] as const;
     for (const p of providers) {
       expect(PROVIDER_METADATA_SCHEMA[p]).toBeDefined();
       expect(Array.isArray(PROVIDER_METADATA_SCHEMA[p])).toBe(true);
@@ -224,6 +246,11 @@ describe('sanitizeIntegrationMetadata', () => {
   it('lowercases email', () => {
     const r = sanitizeIntegrationMetadata('gmail', { workspace_email: 'User@Company.COM' });
     expect(r.workspace_email).toBe('user@company.com');
+  });
+
+  it('lowercases email_imap account_email', () => {
+    const r = sanitizeIntegrationMetadata('email_imap', { account_email: 'Contact@Company.COM' });
+    expect(r.account_email).toBe('contact@company.com');
   });
 
   // --- Drops unknown keys ---

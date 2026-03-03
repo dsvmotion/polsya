@@ -32,3 +32,12 @@ verify_jwt = true
 
 [functions.gmail-oauth-exchange]
 verify_jwt = true
+
+[functions.outlook-oauth-url]
+verify_jwt = true
+
+[functions.outlook-oauth-exchange]
+verify_jwt = true
+
+[functions.email-imap-upsert]
+verify_jwt = true

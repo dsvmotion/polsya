@@ -153,30 +153,115 @@ async function refreshGmailAccessToken(params: {
   };
 }
 
+async function refreshOutlookAccessToken(params: {
+  refreshToken: string;
+  tenant: string;
+}): Promise<{ accessToken: string; tokenType: string | null; scope: string | null; expiresAt: string | null }> {
+  const clientId = Deno.env.get('OUTLOOK_CLIENT_ID') ?? '';
+  const clientSecret = Deno.env.get('OUTLOOK_CLIENT_SECRET') ?? '';
+  const scopes = Deno.env.get('OUTLOOK_OAUTH_SCOPES')
+    ?? 'offline_access openid profile email User.Read Mail.Read';
+
+  if (!clientId || !clientSecret) {
+    throw new Error('Missing OUTLOOK_CLIENT_ID or OUTLOOK_CLIENT_SECRET for token refresh');
+  }
+
+  const tokenParams = new URLSearchParams({
+    client_id: clientId,
+    client_secret: clientSecret,
+    refresh_token: params.refreshToken,
+    grant_type: 'refresh_token',
+    scope: scopes,
+  });
+
+  const response = await fetch(`https://login.microsoftonline.com/${encodeURIComponent(params.tenant)}/oauth2/v2.0/token`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+    body: tokenParams,
+  });
+
+  const body = await response.json().catch(() => ({})) as {
+    access_token?: string;
+    token_type?: string;
+    scope?: string;
+    expires_in?: number;
+    error?: string;
+    error_description?: string;
+  };
+
+  if (!response.ok || !body.access_token) {
+    const detail = body.error_description || body.error || `status ${response.status}`;
+    throw new Error(`Failed to refresh Outlook access token: ${detail}`);
+  }
+
+  const expiresAt = typeof body.expires_in === 'number'
+    ? new Date(Date.now() + body.expires_in * 1000).toISOString()
+    : null;
+
+  return {
+    accessToken: body.access_token,
+    tokenType: body.token_type ?? null,
+    scope: body.scope ?? null,
+    expiresAt,
+  };
+}
+
 async function resolveConnectorMetadata(
   supabaseAdmin: ReturnType<typeof createClient>,
   integration: IntegrationConnectionRow,
 ): Promise<Record<string, unknown>> {
   const metadata = asMetadata(integration.metadata);
 
-  if (integration.provider !== 'gmail') {
+  if (integration.provider === 'email_imap') {
+    const { data: credsRow, error: credsError } = await supabaseAdmin
+      .from('integration_email_credentials')
+      .select('account_email, username, password, imap_host, imap_port, imap_secure, smtp_host, smtp_port, smtp_secure')
+      .eq('organization_id', integration.organization_id)
+      .eq('integration_id', integration.id)
+      .eq('provider', 'email_imap')
+      .maybeSingle();
+
+    if (credsError) {
+      throw new Error(`Failed to load IMAP credentials: ${credsError.message}`);
+    }
+    if (!credsRow) {
+      throw new Error('IMAP/SMTP credentials not found. Configure email_imap first.');
+    }
+
+    return {
+      ...metadata,
+      account_email: (credsRow as Record<string, unknown>).account_email,
+      username: (credsRow as Record<string, unknown>).username,
+      password: (credsRow as Record<string, unknown>).password,
+      imap_host: (credsRow as Record<string, unknown>).imap_host,
+      imap_port: (credsRow as Record<string, unknown>).imap_port,
+      imap_secure: (credsRow as Record<string, unknown>).imap_secure,
+      smtp_host: (credsRow as Record<string, unknown>).smtp_host,
+      smtp_port: (credsRow as Record<string, unknown>).smtp_port,
+      smtp_secure: (credsRow as Record<string, unknown>).smtp_secure,
+    };
+  }
+
+  if (integration.provider !== 'gmail' && integration.provider !== 'outlook') {
     return metadata;
   }
+
+  const oauthProvider = integration.provider as 'gmail' | 'outlook';
 
   const { data: tokenRow, error: tokenError } = await supabaseAdmin
     .from('integration_oauth_tokens')
     .select('access_token, refresh_token, expires_at, token_type, scope, provider_account_email')
     .eq('organization_id', integration.organization_id)
     .eq('integration_id', integration.id)
-    .eq('provider', 'gmail')
+    .eq('provider', oauthProvider)
     .maybeSingle();
 
   if (tokenError) {
-    throw new Error(`Failed to load Gmail OAuth token: ${tokenError.message}`);
+    throw new Error(`Failed to load ${oauthProvider} OAuth token: ${tokenError.message}`);
   }
 
   if (!tokenRow) {
-    throw new Error('Gmail OAuth token not found. Connect Gmail first.');
+    throw new Error(`${oauthProvider} OAuth token not found. Connect ${oauthProvider} first.`);
   }
 
   const token = tokenRow as unknown as IntegrationOAuthTokenRow;
@@ -188,10 +273,17 @@ async function resolveConnectorMetadata(
   const expiresSoon = !!expiresAt && Date.parse(expiresAt) <= Date.now() + 60_000;
   if (expiresSoon) {
     if (!token.refresh_token) {
-      throw new Error('Gmail OAuth token expired and no refresh token is available. Reconnect Gmail.');
+      throw new Error(`${oauthProvider} OAuth token expired and no refresh token is available. Reconnect ${oauthProvider}.`);
     }
 
-    const refreshed = await refreshGmailAccessToken({ refreshToken: token.refresh_token });
+    const refreshed = oauthProvider === 'gmail'
+      ? await refreshGmailAccessToken({ refreshToken: token.refresh_token })
+      : await refreshOutlookAccessToken({
+        refreshToken: token.refresh_token,
+        tenant: (typeof metadata.tenant_id === 'string' && metadata.tenant_id.length > 0)
+          ? metadata.tenant_id
+          : (Deno.env.get('OUTLOOK_TENANT_ID') ?? 'common'),
+      });
     accessToken = refreshed.accessToken;
     tokenType = refreshed.tokenType;
     scope = refreshed.scope;
@@ -207,11 +299,22 @@ async function resolveConnectorMetadata(
       })
       .eq('organization_id', integration.organization_id)
       .eq('integration_id', integration.id)
-      .eq('provider', 'gmail');
+      .eq('provider', oauthProvider);
 
     if (updateTokenError) {
-      throw new Error(`Failed to persist refreshed Gmail token: ${updateTokenError.message}`);
+      throw new Error(`Failed to persist refreshed ${oauthProvider} token: ${updateTokenError.message}`);
     }
+  }
+
+  if (oauthProvider === 'outlook') {
+    return {
+      ...metadata,
+      outlook_access_token: accessToken,
+      outlook_account_email: token.provider_account_email,
+      outlook_token_type: tokenType,
+      outlook_scope: scope,
+      outlook_token_expires_at: expiresAt,
+    };
   }
 
   return {

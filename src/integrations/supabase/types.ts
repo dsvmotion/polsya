@@ -583,6 +583,75 @@ export type Database = {
           },
         ]
       }
+      integration_email_credentials: {
+        Row: {
+          id: string
+          organization_id: string
+          integration_id: string
+          provider: string
+          account_email: string
+          username: string
+          password: string
+          imap_host: string
+          imap_port: number
+          imap_secure: boolean
+          smtp_host: string
+          smtp_port: number
+          smtp_secure: boolean
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          organization_id?: string
+          integration_id: string
+          provider: string
+          account_email: string
+          username: string
+          password: string
+          imap_host: string
+          imap_port?: number
+          imap_secure?: boolean
+          smtp_host: string
+          smtp_port?: number
+          smtp_secure?: boolean
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          organization_id?: string
+          integration_id?: string
+          provider?: string
+          account_email?: string
+          username?: string
+          password?: string
+          imap_host?: string
+          imap_port?: number
+          imap_secure?: boolean
+          smtp_host?: string
+          smtp_port?: number
+          smtp_secure?: boolean
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "integration_email_credentials_integration_id_fkey"
+            columns: ["integration_id"]
+            isOneToOne: false
+            referencedRelation: "integration_connections"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "integration_email_credentials_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       integration_oauth_states: {
         Row: {
           state: string
