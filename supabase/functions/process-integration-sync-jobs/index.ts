@@ -24,6 +24,11 @@ type IntegrationSyncJobRow = {
   created_at: string;
   started_at: string | null;
   finished_at: string | null;
+  attempt_count: number;
+  max_attempts: number;
+  next_retry_at: string | null;
+  last_attempt_at: string | null;
+  dead_lettered_at: string | null;
 };
 
 type IntegrationConnectionRow = {
@@ -55,6 +60,15 @@ type PersistResult = {
   summary: string;
 };
 
+type RetryTransition = {
+  status: 'queued' | 'error';
+  retryScheduled: boolean;
+  deadLettered: boolean;
+  nextRetryAt: string | null;
+  attemptCount: number;
+  maxAttempts: number;
+};
+
 function jsonResponse(
   body: Record<string, unknown>,
   status: number,
@@ -69,6 +83,115 @@ function jsonResponse(
 function safeErrorMessage(error: unknown): string {
   if (error instanceof Error) return error.message;
   return String(error);
+}
+
+function retryBaseDelayMs(): number {
+  const value = Number(Deno.env.get('INTEGRATION_JOB_RETRY_BASE_MS') ?? '60000');
+  return Number.isFinite(value) && value > 0 ? value : 60_000;
+}
+
+function retryMaxDelayMs(): number {
+  const value = Number(Deno.env.get('INTEGRATION_JOB_RETRY_MAX_MS') ?? '1800000');
+  return Number.isFinite(value) && value > 0 ? value : 1_800_000;
+}
+
+function computeRetryDelayMs(attemptCount: number): number {
+  const exponent = Math.max(0, attemptCount - 1);
+  const delay = retryBaseDelayMs() * (2 ** exponent);
+  return Math.min(delay, retryMaxDelayMs());
+}
+
+async function transitionJobAfterFailure(
+  supabaseAdmin: ReturnType<typeof createClient>,
+  params: {
+    job: IntegrationSyncJobRow;
+    errorMessage: string;
+    finishedAt: string;
+  },
+): Promise<RetryTransition> {
+  const attemptCount = Math.max(1, Number(params.job.attempt_count ?? 1));
+  const maxAttempts = Math.max(1, Number(params.job.max_attempts ?? 3));
+  const exhausted = attemptCount >= maxAttempts;
+
+  if (exhausted) {
+    const { error: jobUpdateError } = await supabaseAdmin
+      .from('integration_sync_jobs')
+      .update({
+        status: 'error',
+        finished_at: params.finishedAt,
+        started_at: null,
+        next_retry_at: null,
+        dead_lettered_at: params.finishedAt,
+        error_message: params.errorMessage,
+      })
+      .eq('id', params.job.id)
+      .eq('organization_id', params.job.organization_id);
+
+    if (jobUpdateError) {
+      throw new Error(`Failed to dead-letter integration job: ${jobUpdateError.message}`);
+    }
+
+    const { error: dlqError } = await supabaseAdmin
+      .from('integration_sync_job_dead_letters')
+      .upsert(
+        {
+          organization_id: params.job.organization_id,
+          job_id: params.job.id,
+          integration_id: params.job.integration_id,
+          provider: params.job.provider,
+          job_type: params.job.job_type,
+          payload: params.job.payload ?? {},
+          attempt_count: attemptCount,
+          max_attempts: maxAttempts,
+          error_message: params.errorMessage,
+          first_created_at: params.job.created_at,
+          failed_at: params.finishedAt,
+        },
+        { onConflict: 'job_id', ignoreDuplicates: false },
+      );
+
+    if (dlqError) {
+      throw new Error(`Failed to write dead-letter record: ${dlqError.message}`);
+    }
+
+    return {
+      status: 'error',
+      retryScheduled: false,
+      deadLettered: true,
+      nextRetryAt: null,
+      attemptCount,
+      maxAttempts,
+    };
+  }
+
+  const delayMs = computeRetryDelayMs(attemptCount);
+  const nextRetryAt = new Date(Date.now() + delayMs).toISOString();
+
+  const { error: jobUpdateError } = await supabaseAdmin
+    .from('integration_sync_jobs')
+    .update({
+      status: 'queued',
+      started_at: null,
+      finished_at: null,
+      next_retry_at: nextRetryAt,
+      dead_lettered_at: null,
+      error_message: params.errorMessage,
+    })
+    .eq('id', params.job.id)
+    .eq('organization_id', params.job.organization_id);
+
+  if (jobUpdateError) {
+    throw new Error(`Failed to schedule integration job retry: ${jobUpdateError.message}`);
+  }
+
+  return {
+    status: 'queued',
+    retryScheduled: true,
+    deadLettered: false,
+    nextRetryAt,
+    attemptCount,
+    maxAttempts,
+  };
 }
 
 function runStep(
@@ -458,20 +581,42 @@ serve(async (req) => {
 
       job = data as unknown as IntegrationSyncJobRow;
     } else {
-      const { data, error } = await supabaseAdmin
+      const nowIso = new Date().toISOString();
+
+      const { data: readyWithoutRetryDate, error: readyWithoutRetryDateError } = await supabaseAdmin
         .from('integration_sync_jobs')
         .select('*')
         .eq('organization_id', auth.organizationId)
         .eq('status', 'queued')
+        .is('next_retry_at', null)
         .order('created_at', { ascending: true })
         .limit(1)
         .maybeSingle();
 
-      if (error) {
-        return jsonResponse({ error: `Failed to fetch queued jobs: ${error.message}` }, 500, corsHeaders);
+      if (readyWithoutRetryDateError) {
+        return jsonResponse({ error: `Failed to fetch queued jobs: ${readyWithoutRetryDateError.message}` }, 500, corsHeaders);
       }
 
-      job = (data ?? null) as unknown as IntegrationSyncJobRow | null;
+      if (readyWithoutRetryDate) {
+        job = readyWithoutRetryDate as unknown as IntegrationSyncJobRow;
+      } else {
+        const { data: retryReadyData, error: retryReadyError } = await supabaseAdmin
+          .from('integration_sync_jobs')
+          .select('*')
+          .eq('organization_id', auth.organizationId)
+          .eq('status', 'queued')
+          .lte('next_retry_at', nowIso)
+          .order('next_retry_at', { ascending: true })
+          .order('created_at', { ascending: true })
+          .limit(1)
+          .maybeSingle();
+
+        if (retryReadyError) {
+          return jsonResponse({ error: `Failed to fetch retryable jobs: ${retryReadyError.message}` }, 500, corsHeaders);
+        }
+
+        job = (retryReadyData ?? null) as unknown as IntegrationSyncJobRow | null;
+      }
     }
 
     if (!job) {
@@ -494,10 +639,18 @@ serve(async (req) => {
     const startedAt = new Date().toISOString();
     const { data: claimedJob, error: claimError } = await supabaseAdmin
       .from('integration_sync_jobs')
-      .update({ status: 'running', started_at: startedAt, error_message: null })
+      .update({
+        status: 'running',
+        started_at: startedAt,
+        last_attempt_at: startedAt,
+        attempt_count: Math.max(0, job.attempt_count) + 1,
+        next_retry_at: null,
+        error_message: null,
+      })
       .eq('id', job.id)
       .eq('organization_id', auth.organizationId)
       .eq('status', 'queued')
+      .eq('attempt_count', Math.max(0, job.attempt_count))
       .select('*')
       .maybeSingle();
 
@@ -520,12 +673,28 @@ serve(async (req) => {
 
     if (integrationError || !integrationData) {
       const errMsg = integrationError?.message ?? 'Integration not found';
-      await supabaseAdmin
-        .from('integration_sync_jobs')
-        .update({ status: 'error', error_message: errMsg, finished_at: new Date().toISOString() })
-        .eq('id', activeJob.id)
-        .eq('organization_id', auth.organizationId);
-      return jsonResponse({ error: `Cannot process job: ${errMsg}` }, 400, corsHeaders);
+      const finishedAt = new Date().toISOString();
+      const retry = await transitionJobAfterFailure(supabaseAdmin, {
+        job: activeJob,
+        errorMessage: errMsg,
+        finishedAt,
+      });
+
+      return jsonResponse(
+        {
+          processed: true,
+          jobId: activeJob.id,
+          status: retry.status,
+          retryScheduled: retry.retryScheduled,
+          nextRetryAt: retry.nextRetryAt,
+          deadLettered: retry.deadLettered,
+          attemptCount: retry.attemptCount,
+          maxAttempts: retry.maxAttempts,
+          error: `Cannot process job: ${errMsg}`,
+        },
+        200,
+        corsHeaders,
+      );
     }
 
     const integration = integrationData as unknown as IntegrationConnectionRow;
@@ -551,13 +720,38 @@ serve(async (req) => {
       .single();
 
     if (runCreateError) {
+      const finishedAt = new Date().toISOString();
+      const retry = await transitionJobAfterFailure(supabaseAdmin, {
+        job: activeJob,
+        errorMessage: runCreateError.message,
+        finishedAt,
+      });
+
       await supabaseAdmin
-        .from('integration_sync_jobs')
-        .update({ status: 'error', error_message: runCreateError.message, finished_at: new Date().toISOString() })
-        .eq('id', activeJob.id)
+        .from('integration_connections')
+        .update({
+          status: 'error',
+          last_sync_at: finishedAt,
+          last_error: runCreateError.message,
+        })
+        .eq('id', integration.id)
         .eq('organization_id', auth.organizationId);
 
-      return jsonResponse({ error: `Failed to create sync run: ${runCreateError.message}` }, 500, corsHeaders);
+      return jsonResponse(
+        {
+          processed: true,
+          jobId: activeJob.id,
+          status: retry.status,
+          retryScheduled: retry.retryScheduled,
+          nextRetryAt: retry.nextRetryAt,
+          deadLettered: retry.deadLettered,
+          attemptCount: retry.attemptCount,
+          maxAttempts: retry.maxAttempts,
+          error: `Failed to create sync run: ${runCreateError.message}`,
+        },
+        200,
+        corsHeaders,
+      );
     }
 
     const runId = runRow.id as string;
@@ -645,15 +839,27 @@ serve(async (req) => {
         .eq('id', runId)
         .eq('organization_id', auth.organizationId);
 
-      await supabaseAdmin
-        .from('integration_sync_jobs')
-        .update({
-          status: runStatus,
-          finished_at: finishedAt,
-          error_message: runStatus === 'success' ? null : joinedSummary,
-        })
-        .eq('id', activeJob.id)
-        .eq('organization_id', auth.organizationId);
+      let retry: RetryTransition | null = null;
+      if (runStatus === 'success') {
+        await supabaseAdmin
+          .from('integration_sync_jobs')
+          .update({
+            status: 'success',
+            finished_at: finishedAt,
+            started_at: null,
+            next_retry_at: null,
+            dead_lettered_at: null,
+            error_message: null,
+          })
+          .eq('id', activeJob.id)
+          .eq('organization_id', auth.organizationId);
+      } else {
+        retry = await transitionJobAfterFailure(supabaseAdmin, {
+          job: activeJob,
+          errorMessage: joinedSummary || 'Sync failed',
+          finishedAt,
+        });
+      }
 
       await supabaseAdmin
         .from('integration_connections')
@@ -670,7 +876,12 @@ serve(async (req) => {
           processed: true,
           jobId: activeJob.id,
           runId,
-          status: runStatus,
+          status: retry?.status ?? 'success',
+          retryScheduled: retry?.retryScheduled ?? false,
+          nextRetryAt: retry?.nextRetryAt ?? null,
+          deadLettered: retry?.deadLettered ?? false,
+          attemptCount: retry?.attemptCount ?? activeJob.attempt_count,
+          maxAttempts: retry?.maxAttempts ?? activeJob.max_attempts,
           targets,
           durationMs,
           recordsProcessed: totalProcessed,
@@ -706,15 +917,11 @@ serve(async (req) => {
         .eq('id', runId)
         .eq('organization_id', auth.organizationId);
 
-      await supabaseAdmin
-        .from('integration_sync_jobs')
-        .update({
-          status: 'error',
-          finished_at: finishedAt,
-          error_message: message,
-        })
-        .eq('id', activeJob.id)
-        .eq('organization_id', auth.organizationId);
+      const retry = await transitionJobAfterFailure(supabaseAdmin, {
+        job: activeJob,
+        errorMessage: message,
+        finishedAt,
+      });
 
       await supabaseAdmin
         .from('integration_connections')
@@ -731,7 +938,12 @@ serve(async (req) => {
           processed: true,
           jobId: activeJob.id,
           runId,
-          status: 'error',
+          status: retry.status,
+          retryScheduled: retry.retryScheduled,
+          nextRetryAt: retry.nextRetryAt,
+          deadLettered: retry.deadLettered,
+          attemptCount: retry.attemptCount,
+          maxAttempts: retry.maxAttempts,
           targets,
           durationMs,
           recordsProcessed: totalProcessed,

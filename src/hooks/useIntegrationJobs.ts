@@ -42,6 +42,7 @@ interface EnqueueJobInput {
   payload?: Record<string, unknown>;
   requestedBy?: string | null;
   idempotencyKey?: string | null;
+  maxAttempts?: number;
 }
 
 export function useEnqueueIntegrationJob() {
@@ -59,6 +60,7 @@ export function useEnqueueIntegrationJob() {
           payload: (input.payload ?? {}) as unknown as import('@/integrations/supabase/types').Json,
           requested_by: input.requestedBy ?? null,
           idempotency_key: input.idempotencyKey ?? null,
+          max_attempts: input.maxAttempts ?? 3,
         })
         .select()
         .single();
@@ -114,6 +116,11 @@ interface ProcessJobResponse {
   jobId?: string;
   runId?: string;
   status?: string;
+  retryScheduled?: boolean;
+  nextRetryAt?: string | null;
+  deadLettered?: boolean;
+  attemptCount?: number;
+  maxAttempts?: number;
   durationMs?: number;
   recordsProcessed?: number;
   recordsFailed?: number;

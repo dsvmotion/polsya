@@ -835,6 +835,11 @@ export type Database = {
           created_at: string
           started_at: string | null
           finished_at: string | null
+          attempt_count: number
+          max_attempts: number
+          next_retry_at: string | null
+          last_attempt_at: string | null
+          dead_lettered_at: string | null
         }
         Insert: {
           id?: string
@@ -850,6 +855,11 @@ export type Database = {
           created_at?: string
           started_at?: string | null
           finished_at?: string | null
+          attempt_count?: number
+          max_attempts?: number
+          next_retry_at?: string | null
+          last_attempt_at?: string | null
+          dead_lettered_at?: string | null
         }
         Update: {
           id?: string
@@ -865,6 +875,11 @@ export type Database = {
           created_at?: string
           started_at?: string | null
           finished_at?: string | null
+          attempt_count?: number
+          max_attempts?: number
+          next_retry_at?: string | null
+          last_attempt_at?: string | null
+          dead_lettered_at?: string | null
         }
         Relationships: [
           {
@@ -876,6 +891,76 @@ export type Database = {
           },
           {
             foreignKeyName: "integration_sync_jobs_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      integration_sync_job_dead_letters: {
+        Row: {
+          id: string
+          organization_id: string
+          job_id: string
+          integration_id: string
+          provider: string
+          job_type: string
+          payload: Json
+          attempt_count: number
+          max_attempts: number
+          error_message: string
+          first_created_at: string
+          failed_at: string
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          organization_id?: string
+          job_id: string
+          integration_id: string
+          provider: string
+          job_type: string
+          payload?: Json
+          attempt_count: number
+          max_attempts: number
+          error_message: string
+          first_created_at: string
+          failed_at?: string
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          organization_id?: string
+          job_id?: string
+          integration_id?: string
+          provider?: string
+          job_type?: string
+          payload?: Json
+          attempt_count?: number
+          max_attempts?: number
+          error_message?: string
+          first_created_at?: string
+          failed_at?: string
+          created_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "integration_sync_job_dead_letters_integration_id_fkey"
+            columns: ["integration_id"]
+            isOneToOne: false
+            referencedRelation: "integration_connections"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "integration_sync_job_dead_letters_job_id_fkey"
+            columns: ["job_id"]
+            isOneToOne: false
+            referencedRelation: "integration_sync_jobs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "integration_sync_job_dead_letters_organization_id_fkey"
             columns: ["organization_id"]
             isOneToOne: false
             referencedRelation: "organizations"

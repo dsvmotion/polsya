@@ -168,8 +168,19 @@ function IntegrationRow({
         toast.success(
           `Sync completed (${result.recordsProcessed ?? 0} processed, ${result.recordsCreated ?? 0} new, ${result.recordsUpdated ?? 0} updated)`
         );
+      } else if (result.status === 'queued' && result.retryScheduled) {
+        const nextRetry = result.nextRetryAt ? new Date(result.nextRetryAt).toLocaleTimeString() : 'soon';
+        toast.error(
+          `Sync failed on attempt ${result.attemptCount ?? '?'} / ${result.maxAttempts ?? '?'}; retry scheduled at ${nextRetry}`
+        );
       } else if (result.status === 'error') {
-        toast.error(result.error || result.summary || 'Sync finished with errors');
+        if (result.deadLettered) {
+          toast.error(
+            `Sync moved to dead-letter after ${result.attemptCount ?? '?'} / ${result.maxAttempts ?? '?'} attempts`
+          );
+        } else {
+          toast.error(result.error || result.summary || 'Sync finished with errors');
+        }
       } else if (result.processed === false) {
         toast.info(result.summary || 'No queued jobs to process');
       } else {
@@ -462,12 +473,18 @@ function IntegrationRow({
       )}
 
       {/* Latest job status */}
-      {latestJob && (latestJob.status === 'queued' || latestJob.status === 'running') && (
+      {latestJob && (latestJob.status === 'queued' || latestJob.status === 'running' || latestJob.status === 'error') && (
         <div className="flex items-center gap-1.5 pl-6 text-[10px] text-gray-400">
           <span>job:</span>
           <span className={cn('px-1 py-0.5 rounded font-medium', INTEGRATION_JOB_STATUS_COLORS[latestJob.status].bg, INTEGRATION_JOB_STATUS_COLORS[latestJob.status].text)}>
             {latestJob.status}
           </span>
+          {latestJob.dead_lettered_at && (
+            <span className="px-1 py-0.5 rounded font-medium bg-red-100 text-red-700">dead-letter</span>
+          )}
+          {(latestJob.status === 'queued' || latestJob.status === 'error') && (
+            <span>{latestJob.attempt_count}/{latestJob.max_attempts} attempts</span>
+          )}
           <span>{timeAgo(latestJob.created_at)}</span>
         </div>
       )}

@@ -138,6 +138,11 @@ export interface IntegrationSyncJob {
   created_at: string;
   started_at: string | null;
   finished_at: string | null;
+  attempt_count: number;
+  max_attempts: number;
+  next_retry_at: string | null;
+  last_attempt_at: string | null;
+  dead_lettered_at: string | null;
 }
 
 export const INTEGRATION_JOB_STATUS_COLORS: Record<IntegrationJobStatus, { bg: string; text: string }> = {
