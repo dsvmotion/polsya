@@ -75,11 +75,24 @@ export function useBillingPlans() {
         .eq('is_active', true)
         .order('amount_cents', { ascending: true });
 
-      if (error) throw new Error(error.message);
+      if (error) {
+        const msg = (error.message ?? '').toLowerCase();
+        if (error.code === '42P01' || msg.includes('does not exist') || (msg.includes('relation') && msg.includes('exist'))) {
+          console.warn('billing_plans table not found (run migrations: supabase db push).');
+          return [];
+        }
+        throw new Error(error.message);
+      }
       return (data ?? []) as BillingPlan[];
     },
     staleTime: 5 * 60 * 1000,
   });
+}
+
+function isTableNotFoundError(error: { message?: string; code?: string } | null): boolean {
+  if (!error) return false;
+  const msg = (error.message ?? '').toLowerCase();
+  return error.code === '42P01' || msg.includes('does not exist') || (msg.includes('relation') && msg.includes('exist'));
 }
 
 export function useBillingOverview(organizationId: string | null) {
@@ -87,7 +100,7 @@ export function useBillingOverview(organizationId: string | null) {
     queryKey: ['billing-overview', organizationId ?? ''],
     enabled: !!organizationId,
     queryFn: async () => {
-      const [{ data: customer, error: customerError }, { data: subscriptions, error: subscriptionError }, { data: invoices, error: invoiceError }] = await Promise.all([
+      const [customerRes, subscriptionRes, invoiceRes] = await Promise.all([
         supabase
           .from('billing_customers')
           .select('*')
@@ -107,14 +120,18 @@ export function useBillingOverview(organizationId: string | null) {
           .limit(25),
       ]);
 
-      if (customerError) throw new Error(customerError.message);
-      if (subscriptionError) throw new Error(subscriptionError.message);
-      if (invoiceError) throw new Error(invoiceError.message);
+      if (isTableNotFoundError(customerRes.error) || isTableNotFoundError(subscriptionRes.error) || isTableNotFoundError(invoiceRes.error)) {
+        console.warn('Billing tables not found (run migrations: supabase db push).');
+        return { customer: null, subscription: null, invoices: [] };
+      }
+      if (customerRes.error) throw new Error(customerRes.error.message);
+      if (subscriptionRes.error) throw new Error(subscriptionRes.error.message);
+      if (invoiceRes.error) throw new Error(invoiceRes.error.message);
 
       return {
-        customer: (customer ?? null) as BillingCustomer | null,
-        subscription: ((subscriptions ?? [])[0] ?? null) as BillingSubscription | null,
-        invoices: (invoices ?? []) as BillingInvoice[],
+        customer: (customerRes.data ?? null) as BillingCustomer | null,
+        subscription: ((subscriptionRes.data ?? [])[0] ?? null) as BillingSubscription | null,
+        invoices: (invoiceRes.data ?? []) as BillingInvoice[],
       };
     },
   });

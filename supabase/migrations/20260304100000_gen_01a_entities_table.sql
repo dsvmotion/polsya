@@ -2,6 +2,41 @@
 -- This migration renames tables/columns in place (ALTER TABLE RENAME) to preserve FKs,
 -- then creates backward-compatible views for any code not yet migrated.
 
+-- ─── 0. Repair: create entity_types if missing (inconsistent migration state) ─
+CREATE TABLE IF NOT EXISTS public.entity_types (
+  id uuid primary key default gen_random_uuid(),
+  organization_id uuid null,
+  key text not null,
+  label text not null,
+  color text null,
+  is_default boolean not null default false,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now(),
+  constraint chk_entity_types_key_format check (key ~ '^[a-z0-9_\-]+$')
+);
+CREATE UNIQUE INDEX IF NOT EXISTS idx_entity_types_org_key ON public.entity_types (organization_id, key);
+CREATE UNIQUE INDEX IF NOT EXISTS idx_entity_types_global_key ON public.entity_types (key) WHERE organization_id IS NULL;
+CREATE INDEX IF NOT EXISTS idx_entity_types_org_default ON public.entity_types (organization_id, is_default desc, label);
+ALTER TABLE public.entity_types ENABLE ROW LEVEL SECURITY;
+DO $repair$
+BEGIN
+  IF NOT EXISTS (SELECT 1 FROM pg_proc p JOIN pg_namespace n ON p.pronamespace = n.oid WHERE n.nspname = 'public' AND p.proname = 'update_updated_at_column') THEN
+    CREATE OR REPLACE FUNCTION public.update_updated_at_column() RETURNS trigger LANGUAGE plpgsql AS $func$ BEGIN new.updated_at = now(); RETURN new; END; $func$;
+  END IF;
+END
+$repair$;
+DROP TRIGGER IF EXISTS update_entity_types_updated_at ON public.entity_types;
+CREATE TRIGGER update_entity_types_updated_at BEFORE UPDATE ON public.entity_types FOR EACH ROW EXECUTE FUNCTION public.update_updated_at_column();
+DO $$
+BEGIN
+  IF NOT EXISTS (SELECT 1 FROM public.entity_types WHERE organization_id IS NULL AND key = 'pharmacy') THEN
+    INSERT INTO public.entity_types (organization_id, key, label, color, is_default) VALUES (null, 'pharmacy', 'Pharmacy', '#334155', true);
+  END IF;
+  IF NOT EXISTS (SELECT 1 FROM public.entity_types WHERE organization_id IS NULL AND key = 'herbalist') THEN
+    INSERT INTO public.entity_types (organization_id, key, label, color, is_default) VALUES (null, 'herbalist', 'Herbalist', '#0f766e', false);
+  END IF;
+END $$;
+
 -- ─── 1. Add metadata JSONB column to entity_types for discovery config ──────
 ALTER TABLE public.entity_types
   ADD COLUMN IF NOT EXISTS metadata jsonb NOT NULL DEFAULT '{}';

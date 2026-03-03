@@ -14,6 +14,7 @@ import {
   Moon,
   Sun,
   X,
+  Sparkles,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
@@ -29,6 +30,7 @@ interface AppSidebarProps {
   onOpenChange: (open: boolean) => void;
   collapsed: boolean;
   onCollapsedChange: (collapsed: boolean) => void;
+  onOpenAiChat?: () => void;
 }
 
 interface NavItem {
@@ -39,7 +41,7 @@ interface NavItem {
   children?: { label: string; href: string }[];
 }
 
-export function AppSidebar({ open, onOpenChange, collapsed, onCollapsedChange }: AppSidebarProps) {
+export function AppSidebar({ open, onOpenChange, collapsed, onCollapsedChange, onOpenAiChat }: AppSidebarProps) {
   const location = useLocation();
   const { theme, setTheme } = useTheme();
   const { data: entityTypes = [] } = useEntityTypes();
@@ -185,6 +187,32 @@ export function AppSidebar({ open, onOpenChange, collapsed, onCollapsedChange }:
 
       {/* Bottom section */}
       <div className="border-t border-sidebar-border px-2 py-3 space-y-1">
+        {/* AI Assistant */}
+        {onOpenAiChat &&
+          (collapsed ? (
+            <Tooltip delayDuration={0}>
+              <TooltipTrigger asChild>
+                <button
+                  onClick={onOpenAiChat}
+                  className="flex items-center justify-center h-10 w-10 mx-auto rounded-lg text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-foreground transition-colors w-full"
+                >
+                  <Sparkles className="h-5 w-5" />
+                </button>
+              </TooltipTrigger>
+              <TooltipContent side="right" className="font-medium">
+                AI Assistant
+              </TooltipContent>
+            </Tooltip>
+          ) : (
+            <button
+              onClick={onOpenAiChat}
+              className="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-foreground transition-colors w-full"
+            >
+              <Sparkles className="h-5 w-5 shrink-0" />
+              <span className="truncate">AI Assistant</span>
+            </button>
+          ))}
+
         {bottomItems.map((item) => {
           const active = isActive(item);
           const Icon = item.icon;

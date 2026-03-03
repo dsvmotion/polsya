@@ -24,6 +24,11 @@ function mapEntityTypeRow(row: {
   };
 }
 
+const DEFAULT_ENTITY_TYPES: EntityTypeDefinition[] = [
+  { id: 'default-pharmacy', organizationId: null, key: 'pharmacy', label: 'Pharmacy', color: '#334155', isDefault: true, createdAt: '', updatedAt: '' },
+  { id: 'default-herbalist', organizationId: null, key: 'herbalist', label: 'Herbalist', color: '#7c3aed', isDefault: false, createdAt: '', updatedAt: '' },
+];
+
 export function useEntityTypes() {
   return useQuery<EntityTypeDefinition[]>({
     queryKey: ['entity-types'],
@@ -34,8 +39,16 @@ export function useEntityTypes() {
         .order('is_default', { ascending: false })
         .order('label', { ascending: true });
 
-      if (error) throw new Error(error.message);
-      return (data ?? []).map(mapEntityTypeRow);
+      if (error) {
+        const msg = (error.message ?? '').toLowerCase();
+        if (error.code === '42P01' || msg.includes('does not exist') || msg.includes('relation') && msg.includes('exist')) {
+          console.warn('entity_types table not found (run migrations: supabase db push). Using defaults.');
+          return DEFAULT_ENTITY_TYPES;
+        }
+        throw new Error(error.message);
+      }
+      const rows = (data ?? []) as Parameters<typeof mapEntityTypeRow>[0][];
+      return rows.length > 0 ? rows.map(mapEntityTypeRow) : DEFAULT_ENTITY_TYPES;
     },
   });
 }

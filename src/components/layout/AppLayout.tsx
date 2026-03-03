@@ -3,6 +3,7 @@ import { Outlet, useLocation } from 'react-router-dom';
 import { AppSidebar } from './AppSidebar';
 import { AppTopBar } from './AppTopBar';
 import { CommandPalette } from './CommandPalette';
+import { AiChatSheet } from './AiChatSheet';
 import { cn } from '@/lib/utils';
 
 interface LayoutContextType {
@@ -24,6 +25,7 @@ export function AppLayout() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [commandOpen, setCommandOpen] = useState(false);
+  const [aiChatOpen, setAiChatOpen] = useState(false);
   const location = useLocation();
 
   useEffect(() => {
@@ -49,6 +51,7 @@ export function AppLayout() {
           onOpenChange={setSidebarOpen}
           collapsed={sidebarCollapsed}
           onCollapsedChange={setSidebarCollapsed}
+          onOpenAiChat={() => setAiChatOpen(true)}
         />
 
         <div
@@ -67,6 +70,7 @@ export function AppLayout() {
         </div>
 
         <CommandPalette open={commandOpen} onOpenChange={setCommandOpen} />
+        <AiChatSheet open={aiChatOpen} onOpenChange={setAiChatOpen} />
       </div>
     </LayoutContext.Provider>
   );

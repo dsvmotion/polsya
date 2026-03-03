@@ -99,8 +99,16 @@ sales-compass-95/
 Aplicar migraciones con Supabase CLI desde la raíz:
 
 ```bash
+# Enlazar proyecto remoto (solo la primera vez)
+supabase link --project-ref <TU_PROJECT_REF>
+
+# Aplicar todas las migraciones
 supabase db push
 ```
+
+**Si ves 404 en entity_types, billing_*:** las tablas no existen → ejecuta `supabase db push`.
+
+**Si ves 401 en Edge Functions:** revisa que estés logueado y que las funciones tengan las variables necesarias (SUPABASE_URL, etc.). Ver `docs/SETUP_MIGRATIONS.md` para más detalles.
 
 ## Desarrollo local
 
