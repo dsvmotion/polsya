@@ -83,7 +83,7 @@ export function KpiStrip() {
 
   return (
     <div className="mb-6 space-y-2">
-      <div className="flex items-center gap-3">
+      <div className="flex flex-wrap items-center gap-3">
         <Select
           value={clientType}
           onValueChange={(v) => setClientType(v as KpiClientType)}
@@ -123,7 +123,7 @@ export function KpiStrip() {
         )}
       </div>
 
-      <div className="grid grid-cols-5 gap-3">
+      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-5 gap-3">
         {isLoading || !kpis ? (
           Array.from({ length: 5 }).map((_, i) => <SkeletonCard key={i} />)
         ) : (

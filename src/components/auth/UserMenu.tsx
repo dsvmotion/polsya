@@ -11,9 +11,11 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { CreditCard, LogOut, User } from 'lucide-react';
+import { useCurrentOrganization } from '@/hooks/useOrganizationContext';
 
 export function UserMenu() {
   const { user, signOut } = useAuth();
+  const { organization, membership } = useCurrentOrganization();
 
   if (!user) return null;
 
@@ -44,6 +46,11 @@ export function UserMenu() {
             <p className="text-xs text-gray-500 truncate">
               {user.email}
             </p>
+            {organization?.name && (
+              <p className="text-[11px] text-gray-400 truncate">
+                {organization.name}{membership?.role ? ` · ${membership.role}` : ''}
+              </p>
+            )}
           </div>
         </DropdownMenuLabel>
         <DropdownMenuSeparator className="bg-gray-100" />

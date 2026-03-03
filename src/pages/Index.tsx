@@ -245,19 +245,20 @@ const Index = () => {
   };
 
   return (
-    <div className="min-h-screen bg-white text-gray-900 p-4 md:p-6">
+    <div className="app-shell p-4 md:p-6">
       <div className="max-w-[1600px] mx-auto">
         {/* Header */}
-        <div className="flex items-center justify-between mb-6">
+        <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between mb-6">
           <div>
             <h1 className="text-2xl font-bold text-gray-900">Sales Tracker</h1>
             <p className="text-sm text-gray-500">Global overview of sales and revenue</p>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2">
             <Link to="/operations/entities">
               <Button 
                 variant="outline" 
                 className="gap-2 bg-white border-gray-300 text-gray-700 hover:bg-gray-100 hover:text-gray-900"
+                size="sm"
               >
                 <ClipboardList className="h-4 w-4" />
                 Saved Pharmacies
@@ -267,6 +268,7 @@ const Index = () => {
               <Button 
                 variant="outline" 
                 className="gap-2 bg-white border-gray-300 text-gray-700 hover:bg-gray-100 hover:text-gray-900"
+                size="sm"
               >
                 <MapPin className="h-4 w-4" />
                 Search Pharmacies
@@ -276,6 +278,7 @@ const Index = () => {
               <Button 
                 variant="outline" 
                 className="gap-2 bg-white border-gray-300 text-gray-700 hover:bg-gray-100 hover:text-gray-900"
+                size="sm"
               >
                 <ClipboardList className="h-4 w-4" />
                 Saved Herbalists
@@ -285,6 +288,7 @@ const Index = () => {
               <Button 
                 variant="outline" 
                 className="gap-2 bg-white border-gray-300 text-gray-700 hover:bg-gray-100 hover:text-gray-900"
+                size="sm"
               >
                 <MapPin className="h-4 w-4" />
                 Search Herbalists

@@ -262,40 +262,41 @@ export default function PharmacyOperations({ clientType = 'pharmacy' }: Props) {
   const showEmptyState = !isLoading && totalCount === 0;
 
   return (
-    <div className="min-h-screen bg-white text-gray-900">
+    <div className="app-shell">
       {/* Header */}
-      <header className="h-14 border-b border-gray-200 flex items-center justify-between px-6 bg-gray-50">
-        <div className="flex items-center gap-4">
+      <header className="app-header px-3 md:px-6">
+        <div className="flex items-center gap-2 md:gap-4 min-w-0">
           <Link to="/">
-            <Button variant="ghost" size="sm" className="text-gray-600 hover:text-gray-900">
+            <Button variant="ghost" size="sm" className="text-gray-600 hover:text-gray-900 px-2 md:px-3">
               <ArrowLeft className="h-4 w-4 mr-2" />
-              Back to Dashboard
+              <span className="hidden md:inline">Back to Dashboard</span>
             </Button>
           </Link>
-          <div className="h-6 w-px bg-gray-300" />
-          <div className="flex items-center gap-2">
+          <div className="h-6 w-px bg-gray-300 hidden md:block" />
+          <div className="flex items-center gap-2 min-w-0">
             {clientType === 'pharmacy' ? (
               <Building2 className="h-5 w-5 text-gray-700" />
             ) : (
               <Leaf className="h-5 w-5 text-gray-700" />
             )}
-            <h1 className="font-semibold text-lg">
+            <h1 className="font-semibold text-sm md:text-lg truncate">
               {`Saved ${entityLabelPlural}`}
             </h1>
           </div>
           {!showEmptyState && (
-            <span className="text-xs text-gray-500 bg-gray-100 px-2 py-0.5 rounded">
+            <span className="text-xs text-gray-500 bg-gray-100 px-2 py-0.5 rounded hidden sm:inline">
               {totalCount} {entityLabelPlural.toLowerCase()}
             </span>
           )}
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 shrink-0">
           <BulkImportDialog defaultClientType={clientType} onSuccess={handleRefresh} />
           <Link to={clientType === 'pharmacy' ? '/prospecting/entities' : '/prospecting/entities/herbalists'}>
             <Button variant="outline" size="sm" className="border-gray-300">
               <MapPin className="h-4 w-4 mr-2" />
-              {`Search ${entityLabelPlural}`}
+              <span className="hidden md:inline">{`Search ${entityLabelPlural}`}</span>
+              <span className="md:hidden">Search</span>
             </Button>
           </Link>
           <Button
@@ -306,7 +307,7 @@ export default function PharmacyOperations({ clientType = 'pharmacy' }: Props) {
             className="border-gray-300"
           >
             <RefreshCw className={`h-4 w-4 mr-2 ${isLoading ? 'animate-spin' : ''}`} />
-            Refresh
+            <span className="hidden md:inline">Refresh</span>
           </Button>
           <UserMenu />
         </div>
@@ -338,7 +339,7 @@ export default function PharmacyOperations({ clientType = 'pharmacy' }: Props) {
       ) : (
         <>
           {/* Pipeline Summary + Risk Alerts */}
-          <div className="grid grid-cols-[1fr_320px] gap-4 px-6 py-4 border-b border-gray-200 bg-gray-50/50">
+          <div className="grid grid-cols-1 xl:grid-cols-[1fr_320px] gap-4 px-4 md:px-6 py-4 border-b border-gray-200 bg-gray-50/50">
             <PipelineSummaryCards />
             <RiskAlertsCard
               clientType={clientType}
@@ -372,9 +373,9 @@ export default function PharmacyOperations({ clientType = 'pharmacy' }: Props) {
           />
 
           {/* Main Content */}
-          <div className="flex items-start">
+          <div className="flex flex-col 2xl:flex-row items-start">
             {/* Table */}
-            <div className={`flex-1 overflow-auto ${selectedPharmacy ? 'max-w-[calc(100%-400px)]' : ''}`}>
+            <div className="w-full flex-1 overflow-auto">
               <OperationsTable
                 pharmacies={smartFiltered}
                 isLoading={isLoading}
@@ -413,7 +414,7 @@ export default function PharmacyOperations({ clientType = 'pharmacy' }: Props) {
 
             {/* Detail Panel */}
             {selectedPharmacy && (
-              <div className="w-[400px] border-l border-gray-200 bg-gray-50 sticky top-20">
+              <div className="w-full 2xl:w-[400px] border-t 2xl:border-t-0 2xl:border-l border-gray-200 bg-gray-50">
                 <PharmacyOperationsDetail
                   pharmacy={selectedPharmacy}
                   onClose={() => setSelectedPharmacy(null)}
