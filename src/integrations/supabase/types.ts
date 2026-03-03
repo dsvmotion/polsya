@@ -115,6 +115,13 @@ export type Database = {
         Row: {
           created_at: string
           id: string
+          logo_url: string | null
+          primary_color: string
+          locale: string
+          timezone: string
+          currency: string
+          entity_label_singular: string
+          entity_label_plural: string
           name: string
           slug: string
           updated_at: string
@@ -122,6 +129,13 @@ export type Database = {
         Insert: {
           created_at?: string
           id?: string
+          logo_url?: string | null
+          primary_color?: string
+          locale?: string
+          timezone?: string
+          currency?: string
+          entity_label_singular?: string
+          entity_label_plural?: string
           name: string
           slug: string
           updated_at?: string
@@ -129,6 +143,13 @@ export type Database = {
         Update: {
           created_at?: string
           id?: string
+          logo_url?: string | null
+          primary_color?: string
+          locale?: string
+          timezone?: string
+          currency?: string
+          entity_label_singular?: string
+          entity_label_plural?: string
           name?: string
           slug?: string
           updated_at?: string

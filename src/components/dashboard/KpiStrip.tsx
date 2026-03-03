@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useDashboardKpis } from '@/hooks/useDashboardKpis';
 import type { KpiClientType, KpiTimeRange } from '@/hooks/useDashboardKpis';
+import { useCurrentOrganization } from '@/hooks/useOrganizationContext';
 import { TrendingUp, Target, AlertTriangle, Users, Percent } from 'lucide-react';
 import {
   Select,
@@ -25,10 +26,16 @@ const TIME_RANGE_OPTIONS: { value: KpiTimeRange; label: string }[] = [
   { value: 'all', label: 'All time' },
 ];
 
-function formatEur(value: number): string {
-  if (value >= 1_000_000) return `€${(value / 1_000_000).toFixed(1)}M`;
-  if (value >= 1_000) return `€${(value / 1_000).toFixed(1)}K`;
-  return `€${value.toLocaleString(undefined, { maximumFractionDigits: 0 })}`;
+function currencySymbol(currency: string, locale: string): string {
+  const parts = new Intl.NumberFormat(locale, { style: 'currency', currency }).formatToParts(0);
+  return parts.find((p) => p.type === 'currency')?.value ?? currency;
+}
+
+function formatMoney(value: number, currency: string, locale: string): string {
+  const symbol = currencySymbol(currency, locale);
+  if (value >= 1_000_000) return `${symbol}${(value / 1_000_000).toFixed(1)}M`;
+  if (value >= 1_000) return `${symbol}${(value / 1_000).toFixed(1)}K`;
+  return new Intl.NumberFormat(locale, { style: 'currency', currency, maximumFractionDigits: 0 }).format(value);
 }
 
 interface KpiCardProps {
@@ -67,8 +74,12 @@ function SkeletonCard() {
 export function KpiStrip() {
   const [clientType, setClientType] = useState<KpiClientType>('all');
   const [timeRange, setTimeRange] = useState<KpiTimeRange>('90d');
+  const { organization } = useCurrentOrganization();
 
   const { data: kpis, isLoading } = useDashboardKpis({ clientType, timeRange });
+  const orgCurrency = organization?.currency ?? 'EUR';
+  const orgLocale = organization?.locale ?? 'es-ES';
+  const entityPlural = organization?.entity_label_plural ?? 'Clients';
 
   return (
     <div className="mb-6 space-y-2">
@@ -119,12 +130,12 @@ export function KpiStrip() {
           <>
             <KpiCard
               label="Pipeline"
-              value={formatEur(kpis.pipelineTotal)}
+              value={formatMoney(kpis.pipelineTotal, orgCurrency, orgLocale)}
               icon={<TrendingUp className="h-4 w-4" />}
             />
             <KpiCard
               label="Weighted Forecast"
-              value={formatEur(kpis.weightedForecast)}
+              value={formatMoney(kpis.weightedForecast, orgCurrency, orgLocale)}
               icon={<Target className="h-4 w-4" />}
             />
             <KpiCard
@@ -134,7 +145,7 @@ export function KpiStrip() {
               accent={kpis.atRiskCount > 0 ? 'text-red-600' : 'text-gray-900'}
             />
             <KpiCard
-              label="Active Clients"
+              label={`Active ${entityPlural}`}
               value={String(kpis.activeClientsCount)}
               icon={<Users className="h-4 w-4" />}
               accent="text-green-700"
