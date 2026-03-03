@@ -19,6 +19,7 @@
     "check:security": "node scripts/check-security-invariants.mjs",
     "check:observability": "node scripts/check-observability-invariants.mjs",
     "check:integration-contracts": "node scripts/check-integration-contracts.mjs",
+    "check:route-guards": "node scripts/check-route-guards.mjs",
     "check:design-system": "node scripts/check-design-system-invariants.mjs",
     "check:release-ops": "node scripts/check-release-ops.mjs",
     "test:contracts": "vitest run src/test/edge-cors-contract.test.ts",
