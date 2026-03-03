@@ -15,6 +15,7 @@ import {
   useCreateCustomerPortalSession,
 } from '@/hooks/useBilling';
 import { useCurrentOrganization } from '@/hooks/useOrganizationContext';
+import { canManageBilling as canManageBillingRole } from '@/lib/rbac';
 import type { BillingSubscriptionStatus } from '@/types/billing';
 
 function formatMoney(cents: number, currency: string, locale: string): string {
@@ -56,7 +57,7 @@ export default function Billing() {
   const createPortal = useCreateCustomerPortalSession();
 
   const checkoutResult = searchParams.get('checkout');
-  const canManageBilling = membership?.role === 'admin' || membership?.role === 'manager';
+  const canManageBilling = canManageBillingRole(membership?.role ?? null);
   const orgLocale = organization?.locale ?? 'es-ES';
   const orgTimezone = organization?.timezone ?? 'Europe/Madrid';
 

@@ -24,5 +24,6 @@ jobs:
       - run: npm run check:migrations
       - run: npm run check:security
       - run: npm run test:contracts
+      - run: npm run test:critical
       - run: npm run test -- --run
       - run: npm run build
