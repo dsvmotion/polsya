@@ -11,6 +11,11 @@ import { useCurrentOrganization } from '@/hooks/useOrganizationContext';
 import { evaluateBillingAccess, useBillingOverview } from '@/hooks/useBilling';
 import { useUpdateOrganizationSettings } from '@/hooks/useOrganizationSettings';
 import { toast } from 'sonner';
+import {
+  getIndustryTemplate,
+  getIndustryTemplateOptions,
+  isIndustryTemplateKey,
+} from '@/lib/industry-templates';
 
 const LOCALE_OPTIONS = ['es-ES', 'en-US', 'en-GB', 'fr-FR', 'de-DE', 'pt-PT', 'it-IT'] as const;
 const TIMEZONE_OPTIONS = [
@@ -49,6 +54,7 @@ export default function Profile() {
     currency: 'EUR',
     entity_label_singular: 'Client',
     entity_label_plural: 'Clients',
+    industry_template_key: 'general_b2b',
   });
 
   useEffect(() => {
@@ -62,6 +68,7 @@ export default function Profile() {
       currency: organization.currency ?? 'EUR',
       entity_label_singular: organization.entity_label_singular ?? 'Client',
       entity_label_plural: organization.entity_label_plural ?? 'Clients',
+      industry_template_key: organization.industry_template_key ?? 'general_b2b',
     });
   }, [organization]);
 
@@ -118,6 +125,7 @@ export default function Profile() {
     const locale = workspaceForm.locale.trim();
     const timezone = workspaceForm.timezone.trim();
     const currency = workspaceForm.currency.trim().toUpperCase();
+    const industryTemplateKey = workspaceForm.industry_template_key.trim();
 
     if (!name) {
       toast.error('Workspace name is required');
@@ -137,6 +145,10 @@ export default function Profile() {
     }
     if (!/^[A-Z]{3}$/.test(currency)) {
       toast.error('Currency must be a 3-letter code, e.g. EUR');
+      return;
+    }
+    if (!isIndustryTemplateKey(industryTemplateKey)) {
+      toast.error('Industry template is invalid');
       return;
     }
     if (!singular || !plural) {
@@ -160,6 +172,7 @@ export default function Profile() {
           currency,
           entity_label_singular: singular,
           entity_label_plural: plural,
+          industry_template_key: industryTemplateKey,
         },
       });
       toast.success('Workspace settings updated');
@@ -344,6 +357,40 @@ export default function Profile() {
                   ))}
                 </select>
               </div>
+              <div className="space-y-2">
+                <Label className="text-gray-600">Industry Template</Label>
+                <div className="flex items-center gap-2">
+                  <select
+                    value={workspaceForm.industry_template_key}
+                    onChange={(e) => setWorkspaceForm((prev) => ({ ...prev, industry_template_key: e.target.value }))}
+                    disabled={!canManageWorkspace}
+                    className="w-full h-10 rounded-md border border-gray-200 bg-white px-3 text-sm text-gray-900"
+                  >
+                    {getIndustryTemplateOptions().map((template) => (
+                      <option key={template.key} value={template.key}>{template.label}</option>
+                    ))}
+                  </select>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    className="shrink-0 border-gray-300"
+                    disabled={!canManageWorkspace}
+                    onClick={() => {
+                      const template = getIndustryTemplate(workspaceForm.industry_template_key);
+                      setWorkspaceForm((prev) => ({
+                        ...prev,
+                        locale: template.defaults.locale,
+                        timezone: template.defaults.timezone,
+                        currency: template.defaults.currency,
+                        entity_label_singular: template.defaults.entityLabelSingular,
+                        entity_label_plural: template.defaults.entityLabelPlural,
+                      }));
+                    }}
+                  >
+                    Apply Defaults
+                  </Button>
+                </div>
+              </div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                 <div className="space-y-2">
                   <Label className="text-gray-600">Entity Label (singular)</Label>
@@ -365,7 +412,7 @@ export default function Profile() {
                 </div>
               </div>
               <p className="text-xs text-gray-500">
-                Preview: {workspaceForm.entity_label_plural || 'Entities'} pipeline in {workspaceForm.currency || 'EUR'} ({workspaceForm.locale || 'es-ES'}).
+                Preview: {workspaceForm.entity_label_plural || 'Entities'} pipeline in {workspaceForm.currency || 'EUR'} ({workspaceForm.locale || 'es-ES'}) using {getIndustryTemplate(workspaceForm.industry_template_key).label}.
               </p>
               <div className="flex items-center gap-2">
                 <Button

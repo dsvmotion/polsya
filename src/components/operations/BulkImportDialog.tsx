@@ -22,6 +22,7 @@ import { supabase } from '@/integrations/supabase/client';
 import type { ClientType } from '@/types/pharmacy';
 import { cn } from '@/lib/utils';
 import { normalizeText, sanitizeTextInput, buildDedupeKey } from '@/lib/import-utils';
+import { getIndustryImportAliases } from '@/lib/industry-templates';
 
 async function computeFileHash(file: File): Promise<string> {
   const buffer = await file.arrayBuffer();
@@ -53,7 +54,7 @@ const FIELDS = [
 
 type FieldKey = (typeof FIELDS)[number]['key'];
 
-const AUTO_DETECT: Record<string, FieldKey> = {
+const BASE_AUTO_DETECT: Record<string, FieldKey> = {
   'nombre de empresa': 'name',
   nombre: 'name',
   name: 'name',
@@ -93,6 +94,20 @@ const AUTO_DETECT: Record<string, FieldKey> = {
 
 function normalizeHeader(h: string): string {
   return h.trim().toLowerCase().replace(/\s+/g, ' ');
+}
+
+function getAutoDetectMap(industryTemplateKey: string | null | undefined): Record<string, FieldKey> {
+  const overrides = getIndustryImportAliases(industryTemplateKey);
+  const merged: Record<string, FieldKey> = { ...BASE_AUTO_DETECT };
+
+  for (const [rawKey, targetField] of Object.entries(overrides)) {
+    const normalized = normalizeHeader(rawKey);
+    if (normalized) {
+      merged[normalized] = targetField as FieldKey;
+    }
+  }
+
+  return merged;
 }
 
 function parseCSVLine(line: string, sep: string): string[] {
@@ -137,12 +152,16 @@ function parseExcel(buffer: ArrayBuffer): { headers: string[]; rows: string[][] 
   return { headers, rows };
 }
 
-function autoDetectMapping(headers: string[]): Partial<Record<FieldKey, string>> {
+function autoDetectMapping(
+  headers: string[],
+  industryTemplateKey: string | null | undefined,
+): Partial<Record<FieldKey, string>> {
+  const autoDetect = getAutoDetectMap(industryTemplateKey);
   const mapping: Partial<Record<FieldKey, string>> = {};
   for (const col of headers) {
     if (!col || col.toString().trim() === '') continue;
     const norm = normalizeHeader(col);
-    const field = AUTO_DETECT[norm];
+    const field = autoDetect[norm];
     if (field && !mapping[field]) mapping[field] = col.toString().trim();
   }
   return mapping;
@@ -158,10 +177,15 @@ interface DryRunResult {
 
 interface BulkImportDialogProps {
   defaultClientType: ClientType;
+  industryTemplateKey?: string | null;
   onSuccess?: () => void;
 }
 
-export function BulkImportDialog({ defaultClientType, onSuccess }: BulkImportDialogProps) {
+export function BulkImportDialog({
+  defaultClientType,
+  industryTemplateKey = null,
+  onSuccess,
+}: BulkImportDialogProps) {
   const [open, setOpen] = useState(false);
   const [file, setFile] = useState<File | null>(null);
   const [headers, setHeaders] = useState<string[]>([]);
@@ -213,7 +237,7 @@ export function BulkImportDialog({ defaultClientType, onSuccess }: BulkImportDia
           }
           setHeaders(h);
           setRows(r);
-          const detected = autoDetectMapping(h);
+          const detected = autoDetectMapping(h, industryTemplateKey);
           setMapping((prev) => ({ ...detected, ...prev }));
         } catch (e) {
           console.error(e);
@@ -224,7 +248,7 @@ export function BulkImportDialog({ defaultClientType, onSuccess }: BulkImportDia
       if (ext === 'csv') reader.readAsText(f);
       else reader.readAsArrayBuffer(f);
     },
-    []
+    [industryTemplateKey]
   );
 
   const handleDrop = useCallback(
