@@ -14,6 +14,7 @@ import { UserMenu } from '@/components/auth/UserMenu';
 import { IntegrationsCard } from '@/components/dashboard/IntegrationsCard';
 import { AgentActionsCard } from '@/components/dashboard/AgentActionsCard';
 import { KpiStrip } from '@/components/dashboard/KpiStrip';
+import { IntegrationHealthCard } from '@/components/dashboard/IntegrationHealthCard';
 
 const normalizeCountry = (country: string): string => {
   if (!country) return '';
@@ -584,6 +585,11 @@ const Index = () => {
         {/* Integrations */}
         <div className="mt-6">
           <IntegrationsCard />
+        </div>
+
+        {/* Integration Health */}
+        <div className="mt-6">
+          <IntegrationHealthCard />
         </div>
 
         {/* Agent Actions */}

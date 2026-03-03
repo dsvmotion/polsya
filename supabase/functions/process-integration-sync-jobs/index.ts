@@ -3,6 +3,7 @@ import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 import { handleCors, corsHeaders as makeCorsHeaders } from '../_shared/cors.ts';
 import { requireOrgRoleAccess } from '../_shared/auth.ts';
 import { requireBillingAccessForOrg } from '../_shared/billing.ts';
+import { logEdgeEvent } from '../_shared/observability.ts';
 import {
   getIntegrationConnector,
   parseSyncTargets,
@@ -648,6 +649,14 @@ serve(async (req) => {
     }
 
     if (!job) {
+      logEdgeEvent('info', {
+        action: 'integration_sync_job_scan',
+        organization_id: auth.organizationId,
+        integration_id: null,
+        job_id: null,
+        processed: false,
+        reason: 'no_queued_jobs',
+      });
       return jsonResponse({ processed: false, message: 'No queued jobs for this organization' }, 200, corsHeaders);
     }
 
@@ -691,6 +700,15 @@ serve(async (req) => {
     }
 
     const activeJob = claimedJob as unknown as IntegrationSyncJobRow;
+    logEdgeEvent('info', {
+      action: 'integration_sync_job_claimed',
+      organization_id: auth.organizationId,
+      integration_id: activeJob.integration_id,
+      job_id: activeJob.id,
+      attempt_count: activeJob.attempt_count,
+      max_attempts: activeJob.max_attempts,
+      requested_job_id: requestedJobId,
+    });
 
     const { data: integrationData, error: integrationError } = await supabaseAdmin
       .from('integration_connections')
@@ -706,6 +724,17 @@ serve(async (req) => {
         job: activeJob,
         errorMessage: errMsg,
         finishedAt,
+      });
+      logEdgeEvent('error', {
+        action: 'integration_sync_job_failed',
+        organization_id: auth.organizationId,
+        integration_id: activeJob.integration_id,
+        job_id: activeJob.id,
+        status: retry.status,
+        retry_scheduled: retry.retryScheduled,
+        next_retry_at: retry.nextRetryAt,
+        dead_lettered: retry.deadLettered,
+        error: errMsg,
       });
 
       return jsonResponse(
@@ -733,6 +762,14 @@ serve(async (req) => {
         .update({ status: 'cancelled', error_message: errMsg, finished_at: new Date().toISOString() })
         .eq('id', activeJob.id)
         .eq('organization_id', auth.organizationId);
+      logEdgeEvent('warn', {
+        action: 'integration_sync_job_cancelled',
+        organization_id: auth.organizationId,
+        integration_id: integration.id,
+        job_id: activeJob.id,
+        status: 'cancelled',
+        reason: 'integration_disabled',
+      });
       return jsonResponse({ processed: false, jobId: activeJob.id, status: 'cancelled', message: errMsg }, 200, corsHeaders);
     }
 
@@ -753,6 +790,17 @@ serve(async (req) => {
         job: activeJob,
         errorMessage: runCreateError.message,
         finishedAt,
+      });
+      logEdgeEvent('error', {
+        action: 'integration_sync_job_failed',
+        organization_id: auth.organizationId,
+        integration_id: integration.id,
+        job_id: activeJob.id,
+        status: retry.status,
+        retry_scheduled: retry.retryScheduled,
+        next_retry_at: retry.nextRetryAt,
+        dead_lettered: retry.deadLettered,
+        error: `run_create_failed: ${runCreateError.message}`,
       });
 
       await supabaseAdmin
@@ -899,6 +947,40 @@ serve(async (req) => {
         .eq('id', integration.id)
         .eq('organization_id', auth.organizationId);
 
+      if (runStatus === 'success') {
+        logEdgeEvent('info', {
+          action: 'integration_sync_job_completed',
+          organization_id: auth.organizationId,
+          integration_id: integration.id,
+          job_id: activeJob.id,
+          run_id: runId,
+          status: 'success',
+          duration_ms: durationMs,
+          records_processed: totalProcessed,
+          records_failed: totalFailed,
+          records_created: totalCreated,
+          records_updated: totalUpdated,
+        });
+      } else {
+        logEdgeEvent('warn', {
+          action: 'integration_sync_job_failed',
+          organization_id: auth.organizationId,
+          integration_id: integration.id,
+          job_id: activeJob.id,
+          run_id: runId,
+          status: retry?.status ?? 'error',
+          retry_scheduled: retry?.retryScheduled ?? false,
+          next_retry_at: retry?.nextRetryAt ?? null,
+          dead_lettered: retry?.deadLettered ?? false,
+          duration_ms: durationMs,
+          records_processed: totalProcessed,
+          records_failed: totalFailed,
+          records_created: totalCreated,
+          records_updated: totalUpdated,
+          summary: joinedSummary,
+        });
+      }
+
       return jsonResponse(
         {
           processed: true,
@@ -961,6 +1043,24 @@ serve(async (req) => {
         .eq('id', integration.id)
         .eq('organization_id', auth.organizationId);
 
+      logEdgeEvent('error', {
+        action: 'integration_sync_job_failed',
+        organization_id: auth.organizationId,
+        integration_id: integration.id,
+        job_id: activeJob.id,
+        run_id: runId,
+        status: retry.status,
+        retry_scheduled: retry.retryScheduled,
+        next_retry_at: retry.nextRetryAt,
+        dead_lettered: retry.deadLettered,
+        duration_ms: durationMs,
+        records_processed: totalProcessed,
+        records_failed: totalFailed + 1,
+        records_created: totalCreated,
+        records_updated: totalUpdated,
+        error: message,
+      });
+
       return jsonResponse(
         {
           processed: true,
@@ -985,6 +1085,13 @@ serve(async (req) => {
       );
     }
   } catch (error) {
+    logEdgeEvent('error', {
+      action: 'integration_sync_job_unhandled_error',
+      organization_id: auth.organizationId,
+      integration_id: null,
+      job_id: null,
+      error: safeErrorMessage(error),
+    });
     return jsonResponse({ error: safeErrorMessage(error) }, 500, corsHeaders);
   }
 });
