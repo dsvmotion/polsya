@@ -17,8 +17,8 @@ import {
 import { useCurrentOrganization } from '@/hooks/useOrganizationContext';
 import type { BillingSubscriptionStatus } from '@/types/billing';
 
-function formatMoney(cents: number, currency: string): string {
-  return new Intl.NumberFormat('es-ES', {
+function formatMoney(cents: number, currency: string, locale: string): string {
+  return new Intl.NumberFormat(locale, {
     style: 'currency',
     currency: currency.toUpperCase(),
     minimumFractionDigits: 0,
@@ -57,6 +57,8 @@ export default function Billing() {
 
   const checkoutResult = searchParams.get('checkout');
   const canManageBilling = membership?.role === 'admin' || membership?.role === 'manager';
+  const orgLocale = organization?.locale ?? 'es-ES';
+  const orgTimezone = organization?.timezone ?? 'Europe/Madrid';
 
   const currentPlan = useMemo(() => {
     if (!overview?.subscription) return null;
@@ -147,7 +149,7 @@ export default function Billing() {
             </div>
             {overview?.subscription?.current_period_end && (
               <p className="text-sm text-gray-500">
-                Current period ends on {new Date(overview.subscription.current_period_end).toLocaleDateString('es-ES')}
+                Current period ends on {new Date(overview.subscription.current_period_end).toLocaleDateString(orgLocale, { timeZone: orgTimezone })}
               </p>
             )}
             {!hasAccess && (
@@ -155,12 +157,12 @@ export default function Billing() {
             )}
             {access.reason === 'past_due_grace' && access.graceEndsAt && (
               <p className="text-sm text-amber-700">
-                Past due grace active until {new Date(access.graceEndsAt).toLocaleDateString('es-ES')} ({getBillingPastDueGraceDays()} days).
+                Past due grace active until {new Date(access.graceEndsAt).toLocaleDateString(orgLocale, { timeZone: orgTimezone })} ({getBillingPastDueGraceDays()} days).
               </p>
             )}
             {access.reason === 'past_due_expired' && access.graceEndsAt && (
               <p className="text-sm text-red-700">
-                Grace period expired on {new Date(access.graceEndsAt).toLocaleDateString('es-ES')}. Update payment method to restore access.
+                Grace period expired on {new Date(access.graceEndsAt).toLocaleDateString(orgLocale, { timeZone: orgTimezone })}. Update payment method to restore access.
               </p>
             )}
             <div>
@@ -191,7 +193,7 @@ export default function Billing() {
                 </CardHeader>
                 <CardContent className="space-y-3">
                   <div className="text-2xl font-semibold text-gray-900">
-                    {formatMoney(plan.amount_cents, plan.currency)}
+                    {formatMoney(plan.amount_cents, plan.currency, orgLocale)}
                     <span className="text-sm text-gray-500">/{plan.interval}</span>
                   </div>
                   {plan.description && <p className="text-sm text-gray-600">{plan.description}</p>}
@@ -219,10 +221,10 @@ export default function Billing() {
                   <div key={invoice.id} className="flex items-center justify-between text-sm border-b border-gray-100 pb-2">
                     <div>
                       <p className="font-medium text-gray-900">{invoice.invoice_number ?? invoice.stripe_invoice_id}</p>
-                      <p className="text-gray-500">{new Date(invoice.created_at).toLocaleDateString('es-ES')}</p>
+                      <p className="text-gray-500">{new Date(invoice.created_at).toLocaleDateString(orgLocale, { timeZone: orgTimezone })}</p>
                     </div>
                     <div className="text-right">
-                      <p className="font-medium text-gray-900">{formatMoney(invoice.amount_due_cents, invoice.currency)}</p>
+                      <p className="font-medium text-gray-900">{formatMoney(invoice.amount_due_cents, invoice.currency, orgLocale)}</p>
                       <p className="text-gray-500 capitalize">{invoice.status}</p>
                     </div>
                   </div>

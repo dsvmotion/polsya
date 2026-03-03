@@ -1,3 +1,4 @@
+import { useEffect, useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -8,11 +9,61 @@ import { Link, Navigate } from 'react-router-dom';
 import { UserMenu } from '@/components/auth/UserMenu';
 import { useCurrentOrganization } from '@/hooks/useOrganizationContext';
 import { evaluateBillingAccess, useBillingOverview } from '@/hooks/useBilling';
+import { useUpdateOrganizationSettings } from '@/hooks/useOrganizationSettings';
+import { toast } from 'sonner';
+
+const LOCALE_OPTIONS = ['es-ES', 'en-US', 'en-GB', 'fr-FR', 'de-DE', 'pt-PT', 'it-IT'] as const;
+const TIMEZONE_OPTIONS = [
+  'Europe/Madrid',
+  'Europe/London',
+  'UTC',
+  'America/New_York',
+  'America/Chicago',
+  'America/Los_Angeles',
+  'America/Mexico_City',
+  'America/Bogota',
+] as const;
+const CURRENCY_OPTIONS = ['EUR', 'USD', 'GBP', 'MXN', 'COP'] as const;
+
+function isValidUrl(value: string): boolean {
+  try {
+    const parsed = new URL(value);
+    return parsed.protocol === 'https:' || parsed.protocol === 'http:';
+  } catch {
+    return false;
+  }
+}
 
 export default function Profile() {
   const { user, signOut, isLoading } = useAuth();
-  const { organization } = useCurrentOrganization();
+  const { organization, membership } = useCurrentOrganization();
   const { data: billingOverview } = useBillingOverview(organization?.id ?? null);
+  const updateWorkspace = useUpdateOrganizationSettings();
+  const canManageWorkspace = membership?.role === 'admin' || membership?.role === 'manager';
+  const [workspaceForm, setWorkspaceForm] = useState({
+    name: '',
+    logo_url: '',
+    primary_color: '#2563eb',
+    locale: 'es-ES',
+    timezone: 'Europe/Madrid',
+    currency: 'EUR',
+    entity_label_singular: 'Client',
+    entity_label_plural: 'Clients',
+  });
+
+  useEffect(() => {
+    if (!organization) return;
+    setWorkspaceForm({
+      name: organization.name ?? '',
+      logo_url: organization.logo_url ?? '',
+      primary_color: organization.primary_color ?? '#2563eb',
+      locale: organization.locale ?? 'es-ES',
+      timezone: organization.timezone ?? 'Europe/Madrid',
+      currency: organization.currency ?? 'EUR',
+      entity_label_singular: organization.entity_label_singular ?? 'Client',
+      entity_label_plural: organization.entity_label_plural ?? 'Clients',
+    });
+  }, [organization]);
 
   if (isLoading) {
     return (
@@ -31,26 +82,92 @@ export default function Profile() {
 
   const fullName = user.user_metadata?.full_name ?? 'Not set';
   const email = user.email ?? '—';
+  const orgLocale = organization?.locale ?? 'es-ES';
+  const orgTimezone = organization?.timezone ?? 'Europe/Madrid';
   const createdAt = user.created_at
-    ? new Date(user.created_at).toLocaleDateString('es-ES', {
+    ? new Date(user.created_at).toLocaleDateString(orgLocale, {
         year: 'numeric',
         month: 'long',
         day: 'numeric',
+        timeZone: orgTimezone,
       })
     : '—';
   const provider = user.app_metadata?.provider ?? 'email';
   const lastSignInAt = user.last_sign_in_at
-    ? new Date(user.last_sign_in_at).toLocaleString('es-ES', {
+    ? new Date(user.last_sign_in_at).toLocaleString(orgLocale, {
         year: 'numeric',
         month: 'long',
         day: 'numeric',
         hour: '2-digit',
         minute: '2-digit',
+        timeZone: orgTimezone,
       })
     : '—';
   const userId = user.id;
   const billingAccess = evaluateBillingAccess(billingOverview?.subscription ?? null);
   const subscriptionStatus = billingOverview?.subscription?.status ?? 'none';
+
+  const handleSaveWorkspaceSettings = async () => {
+    if (!organization?.id) return;
+
+    const name = workspaceForm.name.trim();
+    const logoUrl = workspaceForm.logo_url.trim();
+    const singular = workspaceForm.entity_label_singular.trim();
+    const plural = workspaceForm.entity_label_plural.trim();
+    const primaryColor = workspaceForm.primary_color.trim();
+    const locale = workspaceForm.locale.trim();
+    const timezone = workspaceForm.timezone.trim();
+    const currency = workspaceForm.currency.trim().toUpperCase();
+
+    if (!name) {
+      toast.error('Workspace name is required');
+      return;
+    }
+    if (!/^#[0-9A-Fa-f]{6}$/.test(primaryColor)) {
+      toast.error('Primary color must be a valid hex value, e.g. #2563eb');
+      return;
+    }
+    if (!/^[A-Za-z]{2}(-[A-Za-z]{2})?$/.test(locale)) {
+      toast.error('Locale format is invalid');
+      return;
+    }
+    if (!timezone) {
+      toast.error('Timezone is required');
+      return;
+    }
+    if (!/^[A-Z]{3}$/.test(currency)) {
+      toast.error('Currency must be a 3-letter code, e.g. EUR');
+      return;
+    }
+    if (!singular || !plural) {
+      toast.error('Entity labels are required');
+      return;
+    }
+    if (logoUrl && !isValidUrl(logoUrl)) {
+      toast.error('Logo URL must be valid (http/https)');
+      return;
+    }
+
+    try {
+      await updateWorkspace.mutateAsync({
+        organizationId: organization.id,
+        updates: {
+          name,
+          logo_url: logoUrl || null,
+          primary_color: primaryColor,
+          locale,
+          timezone,
+          currency,
+          entity_label_singular: singular,
+          entity_label_plural: plural,
+        },
+      });
+      toast.success('Workspace settings updated');
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Could not update workspace settings';
+      toast.error(message);
+    }
+  };
 
   return (
     <div className="min-h-screen bg-white text-gray-900">
@@ -142,6 +259,124 @@ export default function Profile() {
                 <p className="text-xs text-gray-500 truncate bg-gray-50 border border-gray-200 rounded-md px-3 py-2 font-mono">
                   {userId}
                 </p>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Workspace Settings */}
+          <Card className="border-gray-200 bg-white">
+            <CardHeader>
+              <CardTitle className="text-gray-900">Workspace Settings</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="space-y-2">
+                <Label className="text-gray-600">Workspace Name</Label>
+                <Input
+                  value={workspaceForm.name}
+                  onChange={(e) => setWorkspaceForm((prev) => ({ ...prev, name: e.target.value }))}
+                  disabled={!canManageWorkspace}
+                  className="border-gray-200 text-gray-900"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label className="text-gray-600">Logo URL</Label>
+                <Input
+                  placeholder="https://..."
+                  value={workspaceForm.logo_url}
+                  onChange={(e) => setWorkspaceForm((prev) => ({ ...prev, logo_url: e.target.value }))}
+                  disabled={!canManageWorkspace}
+                  className="border-gray-200 text-gray-900"
+                />
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                <div className="space-y-2">
+                  <Label className="text-gray-600">Primary Color</Label>
+                  <div className="flex items-center gap-2">
+                    <Input
+                      value={workspaceForm.primary_color}
+                      onChange={(e) => setWorkspaceForm((prev) => ({ ...prev, primary_color: e.target.value }))}
+                      disabled={!canManageWorkspace}
+                      className="border-gray-200 text-gray-900"
+                    />
+                    <span
+                      className="h-8 w-8 rounded border border-gray-200"
+                      style={{ backgroundColor: workspaceForm.primary_color }}
+                    />
+                  </div>
+                </div>
+                <div className="space-y-2">
+                  <Label className="text-gray-600">Locale</Label>
+                  <select
+                    value={workspaceForm.locale}
+                    onChange={(e) => setWorkspaceForm((prev) => ({ ...prev, locale: e.target.value }))}
+                    disabled={!canManageWorkspace}
+                    className="w-full h-10 rounded-md border border-gray-200 bg-white px-3 text-sm text-gray-900"
+                  >
+                    {LOCALE_OPTIONS.map((option) => (
+                      <option key={option} value={option}>{option}</option>
+                    ))}
+                  </select>
+                </div>
+                <div className="space-y-2">
+                  <Label className="text-gray-600">Currency</Label>
+                  <select
+                    value={workspaceForm.currency}
+                    onChange={(e) => setWorkspaceForm((prev) => ({ ...prev, currency: e.target.value }))}
+                    disabled={!canManageWorkspace}
+                    className="w-full h-10 rounded-md border border-gray-200 bg-white px-3 text-sm text-gray-900"
+                  >
+                    {CURRENCY_OPTIONS.map((option) => (
+                      <option key={option} value={option}>{option}</option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+              <div className="space-y-2">
+                <Label className="text-gray-600">Timezone</Label>
+                <select
+                  value={workspaceForm.timezone}
+                  onChange={(e) => setWorkspaceForm((prev) => ({ ...prev, timezone: e.target.value }))}
+                  disabled={!canManageWorkspace}
+                  className="w-full h-10 rounded-md border border-gray-200 bg-white px-3 text-sm text-gray-900"
+                >
+                  {TIMEZONE_OPTIONS.map((option) => (
+                    <option key={option} value={option}>{option}</option>
+                  ))}
+                </select>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                <div className="space-y-2">
+                  <Label className="text-gray-600">Entity Label (singular)</Label>
+                  <Input
+                    value={workspaceForm.entity_label_singular}
+                    onChange={(e) => setWorkspaceForm((prev) => ({ ...prev, entity_label_singular: e.target.value }))}
+                    disabled={!canManageWorkspace}
+                    className="border-gray-200 text-gray-900"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label className="text-gray-600">Entity Label (plural)</Label>
+                  <Input
+                    value={workspaceForm.entity_label_plural}
+                    onChange={(e) => setWorkspaceForm((prev) => ({ ...prev, entity_label_plural: e.target.value }))}
+                    disabled={!canManageWorkspace}
+                    className="border-gray-200 text-gray-900"
+                  />
+                </div>
+              </div>
+              <p className="text-xs text-gray-500">
+                Preview: {workspaceForm.entity_label_plural || 'Entities'} pipeline in {workspaceForm.currency || 'EUR'} ({workspaceForm.locale || 'es-ES'}).
+              </p>
+              <div className="flex items-center gap-2">
+                <Button
+                  onClick={handleSaveWorkspaceSettings}
+                  disabled={!canManageWorkspace || updateWorkspace.isPending}
+                >
+                  {updateWorkspace.isPending ? 'Saving...' : 'Save Workspace Settings'}
+                </Button>
+                {!canManageWorkspace && (
+                  <span className="text-xs text-gray-500">Only admin/manager can edit workspace settings.</span>
+                )}
               </div>
             </CardContent>
           </Card>
