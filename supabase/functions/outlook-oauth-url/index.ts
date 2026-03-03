@@ -2,6 +2,7 @@ import { serve } from 'https://deno.land/std@0.168.0/http/server.ts';
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 import { handleCors, corsHeaders as makeCorsHeaders } from '../_shared/cors.ts';
 import { requireOrgRoleAccess } from '../_shared/auth.ts';
+import { requireBillingAccessForOrg } from '../_shared/billing.ts';
 
 function jsonResponse(body: Record<string, unknown>, status: number, corsHeaders: Record<string, string>) {
   return new Response(JSON.stringify(body), {
@@ -56,6 +57,11 @@ serve(async (req) => {
   }
 
   const supabaseAdmin = createClient(supabaseUrl, serviceRoleKey);
+  const billing = await requireBillingAccessForOrg(supabaseAdmin, auth.organizationId, {
+    action: 'outlook_oauth_url',
+    corsHeaders,
+  });
+  if (!billing.ok) return billing.response;
 
   try {
     const body = await req.json().catch(() => ({}));

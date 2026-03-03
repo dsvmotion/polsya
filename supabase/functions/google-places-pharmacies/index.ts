@@ -1,6 +1,8 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 import { handleCors, corsHeaders as makeCorsHeaders } from '../_shared/cors.ts';
 import { requireOrgRoleAccess } from '../_shared/auth.ts';
+import { requireBillingAccessForOrg } from '../_shared/billing.ts';
 
 interface PlaceResult {
   place_id: string;
@@ -51,6 +53,22 @@ serve(async (req) => {
     corsHeaders,
   });
   if (!auth.ok) return auth.response;
+
+  const supabaseUrl = Deno.env.get('SUPABASE_URL') ?? '';
+  const serviceRoleKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? Deno.env.get('SB_SERVICE_ROLE_KEY') ?? '';
+  if (!supabaseUrl || !serviceRoleKey) {
+    return new Response(JSON.stringify({ error: 'Server misconfiguration: missing Supabase service credentials' }), {
+      status: 500,
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    });
+  }
+
+  const supabaseAdmin = createClient(supabaseUrl, serviceRoleKey);
+  const billing = await requireBillingAccessForOrg(supabaseAdmin, auth.organizationId, {
+    action: 'google_places_pharmacies',
+    corsHeaders,
+  });
+  if (!billing.ok) return billing.response;
 
   try {
     const GOOGLE_MAPS_API_KEY = Deno.env.get('GOOGLE_MAPS_API_KEY');

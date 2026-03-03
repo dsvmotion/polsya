@@ -92,6 +92,19 @@ const REQUIRE_ORG_AUTHZ = [
   'email-imap-upsert',
 ];
 
+const REQUIRE_BILLING_GUARD = [
+  'google-places-pharmacies',
+  'woocommerce-orders',
+  'woocommerce-orders-detailed',
+  'geocode-pharmacies',
+  'process-integration-sync-jobs',
+  'gmail-oauth-url',
+  'gmail-oauth-exchange',
+  'outlook-oauth-url',
+  'outlook-oauth-exchange',
+  'email-imap-upsert',
+];
+
 for (const dir of REQUIRE_ORG_AUTHZ) {
   const indexPath = join(FUNCTIONS_DIR, dir, 'index.ts');
   let source;
@@ -106,7 +119,22 @@ for (const dir of REQUIRE_ORG_AUTHZ) {
   }
 }
 
-// 4. Stripe webhook must verify Stripe signature explicitly.
+// 4. Premium functions must enforce billing access at backend.
+for (const dir of REQUIRE_BILLING_GUARD) {
+  const indexPath = join(FUNCTIONS_DIR, dir, 'index.ts');
+  let source;
+  try {
+    source = readFileSync(indexPath, 'utf-8');
+  } catch {
+    fail(`Cannot read ${dir}/index.ts for billing guard check`);
+    continue;
+  }
+  if (!source.includes('requireBillingAccessForOrg(')) {
+    fail(`${dir}/index.ts does not call requireBillingAccessForOrg()`);
+  }
+}
+
+// 5. Stripe webhook must verify Stripe signature explicitly.
 {
   const webhookPath = join(FUNCTIONS_DIR, 'stripe-webhook', 'index.ts');
   try {
@@ -123,7 +151,7 @@ for (const dir of REQUIRE_ORG_AUTHZ) {
 }
 
 if (exitCode === 0) {
-  console.log(`✅  Security invariants OK — ${functionDirs.length} edge functions checked, ${REQUIRE_ORG_AUTHZ.length} org-authz-gated`);
+  console.log(`✅  Security invariants OK — ${functionDirs.length} edge functions checked, ${REQUIRE_ORG_AUTHZ.length} org-authz-gated, ${REQUIRE_BILLING_GUARD.length} billing-gated`);
 }
 
 process.exit(exitCode);

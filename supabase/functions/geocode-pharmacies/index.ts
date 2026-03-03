@@ -2,6 +2,7 @@ import { serve } from 'https://deno.land/std@0.168.0/http/server.ts';
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 import { handleCors, corsHeaders as makeCorsHeaders } from '../_shared/cors.ts';
 import { requireOrgRoleAccess } from '../_shared/auth.ts';
+import { requireBillingAccessForOrg } from '../_shared/billing.ts';
 
 serve(async (req) => {
   const corsResponse = handleCors(req);
@@ -29,6 +30,11 @@ serve(async (req) => {
       });
     }
     const supabase = createClient(supabaseUrl, serviceRoleKey);
+    const billing = await requireBillingAccessForOrg(supabase, auth.organizationId, {
+      action: 'geocode_pharmacies',
+      corsHeaders: cors,
+    });
+    if (!billing.ok) return billing.response;
     const organizationId = auth.organizationId;
 
     // Get batch size from request body (default 100)
