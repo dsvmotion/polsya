@@ -1,10 +1,8 @@
 import { useQuery } from '@tanstack/react-query';
-import { supabase } from '@/integrations/supabase/client';
-import type { IntegrationSyncJob, IntegrationSyncRun } from '@/types/integrations';
-import {
-  summarizeIntegrationHealth,
-  type IntegrationHealthSummary,
-} from '@/services/integrationHealthService';
+import { buildEdgeFunctionHeaders } from '@/lib/edge-function-headers';
+import type { IntegrationHealthSummary } from '@/services/integrationHealthService';
+
+const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
 
 function parseLookbackHours(raw: number | undefined): number {
   if (!Number.isFinite(raw) || !raw || raw <= 0) return 24;
@@ -25,39 +23,26 @@ export function useIntegrationHealth(lookbackHours = 24) {
   return useQuery<IntegrationHealthSummary>({
     queryKey: ['integration-health', parsedLookbackHours, stuckThresholdMinutes],
     queryFn: async () => {
-      const cutoffIso = new Date(
-        Date.now() - parsedLookbackHours * 60 * 60 * 1000,
-      ).toISOString();
-
-      const [{ data: jobs, error: jobsError }, { data: runs, error: runsError }] = await Promise.all([
-        supabase
-          .from('integration_sync_jobs')
-          .select('status,created_at,next_retry_at,dead_lettered_at')
-          .gte('created_at', cutoffIso)
-          .order('created_at', { ascending: false })
-          .limit(500),
-        supabase
-          .from('integration_sync_runs')
-          .select('status,duration_ms,created_at')
-          .gte('created_at', cutoffIso)
-          .order('created_at', { ascending: false })
-          .limit(500),
-      ]);
-
-      if (jobsError) throw new Error(jobsError.message);
-      if (runsError) throw new Error(runsError.message);
-
-      return summarizeIntegrationHealth({
-        jobs: (jobs ?? []) as unknown as Pick<
-          IntegrationSyncJob,
-          'status' | 'created_at' | 'next_retry_at' | 'dead_lettered_at'
-        >[],
-        runs: (runs ?? []) as unknown as Pick<
-          IntegrationSyncRun,
-          'status' | 'duration_ms' | 'created_at'
-        >[],
-        stuckThresholdMinutes,
+      const headers = await buildEdgeFunctionHeaders({ 'Content-Type': 'application/json' });
+      const response = await fetch(`${SUPABASE_URL}/functions/v1/process-integration-sync-jobs`, {
+        method: 'POST',
+        headers,
+        body: JSON.stringify({
+          mode: 'metrics',
+          lookbackHours: parsedLookbackHours,
+          stuckThresholdMinutes,
+        }),
       });
+
+      const body = await response.json().catch(() => ({}));
+      if (!response.ok) {
+        throw new Error(
+          (body as { error?: string }).error
+            ?? `Failed to load integration health metrics (${response.status})`,
+        );
+      }
+
+      return body as IntegrationHealthSummary;
     },
     staleTime: 30_000,
   });

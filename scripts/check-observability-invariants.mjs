@@ -41,6 +41,7 @@ const requiredEvents = [
   'integration_sync_job_claimed',
   'integration_sync_job_completed',
   'integration_sync_job_failed',
+  'integration_sync_metrics_exported',
 ];
 for (const eventName of requiredEvents) {
   if (!processorSource.includes(eventName)) {
@@ -53,6 +54,8 @@ const requiredContextKeys = [
   'integration_id',
   'job_id',
   'duration_ms',
+  'queue_depth',
+  'p95_duration_ms',
 ];
 for (const key of requiredContextKeys) {
   if (!processorSource.includes(key)) {
@@ -61,7 +64,7 @@ for (const key of requiredContextKeys) {
 }
 
 if (exitCode === 0) {
-  console.log('✅  Observability invariants OK — integration job processor logs structured context and lifecycle events');
+  console.log('✅  Observability invariants OK — integration job processor logs lifecycle + metrics export context');
 }
 
 process.exit(exitCode);
