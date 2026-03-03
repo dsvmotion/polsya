@@ -325,7 +325,7 @@ serve(async (req) => {
     });
   }
 
-  let event: StripeEvent;
+  let event: StripeEvent | null = null;
   try {
     event = JSON.parse(rawBody) as StripeEvent;
   } catch {
@@ -346,8 +346,36 @@ serve(async (req) => {
 
   const supabaseAdmin = createClient(supabaseUrl, serviceRoleKey);
 
+  const { error: ledgerInsertError } = await supabaseAdmin
+    .from('billing_webhook_events')
+    .insert({
+      id: event.id,
+      provider: 'stripe',
+      event_type: event.type,
+      processing_status: 'processing',
+      payload: event as unknown as Record<string, unknown>,
+      received_at: new Date().toISOString(),
+    });
+
+  if (ledgerInsertError) {
+    const code = (ledgerInsertError as { code?: string }).code;
+    if (code === '23505') {
+      console.log(JSON.stringify({ action: 'stripe_webhook', event: event.type, event_id: event.id, duplicate: true }));
+      return new Response(JSON.stringify({ received: true, duplicate: true }), {
+        status: 200,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
+    return new Response(JSON.stringify({ error: `Failed to log webhook event: ${ledgerInsertError.message}` }), {
+      status: 500,
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    });
+  }
+
   try {
     let handled = false;
+    let resolvedOrganizationId: string | null = null;
 
     switch (event.type) {
       case 'checkout.session.completed': {
@@ -355,6 +383,7 @@ serve(async (req) => {
         const session = event.data.object as unknown as StripeCheckoutSession;
         const organizationId =
           session.client_reference_id ?? session.metadata?.organization_id ?? null;
+        resolvedOrganizationId = organizationId;
 
         if (!organizationId) {
           console.log(JSON.stringify({ action: 'stripe_webhook', event: event.type, event_id: event.id, handled: false, reason: 'missing_organization_id' }));
@@ -406,6 +435,7 @@ serve(async (req) => {
         const organizationId =
           subscription.metadata?.organization_id ??
           (await resolveOrganizationIdByCustomer(supabaseAdmin, stripeCustomerId));
+        resolvedOrganizationId = organizationId;
 
         if (!organizationId) {
           console.log(JSON.stringify({ action: 'stripe_webhook', event: event.type, event_id: event.id, handled: false, reason: 'organization_not_found' }));
@@ -428,6 +458,7 @@ serve(async (req) => {
         const organizationId =
           invoice.metadata?.organization_id ??
           (await resolveOrganizationIdByCustomer(supabaseAdmin, stripeCustomerId));
+        resolvedOrganizationId = organizationId;
 
         if (!organizationId) {
           console.log(JSON.stringify({ action: 'stripe_webhook', event: event.type, event_id: event.id, handled: false, reason: 'organization_not_found' }));
@@ -455,12 +486,30 @@ serve(async (req) => {
         break;
     }
 
+    await supabaseAdmin
+      .from('billing_webhook_events')
+      .update({
+        organization_id: resolvedOrganizationId,
+        processing_status: handled ? 'processed' : 'ignored',
+        processed_at: new Date().toISOString(),
+      })
+      .eq('id', event.id);
+
     console.log(JSON.stringify({ action: 'stripe_webhook', event: event.type, event_id: event.id, handled }));
     return new Response(JSON.stringify({ received: true, handled }), {
       status: 200,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
   } catch (error) {
+    await supabaseAdmin
+      .from('billing_webhook_events')
+      .update({
+        processing_status: 'error',
+        error_message: error instanceof Error ? error.message : String(error),
+        processed_at: new Date().toISOString(),
+      })
+      .eq('id', event.id);
+
     console.error(JSON.stringify({ action: 'stripe_webhook', event: event.type, event_id: event.id, error: String(error) }));
     return new Response(
       JSON.stringify({ error: error instanceof Error ? error.message : 'Webhook processing failed' }),
