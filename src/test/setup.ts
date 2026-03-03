@@ -13,3 +13,12 @@ Object.defineProperty(window, "matchMedia", {
     dispatchEvent: () => {},
   }),
 });
+
+const originalWarn = console.warn;
+console.warn = (...args: unknown[]) => {
+  const first = typeof args[0] === "string" ? args[0] : "";
+  if (first.includes("React Router Future Flag Warning")) {
+    return;
+  }
+  originalWarn(...args);
+};
