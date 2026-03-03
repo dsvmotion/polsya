@@ -39,6 +39,7 @@ import {
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 import { EmptyState, LoadingState } from '@/components/ui/view-states';
+import { decideSyncToast } from '@/services/integrationJobResultService';
 
 const PROVIDERS = Object.keys(PROVIDER_LABELS) as IntegrationProvider[];
 
@@ -168,28 +169,13 @@ function IntegrationRow({
       const result = await processJob.mutateAsync({
         integrationId: intg.id,
       });
-
-      if (result.status === 'success') {
-        toast.success(
-          `Sync completed (${result.recordsProcessed ?? 0} processed, ${result.recordsCreated ?? 0} new, ${result.recordsUpdated ?? 0} updated)`
-        );
-      } else if (result.status === 'queued' && result.retryScheduled) {
-        const nextRetry = result.nextRetryAt ? new Date(result.nextRetryAt).toLocaleTimeString() : 'soon';
-        toast.error(
-          `Sync failed on attempt ${result.attemptCount ?? '?'} / ${result.maxAttempts ?? '?'}; retry scheduled at ${nextRetry}`
-        );
-      } else if (result.status === 'error') {
-        if (result.deadLettered) {
-          toast.error(
-            `Sync moved to dead-letter after ${result.attemptCount ?? '?'} / ${result.maxAttempts ?? '?'} attempts`
-          );
-        } else {
-          toast.error(result.error || result.summary || 'Sync finished with errors');
-        }
-      } else if (result.processed === false) {
-        toast.info(result.summary || 'No queued jobs to process');
+      const decision = decideSyncToast(result);
+      if (decision.type === 'error') {
+        toast.error(decision.message);
+      } else if (decision.type === 'info') {
+        toast.info(decision.message);
       } else {
-        toast.success('Sync job processed');
+        toast.success(decision.message);
       }
     } catch {
       toast.error('Failed to queue sync');

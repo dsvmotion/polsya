@@ -111,7 +111,7 @@ interface ProcessJobInput {
   jobId?: string;
 }
 
-interface ProcessJobResponse {
+export interface ProcessJobResponse {
   processed: boolean;
   jobId?: string;
   runId?: string;
