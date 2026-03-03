@@ -6,13 +6,21 @@ verify_jwt = true
 [functions.woocommerce-orders-detailed]
 verify_jwt = true
 
+# DEPRECATED: use google-places-search instead
 [functions.google-places-pharmacies]
+verify_jwt = true
+
+[functions.google-places-search]
 verify_jwt = true
 
 [functions.populate-geography]
 verify_jwt = true
 
+# DEPRECATED: use geocode-entities instead
 [functions.geocode-pharmacies]
+verify_jwt = true
+
+[functions.geocode-entities]
 verify_jwt = true
 
 [functions.create-checkout-session]
@@ -37,6 +45,12 @@ verify_jwt = true
 verify_jwt = true
 
 [functions.outlook-oauth-exchange]
+verify_jwt = true
+
+[functions.oauth-start]
+verify_jwt = true
+
+[functions.oauth-exchange]
 verify_jwt = true
 
 [functions.email-imap-upsert]

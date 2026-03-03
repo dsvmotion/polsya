@@ -1,7 +1,19 @@
-import type { AccountActivity } from '@/types/entity';
-import type { PharmacyActivity } from '@/types/pharmacy';
+import type { AccountActivity, ActivityType } from '@/types/entity';
 
-export function toAccountActivity(row: PharmacyActivity): AccountActivity {
+export interface ActivityRow {
+  id: string;
+  pharmacy_id: string;
+  activity_type: ActivityType;
+  title: string;
+  description: string | null;
+  due_at: string | null;
+  completed_at: string | null;
+  owner: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export function toAccountActivity(row: ActivityRow): AccountActivity {
   return {
     id: row.id,
     entityId: row.pharmacy_id,
@@ -16,6 +28,6 @@ export function toAccountActivity(row: PharmacyActivity): AccountActivity {
   };
 }
 
-export function toAccountActivities(rows: readonly PharmacyActivity[]): AccountActivity[] {
+export function toAccountActivities(rows: readonly ActivityRow[]): AccountActivity[] {
   return rows.map(toAccountActivity);
 }

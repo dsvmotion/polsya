@@ -42,7 +42,7 @@ export function PharmacyListItem({
   isSavedToOperations = false,
   isSaving = false,
 }: PharmacyListItemProps) {
-  const isSaved = pharmacy.saved_at !== null;
+  const isSaved = pharmacy.savedAt !== null;
 
   return (
     <div
@@ -72,7 +72,7 @@ export function PharmacyListItem({
             <h3 className="font-semibold text-sm leading-tight truncate flex-1 text-gray-900">
               {pharmacy.name}
             </h3>
-            <StatusBadge status={pharmacy.commercial_status} isSaved={isSaved} />
+            <StatusBadge status={pharmacy.status} isSaved={isSaved} />
           </div>
           
           <div className="space-y-1">

@@ -130,7 +130,7 @@ export const PharmacyGoogleMap = forwardRef<google.maps.Map | null, PharmacyGoog
       [onPharmacySelect]
     );
 
-    const getMarkerIcon = useCallback((status: Pharmacy['commercial_status']) => {
+    const getMarkerIcon = useCallback((status: Pharmacy['status']) => {
       const color = STATUS_COLORS[status].pin;
       return {
         path: google.maps.SymbolPath.CIRCLE,
@@ -176,7 +176,7 @@ export const PharmacyGoogleMap = forwardRef<google.maps.Map | null, PharmacyGoog
           <MarkerF
             key={pharmacy.id}
             position={{ lat: pharmacy.lat, lng: pharmacy.lng }}
-            icon={getMarkerIcon(pharmacy.commercial_status)}
+            icon={getMarkerIcon(pharmacy.status)}
             onClick={() => handleMarkerClick(pharmacy)}
             title={pharmacy.name}
           >
@@ -193,9 +193,9 @@ export const PharmacyGoogleMap = forwardRef<google.maps.Map | null, PharmacyGoog
                   </p>
                   <div className="flex items-center gap-2 text-xs">
                     <span
-                      className={`px-2 py-0.5 rounded-full ${STATUS_COLORS[pharmacy.commercial_status].bg} ${STATUS_COLORS[pharmacy.commercial_status].text}`}
+                      className={`px-2 py-0.5 rounded-full ${STATUS_COLORS[pharmacy.status].bg} ${STATUS_COLORS[pharmacy.status].text}`}
                     >
-                      {pharmacy.commercial_status.replace('_', ' ')}
+                      {pharmacy.status.replace('_', ' ')}
                     </span>
                   </div>
                   {pharmacy.phone && (

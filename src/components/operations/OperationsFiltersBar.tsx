@@ -199,7 +199,7 @@ export function OperationsFiltersBar({
         <div className="relative w-full sm:w-64">
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
           <Input
-            placeholder="Search pharmacies..."
+            placeholder="Search entities..."
             value={filters.search}
             onChange={(e) => onFiltersChange({ ...filters, search: e.target.value })}
             className="pl-10 bg-white border-gray-300 text-gray-900 placeholder:text-gray-400"

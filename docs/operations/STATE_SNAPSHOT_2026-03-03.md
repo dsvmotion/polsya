@@ -67,7 +67,7 @@ CI enforcement:
 
 - `npm run lint` ✅
 - `npm run typecheck` ✅
-- `npm run test -- --run` ✅ (`256` tests)
+- `npm run test -- --run` ✅ (`280` tests)
 - `npm run build` ✅
 - All invariant checks listed above ✅
 
@@ -79,7 +79,8 @@ Priority order for next delivery:
 2. **BILL-01D hard enforcement review**
    - Validate grace-period and entitlement matrix for all premium screens/routes/functions end-to-end.
 3. **QA-03A E2E expansion**
-   - Add browser-level E2E for: subscription inactive, role denial paths, job retry/dead-letter transitions.
+   - Contract-level coverage is now in place (`authz-policy`, retry planner, subscription guard, sync result decisions).
+   - Remaining gap: browser-level E2E for subscription inactive + role denial + retry/dead-letter transitions.
 4. **REL-05A operational drills**
    - Execute and record one restore drill + one incident drill against staging.
 

@@ -21,8 +21,9 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { supabase } from '@/integrations/supabase/client';
 import type { ClientType } from '@/types/pharmacy';
 import { cn } from '@/lib/utils';
-import { normalizeText, sanitizeTextInput, buildDedupeKey } from '@/lib/import-utils';
+import { sanitizeTextInput, buildDedupeKey } from '@/lib/import-utils';
 import { getIndustryImportAliases } from '@/lib/industry-templates';
+import { useEntityTypes } from '@/hooks/useEntityTypes';
 
 async function computeFileHash(file: File): Promise<string> {
   const buffer = await file.arrayBuffer();
@@ -186,6 +187,7 @@ export function BulkImportDialog({
   industryTemplateKey = null,
   onSuccess,
 }: BulkImportDialogProps) {
+  const { data: entityTypesData = [] } = useEntityTypes();
   const [open, setOpen] = useState(false);
   const [file, setFile] = useState<File | null>(null);
   const [headers, setHeaders] = useState<string[]>([]);
@@ -318,10 +320,12 @@ export function BulkImportDialog({
 
           const clientTypeRaw = (getVal(row, 'client_type') || getVal(row, 'activity') || getVal(row, 'subsector') || '').toLowerCase();
           let clientType: ClientType = defaultType;
-          if (clientTypeRaw.includes('herbol') || clientTypeRaw.includes('herbor') || clientTypeRaw.includes('erborist')) {
-            clientType = 'herbalist';
-          } else if (clientTypeRaw.includes('farmac') || clientTypeRaw.includes('pharmac')) {
-            clientType = 'pharmacy';
+          const matched = entityTypesData.find((et) =>
+            et.key.toLowerCase() === clientTypeRaw ||
+            et.label.toLowerCase() === clientTypeRaw
+          );
+          if (matched) {
+            clientType = matched.key as ClientType;
           }
           return {
             name,
@@ -398,7 +402,7 @@ export function BulkImportDialog({
         continue;
       }
 
-      const { error } = await supabase.from('pharmacies').insert(toInsert);
+      const { error } = await supabase.from('pharmacies').insert(toInsert as never);
       if (error) {
         errors += toInsert.length;
       } else {
@@ -427,7 +431,7 @@ export function BulkImportDialog({
     if (imported > 0) {
       onSuccess?.();
     }
-  }, [file, headers, mapping, rows, defaultType, onSuccess]);
+  }, [file, headers, mapping, rows, defaultType, onSuccess, entityTypesData]);
 
   const handleDryRun = useCallback(async () => {
     if (!headers.length || !mapping.name || mapping.name === '__skip__') return;
@@ -572,8 +576,16 @@ export function BulkImportDialog({
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="pharmacy">Pharmacy</SelectItem>
-                <SelectItem value="herbalist">Herbalist</SelectItem>
+                {entityTypesData.length > 0 ? (
+                  entityTypesData.map((et) => (
+                    <SelectItem key={et.key} value={et.key}>{et.label}</SelectItem>
+                  ))
+                ) : (
+                  <>
+                    <SelectItem value="pharmacy">Pharmacy</SelectItem>
+                    <SelectItem value="herbalist">Herbalist</SelectItem>
+                  </>
+                )}
               </SelectContent>
             </Select>
 

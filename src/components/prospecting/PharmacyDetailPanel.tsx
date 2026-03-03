@@ -100,7 +100,7 @@ function ContactsSection({ pharmacyId }: { pharmacyId: string }) {
   const handleSetPrimary = async (id: string) => {
     try {
       for (const c of contacts) {
-        if (c.is_primary && c.id !== id) {
+        if (c.isPrimary && c.id !== id) {
           await updateContact.mutateAsync({
             id: c.id,
             pharmacyId,
@@ -193,7 +193,7 @@ function ContactsSection({ pharmacyId }: { pharmacyId: string }) {
               <div className="min-w-0 flex-1">
                 <div className="flex items-center gap-1.5">
                   <span className="text-sm font-medium text-gray-900 truncate">{contact.name}</span>
-                  {contact.is_primary && (
+                  {contact.isPrimary && (
                     <Star className="h-3 w-3 text-yellow-500 fill-yellow-500 shrink-0" />
                   )}
                   {contact.role && (
@@ -210,7 +210,7 @@ function ContactsSection({ pharmacyId }: { pharmacyId: string }) {
                 )}
               </div>
               <div className="flex items-center gap-0.5 shrink-0">
-                {!contact.is_primary && (
+                {!contact.isPrimary && (
                   <Button
                     variant="ghost"
                     size="sm"
@@ -297,7 +297,7 @@ function ActivitiesSection({ pharmacyId }: { pharmacyId: string }) {
     }
   };
 
-  const pendingCount = activities.filter((a) => !a.completed_at).length;
+  const pendingCount = activities.filter((a) => !a.completedAt).length;
 
   return (
     <div className="space-y-3">
@@ -375,8 +375,8 @@ function ActivitiesSection({ pharmacyId }: { pharmacyId: string }) {
       ) : (
         <div className="space-y-2">
           {activities.map((act) => {
-            const isDone = !!act.completed_at;
-            const isOverdue = !isDone && act.due_at && new Date(act.due_at) < new Date();
+            const isDone = !!act.completedAt;
+            const isOverdue = !isDone && act.dueAt && new Date(act.dueAt) < new Date();
             return (
               <div
                 key={act.id}
@@ -399,7 +399,7 @@ function ActivitiesSection({ pharmacyId }: { pharmacyId: string }) {
                 </button>
                 <div className="min-w-0 flex-1">
                   <div className="flex items-center gap-1.5">
-                    <span className="text-xs">{ACTIVITY_TYPE_ICONS[act.activity_type]}</span>
+                    <span className="text-xs">{ACTIVITY_TYPE_ICONS[act.activityType]}</span>
                     <span className={cn('text-sm font-medium truncate', isDone ? 'line-through text-gray-400' : 'text-gray-900')}>
                       {act.title}
                     </span>
@@ -408,15 +408,15 @@ function ActivitiesSection({ pharmacyId }: { pharmacyId: string }) {
                     <p className="text-xs text-gray-500 mt-0.5 line-clamp-2">{act.description}</p>
                   )}
                   <div className="flex items-center gap-2 mt-1 text-[10px] text-gray-400">
-                    <span>{new Date(act.created_at).toLocaleDateString()}</span>
-                    {act.due_at && (
+                    <span>{new Date(act.createdAt).toLocaleDateString()}</span>
+                    {act.dueAt && (
                       <span className={cn(isOverdue ? 'text-red-500 font-medium' : '')}>
-                        Due: {new Date(act.due_at).toLocaleDateString()}
+                        Due: {new Date(act.dueAt).toLocaleDateString()}
                       </span>
                     )}
-                    {isDone && act.completed_at && (
+                    {isDone && act.completedAt && (
                       <span className="text-green-600">
-                        Done: {new Date(act.completed_at).toLocaleDateString()}
+                        Done: {new Date(act.completedAt).toLocaleDateString()}
                       </span>
                     )}
                   </div>
@@ -439,7 +439,7 @@ function ActivitiesSection({ pharmacyId }: { pharmacyId: string }) {
 }
 
 function OpportunityRow({ opp, pharmacyId, onDelete }: {
-  opp: { id: string; title: string; stage: OpportunityStage; amount: number; probability: number; expected_close_date: string | null; created_at: string };
+  opp: { id: string; title: string; stage: OpportunityStage; amount: number; probability: number; expectedCloseDate: string | null; createdAt: string };
   pharmacyId: string;
   onDelete: (id: string) => void;
 }) {
@@ -448,13 +448,13 @@ function OpportunityRow({ opp, pharmacyId, onDelete }: {
   const [editStage, setEditStage] = useState<OpportunityStage>(opp.stage);
   const [editAmount, setEditAmount] = useState(String(opp.amount));
   const [editProbability, setEditProbability] = useState(String(opp.probability));
-  const [editCloseDate, setEditCloseDate] = useState(opp.expected_close_date ?? '');
+  const [editCloseDate, setEditCloseDate] = useState(opp.expectedCloseDate ?? '');
 
   const startEdit = () => {
     setEditStage(opp.stage);
     setEditAmount(String(opp.amount));
     setEditProbability(String(opp.probability));
-    setEditCloseDate(opp.expected_close_date ?? '');
+    setEditCloseDate(opp.expectedCloseDate ?? '');
     setEditing(true);
   };
 
@@ -572,10 +572,10 @@ function OpportunityRow({ opp, pharmacyId, onDelete }: {
             <span className="text-gray-400">→ €{weighted.toLocaleString('es-ES', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}</span>
           </div>
           <div className="flex items-center gap-2 mt-0.5 text-[10px] text-gray-400">
-            {opp.expected_close_date && (
-              <span>Close: {new Date(opp.expected_close_date + 'T00:00:00').toLocaleDateString()}</span>
+            {opp.expectedCloseDate && (
+              <span>Close: {new Date(opp.expectedCloseDate + 'T00:00:00').toLocaleDateString()}</span>
             )}
-            <span>{new Date(opp.created_at).toLocaleDateString()}</span>
+            <span>{new Date(opp.createdAt).toLocaleDateString()}</span>
           </div>
         </div>
         <div className="flex items-center gap-0.5 shrink-0">
@@ -807,7 +807,7 @@ export function PharmacyDetailPanel({ pharmacy, onClose }: PharmacyDetailPanelPr
   const [copiedField, setCopiedField] = useState<string | null>(null);
   const [notes, setNotes] = useState(pharmacy.notes || '');
   const [email, setEmail] = useState(pharmacy.email || '');
-  const [status, setStatus] = useState<PharmacyStatus>(pharmacy.commercial_status);
+  const [status, setStatus] = useState<PharmacyStatus>(pharmacy.status);
   const [hasChanges, setHasChanges] = useState(false);
 
   const updatePharmacy = useUpdatePharmacy();
@@ -970,9 +970,9 @@ export function PharmacyDetailPanel({ pharmacy, onClose }: PharmacyDetailPanelPr
               <MapPin className="h-4 w-4 mt-0.5 text-gray-400 shrink-0" />
               <div className="flex-1 min-w-0">
                 <p className="text-sm text-gray-700">{pharmacy.address}</p>
-                {(pharmacy.city || pharmacy.province) && (
+                {(pharmacy.city || pharmacy.region) && (
                   <p className="text-xs text-gray-500 mt-0.5">
-                    {[pharmacy.city, pharmacy.province, pharmacy.country].filter(Boolean).join(', ')}
+                    {[pharmacy.city, pharmacy.region, pharmacy.country].filter(Boolean).join(', ')}
                   </p>
                 )}
               </div>
@@ -1057,14 +1057,14 @@ export function PharmacyDetailPanel({ pharmacy, onClose }: PharmacyDetailPanelPr
         <OpportunitiesSection pharmacyId={pharmacy.id} />
 
         {/* Opening Hours */}
-        {pharmacy.opening_hours && pharmacy.opening_hours.length > 0 && (
+        {pharmacy.attributes.openingHours && pharmacy.attributes.openingHours.length > 0 && (
           <div className="space-y-3">
             <h3 className="text-sm font-medium text-gray-500 flex items-center gap-2">
               <Clock className="h-4 w-4" />
               Opening Hours
             </h3>
             <div className="text-xs space-y-1 pl-6">
-              {pharmacy.opening_hours.map((hours, index) => (
+              {pharmacy.attributes.openingHours.map((hours, index) => (
                 <p key={index} className="text-gray-600">{hours}</p>
               ))}
             </div>

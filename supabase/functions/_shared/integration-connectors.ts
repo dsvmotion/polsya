@@ -1,6 +1,16 @@
 import { fetchWithRetry } from './fetchWithRetry.ts';
+import { getProviderDefinition } from './provider-registry.ts';
+import { hubspotConnector } from './connectors/hubspot-connector.ts';
+import { salesforceConnector } from './connectors/salesforce-connector.ts';
+import { pipedriveConnector } from './connectors/pipedrive-connector.ts';
+import { prestashopConnector } from './connectors/prestashop-connector.ts';
+import { whatsappConnector } from './connectors/whatsapp-connector.ts';
+import { slackConnector } from './connectors/slack-connector.ts';
 
-export type SyncTarget = 'entities' | 'orders' | 'products' | 'inventory';
+export type SyncTarget =
+  | 'entities' | 'orders' | 'products' | 'inventory'
+  | 'contacts' | 'deals' | 'invoices' | 'messages'
+  | 'tickets' | 'campaigns' | 'events';
 
 export interface IntegrationConnectorContext {
   organizationId: string;
@@ -25,6 +35,7 @@ export interface SyncStepResult {
 export interface IntegrationConnector {
   provider: string;
   testConnection(ctx: IntegrationConnectorContext): Promise<void>;
+  sync(target: SyncTarget, ctx: IntegrationConnectorContext): Promise<SyncStepResult>;
   syncEntities(ctx: IntegrationConnectorContext): Promise<SyncStepResult>;
   syncOrders(ctx: IntegrationConnectorContext): Promise<SyncStepResult>;
   syncProducts(ctx: IntegrationConnectorContext): Promise<SyncStepResult>;
@@ -162,6 +173,15 @@ const wooConnector: IntegrationConnector = {
   async testConnection(ctx) {
     await fetchWooPage(ctx, 'orders');
   },
+  async sync(target, ctx) {
+    switch (target) {
+      case 'entities': return this.syncEntities(ctx);
+      case 'orders': return this.syncOrders(ctx);
+      case 'products': return this.syncProducts(ctx);
+      case 'inventory': return this.syncInventory(ctx);
+      default: return { processed: 0, failed: 0, summary: `${target}: not supported for woocommerce`, records: [] };
+    }
+  },
   async syncEntities(ctx) {
     const { items, total } = await fetchWooPage(ctx, 'customers');
     return wooResult('entities', items, total);
@@ -264,6 +284,15 @@ const shopifyConnector: IntegrationConnector = {
   provider: 'shopify',
   async testConnection(ctx) {
     await fetchShopifyItems(ctx, 'orders');
+  },
+  async sync(target, ctx) {
+    switch (target) {
+      case 'entities': return this.syncEntities(ctx);
+      case 'orders': return this.syncOrders(ctx);
+      case 'products': return this.syncProducts(ctx);
+      case 'inventory': return this.syncInventory(ctx);
+      default: return { processed: 0, failed: 0, summary: `${target}: not supported for shopify`, records: [] };
+    }
   },
   async syncEntities(ctx) {
     const { items, count } = await fetchShopifyItems(ctx, 'customers');
@@ -386,6 +415,13 @@ const gmailConnector: IntegrationConnector = {
       throw new Error(`Gmail profile check failed with status ${res.status}`);
     }
   },
+  async sync(target, ctx) {
+    switch (target) {
+      case 'entities': return this.syncEntities(ctx);
+      case 'messages': return this.syncEntities(ctx);
+      default: return { processed: 0, failed: 0, summary: `${target}: not applicable for gmail`, records: [] };
+    }
+  },
   async syncEntities(ctx) {
     const records = await fetchGmailMessageRecords(ctx);
     return {
@@ -505,6 +541,13 @@ const outlookConnector: IntegrationConnector = {
       throw new Error(`Outlook profile check failed with status ${res.status}`);
     }
   },
+  async sync(target, ctx) {
+    switch (target) {
+      case 'entities': return this.syncEntities(ctx);
+      case 'messages': return this.syncEntities(ctx);
+      default: return { processed: 0, failed: 0, summary: `${target}: not applicable for outlook`, records: [] };
+    }
+  },
   async syncEntities(ctx) {
     const records = await fetchOutlookMessageRecords(ctx);
     return {
@@ -557,6 +600,13 @@ const emailImapConnector: IntegrationConnector = {
   provider: 'email_imap',
   async testConnection(ctx) {
     getEmailImapConfig(ctx.metadata);
+  },
+  async sync(target, ctx) {
+    switch (target) {
+      case 'entities': return this.syncEntities(ctx);
+      case 'messages': return this.syncEntities(ctx);
+      default: return { processed: 0, failed: 0, summary: `${target}: not applicable for email_imap`, records: [] };
+    }
   },
   async syncEntities(ctx) {
     const cfg = getEmailImapConfig(ctx.metadata);
@@ -733,6 +783,14 @@ const brevoConnector: IntegrationConnector = {
       throw new Error(`Brevo account check failed with status ${res.status}`);
     }
   },
+  async sync(target, ctx) {
+    switch (target) {
+      case 'entities': return this.syncEntities(ctx);
+      case 'campaigns': return this.syncEntities(ctx);
+      case 'contacts': return this.syncEntities(ctx);
+      default: return { processed: 0, failed: 0, summary: `${target}: not applicable for brevo`, records: [] };
+    }
+  },
   async syncEntities(ctx) {
     const records = await fetchBrevoRecords(ctx);
     return {
@@ -773,6 +831,9 @@ const unsupportedConnector: IntegrationConnector = {
   async testConnection(ctx) {
     throw new Error(`Provider ${ctx.provider} is not supported yet`);
   },
+  async sync(_target) {
+    return { processed: 0, failed: 0, summary: 'Not supported', records: [] };
+  },
   async syncEntities() {
     return { processed: 0, failed: 0, summary: 'Not supported', records: [] };
   },
@@ -787,39 +848,33 @@ const unsupportedConnector: IntegrationConnector = {
   },
 };
 
+const connectorMap: Record<string, IntegrationConnector> = {
+  woocommerce: wooConnector,
+  shopify: shopifyConnector,
+  gmail: gmailConnector,
+  outlook: outlookConnector,
+  email_imap: emailImapConnector,
+  brevo: brevoConnector,
+  hubspot: hubspotConnector,
+  salesforce: salesforceConnector,
+  pipedrive: pipedriveConnector,
+  prestashop: prestashopConnector,
+  whatsapp: whatsappConnector,
+  slack: slackConnector,
+  notion: unsupportedConnector,
+  openai: unsupportedConnector,
+  anthropic: unsupportedConnector,
+  custom_api: unsupportedConnector,
+};
+
 export function getIntegrationConnector(provider: string): IntegrationConnector {
-  if (provider === 'woocommerce') return wooConnector;
-  if (provider === 'shopify') return shopifyConnector;
-  if (provider === 'gmail') return gmailConnector;
-  if (provider === 'outlook') return outlookConnector;
-  if (provider === 'email_imap') return emailImapConnector;
-  if (provider === 'brevo') return brevoConnector;
-  return unsupportedConnector;
+  return connectorMap[provider] ?? unsupportedConnector;
 }
 
 export function parseSyncTargets(provider: string, payload: Record<string, unknown>): SyncTarget[] {
-  const allowedByProvider: Record<string, SyncTarget[]> = {
-    gmail: ['entities'],
-    outlook: ['entities'],
-    email_imap: ['entities'],
-    brevo: ['entities'],
-    woocommerce: ['entities', 'orders', 'products', 'inventory'],
-    shopify: ['entities', 'orders', 'products', 'inventory'],
-  };
-
-  const defaultByProvider: Record<string, SyncTarget[]> = {
-    gmail: ['entities'],
-    outlook: ['entities'],
-    email_imap: ['entities'],
-    brevo: ['entities'],
-    woocommerce: ['orders'],
-    shopify: ['orders'],
-  };
-
-  const allowed = new Set<SyncTarget>(
-    allowedByProvider[provider] ?? ['entities', 'orders', 'products', 'inventory'],
-  );
-  const defaults = defaultByProvider[provider] ?? ['orders'];
+  const def = getProviderDefinition(provider);
+  const allowed = new Set<SyncTarget>(def?.syncTargets ?? ['entities', 'orders', 'products', 'inventory']);
+  const defaults = def?.defaultTargets ?? ['orders'];
 
   const raw = payload.targets;
   if (!Array.isArray(raw) || raw.length === 0) return defaults;

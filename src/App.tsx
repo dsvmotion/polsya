@@ -3,7 +3,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate, useParams } from "react-router-dom";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
 import { SubscriptionGuard } from "@/components/auth/SubscriptionGuard";
@@ -22,6 +22,16 @@ const PharmacyProspecting = lazy(() => import("./pages/PharmacyProspecting"));
 const PharmacyOperations = lazy(() => import("./pages/PharmacyOperations"));
 
 const queryClient = new QueryClient();
+
+function ProspectingByType() {
+  const { typeKey } = useParams<{ typeKey: string }>();
+  return <PharmacyProspecting clientType={typeKey} />;
+}
+
+function OperationsByType() {
+  const { typeKey } = useParams<{ typeKey: string }>();
+  return <PharmacyOperations clientType={typeKey} />;
+}
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
@@ -54,10 +64,10 @@ const App = () => (
                   </SubscriptionGuard>
                 </ProtectedRoute>
               } />
-              <Route path="/prospecting/entities/herbalists" element={
+              <Route path="/prospecting/entities/:typeKey" element={
                 <ProtectedRoute>
                   <SubscriptionGuard>
-                    <PharmacyProspecting clientType="herbalist" />
+                    <ProspectingByType />
                   </SubscriptionGuard>
                 </ProtectedRoute>
               } />
@@ -69,19 +79,17 @@ const App = () => (
                   </SubscriptionGuard>
                 </ProtectedRoute>
               } />
-              <Route path="/operations/entities/herbalists" element={
+              <Route path="/operations/entities/:typeKey" element={
                 <ProtectedRoute>
                   <SubscriptionGuard>
-                    <PharmacyOperations clientType="herbalist" />
+                    <OperationsByType />
                   </SubscriptionGuard>
                 </ProtectedRoute>
               } />
 
               {/* Legacy route redirects */}
               <Route path="/prospecting" element={<Navigate to="/prospecting/entities" replace />} />
-              <Route path="/prospecting/herbalists" element={<Navigate to="/prospecting/entities/herbalists" replace />} />
               <Route path="/operations" element={<Navigate to="/operations/entities" replace />} />
-              <Route path="/operations/herbalists" element={<Navigate to="/operations/entities/herbalists" replace />} />
 
               <Route path="/profile" element={
                 <ProtectedRoute>

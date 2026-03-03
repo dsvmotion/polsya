@@ -599,7 +599,7 @@ export function PharmacyOperationsDetail({ pharmacy, onClose, onStatusUpdate }: 
                       <div className="min-w-0 flex-1">
                         <div className="flex items-center gap-1.5">
                           <span className="font-medium text-gray-900 truncate">{contact.name}</span>
-                          {contact.is_primary && (
+                          {contact.isPrimary && (
                             <Star className="h-3 w-3 text-yellow-500 fill-yellow-500 shrink-0" />
                           )}
                           {contact.role && (

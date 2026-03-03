@@ -1,6 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import type { PharmacyContact, ContactRole } from '@/types/pharmacy';
+import { toAccountContact, toAccountContacts, type ContactRow } from '@/services/contactService';
 
 function contactsKey(pharmacyId: string) {
   return ['pharmacy-contacts', pharmacyId] as const;
@@ -19,7 +20,7 @@ export function usePharmacyContacts(pharmacyId: string | null) {
         .order('created_at', { ascending: false });
 
       if (error) throw new Error(error.message);
-      return (data ?? []) as PharmacyContact[];
+      return toAccountContacts((data ?? []) as ContactRow[]);
     },
   });
 }
@@ -54,7 +55,7 @@ export function useCreatePharmacyContact() {
         .single();
 
       if (error) throw new Error(error.message);
-      return data as PharmacyContact;
+      return toAccountContact(data as ContactRow);
     },
     onSuccess: (_data, variables) => {
       qc.invalidateQueries({ queryKey: contactsKey(variables.pharmacyId) });
@@ -88,7 +89,7 @@ export function useUpdatePharmacyContact() {
         .single();
 
       if (error) throw new Error(error.message);
-      return data as PharmacyContact;
+      return toAccountContact(data as ContactRow);
     },
     onSuccess: (_data, variables) => {
       qc.invalidateQueries({ queryKey: contactsKey(variables.pharmacyId) });

@@ -1,7 +1,19 @@
-import type { AccountOpportunity } from '@/types/entity';
-import type { PharmacyOpportunity } from '@/types/pharmacy';
+import type { AccountOpportunity, OpportunityStage } from '@/types/entity';
 
-export function toAccountOpportunity(row: PharmacyOpportunity): AccountOpportunity {
+export interface OpportunityRow {
+  id: string;
+  pharmacy_id: string;
+  title: string;
+  stage: OpportunityStage;
+  amount: number;
+  probability: number;
+  expected_close_date: string | null;
+  notes: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export function toAccountOpportunity(row: OpportunityRow): AccountOpportunity {
   return {
     id: row.id,
     entityId: row.pharmacy_id,
@@ -16,6 +28,6 @@ export function toAccountOpportunity(row: PharmacyOpportunity): AccountOpportuni
   };
 }
 
-export function toAccountOpportunities(rows: readonly PharmacyOpportunity[]): AccountOpportunity[] {
+export function toAccountOpportunities(rows: readonly OpportunityRow[]): AccountOpportunity[] {
   return rows.map(toAccountOpportunity);
 }

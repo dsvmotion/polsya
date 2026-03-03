@@ -23,9 +23,9 @@ try {
 const premiumPaths = [
   '/',
   '/prospecting/entities',
-  '/prospecting/entities/herbalists',
+  '/prospecting/entities/:typeKey',
   '/operations/entities',
-  '/operations/entities/herbalists',
+  '/operations/entities/:typeKey',
 ];
 
 function hasSubscriptionGuard(path) {

@@ -1,7 +1,7 @@
 import { useMemo } from 'react';
 import { usePharmaciesWithOrders } from '@/hooks/usePharmacyOperations';
 import type { RiskAlert, RiskReason, RiskLevel, RiskSummary } from '@/types/operations';
-import type { ClientType } from '@/types/pharmacy';
+import type { EntityTypeKey } from '@/types/entity';
 
 const MEDIUM_THRESHOLD_DAYS = 60;
 
@@ -9,8 +9,8 @@ function daysBetween(dateStr: string, now: number): number {
   return Math.floor((now - new Date(dateStr).getTime()) / (1000 * 60 * 60 * 24));
 }
 
-export function useRiskAlerts(clientType: ClientType = 'pharmacy') {
-  const { data: pharmacies, isLoading } = usePharmaciesWithOrders(true, clientType);
+export function useRiskAlerts(entityTypeKey: EntityTypeKey = 'pharmacy') {
+  const { data: pharmacies, isLoading } = usePharmaciesWithOrders(true, entityTypeKey);
 
   const { alerts, summary } = useMemo(() => {
     if (!pharmacies || pharmacies.length === 0) {

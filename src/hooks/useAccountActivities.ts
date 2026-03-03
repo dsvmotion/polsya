@@ -1,8 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import type { AccountActivity } from '@/types/entity';
-import type { PharmacyActivity } from '@/types/pharmacy';
-import { toAccountActivities } from '@/services/activityService';
+import { toAccountActivities, type ActivityRow } from '@/services/activityService';
 
 export function useAccountActivities(entityId: string | null) {
   return useQuery<AccountActivity[]>({
@@ -16,7 +15,7 @@ export function useAccountActivities(entityId: string | null) {
         .order('created_at', { ascending: false });
 
       if (error) throw error;
-      return toAccountActivities((data ?? []) as PharmacyActivity[]);
+      return toAccountActivities((data ?? []) as ActivityRow[]);
     },
   });
 }

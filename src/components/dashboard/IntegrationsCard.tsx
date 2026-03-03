@@ -18,15 +18,12 @@ import {
 } from '@/hooks/useIntegrations';
 import { useIntegrationRuns } from '@/hooks/useIntegrationRuns';
 import { useIntegrationJobs, useEnqueueIntegrationJob, useProcessIntegrationJob, createJobIdempotencyKey } from '@/hooks/useIntegrationJobs';
-import { useStartGmailOAuth } from '@/hooks/useGmailOAuth';
-import { useStartOutlookOAuth } from '@/hooks/useOutlookOAuth';
+import { useStartOAuth } from '@/hooks/useOAuth';
 import { useUpsertEmailImapCredentials } from '@/hooks/useEmailImapCredentials';
 import { useUpsertEmailMarketingCredentials } from '@/hooks/useEmailMarketingCredentials';
 import {
   IntegrationProvider,
   IntegrationConnection,
-  PROVIDER_LABELS,
-  PROVIDER_ICONS,
   STATUS_COLORS,
   SYNC_RUN_STATUS_COLORS,
   INTEGRATION_JOB_STATUS_COLORS,
@@ -36,12 +33,17 @@ import {
   validateIntegrationMetadata,
   sanitizeIntegrationMetadata,
 } from '@/lib/integration-metadata';
+import { PROVIDER_REGISTRY, getProviderDefinition } from '@/lib/provider-registry';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 import { EmptyState, LoadingState } from '@/components/ui/view-states';
 import { decideSyncToast } from '@/services/integrationJobResultService';
 
-const PROVIDERS = Object.keys(PROVIDER_LABELS) as IntegrationProvider[];
+const providerOptions = Object.values(PROVIDER_REGISTRY).map((p) => ({
+  value: p.key,
+  label: p.label,
+  icon: p.icon,
+}));
 
 function timeAgo(dateStr: string): string {
   const diff = Date.now() - new Date(dateStr).getTime();
@@ -104,8 +106,7 @@ function IntegrationRow({
   const { data: jobs = [] } = useIntegrationJobs(intg.id, 1);
   const enqueueJob = useEnqueueIntegrationJob();
   const processJob = useProcessIntegrationJob();
-  const startGmailOAuth = useStartGmailOAuth();
-  const startOutlookOAuth = useStartOutlookOAuth();
+  const startOAuth = useStartOAuth();
   const upsertEmailImap = useUpsertEmailImapCredentials();
   const upsertEmailMarketing = useUpsertEmailMarketingCredentials();
   const updateIntegration = useUpdateIntegration();
@@ -113,9 +114,9 @@ function IntegrationRow({
   const [editing, setEditing] = useState(false);
   const [editMeta, setEditMeta] = useState<Record<string, string>>({});
   const [editErrors, setEditErrors] = useState<Record<string, string>>({});
-  const [configuringImap, setConfiguringImap] = useState(false);
-  const [configuringBrevo, setConfiguringBrevo] = useState(false);
-  const [brevoApiKey, setBrevoApiKey] = useState('');
+  const [configuringCredentials, setConfiguringCredentials] = useState(false);
+  const [configuringApiKey, setConfiguringApiKey] = useState(false);
+  const [apiKeyValue, setApiKeyValue] = useState('');
   const [imapForm, setImapForm] = useState({
     accountEmail: '',
     username: '',
@@ -128,30 +129,27 @@ function IntegrationRow({
     smtpSecure: true,
   });
 
+  const providerDef = getProviderDefinition(intg.provider);
   const lastRun = runs[0] ?? null;
   const latestJob = jobs[0] ?? null;
   const statusColor = STATUS_COLORS[intg.status];
   const schema = PROVIDER_METADATA_SCHEMA[intg.provider];
   const isSyncing = enqueueJob.isPending || processJob.isPending;
-  const isConnectingGmail = startGmailOAuth.isPending;
-  const isConnectingOutlook = startOutlookOAuth.isPending;
+  const isConnectingOAuth = startOAuth.isPending;
 
-  const handleConnectGmail = async () => {
+  const providerIcon = providerDef?.icon ?? '🔌';
+  const providerLabel = providerDef?.label ?? intg.provider;
+  const authType = providerDef?.authType ?? 'none';
+
+  const handleConnectOAuth = async () => {
     try {
-      const result = await startGmailOAuth.mutateAsync({ integrationId: intg.id });
+      const result = await startOAuth.mutateAsync({
+        integrationId: intg.id,
+        provider: intg.provider,
+      });
       window.location.assign(result.authUrl);
     } catch (error) {
-      const message = error instanceof Error ? error.message : 'Failed to start Gmail OAuth';
-      toast.error(message);
-    }
-  };
-
-  const handleConnectOutlook = async () => {
-    try {
-      const result = await startOutlookOAuth.mutateAsync({ integrationId: intg.id });
-      window.location.assign(result.authUrl);
-    } catch (error) {
-      const message = error instanceof Error ? error.message : 'Failed to start Outlook OAuth';
+      const message = error instanceof Error ? error.message : `Failed to start ${providerLabel} OAuth`;
       toast.error(message);
     }
   };
@@ -182,21 +180,21 @@ function IntegrationRow({
     }
   };
 
-  const startImapConfig = () => {
-    setConfiguringBrevo(false);
+  const startCredentialsConfig = () => {
+    setConfiguringApiKey(false);
     const meta = intg.metadata as Record<string, unknown>;
     setImapForm((prev) => ({
       ...prev,
       accountEmail: typeof meta.account_email === 'string' ? meta.account_email : '',
       username: typeof meta.account_email === 'string' ? meta.account_email : prev.username,
     }));
-    setConfiguringImap(true);
+    setConfiguringCredentials(true);
   };
 
-  const startBrevoConfig = () => {
-    setConfiguringImap(false);
-    setBrevoApiKey('');
-    setConfiguringBrevo(true);
+  const startApiKeyConfig = () => {
+    setConfiguringCredentials(false);
+    setApiKeyValue('');
+    setConfiguringApiKey(true);
   };
 
   const handleSaveImap = async () => {
@@ -214,7 +212,7 @@ function IntegrationRow({
         smtpSecure: imapForm.smtpSecure,
       });
       toast.success('IMAP/SMTP credentials saved');
-      setConfiguringImap(false);
+      setConfiguringCredentials(false);
       setImapForm((prev) => ({ ...prev, password: '' }));
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Failed to save IMAP credentials';
@@ -222,17 +220,17 @@ function IntegrationRow({
     }
   };
 
-  const handleSaveBrevo = async () => {
+  const handleSaveApiKey = async () => {
     try {
       await upsertEmailMarketing.mutateAsync({
         integrationId: intg.id,
-        apiKey: brevoApiKey.trim(),
+        apiKey: apiKeyValue.trim(),
       });
-      toast.success('Brevo API key saved');
-      setConfiguringBrevo(false);
-      setBrevoApiKey('');
+      toast.success(`${providerLabel} API key saved`);
+      setConfiguringApiKey(false);
+      setApiKeyValue('');
     } catch (error) {
-      const message = error instanceof Error ? error.message : 'Failed to save Brevo API key';
+      const message = error instanceof Error ? error.message : `Failed to save ${providerLabel} API key`;
       toast.error(message);
     }
   };
@@ -279,7 +277,7 @@ function IntegrationRow({
     <div className="px-2 py-2 rounded border border-gray-100 bg-white space-y-1">
       <div className="flex items-center justify-between gap-2">
         <div className="flex items-center gap-2 min-w-0 flex-1">
-          <span className="text-sm shrink-0">{PROVIDER_ICONS[intg.provider]}</span>
+          <span className="text-sm shrink-0">{providerIcon}</span>
           <span className="text-sm text-gray-900 truncate">{intg.display_name}</span>
           <span className={cn('text-[10px] px-1.5 py-0.5 rounded font-medium shrink-0', statusColor.bg, statusColor.text)}>
             {intg.status}
@@ -296,52 +294,38 @@ function IntegrationRow({
           >
             <RotateCw className={cn('h-3.5 w-3.5', isSyncing && 'animate-spin')} />
           </Button>
-          {intg.provider === 'gmail' && (
+          {authType === 'oauth2' && (
             <Button
               variant="ghost"
               size="sm"
               className="h-7 px-1.5 text-gray-400 hover:text-blue-600"
-              onClick={handleConnectGmail}
-              disabled={isConnectingGmail}
-              title={intg.status === 'connected' ? 'Reconnect Gmail' : 'Connect Gmail'}
+              onClick={handleConnectOAuth}
+              disabled={isConnectingOAuth}
+              title={intg.status === 'connected' ? `Reconnect ${providerLabel}` : `Connect ${providerLabel}`}
             >
               <span className="text-[10px] font-medium">
-                {isConnectingGmail ? '...' : intg.status === 'connected' ? 'Reconnect' : 'Connect'}
+                {isConnectingOAuth ? '...' : intg.status === 'connected' ? 'Reconnect' : 'Connect'}
               </span>
             </Button>
           )}
-          {intg.provider === 'outlook' && (
+          {authType === 'credentials' && (
             <Button
               variant="ghost"
               size="sm"
               className="h-7 px-1.5 text-gray-400 hover:text-blue-600"
-              onClick={handleConnectOutlook}
-              disabled={isConnectingOutlook}
-              title={intg.status === 'connected' ? 'Reconnect Outlook' : 'Connect Outlook'}
-            >
-              <span className="text-[10px] font-medium">
-                {isConnectingOutlook ? '...' : intg.status === 'connected' ? 'Reconnect' : 'Connect'}
-              </span>
-            </Button>
-          )}
-          {intg.provider === 'email_imap' && (
-            <Button
-              variant="ghost"
-              size="sm"
-              className="h-7 px-1.5 text-gray-400 hover:text-blue-600"
-              onClick={startImapConfig}
-              title="Configure IMAP/SMTP credentials"
+              onClick={startCredentialsConfig}
+              title={`Configure ${providerLabel} credentials`}
             >
               <span className="text-[10px] font-medium">Configure</span>
             </Button>
           )}
-          {intg.provider === 'brevo' && (
+          {authType === 'api_key' && providerDef?.category === 'email' && (
             <Button
               variant="ghost"
               size="sm"
               className="h-7 px-1.5 text-gray-400 hover:text-blue-600"
-              onClick={startBrevoConfig}
-              title="Configure Brevo API key"
+              onClick={startApiKeyConfig}
+              title={`Configure ${providerLabel} API key`}
             >
               <span className="text-[10px] font-medium">Configure</span>
             </Button>
@@ -389,7 +373,7 @@ function IntegrationRow({
         <p className="text-[10px] text-gray-400 pl-6 truncate">{metaSummary}</p>
       )}
 
-      {configuringImap && intg.provider === 'email_imap' && (
+      {configuringCredentials && authType === 'credentials' && (
         <div className="pl-6 pt-1 space-y-2">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
             <Input
@@ -465,7 +449,7 @@ function IntegrationRow({
               size="sm"
               variant="ghost"
               onClick={() => {
-                setConfiguringImap(false);
+                setConfiguringCredentials(false);
                 setImapForm((prev) => ({ ...prev, password: '' }));
               }}
             >
@@ -475,25 +459,25 @@ function IntegrationRow({
         </div>
       )}
 
-      {configuringBrevo && intg.provider === 'brevo' && (
+      {configuringApiKey && authType === 'api_key' && (
         <div className="pl-6 pt-1 space-y-2">
           <Input
-            placeholder="Brevo API key *"
-            value={brevoApiKey}
-            onChange={(e) => setBrevoApiKey(e.target.value)}
+            placeholder={`${providerLabel} API key *`}
+            value={apiKeyValue}
+            onChange={(e) => setApiKeyValue(e.target.value)}
             className="h-8 text-sm"
             type="password"
           />
           <div className="flex items-center gap-2">
-            <Button size="sm" onClick={handleSaveBrevo} disabled={upsertEmailMarketing.isPending}>
+            <Button size="sm" onClick={handleSaveApiKey} disabled={upsertEmailMarketing.isPending}>
               {upsertEmailMarketing.isPending ? 'Saving...' : 'Save key'}
             </Button>
             <Button
               size="sm"
               variant="ghost"
               onClick={() => {
-                setConfiguringBrevo(false);
-                setBrevoApiKey('');
+                setConfiguringApiKey(false);
+                setApiKeyValue('');
               }}
             >
               Cancel
@@ -593,7 +577,7 @@ export function IntegrationsCard() {
   const toggleEnabled = useToggleIntegrationEnabled();
 
   const [showForm, setShowForm] = useState(false);
-  const [newProvider, setNewProvider] = useState<IntegrationProvider>('woocommerce');
+  const [newProvider, setNewProvider] = useState<string>(providerOptions[0]?.value ?? 'woocommerce');
   const [newName, setNewName] = useState('');
   const [newMeta, setNewMeta] = useState<Record<string, string>>({});
   const [formErrors, setFormErrors] = useState<Record<string, string>>({});
@@ -617,7 +601,7 @@ export function IntegrationsCard() {
     setShowForm(false);
   };
 
-  const handleProviderChange = (provider: IntegrationProvider) => {
+  const handleProviderChange = (provider: string) => {
     setNewProvider(provider);
     setNewMeta({});
     setFormErrors({});
@@ -630,7 +614,8 @@ export function IntegrationsCard() {
       errs._name = 'Display name is required';
     }
 
-    const metaResult = validateIntegrationMetadata(newProvider, newMeta);
+    const castProvider = newProvider as IntegrationProvider;
+    const metaResult = validateIntegrationMetadata(castProvider, newMeta);
     if (!metaResult.valid) {
       Object.assign(errs, metaResult.errors);
     }
@@ -640,10 +625,10 @@ export function IntegrationsCard() {
       return;
     }
 
-    const sanitized = sanitizeIntegrationMetadata(newProvider, newMeta);
+    const sanitized = sanitizeIntegrationMetadata(castProvider, newMeta);
     try {
       await createIntegration.mutateAsync({
-        provider: newProvider,
+        provider: castProvider,
         displayName: trimmed,
         metadata: sanitized,
       });
@@ -713,14 +698,14 @@ export function IntegrationsCard() {
         {/* Add form */}
         {showForm && (
           <div className="p-3 border border-gray-200 rounded-lg bg-gray-50 space-y-2 mb-3">
-            <Select value={newProvider} onValueChange={(v) => handleProviderChange(v as IntegrationProvider)}>
+            <Select value={newProvider} onValueChange={handleProviderChange}>
               <SelectTrigger className="h-8 text-sm bg-white border-gray-300">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent className="bg-white border-gray-200">
-                {PROVIDERS.map((p) => (
-                  <SelectItem key={p} value={p}>
-                    {PROVIDER_ICONS[p]} {PROVIDER_LABELS[p]}
+                {providerOptions.map((p) => (
+                  <SelectItem key={p.value} value={p.value}>
+                    {p.icon} {p.label}
                   </SelectItem>
                 ))}
               </SelectContent>
@@ -740,7 +725,7 @@ export function IntegrationsCard() {
               )}
             </div>
             <MetadataFields
-              provider={newProvider}
+              provider={newProvider as IntegrationProvider}
               values={newMeta}
               onChange={(k, v) => {
                 setNewMeta((prev) => ({ ...prev, [k]: v }));

@@ -47,7 +47,7 @@ export function ProspectingMap({
   // Get marker icon using status colors (Yellow/Blue/Green)
   const getMarkerIcon = useCallback(
     (pharmacy: Pharmacy, isSelected: boolean): google.maps.Symbol => {
-      const color = STATUS_PIN_COLORS[pharmacy.commercial_status];
+      const color = STATUS_PIN_COLORS[pharmacy.status];
       return {
         path: google.maps.SymbolPath.BACKWARD_CLOSED_ARROW,
         fillColor: color,
@@ -183,7 +183,7 @@ export function ProspectingMap({
                   background: #f3f4f6;
                   color: #374151;
                 ">
-                  ${escapeHtml(statusLabels[pharmacy.commercial_status])}
+                  ${escapeHtml(statusLabels[pharmacy.status])}
                 </span>
               </div>
               <h3 style="font-weight: 600; font-size: 14px; margin-bottom: 4px; color: #111827;">${escapeHtml(pharmacy.name)}</h3>

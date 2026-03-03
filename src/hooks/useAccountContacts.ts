@@ -1,8 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import type { AccountContact } from '@/types/entity';
-import type { PharmacyContact } from '@/types/pharmacy';
-import { toAccountContacts } from '@/services/contactService';
+import { toAccountContacts, type ContactRow } from '@/services/contactService';
 
 export function useAccountContacts(entityId: string | null) {
   return useQuery<AccountContact[]>({
@@ -17,7 +16,7 @@ export function useAccountContacts(entityId: string | null) {
         .order('created_at', { ascending: false });
 
       if (error) throw error;
-      return toAccountContacts((data ?? []) as PharmacyContact[]);
+      return toAccountContacts((data ?? []) as ContactRow[]);
     },
   });
 }

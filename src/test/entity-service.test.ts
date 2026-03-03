@@ -1,15 +1,17 @@
 import {
   toBusinessEntity,
   toBusinessEntities,
-  toLegacyPharmacyPatch,
+  toLegacyPatch,
 } from '@/services/entityService';
 import { toAccountActivities } from '@/services/activityService';
 import { toAccountContacts } from '@/services/contactService';
 import { toAccountOpportunities } from '@/services/opportunityService';
-import type { Pharmacy, PharmacyActivity, PharmacyContact, PharmacyOpportunity } from '@/types/pharmacy';
+import type { ContactRow } from '@/services/contactService';
+import type { ActivityRow } from '@/services/activityService';
+import type { OpportunityRow } from '@/services/opportunityService';
 
 describe('entityService', () => {
-  const pharmacy: Pharmacy = {
+  const entityRow = {
     id: 'p1',
     google_place_id: 'g-1',
     name: 'Farmacia Central',
@@ -39,8 +41,8 @@ describe('entityService', () => {
     sub_locality: null,
   };
 
-  it('maps Pharmacy to BusinessEntity', () => {
-    const entity = toBusinessEntity(pharmacy);
+  it('maps entity row to BusinessEntity', () => {
+    const entity = toBusinessEntity(entityRow);
 
     expect(entity.id).toBe('p1');
     expect(entity.externalId).toBe('g-1');
@@ -50,14 +52,14 @@ describe('entityService', () => {
     expect(entity.attributes.postalCode).toBe('28001');
   });
 
-  it('maps list of pharmacies', () => {
-    const list = toBusinessEntities([pharmacy]);
+  it('maps list of entity rows', () => {
+    const list = toBusinessEntities([entityRow]);
     expect(list).toHaveLength(1);
     expect(list[0].name).toBe('Farmacia Central');
   });
 
-  it('maps business patch to legacy pharmacy patch', () => {
-    const patch = toLegacyPharmacyPatch({
+  it('maps business patch to legacy DB patch', () => {
+    const patch = toLegacyPatch({
       status: 'proposal',
       notes: 'updated',
       email: 'new@example.com',
@@ -77,7 +79,7 @@ describe('entityService', () => {
 
 describe('account adapters', () => {
   it('maps contacts/activities/opportunities to account models', () => {
-    const contacts: PharmacyContact[] = [{
+    const contacts: ContactRow[] = [{
       id: 'c1',
       pharmacy_id: 'p1',
       name: 'John',
@@ -90,7 +92,7 @@ describe('account adapters', () => {
       updated_at: '2026-01-01T00:00:00.000Z',
     }];
 
-    const activities: PharmacyActivity[] = [{
+    const activities: ActivityRow[] = [{
       id: 'a1',
       pharmacy_id: 'p1',
       activity_type: 'task',
@@ -103,7 +105,7 @@ describe('account adapters', () => {
       updated_at: '2026-01-01T00:00:00.000Z',
     }];
 
-    const opportunities: PharmacyOpportunity[] = [{
+    const opportunities: OpportunityRow[] = [{
       id: 'o1',
       pharmacy_id: 'p1',
       title: 'Deal',

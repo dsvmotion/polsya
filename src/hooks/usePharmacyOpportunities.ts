@@ -1,13 +1,14 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import type { PharmacyOpportunity, OpportunityStage } from '@/types/pharmacy';
+import type { AccountOpportunity, OpportunityStage } from '@/types/entity';
+import { toAccountOpportunity, toAccountOpportunities, type OpportunityRow } from '@/services/opportunityService';
 
 function opportunitiesKey(pharmacyId: string) {
   return ['pharmacy-opportunities', pharmacyId] as const;
 }
 
 export function usePharmacyOpportunities(pharmacyId: string | null) {
-  return useQuery<PharmacyOpportunity[]>({
+  return useQuery<AccountOpportunity[]>({
     queryKey: opportunitiesKey(pharmacyId ?? ''),
     enabled: !!pharmacyId,
     queryFn: async () => {
@@ -18,7 +19,7 @@ export function usePharmacyOpportunities(pharmacyId: string | null) {
         .order('created_at', { ascending: false });
 
       if (error) throw new Error(error.message);
-      return (data ?? []) as PharmacyOpportunity[];
+      return toAccountOpportunities((data ?? []) as OpportunityRow[]);
     },
   });
 }
@@ -53,7 +54,7 @@ export function useCreatePharmacyOpportunity() {
         .single();
 
       if (error) throw new Error(error.message);
-      return data as PharmacyOpportunity;
+      return toAccountOpportunity(data as OpportunityRow);
     },
     onSuccess: (_data, variables) => {
       qc.invalidateQueries({ queryKey: opportunitiesKey(variables.pharmacyId) });
@@ -87,7 +88,7 @@ export function useUpdatePharmacyOpportunity() {
         .single();
 
       if (error) throw new Error(error.message);
-      return data as PharmacyOpportunity;
+      return toAccountOpportunity(data as OpportunityRow);
     },
     onSuccess: (_data, variables) => {
       qc.invalidateQueries({ queryKey: opportunitiesKey(variables.pharmacyId) });

@@ -8,7 +8,13 @@ export type IntegrationProvider =
   | 'notion'
   | 'openai'
   | 'anthropic'
-  | 'custom_api';
+  | 'custom_api'
+  | 'hubspot'
+  | 'salesforce'
+  | 'pipedrive'
+  | 'prestashop'
+  | 'whatsapp'
+  | 'slack';
 
 export type IntegrationStatus = 'connected' | 'disconnected' | 'error';
 
@@ -37,6 +43,12 @@ export const PROVIDER_LABELS: Record<IntegrationProvider, string> = {
   openai: 'OpenAI',
   anthropic: 'Anthropic',
   custom_api: 'Custom API',
+  hubspot: 'HubSpot',
+  salesforce: 'Salesforce',
+  pipedrive: 'Pipedrive',
+  prestashop: 'PrestaShop',
+  whatsapp: 'WhatsApp',
+  slack: 'Slack',
 };
 
 export const PROVIDER_ICONS: Record<IntegrationProvider, string> = {
@@ -50,6 +62,12 @@ export const PROVIDER_ICONS: Record<IntegrationProvider, string> = {
   openai: '🤖',
   anthropic: '🧠',
   custom_api: '🔌',
+  hubspot: '🟠',
+  salesforce: '☁️',
+  pipedrive: '🔵',
+  prestashop: '🛍️',
+  whatsapp: '💬',
+  slack: '💼',
 };
 
 export const STATUS_COLORS: Record<IntegrationStatus, { bg: string; text: string; dot: string }> = {
@@ -68,6 +86,12 @@ export interface NotionMetadata { workspace_id?: string }
 export interface OpenAIMetadata { project_id?: string }
 export interface AnthropicMetadata { workspace_id?: string }
 export interface CustomApiMetadata { base_url: string }
+export interface HubSpotMetadata { hubspot_access_token?: string }
+export interface SalesforceMetadata { salesforce_access_token?: string; instance_url?: string }
+export interface PipedriveMetadata { api_key: string }
+export interface PrestaShopMetadata { store_url: string; api_key: string }
+export interface WhatsAppMetadata { access_token: string; phone_number_id: string }
+export interface SlackMetadata { slack_access_token?: string; channel_id?: string }
 
 export interface IntegrationMetadataByProvider {
   woocommerce: WooCommerceMetadata;
@@ -80,6 +104,12 @@ export interface IntegrationMetadataByProvider {
   openai: OpenAIMetadata;
   anthropic: AnthropicMetadata;
   custom_api: CustomApiMetadata;
+  hubspot: HubSpotMetadata;
+  salesforce: SalesforceMetadata;
+  pipedrive: PipedriveMetadata;
+  prestashop: PrestaShopMetadata;
+  whatsapp: WhatsAppMetadata;
+  slack: SlackMetadata;
 }
 
 export type IntegrationMetadata = IntegrationMetadataByProvider[IntegrationProvider];

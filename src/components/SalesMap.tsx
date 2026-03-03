@@ -7,6 +7,7 @@ interface SalesMapProps {
   sales: Sale[];
   onSaleSelect?: (sale: Sale) => void;
   selectedSaleId?: string | null;
+  entityTypeColors?: Record<string, string>;
 }
 
 const mapContainerStyle = {
@@ -67,16 +68,24 @@ const mapOptions: google.maps.MapOptions = {
   ],
 };
 
-function getMarkerIcon(customerType: string, status?: string) {
-  let color = '#9333ea'; // default: morado (WooCommerce order / not contacted)
+const DEFAULT_ENTITY_COLORS: Record<string, string> = {
+  pharmacy: '#16a34a',
+  herbalist: '#166534',
+};
+
+function getMarkerIcon(
+  customerType: string,
+  status?: string,
+  entityTypeColors?: Record<string, string>,
+) {
+  let color = '#9333ea';
   if (status === 'client') {
-    color = '#f97316'; // naranja para clientes
+    color = '#f97316';
   } else if (status === 'contacted') {
-    color = '#3b82f6'; // azul para contactados
-  } else if (customerType === 'pharmacy') {
-    color = '#16a34a'; // verde para farmacias no contactadas
-  } else if (customerType === 'herbalist') {
-    color = '#166534'; // verde oscuro para herbolarios no contactados
+    color = '#3b82f6';
+  } else {
+    const colorMap = entityTypeColors ?? DEFAULT_ENTITY_COLORS;
+    color = colorMap[customerType] ?? color;
   }
   return {
     path: google.maps.SymbolPath.CIRCLE,
@@ -89,7 +98,7 @@ function getMarkerIcon(customerType: string, status?: string) {
 }
 
 export const SalesMap = forwardRef<google.maps.Map | null, SalesMapProps>(function SalesMap(
-  { sales, onSaleSelect },
+  { sales, onSaleSelect, entityTypeColors },
   ref
 ) {
   const mapRef = useRef<google.maps.Map | null>(null);
@@ -164,7 +173,7 @@ export const SalesMap = forwardRef<google.maps.Map | null, SalesMapProps>(functi
     const markers: google.maps.Marker[] = sales.map((sale) => {
       const marker = new google.maps.Marker({
         position: { lat: sale.lat, lng: sale.lng },
-        icon: getMarkerIcon(sale.customerType, sale.commercialStatus),
+        icon: getMarkerIcon(sale.customerType, sale.commercialStatus, entityTypeColors),
         title: sale.customerName,
         map,
       });
@@ -260,7 +269,7 @@ export const SalesMap = forwardRef<google.maps.Map | null, SalesMapProps>(functi
       });
       markersRef.current = [];
     };
-  }, [isLoaded, mapReady, sales, onSaleSelect]);
+  }, [isLoaded, mapReady, sales, onSaleSelect, entityTypeColors]);
 
   if (loadError) {
     return (
