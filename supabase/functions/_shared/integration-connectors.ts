@@ -68,6 +68,30 @@ function dedupeRecords(records: SyncRecord[]): SyncRecord[] {
   return Array.from(map.values());
 }
 
+async function runWithConcurrency<T, R>(
+  items: T[],
+  limit: number,
+  worker: (item: T) => Promise<R>,
+): Promise<R[]> {
+  if (items.length === 0) return [];
+  const laneCount = Math.max(1, Math.min(limit, items.length));
+  const out: R[] = [];
+  let cursor = 0;
+
+  await Promise.all(
+    Array.from({ length: laneCount }, async () => {
+      while (true) {
+        const idx = cursor;
+        cursor += 1;
+        if (idx >= items.length) break;
+        out[idx] = await worker(items[idx]);
+      }
+    }),
+  );
+
+  return out;
+}
+
 function getWooConfig(metadata: Record<string, unknown>) {
   const baseUrl = normalizeBaseUrl(
     (typeof metadata.store_url === 'string' ? metadata.store_url : '') ||
@@ -299,8 +323,7 @@ async function fetchGmailMessageRecords(ctx: IntegrationConnectorContext): Promi
     .map((m) => m.id)
     .filter((id): id is string => typeof id === 'string' && id.length > 0);
 
-  const records: SyncRecord[] = [];
-  for (const id of ids) {
+  const records = await runWithConcurrency(ids, 5, async (id) => {
     const msgRes = await fetchWithRetry(
       `https://gmail.googleapis.com/gmail/v1/users/me/messages/${id}?format=metadata&metadataHeaders=From&metadataHeaders=To&metadataHeaders=Subject&metadataHeaders=Date`,
       {
@@ -310,9 +333,7 @@ async function fetchGmailMessageRecords(ctx: IntegrationConnectorContext): Promi
       { action: 'connector_gmail_message_detail' },
     );
 
-    if (!msgRes.ok) {
-      continue;
-    }
+    if (!msgRes.ok) return null;
 
     const msgJson = await msgRes.json() as {
       id?: string;
@@ -322,7 +343,7 @@ async function fetchGmailMessageRecords(ctx: IntegrationConnectorContext): Promi
     };
 
     const messageId = msgJson.id;
-    if (!messageId) continue;
+    if (!messageId) return null;
 
     const internalDateMs = Number(msgJson.internalDate ?? 0);
     const internalIso = Number.isFinite(internalDateMs) && internalDateMs > 0
@@ -330,7 +351,7 @@ async function fetchGmailMessageRecords(ctx: IntegrationConnectorContext): Promi
       : null;
 
     const headers = msgJson.payload?.headers;
-    records.push({
+    return {
       externalId: messageId,
       externalUpdatedAt: internalIso,
       payload: {
@@ -342,10 +363,10 @@ async function fetchGmailMessageRecords(ctx: IntegrationConnectorContext): Promi
         snippet: msgJson.snippet ?? null,
         internalDate: msgJson.internalDate ?? null,
       },
-    });
-  }
+    } as SyncRecord;
+  });
 
-  return dedupeRecords(records);
+  return dedupeRecords(records.filter((record): record is SyncRecord => record !== null));
 }
 
 const gmailConnector: IntegrationConnector = {
