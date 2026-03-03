@@ -45,4 +45,25 @@ describe('getIntegrationConnector', () => {
     const connector = getIntegrationConnector('unknown_provider');
     expect(connector.provider).toBe('unsupported');
   });
+
+  it('email_imap syncEntities emits config checkpoint record', async () => {
+    const connector = getIntegrationConnector('email_imap');
+    const result = await connector.syncEntities({
+      organizationId: 'org-1',
+      integrationId: 'int-1',
+      provider: 'email_imap',
+      metadata: {
+        account_email: 'contact@moodly.com',
+        username: 'contact@moodly.com',
+        imap_host: 'imap.hostinger.com',
+        smtp_host: 'smtp.hostinger.com',
+      },
+    });
+
+    expect(result.processed).toBe(1);
+    expect(result.failed).toBe(0);
+    expect(result.records).toHaveLength(1);
+    expect(result.records[0].externalId).toBe('email_imap_config:contact@moodly.com');
+    expect(result.records[0].payload.sync_mode).toBe('config_only');
+  });
 });

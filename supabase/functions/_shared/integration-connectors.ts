@@ -560,11 +560,28 @@ const emailImapConnector: IntegrationConnector = {
   },
   async syncEntities(ctx) {
     const cfg = getEmailImapConfig(ctx.metadata);
+    const nowIso = new Date().toISOString();
+    const normalizedEmail = cfg.accountEmail.trim().toLowerCase();
+
+    const records: SyncRecord[] = [{
+      externalId: `email_imap_config:${normalizedEmail}`,
+      externalUpdatedAt: nowIso,
+      payload: {
+        kind: 'imap_config_checkpoint',
+        sync_mode: 'config_only',
+        account_email: cfg.accountEmail,
+        username: cfg.username,
+        imap_host: cfg.imapHost,
+        smtp_host: cfg.smtpHost,
+        synced_at: nowIso,
+      },
+    }];
+
     return {
-      processed: 0,
+      processed: records.length,
       failed: 0,
-      summary: `entities: IMAP account ${cfg.accountEmail} configured (full mailbox sync pending)`,
-      records: [],
+      summary: `entities: config-only checkpoint for ${cfg.accountEmail} (full mailbox sync pending)`,
+      records,
     };
   },
   async syncOrders() {
