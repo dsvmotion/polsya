@@ -67,7 +67,7 @@ export default function Profile() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-white flex items-center justify-center">
+      <div className="app-shell flex items-center justify-center">
         <div className="flex flex-col items-center gap-3 text-gray-500">
           <Loader2 className="h-8 w-8 animate-spin" />
           <span>Loading...</span>
@@ -170,9 +170,9 @@ export default function Profile() {
   };
 
   return (
-    <div className="min-h-screen bg-white text-gray-900">
+    <div className="app-shell">
       {/* Header */}
-      <header className="h-14 border-b border-gray-200 flex items-center justify-between px-4 md:px-6 bg-gray-50 shrink-0">
+      <header className="app-header px-4 md:px-6 shrink-0">
         <div className="flex items-center gap-4">
           <Link to="/">
             <Button variant="ghost" size="sm" className="text-gray-600 hover:text-gray-900">
@@ -185,7 +185,7 @@ export default function Profile() {
       </header>
 
       {/* Content */}
-      <main className="max-w-2xl mx-auto py-8 px-4">
+      <main className="max-w-2xl mx-auto py-6 md:py-8 px-4">
         <div className="space-y-6">
           {/* Account Information */}
           <Card className="border-gray-200 bg-white">

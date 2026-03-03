@@ -179,37 +179,37 @@ export default function PharmacyProspecting({ clientType = 'pharmacy' }: Props) 
   );
 
   return (
-    <div className="h-screen flex flex-col bg-white text-gray-900">
+    <div className="h-screen flex flex-col app-shell">
       {/* Header */}
-      <header className="h-14 border-b border-gray-200 flex items-center justify-between px-4 bg-gray-50 shrink-0">
-        <div className="flex items-center gap-4">
+      <header className="app-header px-3 md:px-4 shrink-0">
+        <div className="flex items-center gap-2 md:gap-4 min-w-0">
           <Link to="/">
-            <Button variant="ghost" size="sm" className="text-gray-600 hover:text-gray-900">
+            <Button variant="ghost" size="sm" className="text-gray-600 hover:text-gray-900 px-2 md:px-3">
               <ArrowLeft className="h-4 w-4 mr-2" />
-              Back to Dashboard
+              <span className="hidden md:inline">Back to Dashboard</span>
             </Button>
           </Link>
-          <div className="h-6 w-px bg-gray-300" />
-          <div className="flex items-center gap-2">
+          <div className="h-6 w-px bg-gray-300 hidden md:block" />
+          <div className="flex items-center gap-2 min-w-0">
             {clientType === 'pharmacy' ? (
               <Building2 className="h-5 w-5 text-gray-600" />
             ) : (
               <Leaf className="h-5 w-5 text-gray-600" />
             )}
-            <h1 className="font-semibold text-lg text-gray-900">
+            <h1 className="font-semibold text-sm md:text-lg text-gray-900 truncate">
               {`${labels.searchButton} Map`}
             </h1>
           </div>
           {hasSearched && (
-            <span className="text-xs text-gray-500 bg-gray-100 px-2 py-0.5 rounded">
+            <span className="text-xs text-gray-500 bg-gray-100 px-2 py-0.5 rounded hidden sm:inline">
               {displayedPharmacies.length} {labels.plural}
             </span>
           )}
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 shrink-0">
           {isSearching && (
-            <Button variant="outline" size="sm" onClick={handleCancelSearch} className="border-gray-300">
+            <Button variant="outline" size="sm" onClick={handleCancelSearch} className="border-gray-300 hidden sm:inline-flex">
               <XCircle className="h-4 w-4 mr-2" />
               Cancel Search
             </Button>
@@ -219,9 +219,9 @@ export default function PharmacyProspecting({ clientType = 'pharmacy' }: Props) 
       </header>
 
       {/* Main Content */}
-      <div className="flex-1 flex overflow-hidden">
+      <div className="flex-1 flex flex-col lg:flex-row overflow-hidden">
         {/* Sidebar */}
-        <div className="w-80 shrink-0 border-r border-gray-200 bg-gray-50">
+        <div className="w-full lg:w-80 shrink-0 border-b lg:border-b-0 lg:border-r border-gray-200 bg-gray-50 overflow-auto max-h-[46vh] lg:max-h-none">
           <PharmacySidebar
             pharmacies={displayedPharmacies}
             isLoading={false}
@@ -250,7 +250,7 @@ export default function PharmacyProspecting({ clientType = 'pharmacy' }: Props) 
         </div>
 
         {/* Map */}
-        <div className="flex-1 relative">
+        <div className="flex-1 relative min-h-[40vh]">
           <ProspectingMap
             pharmacies={displayedPharmacies}
             selectedPharmacyId={selectedPharmacy?.id || null}
@@ -261,7 +261,7 @@ export default function PharmacyProspecting({ clientType = 'pharmacy' }: Props) 
 
         {/* Detail Panel */}
         {selectedPharmacy && (
-          <div className="w-96 shrink-0 border-l border-gray-200 bg-gray-50">
+          <div className="w-full lg:w-96 shrink-0 border-t lg:border-t-0 lg:border-l border-gray-200 bg-gray-50 overflow-auto max-h-[44vh] lg:max-h-none">
             <PharmacyDetailPanel pharmacy={selectedPharmacy} onClose={handleCloseDetail} />
           </div>
         )}

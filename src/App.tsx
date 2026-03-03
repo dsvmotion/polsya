@@ -8,6 +8,7 @@ import { AuthProvider } from "@/contexts/AuthContext";
 import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
 import { SubscriptionGuard } from "@/components/auth/SubscriptionGuard";
 import { PageLoader } from "@/components/ui/page-loader";
+import { WorkspaceThemeBridge } from "@/components/layout/WorkspaceThemeBridge";
 import Index from "./pages/Index";
 import Login from "./pages/Login";
 import Signup from "./pages/Signup";
@@ -25,6 +26,7 @@ const queryClient = new QueryClient();
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <AuthProvider>
+      <WorkspaceThemeBridge />
       <TooltipProvider>
         <Toaster />
         <Sonner />
