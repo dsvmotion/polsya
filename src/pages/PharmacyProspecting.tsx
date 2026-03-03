@@ -1,6 +1,5 @@
 import { useState, useCallback, useMemo, useEffect } from 'react';
-import { ArrowLeft, XCircle, Building2, Leaf } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { XCircle, Building2, Leaf } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { PharmacySidebar } from '@/components/prospecting/PharmacySidebar';
 import { ProspectingMap } from '@/components/prospecting/ProspectingMap';
@@ -9,7 +8,6 @@ import { useGeographyOptions } from '@/hooks/useGeographyOptions';
 import { useProspectingSearch } from '@/hooks/useProspectingSearch';
 import { useSavePharmacies } from '@/hooks/useSavePharmacies';
 import { Pharmacy, PharmacyFilters as Filters, type ClientType } from '@/types/pharmacy';
-import { UserMenu } from '@/components/auth/UserMenu';
 import { useEntityTypes, resolveEntityTypeLabel } from '@/hooks/useEntityTypes';
 
 interface Props {
@@ -179,49 +177,38 @@ export default function PharmacyProspecting({ clientType = 'pharmacy' }: Props) 
   );
 
   return (
-    <div className="min-h-screen flex flex-col app-shell">
-      {/* Header */}
-      <header className="app-header px-3 md:px-4 shrink-0">
-        <div className="flex items-center gap-2 md:gap-4 min-w-0">
-          <Link to="/">
-            <Button variant="ghost" size="sm" className="text-gray-600 hover:text-gray-900 px-2 md:px-3">
-              <ArrowLeft className="h-4 w-4 mr-2" />
-              <span className="hidden md:inline">Back to Dashboard</span>
-            </Button>
-          </Link>
-          <div className="h-6 w-px bg-gray-300 hidden md:block" />
-          <div className="flex items-center gap-2 min-w-0">
-            {clientType === 'pharmacy' ? (
-              <Building2 className="h-5 w-5 text-gray-600" />
-            ) : (
-              <Leaf className="h-5 w-5 text-gray-600" />
-            )}
-            <h1 className="font-semibold text-sm md:text-lg text-gray-900 truncate">
-              {`${labels.searchButton} Map`}
-            </h1>
-          </div>
+    <div className="flex flex-col h-[calc(100vh-3.5rem)]">
+      {/* Sub-header */}
+      <div className="flex items-center justify-between px-3 md:px-4 py-2 border-b border-border bg-card shrink-0">
+        <div className="flex items-center gap-2 min-w-0">
+          {clientType === 'pharmacy' ? (
+            <Building2 className="h-5 w-5 text-muted-foreground" />
+          ) : (
+            <Leaf className="h-5 w-5 text-muted-foreground" />
+          )}
+          <h1 className="font-semibold text-sm md:text-base truncate">
+            {`${labels.searchButton} Map`}
+          </h1>
           {hasSearched && (
-            <span className="text-xs text-gray-500 bg-gray-100 px-2 py-0.5 rounded hidden sm:inline">
+            <span className="text-xs text-muted-foreground bg-muted px-2 py-0.5 rounded hidden sm:inline">
               {displayedPharmacies.length} {labels.plural}
             </span>
           )}
         </div>
-
         <div className="flex items-center gap-2 shrink-0">
           {isSearching && (
-            <Button variant="outline" size="sm" onClick={handleCancelSearch} className="border-gray-300 hidden sm:inline-flex">
+            <Button variant="outline" size="sm" onClick={handleCancelSearch} className="hidden sm:inline-flex">
               <XCircle className="h-4 w-4 mr-2" />
-              Cancel Search
+              Cancel
             </Button>
           )}
-          <UserMenu />
         </div>
-      </header>
+      </div>
 
       {/* Main Content */}
       <div className="flex-1 flex flex-col lg:flex-row overflow-hidden">
         {/* Sidebar */}
-        <div className="w-full lg:w-80 shrink-0 border-b lg:border-b-0 lg:border-r border-gray-200 bg-gray-50 overflow-auto max-h-[40vh] sm:max-h-[46vh] lg:max-h-none">
+        <div className="w-full lg:w-80 shrink-0 border-b lg:border-b-0 lg:border-r border-border bg-muted/50 overflow-auto max-h-[40vh] sm:max-h-[46vh] lg:max-h-none">
           <PharmacySidebar
             pharmacies={displayedPharmacies}
             isLoading={false}
@@ -261,7 +248,7 @@ export default function PharmacyProspecting({ clientType = 'pharmacy' }: Props) 
 
         {/* Detail Panel */}
         {selectedPharmacy && (
-          <div className="w-full lg:w-96 shrink-0 border-t lg:border-t-0 lg:border-l border-gray-200 bg-gray-50 overflow-auto max-h-[36vh] sm:max-h-[44vh] lg:max-h-none">
+          <div className="w-full lg:w-96 shrink-0 border-t lg:border-t-0 lg:border-l border-border bg-muted/50 overflow-auto max-h-[36vh] sm:max-h-[44vh] lg:max-h-none">
             <PharmacyDetailPanel pharmacy={selectedPharmacy} onClose={handleCloseDetail} />
           </div>
         )}

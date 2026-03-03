@@ -1,5 +1,5 @@
 import { useState, useMemo, useCallback, useEffect } from 'react';
-import { ArrowLeft, RefreshCw, Building2, Leaf, MapPin, Search } from 'lucide-react';
+import { RefreshCw, Building2, Leaf, MapPin, Search } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { usePharmacyOperations } from '@/hooks/usePharmacyOperations';
@@ -11,7 +11,6 @@ import { OperationsFiltersBar } from '@/components/operations/OperationsFiltersB
 import { PharmacyOperationsDetail } from '@/components/operations/PharmacyOperationsDetail';
 import { useQueryClient } from '@tanstack/react-query';
 import { useGeographyOptions } from '@/hooks/useGeographyOptions';
-import { UserMenu } from '@/components/auth/UserMenu';
 import { BulkImportDialog } from '@/components/operations/BulkImportDialog';
 import { PipelineSummaryCards } from '@/components/operations/PipelineSummaryCards';
 import { RiskAlertsCard } from '@/components/operations/RiskAlertsCard';
@@ -269,29 +268,20 @@ export default function PharmacyOperations({ clientType = 'pharmacy' }: Props) {
   const showEmptyState = !isLoading && totalCount === 0;
 
   return (
-    <div className="app-shell">
-      {/* Header */}
-      <header className="app-header px-3 md:px-6">
+    <div className="flex flex-col">
+      {/* Sub-header */}
+      <div className="flex items-center justify-between px-3 md:px-6 py-2 border-b border-border bg-card shrink-0">
         <div className="flex items-center gap-2 md:gap-4 min-w-0">
-          <Link to="/">
-            <Button variant="ghost" size="sm" className="text-gray-600 hover:text-gray-900 px-2 md:px-3">
-              <ArrowLeft className="h-4 w-4 mr-2" />
-              <span className="hidden md:inline">Back to Dashboard</span>
-            </Button>
-          </Link>
-          <div className="h-6 w-px bg-gray-300 hidden md:block" />
-          <div className="flex items-center gap-2 min-w-0">
-            {clientType === 'pharmacy' ? (
-              <Building2 className="h-5 w-5 text-gray-700" />
-            ) : (
-              <Leaf className="h-5 w-5 text-gray-700" />
-            )}
-            <h1 className="font-semibold text-sm md:text-lg truncate">
-              {`Saved ${entityLabelPlural}`}
-            </h1>
-          </div>
+          {clientType === 'pharmacy' ? (
+            <Building2 className="h-5 w-5 text-muted-foreground" />
+          ) : (
+            <Leaf className="h-5 w-5 text-muted-foreground" />
+          )}
+          <h1 className="font-semibold text-sm md:text-base truncate">
+            {`Saved ${entityLabelPlural}`}
+          </h1>
           {!showEmptyState && (
-            <span className="text-xs text-gray-500 bg-gray-100 px-2 py-0.5 rounded hidden sm:inline">
+            <span className="text-xs text-muted-foreground bg-muted px-2 py-0.5 rounded hidden sm:inline">
               {totalCount} {entityLabelPlural.toLowerCase()}
             </span>
           )}
@@ -304,7 +294,7 @@ export default function PharmacyOperations({ clientType = 'pharmacy' }: Props) {
             onSuccess={handleRefresh}
           />
           <Link to={clientType === 'pharmacy' ? '/prospecting/entities' : '/prospecting/entities/herbalists'}>
-            <Button variant="outline" size="sm" className="border-gray-300">
+            <Button variant="outline" size="sm">
               <MapPin className="h-4 w-4 mr-2" />
               <span className="hidden md:inline">{`Search ${entityLabelPlural}`}</span>
               <span className="md:hidden">Search</span>
@@ -315,33 +305,30 @@ export default function PharmacyOperations({ clientType = 'pharmacy' }: Props) {
             size="sm"
             onClick={handleRefresh}
             disabled={isLoading}
-            className="border-gray-300"
           >
             <RefreshCw className={`h-4 w-4 mr-2 ${isLoading ? 'animate-spin' : ''}`} />
             <span className="hidden md:inline">Refresh</span>
           </Button>
-          <UserMenu />
         </div>
-      </header>
+      </div>
 
       {showEmptyState ? (
-        /* Empty State */
         <div className="flex flex-col items-center justify-center py-24 px-4">
-          <div className="bg-gray-100 rounded-full p-6 mb-6">
+          <div className="bg-muted rounded-full p-6 mb-6">
             {clientType === 'pharmacy' ? (
-              <Building2 className="h-12 w-12 text-gray-400" />
+              <Building2 className="h-12 w-12 text-muted-foreground" />
             ) : (
-              <Leaf className="h-12 w-12 text-gray-400" />
+              <Leaf className="h-12 w-12 text-muted-foreground" />
             )}
           </div>
-          <h2 className="text-xl font-semibold text-gray-900 mb-2">
+          <h2 className="text-xl font-semibold mb-2">
             {`No Saved ${entityLabelPlural}`}
           </h2>
-          <p className="text-gray-500 text-center max-w-md mb-6">
+          <p className="text-muted-foreground text-center max-w-md mb-6">
             {`You haven't saved any ${entityLabelPlural.toLowerCase()} yet. Use Search ${entityLabelPlural} to discover and save them here for management.`}
           </p>
           <Link to={clientType === 'pharmacy' ? '/prospecting/entities' : '/prospecting/entities/herbalists'}>
-            <Button className="bg-primary hover:bg-primary/90">
+            <Button>
               <Search className="h-4 w-4 mr-2" />
               {`Go to Search ${entityLabelPlural}`}
             </Button>
@@ -350,7 +337,7 @@ export default function PharmacyOperations({ clientType = 'pharmacy' }: Props) {
       ) : (
         <>
           {/* Pipeline Summary + Risk Alerts */}
-          <div className="grid grid-cols-1 xl:grid-cols-[minmax(0,1fr)_320px] gap-4 px-3 md:px-6 py-4 border-b border-gray-200 bg-gray-50/50">
+          <div className="grid grid-cols-1 xl:grid-cols-[minmax(0,1fr)_320px] gap-4 px-3 md:px-6 py-4 border-b border-border bg-muted/30">
             <PipelineSummaryCards />
             <RiskAlertsCard
               clientType={clientType}
@@ -397,7 +384,7 @@ export default function PharmacyOperations({ clientType = 'pharmacy' }: Props) {
                 selectedPharmacyId={selectedPharmacy?.id || null}
                 onSelectPharmacy={setSelectedPharmacy}
               />
-              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 p-4 border-t border-gray-200">
+              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 p-4 border-t border-border">
                 <span className="text-xs sm:text-sm text-gray-500">
                   {totalCount > 0
                     ? `Showing ${page * pageSize + 1}-${Math.min((page + 1) * pageSize, totalCount)} of ${totalCount}`
@@ -426,7 +413,7 @@ export default function PharmacyOperations({ clientType = 'pharmacy' }: Props) {
 
             {/* Detail Panel */}
             {selectedPharmacy && (
-              <div className="w-full xl:w-[380px] 2xl:w-[420px] border-t xl:border-t-0 xl:border-l border-gray-200 bg-gray-50">
+              <div className="w-full xl:w-[380px] 2xl:w-[420px] border-t xl:border-t-0 xl:border-l border-border bg-muted/50">
                 <PharmacyOperationsDetail
                   pharmacy={selectedPharmacy}
                   onClose={() => setSelectedPharmacy(null)}

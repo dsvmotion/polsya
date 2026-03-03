@@ -4,9 +4,8 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { ArrowLeft, User, Mail, Calendar, Shield, Loader2 } from 'lucide-react';
-import { Link, Navigate } from 'react-router-dom';
-import { UserMenu } from '@/components/auth/UserMenu';
+import { User, Mail, Calendar, Shield, Loader2 } from 'lucide-react';
+import { Navigate } from 'react-router-dom';
 import { useCurrentOrganization } from '@/hooks/useOrganizationContext';
 import { evaluateBillingAccess, useBillingOverview } from '@/hooks/useBilling';
 import { useUpdateOrganizationSettings } from '@/hooks/useOrganizationSettings';
@@ -184,93 +183,59 @@ export default function Profile() {
   };
 
   return (
-    <div className="app-shell">
-      {/* Header */}
-      <header className="app-header px-4 md:px-6 shrink-0">
-        <div className="flex items-center gap-4">
-          <Link to="/">
-            <Button variant="ghost" size="sm" className="text-gray-600 hover:text-gray-900">
-              <ArrowLeft className="h-4 w-4 mr-2" />
-              Back to Dashboard
-            </Button>
-          </Link>
-        </div>
-        <UserMenu />
-      </header>
-
-      {/* Content */}
-      <main className="max-w-2xl mx-auto py-6 md:py-8 px-4">
+    <div className="p-4 md:p-6">
+      <main className="max-w-2xl mx-auto">
         <div className="space-y-6">
           {/* Account Information */}
-          <Card className="border-gray-200 bg-white">
+          <Card>
             <CardHeader>
-              <CardTitle className="text-gray-900 flex items-center gap-2">
+              <CardTitle className="flex items-center gap-2">
                 <User className="h-5 w-5" />
                 Account Information
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="space-y-2">
-                <Label className="text-gray-600">Full Name</Label>
-                <Input
-                  readOnly
-                  value={fullName}
-                  className="bg-gray-50 border-gray-200 text-gray-900"
-                />
+                <Label className="text-muted-foreground">Full Name</Label>
+                <Input readOnly value={fullName} className="bg-muted" />
               </div>
               <div className="space-y-2">
-                <Label className="text-gray-600 flex items-center gap-2">
+                <Label className="text-muted-foreground flex items-center gap-2">
                   <Mail className="h-4 w-4" />
                   Email
                 </Label>
-                <Input
-                  readOnly
-                  value={email}
-                  className="bg-gray-50 border-gray-200 text-gray-900"
-                />
+                <Input readOnly value={email} className="bg-muted" />
               </div>
               <div className="space-y-2">
-                <Label className="text-gray-600 flex items-center gap-2">
+                <Label className="text-muted-foreground flex items-center gap-2">
                   <Calendar className="h-4 w-4" />
                   Account created
                 </Label>
-                <Input
-                  readOnly
-                  value={createdAt}
-                  className="bg-gray-50 border-gray-200 text-gray-900"
-                />
+                <Input readOnly value={createdAt} className="bg-muted" />
               </div>
               <div className="space-y-2">
-                <Label className="text-gray-600 flex items-center gap-2">
+                <Label className="text-muted-foreground flex items-center gap-2">
                   <Shield className="h-4 w-4" />
                   Auth provider
                 </Label>
-                <Input
-                  readOnly
-                  value={provider}
-                  className="bg-gray-50 border-gray-200 text-gray-900"
-                />
+                <Input readOnly value={provider} className="bg-muted" />
               </div>
             </CardContent>
           </Card>
 
           {/* Session */}
-          <Card className="border-gray-200 bg-white">
+          <Card>
             <CardHeader>
-              <CardTitle className="text-gray-900">Session</CardTitle>
+              <CardTitle>Session</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="space-y-2">
-                <Label className="text-gray-600">Last sign in</Label>
-                <Input
-                  readOnly
-                  value={lastSignInAt}
-                  className="bg-gray-50 border-gray-200 text-gray-900"
-                />
+                <Label className="text-muted-foreground">Last sign in</Label>
+                <Input readOnly value={lastSignInAt} className="bg-muted" />
               </div>
               <div className="space-y-2">
-                <Label className="text-gray-600">User ID</Label>
-                <p className="text-xs text-gray-500 truncate bg-gray-50 border border-gray-200 rounded-md px-3 py-2 font-mono">
+                <Label className="text-muted-foreground">User ID</Label>
+                <p className="text-xs text-muted-foreground truncate bg-muted border border-border rounded-md px-3 py-2 font-mono">
                   {userId}
                 </p>
               </div>
@@ -278,53 +243,50 @@ export default function Profile() {
           </Card>
 
           {/* Workspace Settings */}
-          <Card className="border-gray-200 bg-white">
+          <Card>
             <CardHeader>
-              <CardTitle className="text-gray-900">Workspace Settings</CardTitle>
+              <CardTitle>Workspace Settings</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="space-y-2">
-                <Label className="text-gray-600">Workspace Name</Label>
+                <Label className="text-muted-foreground">Workspace Name</Label>
                 <Input
                   value={workspaceForm.name}
                   onChange={(e) => setWorkspaceForm((prev) => ({ ...prev, name: e.target.value }))}
                   disabled={!canManageWorkspace}
-                  className="border-gray-200 text-gray-900"
                 />
               </div>
               <div className="space-y-2">
-                <Label className="text-gray-600">Logo URL</Label>
+                <Label className="text-muted-foreground">Logo URL</Label>
                 <Input
                   placeholder="https://..."
                   value={workspaceForm.logo_url}
                   onChange={(e) => setWorkspaceForm((prev) => ({ ...prev, logo_url: e.target.value }))}
                   disabled={!canManageWorkspace}
-                  className="border-gray-200 text-gray-900"
                 />
               </div>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
                 <div className="space-y-2">
-                  <Label className="text-gray-600">Primary Color</Label>
+                  <Label className="text-muted-foreground">Primary Color</Label>
                   <div className="flex items-center gap-2">
                     <Input
                       value={workspaceForm.primary_color}
                       onChange={(e) => setWorkspaceForm((prev) => ({ ...prev, primary_color: e.target.value }))}
                       disabled={!canManageWorkspace}
-                      className="border-gray-200 text-gray-900"
                     />
                     <span
-                      className="h-8 w-8 rounded border border-gray-200"
+                      className="h-8 w-8 rounded border border-border"
                       style={{ backgroundColor: workspaceForm.primary_color }}
                     />
                   </div>
                 </div>
                 <div className="space-y-2">
-                  <Label className="text-gray-600">Locale</Label>
+                  <Label className="text-muted-foreground">Locale</Label>
                   <select
                     value={workspaceForm.locale}
                     onChange={(e) => setWorkspaceForm((prev) => ({ ...prev, locale: e.target.value }))}
                     disabled={!canManageWorkspace}
-                    className="w-full h-10 rounded-md border border-gray-200 bg-white px-3 text-sm text-gray-900"
+                    className="w-full h-10 rounded-md border border-input bg-background px-3 text-sm"
                   >
                     {LOCALE_OPTIONS.map((option) => (
                       <option key={option} value={option}>{option}</option>
@@ -332,12 +294,12 @@ export default function Profile() {
                   </select>
                 </div>
                 <div className="space-y-2">
-                  <Label className="text-gray-600">Currency</Label>
+                  <Label className="text-muted-foreground">Currency</Label>
                   <select
                     value={workspaceForm.currency}
                     onChange={(e) => setWorkspaceForm((prev) => ({ ...prev, currency: e.target.value }))}
                     disabled={!canManageWorkspace}
-                    className="w-full h-10 rounded-md border border-gray-200 bg-white px-3 text-sm text-gray-900"
+                    className="w-full h-10 rounded-md border border-input bg-background px-3 text-sm"
                   >
                     {CURRENCY_OPTIONS.map((option) => (
                       <option key={option} value={option}>{option}</option>
@@ -346,12 +308,12 @@ export default function Profile() {
                 </div>
               </div>
               <div className="space-y-2">
-                <Label className="text-gray-600">Timezone</Label>
+                <Label className="text-muted-foreground">Timezone</Label>
                 <select
                   value={workspaceForm.timezone}
                   onChange={(e) => setWorkspaceForm((prev) => ({ ...prev, timezone: e.target.value }))}
                   disabled={!canManageWorkspace}
-                  className="w-full h-10 rounded-md border border-gray-200 bg-white px-3 text-sm text-gray-900"
+                  className="w-full h-10 rounded-md border border-input bg-background px-3 text-sm"
                 >
                   {TIMEZONE_OPTIONS.map((option) => (
                     <option key={option} value={option}>{option}</option>
@@ -359,13 +321,13 @@ export default function Profile() {
                 </select>
               </div>
               <div className="space-y-2">
-                <Label className="text-gray-600">Industry Template</Label>
+                <Label className="text-muted-foreground">Industry Template</Label>
                 <div className="flex items-center gap-2">
                   <select
                     value={workspaceForm.industry_template_key}
                     onChange={(e) => setWorkspaceForm((prev) => ({ ...prev, industry_template_key: e.target.value }))}
                     disabled={!canManageWorkspace}
-                    className="w-full h-10 rounded-md border border-gray-200 bg-white px-3 text-sm text-gray-900"
+                    className="w-full h-10 rounded-md border border-input bg-background px-3 text-sm"
                   >
                     {getIndustryTemplateOptions().map((template) => (
                       <option key={template.key} value={template.key}>{template.label}</option>
@@ -374,7 +336,7 @@ export default function Profile() {
                   <Button
                     type="button"
                     variant="outline"
-                    className="shrink-0 border-gray-300"
+                    className="shrink-0"
                     disabled={!canManageWorkspace}
                     onClick={() => {
                       const template = getIndustryTemplate(workspaceForm.industry_template_key);
@@ -394,25 +356,23 @@ export default function Profile() {
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                 <div className="space-y-2">
-                  <Label className="text-gray-600">Entity Label (singular)</Label>
+                  <Label className="text-muted-foreground">Entity Label (singular)</Label>
                   <Input
                     value={workspaceForm.entity_label_singular}
                     onChange={(e) => setWorkspaceForm((prev) => ({ ...prev, entity_label_singular: e.target.value }))}
                     disabled={!canManageWorkspace}
-                    className="border-gray-200 text-gray-900"
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label className="text-gray-600">Entity Label (plural)</Label>
+                  <Label className="text-muted-foreground">Entity Label (plural)</Label>
                   <Input
                     value={workspaceForm.entity_label_plural}
                     onChange={(e) => setWorkspaceForm((prev) => ({ ...prev, entity_label_plural: e.target.value }))}
                     disabled={!canManageWorkspace}
-                    className="border-gray-200 text-gray-900"
                   />
                 </div>
               </div>
-              <p className="text-xs text-gray-500">
+              <p className="text-xs text-muted-foreground">
                 Preview: {workspaceForm.entity_label_plural || 'Entities'} pipeline in {workspaceForm.currency || 'EUR'} ({workspaceForm.locale || 'es-ES'}) using {getIndustryTemplate(workspaceForm.industry_template_key).label}.
               </p>
               <div className="flex items-center gap-2">
@@ -423,53 +383,43 @@ export default function Profile() {
                   {updateWorkspace.isPending ? 'Saving...' : 'Save Workspace Settings'}
                 </Button>
                 {!canManageWorkspace && (
-                  <span className="text-xs text-gray-500">Only admin/manager can edit workspace settings.</span>
+                  <span className="text-xs text-muted-foreground">Only admin/manager can edit workspace settings.</span>
                 )}
               </div>
             </CardContent>
           </Card>
 
           {/* Organization Billing */}
-          <Card className="border-gray-200 bg-white">
+          <Card>
             <CardHeader>
-              <CardTitle className="text-gray-900">Organization Billing</CardTitle>
+              <CardTitle>Organization Billing</CardTitle>
             </CardHeader>
             <CardContent className="space-y-3">
               <div className="space-y-2">
-                <Label className="text-gray-600">Workspace</Label>
-                <Input
-                  readOnly
-                  value={organization?.name ?? '—'}
-                  className="bg-gray-50 border-gray-200 text-gray-900"
-                />
+                <Label className="text-muted-foreground">Workspace</Label>
+                <Input readOnly value={organization?.name ?? '—'} className="bg-muted" />
               </div>
               <div className="space-y-2">
-                <Label className="text-gray-600">Subscription status</Label>
+                <Label className="text-muted-foreground">Subscription status</Label>
                 <Input
                   readOnly
                   value={`${subscriptionStatus}${billingAccess.reason === 'past_due_grace' ? ' (grace period)' : ''}`}
-                  className="bg-gray-50 border-gray-200 text-gray-900"
+                  className="bg-muted"
                 />
               </div>
-              <Link to="/billing">
-                <Button variant="outline" className="border-gray-300 text-gray-700 hover:bg-gray-100">
-                  Open Billing
-                </Button>
-              </Link>
+              <a href="/billing">
+                <Button variant="outline">Open Billing</Button>
+              </a>
             </CardContent>
           </Card>
 
           {/* Danger Zone */}
-          <Card className="border-gray-200 bg-white border-red-200">
+          <Card className="border-destructive/30">
             <CardHeader>
-              <CardTitle className="text-gray-900">Danger Zone</CardTitle>
+              <CardTitle>Danger Zone</CardTitle>
             </CardHeader>
             <CardContent>
-              <Button
-                variant="destructive"
-                onClick={() => signOut()}
-                className="bg-red-600 hover:bg-red-700 text-white"
-              >
+              <Button variant="destructive" onClick={() => signOut()}>
                 Sign Out
               </Button>
             </CardContent>

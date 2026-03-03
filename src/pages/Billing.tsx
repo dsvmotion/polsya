@@ -1,11 +1,10 @@
 import { useMemo } from 'react';
-import { Link, useSearchParams } from 'react-router-dom';
-import { ArrowLeft, CreditCard, Loader2 } from 'lucide-react';
+import { useSearchParams } from 'react-router-dom';
+import { CreditCard, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { UserMenu } from '@/components/auth/UserMenu';
 import {
   evaluateBillingAccess,
   getBillingPastDueGraceDays,
@@ -93,8 +92,8 @@ export default function Billing() {
 
   if (orgLoading || plansLoading || overviewLoading) {
     return (
-      <div className="app-shell flex items-center justify-center">
-        <div className="flex flex-col items-center gap-3 text-gray-500">
+      <div className="flex items-center justify-center min-h-[60vh]">
+        <div className="flex flex-col items-center gap-3 text-muted-foreground">
           <Loader2 className="h-8 w-8 animate-spin" />
           <span>Loading billing...</span>
         </div>
@@ -103,23 +102,11 @@ export default function Billing() {
   }
 
   return (
-    <div className="app-shell">
-      <header className="app-header px-4 md:px-6 shrink-0">
-        <div className="flex items-center gap-4">
-          <Link to="/">
-            <Button variant="ghost" size="sm" className="text-gray-600 hover:text-gray-900">
-              <ArrowLeft className="h-4 w-4 mr-2" />
-              Back to Dashboard
-            </Button>
-          </Link>
-        </div>
-        <UserMenu />
-      </header>
-
-      <main className="max-w-5xl mx-auto py-6 md:py-8 px-4 space-y-6">
+    <div className="p-4 md:p-6">
+      <main className="max-w-5xl mx-auto space-y-6">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Billing</h1>
-          <p className="text-sm text-gray-500">Manage your workspace subscription and invoices.</p>
+          <h1 className="text-2xl font-bold">Billing</h1>
+          <p className="text-sm text-muted-foreground">Manage your workspace subscription and invoices.</p>
         </div>
 
         {checkoutResult === 'success' && (
@@ -134,7 +121,7 @@ export default function Billing() {
           </div>
         )}
 
-        <Card className="border-gray-200">
+        <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <CreditCard className="h-5 w-5" />
@@ -146,10 +133,10 @@ export default function Billing() {
               <Badge variant={statusVariant(overview?.subscription?.status)}>
                 {statusLabel(overview?.subscription?.status)}
               </Badge>
-              {currentPlan && <span className="text-sm text-gray-600">{currentPlan.name}</span>}
+              {currentPlan && <span className="text-sm text-muted-foreground">{currentPlan.name}</span>}
             </div>
             {overview?.subscription?.current_period_end && (
-              <p className="text-sm text-gray-500">
+              <p className="text-sm text-muted-foreground">
                 Current period ends on {new Date(overview.subscription.current_period_end).toLocaleDateString(orgLocale, { timeZone: orgTimezone })}
               </p>
             )}
@@ -175,7 +162,7 @@ export default function Billing() {
                 {createPortal.isPending ? 'Opening portal...' : 'Open customer portal'}
               </Button>
               {!canManageBilling && (
-                <p className="text-xs text-gray-500 mt-2">Only admin/manager can manage billing.</p>
+                <p className="text-xs text-muted-foreground mt-2">Only admin/manager can manage billing.</p>
               )}
             </div>
           </CardContent>
@@ -185,7 +172,7 @@ export default function Billing() {
           {plans.map((plan) => {
             const isCurrent = currentPlan?.id === plan.id;
             return (
-              <Card key={plan.id} className="border-gray-200">
+              <Card key={plan.id}>
                 <CardHeader>
                   <CardTitle className="flex items-center justify-between">
                     <span>{plan.name}</span>
@@ -193,11 +180,11 @@ export default function Billing() {
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-3">
-                  <div className="text-2xl font-semibold text-gray-900">
+                  <div className="text-2xl font-semibold">
                     {formatMoney(plan.amount_cents, plan.currency, orgLocale)}
-                    <span className="text-sm text-gray-500">/{plan.interval}</span>
+                    <span className="text-sm text-muted-foreground">/{plan.interval}</span>
                   </div>
-                  {plan.description && <p className="text-sm text-gray-600">{plan.description}</p>}
+                  {plan.description && <p className="text-sm text-muted-foreground">{plan.description}</p>}
                   <Button
                     className="w-full"
                     onClick={() => handleSubscribe(plan.id)}
@@ -211,7 +198,7 @@ export default function Billing() {
           })}
         </div>
 
-        <Card className="border-gray-200">
+        <Card>
           <CardHeader>
             <CardTitle>Recent invoices</CardTitle>
           </CardHeader>
@@ -219,20 +206,20 @@ export default function Billing() {
             {overview?.invoices?.length ? (
               <div className="space-y-2">
                 {overview.invoices.map((invoice) => (
-                  <div key={invoice.id} className="flex items-center justify-between text-sm border-b border-gray-100 pb-2">
+                  <div key={invoice.id} className="flex items-center justify-between text-sm border-b border-border pb-2">
                     <div>
-                      <p className="font-medium text-gray-900">{invoice.invoice_number ?? invoice.stripe_invoice_id}</p>
-                      <p className="text-gray-500">{new Date(invoice.created_at).toLocaleDateString(orgLocale, { timeZone: orgTimezone })}</p>
+                      <p className="font-medium">{invoice.invoice_number ?? invoice.stripe_invoice_id}</p>
+                      <p className="text-muted-foreground">{new Date(invoice.created_at).toLocaleDateString(orgLocale, { timeZone: orgTimezone })}</p>
                     </div>
                     <div className="text-right">
-                      <p className="font-medium text-gray-900">{formatMoney(invoice.amount_due_cents, invoice.currency, orgLocale)}</p>
-                      <p className="text-gray-500 capitalize">{invoice.status}</p>
+                      <p className="font-medium">{formatMoney(invoice.amount_due_cents, invoice.currency, orgLocale)}</p>
+                      <p className="text-muted-foreground capitalize">{invoice.status}</p>
                     </div>
                   </div>
                 ))}
               </div>
             ) : (
-              <p className="text-sm text-gray-500">No invoices yet.</p>
+              <p className="text-sm text-muted-foreground">No invoices yet.</p>
             )}
           </CardContent>
         </Card>
