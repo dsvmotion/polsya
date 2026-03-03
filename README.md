@@ -43,6 +43,10 @@ npm install
 | `npm run lint` | ESLint                       |
 | `npm run test` | Tests (Vitest)               |
 | `npm run test:watch` | Tests en modo watch     |
+| `npm run check:migrations` | Verifica orden/duplicados de migraciones |
+| `npm run check:security` | Invariantes de seguridad edge/config |
+| `npm run check:observability` | Invariantes de logs estructurados en jobs |
+| `npm run check:release-ops` | Runbooks operativos obligatorios |
 
 ## Estructura del proyecto
 
@@ -103,3 +107,11 @@ supabase db push
 ## Licencia
 
 Privado / uso interno.
+
+## Operación segura
+
+Runbooks de operación y rollback:
+
+- `docs/operations/REL-05A_BACKUP_RESTORE_RUNBOOK.md`
+- `docs/operations/REL-05A_INCIDENT_RUNBOOK.md`
+- `docs/operations/REL-05A_ROLLBACK_CHECKLISTS.md`

@@ -18,6 +18,7 @@
     "check:migrations": "node scripts/check-migrations-order.mjs",
     "check:security": "node scripts/check-security-invariants.mjs",
     "check:observability": "node scripts/check-observability-invariants.mjs",
+    "check:release-ops": "node scripts/check-release-ops.mjs",
     "test:contracts": "vitest run src/test/edge-cors-contract.test.ts",
     "test:critical": "vitest run src/test/critical-flows.test.ts"
   },
