@@ -126,7 +126,7 @@ export function RiskAlertsCard({
       </div>
 
       {/* Summary badges */}
-      <div className="flex items-center gap-3 mb-3">
+      <div className="flex items-center gap-3 mb-3 flex-wrap">
         {summary.highCount > 0 && (
           <div className="flex items-center gap-1.5">
             <AlertTriangle className="h-3.5 w-3.5 text-red-500" />

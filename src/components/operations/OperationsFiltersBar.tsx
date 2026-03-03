@@ -95,7 +95,7 @@ export function OperationsFiltersBar({
   const selectedSegment = segments.find((s) => s.id === selectedSegmentId) ?? null;
 
   return (
-    <div className="px-6 py-3 border-b border-gray-200 bg-white/95 backdrop-blur space-y-2">
+    <div className="px-3 md:px-6 py-3 border-b border-gray-200 bg-white/95 backdrop-blur space-y-2">
       {/* Segment row */}
       <div className="flex items-center gap-2 flex-wrap">
         <Bookmark className="h-4 w-4 text-gray-400 shrink-0" />
@@ -103,7 +103,7 @@ export function OperationsFiltersBar({
           value={selectedSegmentId ?? '__none__'}
           onValueChange={handleSegmentChange}
         >
-          <SelectTrigger className="w-48 h-8 text-sm bg-white border-gray-300 text-gray-900">
+          <SelectTrigger className="w-full sm:w-48 h-8 text-sm bg-white border-gray-300 text-gray-900">
             <SelectValue placeholder="Saved segments" />
           </SelectTrigger>
           <SelectContent className="bg-white border-gray-200 z-50">
@@ -139,13 +139,13 @@ export function OperationsFiltersBar({
           </>
         )}
 
-        <div className="h-5 w-px bg-gray-200" />
+        <div className="hidden sm:block h-5 w-px bg-gray-200" />
 
         <Select
           value={smartSegment}
           onValueChange={(v) => onSmartSegmentChange(v as SmartSegmentKey)}
         >
-          <SelectTrigger className="w-52 h-8 text-sm bg-white border-gray-300 text-gray-900">
+          <SelectTrigger className="w-full sm:w-52 h-8 text-sm bg-white border-gray-300 text-gray-900">
             <SelectValue placeholder="Smart segment" />
           </SelectTrigger>
           <SelectContent className="bg-white border-gray-200 z-50">
@@ -174,12 +174,12 @@ export function OperationsFiltersBar({
         )}
 
         {showSaveInput && (
-          <div className="flex items-center gap-1.5">
+          <div className="flex items-center gap-1.5 w-full sm:w-auto">
             <Input
               placeholder="Segment name"
               value={segmentName}
               onChange={(e) => setSegmentName(e.target.value)}
-              className="h-7 w-40 text-xs bg-white border-gray-300"
+              className="h-7 w-full sm:w-40 text-xs bg-white border-gray-300"
               onKeyDown={(e) => e.key === 'Enter' && handleSave()}
               autoFocus
             />
@@ -196,7 +196,7 @@ export function OperationsFiltersBar({
       {/* Filters row */}
       <div className="flex items-center gap-3 flex-wrap">
         {/* Search */}
-        <div className="relative w-64">
+        <div className="relative w-full sm:w-64">
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
           <Input
             placeholder="Search pharmacies..."
@@ -216,7 +216,7 @@ export function OperationsFiltersBar({
             city: ''
           })}
         >
-          <SelectTrigger className="w-40 bg-white border-gray-300 text-gray-900">
+          <SelectTrigger className="w-full sm:w-40 bg-white border-gray-300 text-gray-900">
             <SelectValue placeholder="Country" />
           </SelectTrigger>
           <SelectContent className="bg-white border-gray-200 max-h-60 z-50">
@@ -239,7 +239,7 @@ export function OperationsFiltersBar({
           })}
           disabled={!filters.country}
         >
-          <SelectTrigger className={`w-40 bg-white border-gray-300 text-gray-900 ${!filters.country ? 'opacity-50' : ''}`}>
+          <SelectTrigger className={`w-full sm:w-40 bg-white border-gray-300 text-gray-900 ${!filters.country ? 'opacity-50' : ''}`}>
             <SelectValue placeholder={filters.country ? (provinces.length > 0 ? 'Province' : 'No provinces') : 'Select Country'} />
           </SelectTrigger>
           <SelectContent className="bg-white border-gray-200 max-h-60 z-50">
@@ -258,7 +258,7 @@ export function OperationsFiltersBar({
           onValueChange={(value) => onFiltersChange({ ...filters, city: value === 'all' ? '' : value })}
           disabled={!filters.province}
         >
-          <SelectTrigger className={`w-40 bg-white border-gray-300 text-gray-900 ${!filters.province ? 'opacity-50' : ''}`}>
+          <SelectTrigger className={`w-full sm:w-40 bg-white border-gray-300 text-gray-900 ${!filters.province ? 'opacity-50' : ''}`}>
             <SelectValue placeholder={filters.province ? (cities.length > 0 ? 'City' : 'No cities') : 'Select Province'} />
           </SelectTrigger>
           <SelectContent className="bg-white border-gray-200 max-h-60 z-50">
@@ -276,7 +276,7 @@ export function OperationsFiltersBar({
           value={filters.commercialStatus}
           onValueChange={(value) => onFiltersChange({ ...filters, commercialStatus: value as OperationsFilters['commercialStatus'] })}
         >
-          <SelectTrigger className="w-40 bg-white border-gray-300 text-gray-900">
+          <SelectTrigger className="w-full sm:w-40 bg-white border-gray-300 text-gray-900">
             <SelectValue placeholder="Status" />
           </SelectTrigger>
           <SelectContent className="bg-white border-gray-200 z-50">
@@ -294,7 +294,7 @@ export function OperationsFiltersBar({
           value={filters.paymentStatus}
           onValueChange={(value) => onFiltersChange({ ...filters, paymentStatus: value as OperationsFilters['paymentStatus'] })}
         >
-          <SelectTrigger className="w-36 bg-white border-gray-300 text-gray-900">
+          <SelectTrigger className="w-full sm:w-36 bg-white border-gray-300 text-gray-900">
             <SelectValue placeholder="Payment" />
           </SelectTrigger>
           <SelectContent className="bg-white border-gray-200 z-50">
