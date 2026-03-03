@@ -53,6 +53,7 @@ CI enforcement:
 ### Integrations
 - Connections, jobs, runs, idempotent sync object foundation.
 - Retry/backoff + dead-letter handling in sync job processor.
+- Org-scoped integration health metrics export (`mode=metrics`) with queue depth, stuck queue, and p95/avg duration summary.
 - OAuth foundation: Gmail + Outlook.
 - Custom email credential path: IMAP/SMTP secure vault path via edge function.
 - Email marketing key management foundation present.
@@ -66,7 +67,7 @@ CI enforcement:
 
 - `npm run lint` ✅
 - `npm run typecheck` ✅
-- `npm run test -- --run` ✅ (`216` tests)
+- `npm run test -- --run` ✅ (`256` tests)
 - `npm run build` ✅
 - All invariant checks listed above ✅
 
@@ -79,9 +80,7 @@ Priority order for next delivery:
    - Validate grace-period and entitlement matrix for all premium screens/routes/functions end-to-end.
 3. **QA-03A E2E expansion**
    - Add browser-level E2E for: subscription inactive, role denial paths, job retry/dead-letter transitions.
-4. **OBS-02A metrics depth**
-   - Add p95 and queue-depth style metrics export (beyond structured logs).
-5. **REL-05A operational drills**
+4. **REL-05A operational drills**
    - Execute and record one restore drill + one incident drill against staging.
 
 ## 6) Audit Entry Points

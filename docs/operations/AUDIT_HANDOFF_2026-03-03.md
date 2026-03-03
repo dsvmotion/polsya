@@ -4,6 +4,8 @@ Quick handoff for external review/audit after the latest stabilization wave on b
 
 ## 1) Recent commits (latest first)
 
+- `0227a53` — `test(obs): cover integration retry backoff and health metrics contracts`
+- `36aa84e` — `feat(obs): export org-scoped integration health metrics via sync processor`
 - `922be6d` — `chore(test): suppress known react-router future flag warnings in test output`
 - `02208b5` — `chore(ci): enforce premium route subscription guards contract`
 - `b5dc60f` — `test(bill): cover frontend subscription guard redirects and loading states`
@@ -34,6 +36,9 @@ Quick handoff for external review/audit after the latest stabilization wave on b
 - CI contract gates:
   - Added `check:design-system` and `check:integration-contracts`.
   - Added `check:route-guards` to guarantee premium routes remain subscription-guarded.
+- Observability depth:
+  - Integration job processor now exports org-scoped health metrics (`mode=metrics`) including queue depth, stuck queued count, dead-letter count, p95/avg duration, and per-provider breakdown.
+  - Shared metrics/retry helper module has direct test coverage.
 
 ## 3) Canonical verification commands
 
@@ -55,7 +60,7 @@ npm run build
 
 ## 4) Expected current baseline
 
-- Tests: `239` passing.
+- Tests: `256` passing.
 - Lint: clean.
 - Build: successful with split vendor chunks.
 - Security/migration/observability/release-ops/design-system/integration-contract checks: all green.
