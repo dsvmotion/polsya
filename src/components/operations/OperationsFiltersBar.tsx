@@ -95,7 +95,7 @@ export function OperationsFiltersBar({
   const selectedSegment = segments.find((s) => s.id === selectedSegmentId) ?? null;
 
   return (
-    <div className="px-6 py-3 border-b border-gray-200 bg-white space-y-2">
+    <div className="px-6 py-3 border-b border-gray-200 bg-white/95 backdrop-blur space-y-2">
       {/* Segment row */}
       <div className="flex items-center gap-2 flex-wrap">
         <Bookmark className="h-4 w-4 text-gray-400 shrink-0" />

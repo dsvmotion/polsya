@@ -486,9 +486,9 @@ export function PharmacyOperationsDetail({ pharmacy, onClose, onStatusUpdate }: 
   const statusColor = STATUS_COLORS[status];
 
   return (
-    <div className="h-[calc(100vh-56px)] flex flex-col">
+    <div className="h-[calc(100vh-56px)] flex flex-col surface-card rounded-none border-0 2xl:border-l 2xl:border-gray-200">
       {/* Header with Photo */}
-      <div className="border-b border-gray-200">
+      <div className="border-b border-gray-200 bg-white">
         {/* Photo Section */}
         <div className="h-32 bg-gray-100 relative overflow-hidden">
           {photoUrl ? (

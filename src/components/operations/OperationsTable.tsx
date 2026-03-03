@@ -1,7 +1,8 @@
-import { ArrowUpDown, ArrowUp, ArrowDown, FileText, Loader2 } from 'lucide-react';
+import { ArrowUpDown, ArrowUp, ArrowDown, FileText } from 'lucide-react';
 import { PharmacyWithOrders, SortField, SortDirection } from '@/types/operations';
 import { PharmacyStatus, STATUS_LABELS, STATUS_COLORS } from '@/types/pharmacy';
 import { cn } from '@/lib/utils';
+import { EmptyState, LoadingState } from '@/components/ui/view-states';
 
 interface OperationsTableProps {
   pharmacies: PharmacyWithOrders[];
@@ -81,19 +82,22 @@ export function OperationsTable({
 }: OperationsTableProps) {
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center py-16">
-        <Loader2 className="h-6 w-6 animate-spin text-gray-400" />
-      </div>
+      <LoadingState
+        title="Loading accounts..."
+        description="Applying filters and sorting."
+        className="mx-4 mt-4"
+      />
     );
   }
 
   if (pharmacies.length === 0) {
     return (
-      <div className="flex flex-col items-center justify-center py-16 text-gray-500">
-        <FileText className="h-12 w-12 mb-4 text-gray-300" />
-        <p className="font-medium">No pharmacies found</p>
-        <p className="text-sm text-gray-400 mt-1">Adjust your filters or add more pharmacies</p>
-      </div>
+      <EmptyState
+        title="No accounts found"
+        description="Adjust filters or import more records."
+        icon={FileText}
+        className="mx-4 mt-4"
+      />
     );
   }
 

@@ -63,6 +63,15 @@
     --sidebar-ring: 217 91% 53%;
 
     --workspace-primary-hex: #2563eb;
+
+    /* UX-02A semantic surface tokens */
+    --surface-0: 0 0% 100%;
+    --surface-1: 214 28% 97%;
+    --surface-border: 214 22% 86%;
+    --state-neutral-bg: 214 28% 97%;
+    --state-success-bg: 142 76% 96%;
+    --state-warning-bg: 44 94% 94%;
+    --state-danger-bg: 0 86% 97%;
   }
 
   /* Dark mode - keeping for future toggle */
@@ -125,6 +134,43 @@
   .app-panel {
     @apply rounded-xl border border-gray-200 bg-white;
     box-shadow: var(--shadow-card);
+  }
+
+  .surface-card {
+    @apply rounded-xl border border-gray-200 bg-white;
+    box-shadow: var(--shadow-card);
+  }
+
+  .surface-card-header {
+    @apply px-4 py-3 border-b border-gray-200 flex items-center justify-between gap-3;
+  }
+
+  .surface-card-body {
+    @apply p-4;
+  }
+
+  .metric-card {
+    @apply rounded-lg border border-gray-200 bg-white px-4 py-3;
+  }
+
+  .state-panel {
+    @apply rounded-lg border border-gray-200 bg-gray-50 px-4 py-6 text-center;
+  }
+
+  .state-panel-neutral {
+    background-color: hsl(var(--state-neutral-bg));
+  }
+
+  .state-panel-success {
+    background-color: hsl(var(--state-success-bg));
+  }
+
+  .state-panel-warning {
+    background-color: hsl(var(--state-warning-bg));
+  }
+
+  .state-panel-danger {
+    background-color: hsl(var(--state-danger-bg));
   }
 
   .glass-card {

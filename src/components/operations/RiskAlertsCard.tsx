@@ -6,6 +6,7 @@ import type { RiskLevel, RiskAlert, RiskReason } from '@/types/operations';
 import type { ClientType } from '@/types/pharmacy';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
+import { EmptyState, LoadingState } from '@/components/ui/view-states';
 
 const LEVEL_CONFIG: Record<RiskLevel, { bg: string; text: string; dot: string; label: string }> = {
   high: { bg: 'bg-red-50', text: 'text-red-700', dot: 'bg-red-500', label: 'High' },
@@ -87,25 +88,23 @@ export function RiskAlertsCard({
 
   if (isLoading) {
     return (
-      <div className="border border-gray-200 rounded-lg bg-white p-4 animate-pulse">
-        <div className="h-4 w-28 bg-gray-200 rounded mb-3" />
-        <div className="space-y-2">
-          <div className="h-3 w-full bg-gray-100 rounded" />
-          <div className="h-3 w-3/4 bg-gray-100 rounded" />
-        </div>
-      </div>
+      <LoadingState
+        title="Loading risk alerts..."
+        description="Evaluating client health signals."
+        className="h-full"
+      />
     );
   }
 
   if (summary.totalAtRisk === 0) {
     return (
-      <div className="border border-gray-200 rounded-lg bg-white p-4 flex items-center gap-3">
-        <ShieldCheck className="h-5 w-5 text-green-500 shrink-0" />
-        <div>
-          <p className="text-sm font-medium text-gray-900">No risk alerts</p>
-          <p className="text-xs text-gray-500">All clients are in good standing</p>
-        </div>
-      </div>
+      <EmptyState
+        title="No risk alerts"
+        description="All clients are in good standing."
+        icon={ShieldCheck}
+        tone="success"
+        className="h-full"
+      />
     );
   }
 
@@ -120,7 +119,7 @@ export function RiskAlertsCard({
   const top5 = alerts.slice(0, 5);
 
   return (
-    <div className="border border-gray-200 rounded-lg bg-white p-4">
+    <div className="surface-card p-4">
       <div className="flex items-center gap-2 mb-3">
         <ShieldAlert className="h-4 w-4 text-red-500" />
         <h3 className="text-sm font-semibold text-gray-900">Risk Alerts</h3>
