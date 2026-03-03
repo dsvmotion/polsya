@@ -1,49 +1,80 @@
-import type { Pharmacy } from '@/types/pharmacy';
 import type { BusinessEntity } from '@/types/entity';
 
-export function toBusinessEntity(pharmacy: Pharmacy): BusinessEntity {
+interface EntityRow {
+  id: string;
+  organization_id?: string;
+  entity_type_id?: string | null;
+  google_place_id: string | null;
+  name: string;
+  address: string | null;
+  city: string | null;
+  province: string | null;
+  country: string | null;
+  phone: string | null;
+  email: string | null;
+  website: string | null;
+  opening_hours: string[] | null;
+  lat: number;
+  lng: number;
+  commercial_status: string;
+  notes: string | null;
+  google_data: Record<string, unknown> | null;
+  created_at: string;
+  updated_at: string;
+  client_type: string;
+  saved_at: string | null;
+  postal_code?: string | null;
+  autonomous_community?: string | null;
+  secondary_phone?: string | null;
+  activity?: string | null;
+  subsector?: string | null;
+  legal_form?: string | null;
+  sub_locality?: string | null;
+}
+
+export function toBusinessEntity(row: EntityRow): BusinessEntity {
   return {
-    id: pharmacy.id,
-    entityTypeId: pharmacy.entity_type_id ?? null,
-    externalId: pharmacy.google_place_id,
-    name: pharmacy.name,
-    address: pharmacy.address,
-    city: pharmacy.city,
-    region: pharmacy.province,
-    country: pharmacy.country,
-    phone: pharmacy.phone,
-    email: pharmacy.email,
-    website: pharmacy.website,
-    lat: pharmacy.lat,
-    lng: pharmacy.lng,
-    status: pharmacy.commercial_status,
-    typeKey: pharmacy.client_type,
-    notes: pharmacy.notes,
-    sourceData: pharmacy.google_data,
-    createdAt: pharmacy.created_at,
-    updatedAt: pharmacy.updated_at,
-    savedAt: pharmacy.saved_at,
+    id: row.id,
+    entityTypeId: row.entity_type_id ?? null,
+    externalId: row.google_place_id,
+    name: row.name,
+    address: row.address,
+    city: row.city,
+    region: row.province,
+    country: row.country,
+    phone: row.phone,
+    email: row.email,
+    website: row.website,
+    lat: row.lat,
+    lng: row.lng,
+    status: row.commercial_status as BusinessEntity['status'],
+    typeKey: row.client_type,
+    notes: row.notes,
+    sourceData: row.google_data,
+    createdAt: row.created_at,
+    updatedAt: row.updated_at,
+    savedAt: row.saved_at,
     attributes: {
-      postalCode: pharmacy.postal_code ?? null,
-      autonomousCommunity: pharmacy.autonomous_community ?? null,
-      secondaryPhone: pharmacy.secondary_phone ?? null,
-      activity: pharmacy.activity ?? null,
-      subsector: pharmacy.subsector ?? null,
-      legalForm: pharmacy.legal_form ?? null,
-      subLocality: pharmacy.sub_locality ?? null,
-      openingHours: pharmacy.opening_hours ?? null,
+      postalCode: row.postal_code ?? null,
+      autonomousCommunity: row.autonomous_community ?? null,
+      secondaryPhone: row.secondary_phone ?? null,
+      activity: row.activity ?? null,
+      subsector: row.subsector ?? null,
+      legalForm: row.legal_form ?? null,
+      subLocality: row.sub_locality ?? null,
+      openingHours: row.opening_hours ?? null,
     },
   };
 }
 
-export function toBusinessEntities(pharmacies: readonly Pharmacy[]): BusinessEntity[] {
-  return pharmacies.map(toBusinessEntity);
+export function toBusinessEntities(rows: readonly EntityRow[]): BusinessEntity[] {
+  return rows.map(toBusinessEntity);
 }
 
-export function toLegacyPharmacyPatch(
+export function toLegacyPatch(
   patch: Partial<Pick<BusinessEntity, 'status' | 'notes' | 'email' | 'phone' | 'website'>>,
-): Partial<Pick<Pharmacy, 'commercial_status' | 'notes' | 'email' | 'phone' | 'website'>> {
-  const legacyPatch: Partial<Pick<Pharmacy, 'commercial_status' | 'notes' | 'email' | 'phone' | 'website'>> = {};
+): Record<string, unknown> {
+  const legacyPatch: Record<string, unknown> = {};
 
   if (patch.status !== undefined) legacyPatch.commercial_status = patch.status;
   if (patch.notes !== undefined) legacyPatch.notes = patch.notes;
@@ -53,3 +84,6 @@ export function toLegacyPharmacyPatch(
 
   return legacyPatch;
 }
+
+/** @deprecated Use toLegacyPatch */
+export const toLegacyPharmacyPatch = toLegacyPatch;

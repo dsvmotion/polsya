@@ -1,8 +1,10 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { DetailedOrder, PharmacyWithOrders, PharmacyDocument } from '@/types/operations';
-import { Pharmacy, type ClientType } from '@/types/pharmacy';
+import { type BusinessEntity } from '@/types/entity';
+import { type ClientType } from '@/types/pharmacy';
 import { buildEdgeFunctionHeaders } from '@/lib/edge-function-headers';
+import { toBusinessEntities } from '@/services/entityService';
 
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
 
@@ -103,24 +105,24 @@ export function usePharmacyOperations(
   const dbColumn = DB_SORT_COLUMNS[sortField];
 
   const {
-    data: pageData = { pharmacies: [] as Pharmacy[], totalCount: 0 },
+    data: pageData = { pharmacies: [] as BusinessEntity[], totalCount: 0 },
     isLoading: pharmaciesLoading,
     error,
     refetch,
   } = useQuery({
     queryKey: ['pharmacy-operations', filters ?? {}, page, pageSize, sortField, sortDirection],
-    queryFn: async (): Promise<{ pharmacies: Pharmacy[]; totalCount: number }> => {
+    queryFn: async (): Promise<{ pharmacies: BusinessEntity[]; totalCount: number }> => {
       let query = supabase
         .from('pharmacies')
         .select('*', { count: 'exact' })
         .not('saved_at', 'is', null);
 
-      if (filters?.clientType) query = query.eq('client_type', filters.clientType);
+      if (filters?.clientType) query = query.eq('client_type', filters.clientType as never);
       if (filters?.country) query = query.ilike('country', filters.country);
       if (filters?.province) query = query.ilike('province', filters.province);
       if (filters?.city) query = query.ilike('city', filters.city);
       if (filters?.commercialStatus && filters.commercialStatus !== 'all') {
-        query = query.eq('commercial_status', filters.commercialStatus as Pharmacy['commercial_status']);
+        query = query.eq('commercial_status', filters.commercialStatus as never);
       }
       if (filters?.search) {
         const term = filters.search.replace(/,/g, ' ');
@@ -133,9 +135,6 @@ export function usePharmacyOperations(
         query = query.order('name', { ascending: true });
       }
 
-      // paymentStatus is derived from WooCommerce data after mapping, so we
-      // cannot filter it in SQL. When active, fetch the full result set and
-      // paginate in memory after the filter is applied.
       if (!hasPaymentFilter) {
         query = query.range(page * pageSize, (page + 1) * pageSize - 1);
       }
@@ -144,7 +143,7 @@ export function usePharmacyOperations(
       if (error) throw error;
 
       return {
-        pharmacies: (data || []) as Pharmacy[],
+        pharmacies: toBusinessEntities((data || []) as never[]),
         totalCount: count ?? 0,
       };
     },
@@ -180,7 +179,7 @@ export function usePharmacyOperations(
   let pharmaciesWithOrders: PharmacyWithOrders[] = pageData.pharmacies.map((pharmacy) => {
     let pharmacyOrders: DetailedOrder[] = [];
 
-    if (pharmacy.commercial_status === 'client') {
+    if (pharmacy.status === 'client') {
       pharmacyOrders = orders.filter(order => {
         const orderName = order.customerName.toLowerCase().trim();
         const pharmacyName = pharmacy.name.toLowerCase().trim();
@@ -212,12 +211,12 @@ export function usePharmacyOperations(
       name: pharmacy.name,
       address: pharmacy.address,
       city: pharmacy.city,
-      province: pharmacy.province,
+      province: pharmacy.region,
       country: pharmacy.country,
-      clientType: pharmacy.client_type || 'pharmacy',
+      clientType: pharmacy.typeKey || 'pharmacy',
       phone: pharmacy.phone,
       email: pharmacy.email,
-      commercialStatus: pharmacy.commercial_status,
+      commercialStatus: pharmacy.status,
       notes: pharmacy.notes,
       orders: sortedOrders,
       lastOrder,
@@ -227,13 +226,13 @@ export function usePharmacyOperations(
       documentCount,
       lat: pharmacy.lat,
       lng: pharmacy.lng,
-      savedAt: pharmacy.saved_at ?? null,
-      postal_code: pharmacy.postal_code ?? null,
-      autonomous_community: pharmacy.autonomous_community ?? null,
-      secondary_phone: pharmacy.secondary_phone ?? null,
-      activity: pharmacy.activity ?? null,
-      subsector: pharmacy.subsector ?? null,
-      legal_form: pharmacy.legal_form ?? null,
+      savedAt: pharmacy.savedAt ?? null,
+      postal_code: pharmacy.attributes.postalCode ?? null,
+      autonomous_community: pharmacy.attributes.autonomousCommunity ?? null,
+      secondary_phone: pharmacy.attributes.secondaryPhone ?? null,
+      activity: pharmacy.attributes.activity ?? null,
+      subsector: pharmacy.attributes.subsector ?? null,
+      legal_form: pharmacy.attributes.legalForm ?? null,
     };
   });
 
@@ -262,8 +261,8 @@ export function usePharmacyOperations(
 export function usePharmaciesWithOrders(savedOnly: boolean = true, clientType?: ClientType) {
   const { data: pharmacies = [], isLoading: pharmaciesLoading } = useQuery({
     queryKey: ['pharmacies', savedOnly ? 'saved' : 'all', clientType ?? 'all'],
-    queryFn: async (): Promise<Pharmacy[]> => {
-      const allData: Pharmacy[] = [];
+    queryFn: async (): Promise<BusinessEntity[]> => {
+      const allData: BusinessEntity[] = [];
       const pageSize = 1000;
       let from = 0;
       let hasMore = true;
@@ -281,7 +280,7 @@ export function usePharmaciesWithOrders(savedOnly: boolean = true, clientType?: 
           query = query.not('saved_at', 'is', null);
         }
         if (clientType) {
-          query = query.eq('client_type', clientType);
+          query = query.eq('client_type', clientType as never);
         }
 
         const { data, error } = await query;
@@ -292,7 +291,7 @@ export function usePharmaciesWithOrders(savedOnly: boolean = true, clientType?: 
         }
 
         if (data && data.length > 0) {
-          allData.push(...(data as Pharmacy[]));
+          allData.push(...toBusinessEntities(data as never[]));
           from += pageSize;
           hasMore = data.length === pageSize;
         } else {
@@ -308,40 +307,28 @@ export function usePharmaciesWithOrders(savedOnly: boolean = true, clientType?: 
   const { data: documents = [], isLoading: docsLoading } = usePharmacyDocuments();
 
   const pharmaciesWithOrders: PharmacyWithOrders[] = pharmacies.map((pharmacy) => {
-    // STRICT matching: Only match orders if the pharmacy is marked as 'client'
-    // AND the order customer name matches the pharmacy name with high confidence
     let pharmacyOrders: DetailedOrder[] = [];
     
-    // Only attempt to match orders for pharmacies that are clients
-    // Non-contacted and contacted pharmacies should NEVER have orders
-    if (pharmacy.commercial_status === 'client') {
+    if (pharmacy.status === 'client') {
       pharmacyOrders = orders.filter(order => {
         const orderName = order.customerName.toLowerCase().trim();
         const pharmacyName = pharmacy.name.toLowerCase().trim();
         
-        // Require strong match:
-        // 1. Exact match, OR
-        // 2. Order name starts with pharmacy name (or vice versa) with at least 80% length overlap
         if (orderName === pharmacyName) return true;
         
-        // Check if one is a significant substring of the other
         const minLength = Math.min(orderName.length, pharmacyName.length);
         const maxLength = Math.max(orderName.length, pharmacyName.length);
         
-        // Only match if the shorter string is at least 80% of the longer one
         if (minLength / maxLength < 0.8) return false;
         
-        // And one must contain the other
         return orderName.includes(pharmacyName) || pharmacyName.includes(orderName);
       });
     }
 
-    // Sort orders by date (newest first)
     const sortedOrders = [...pharmacyOrders].sort(
       (a, b) => new Date(b.dateCreated).getTime() - new Date(a.dateCreated).getTime()
     );
 
-    // Only set lastOrder if there are REAL matched orders
     const lastOrder = sortedOrders.length > 0 ? sortedOrders[0] : null;
     const totalRevenue = pharmacyOrders.reduce((sum, o) => sum + o.amount, 0);
 
@@ -355,12 +342,12 @@ export function usePharmaciesWithOrders(savedOnly: boolean = true, clientType?: 
       name: pharmacy.name,
       address: pharmacy.address,
       city: pharmacy.city,
-      province: pharmacy.province,
+      province: pharmacy.region,
       country: pharmacy.country,
-      clientType: pharmacy.client_type || 'pharmacy',
+      clientType: pharmacy.typeKey || 'pharmacy',
       phone: pharmacy.phone,
       email: pharmacy.email,
-      commercialStatus: pharmacy.commercial_status,
+      commercialStatus: pharmacy.status,
       notes: pharmacy.notes,
       orders: sortedOrders,
       lastOrder,
@@ -370,13 +357,13 @@ export function usePharmaciesWithOrders(savedOnly: boolean = true, clientType?: 
       documentCount,
       lat: pharmacy.lat,
       lng: pharmacy.lng,
-      savedAt: pharmacy.saved_at ?? null,
-      postal_code: pharmacy.postal_code ?? null,
-      autonomous_community: pharmacy.autonomous_community ?? null,
-      secondary_phone: pharmacy.secondary_phone ?? null,
-      activity: pharmacy.activity ?? null,
-      subsector: pharmacy.subsector ?? null,
-      legal_form: pharmacy.legal_form ?? null,
+      savedAt: pharmacy.savedAt ?? null,
+      postal_code: pharmacy.attributes.postalCode ?? null,
+      autonomous_community: pharmacy.attributes.autonomousCommunity ?? null,
+      secondary_phone: pharmacy.attributes.secondaryPhone ?? null,
+      activity: pharmacy.attributes.activity ?? null,
+      subsector: pharmacy.attributes.subsector ?? null,
+      legal_form: pharmacy.attributes.legalForm ?? null,
     };
   });
 

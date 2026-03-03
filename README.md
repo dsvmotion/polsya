@@ -43,6 +43,14 @@ npm install
 | `npm run lint` | ESLint                       |
 | `npm run test` | Tests (Vitest)               |
 | `npm run test:watch` | Tests en modo watch     |
+| `npm run check:migrations` | Verifica orden/duplicados de migraciones |
+| `npm run check:security` | Invariantes de seguridad edge/config |
+| `npm run check:integration-contracts` | Contratos de providers/targets entre frontend y conectores |
+| `npm run check:route-guards` | Invariantes de guards en rutas premium/billing |
+| `npm run check:billing-webhook` | Contrato Stripe webhook (firma, idempotencia, lifecycle) |
+| `npm run check:observability` | Invariantes de logs estructurados en jobs |
+| `npm run check:design-system` | Invariantes de patrones UI/tokens compartidos |
+| `npm run check:release-ops` | Runbooks operativos obligatorios |
 
 ## Estructura del proyecto
 
@@ -103,3 +111,11 @@ supabase db push
 ## Licencia
 
 Privado / uso interno.
+
+## Operación segura
+
+Runbooks de operación y rollback:
+
+- `docs/operations/REL-05A_BACKUP_RESTORE_RUNBOOK.md`
+- `docs/operations/REL-05A_INCIDENT_RUNBOOK.md`
+- `docs/operations/REL-05A_ROLLBACK_CHECKLISTS.md`

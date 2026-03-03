@@ -50,6 +50,20 @@ export const PROVIDER_METADATA_SCHEMA: Record<IntegrationProvider, MetadataField
   custom_api: [
     { key: 'base_url', label: 'Base URL', placeholder: 'https://api.example.com', required: true, type: 'url' },
   ],
+  hubspot: [],
+  salesforce: [
+    { key: 'instance_url', label: 'Instance URL', placeholder: 'https://yourorg.my.salesforce.com', required: false, type: 'url' },
+  ],
+  pipedrive: [],
+  prestashop: [
+    { key: 'store_url', label: 'Store URL', placeholder: 'https://myshop.com', required: true, type: 'url' },
+  ],
+  whatsapp: [
+    { key: 'phone_number_id', label: 'Phone Number ID', placeholder: '1234567890', required: true, type: 'text' },
+  ],
+  slack: [
+    { key: 'channel_id', label: 'Channel ID', placeholder: 'C01234ABCDE', required: false, type: 'text' },
+  ],
 };
 
 export interface ValidationResult {

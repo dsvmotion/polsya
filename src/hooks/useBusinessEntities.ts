@@ -1,17 +1,9 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import type { BusinessEntity, EntityTypeKey } from '@/types/entity';
-import type { ClientType, Pharmacy } from '@/types/pharmacy';
-import { toBusinessEntity, toBusinessEntities, toLegacyPharmacyPatch } from '@/services/entityService';
-
-function toLegacyClientType(typeKey?: EntityTypeKey): ClientType | undefined {
-  if (typeKey === 'pharmacy' || typeKey === 'herbalist') return typeKey;
-  return undefined;
-}
+import { toBusinessEntity, toBusinessEntities, toLegacyPatch } from '@/services/entityService';
 
 export function useBusinessEntities(entityTypeKey?: EntityTypeKey) {
-  const legacyType = toLegacyClientType(entityTypeKey);
-
   return useQuery<BusinessEntity[]>({
     queryKey: ['business-entities', entityTypeKey ?? 'all'],
     queryFn: async () => {
@@ -20,14 +12,14 @@ export function useBusinessEntities(entityTypeKey?: EntityTypeKey) {
         .select('*')
         .order('name');
 
-      if (legacyType) {
-        query = query.eq('client_type', legacyType);
+      if (entityTypeKey) {
+        query = query.eq('client_type', entityTypeKey as never);
       }
 
       const { data, error } = await query;
       if (error) throw error;
 
-      return toBusinessEntities((data ?? []) as Pharmacy[]);
+      return toBusinessEntities((data ?? []) as never[]);
     },
   });
 }
@@ -46,7 +38,7 @@ export function useBusinessEntity(id: string | null) {
         .single();
 
       if (error) throw error;
-      return toBusinessEntity(data as Pharmacy);
+      return toBusinessEntity(data as never);
     },
   });
 }
@@ -63,13 +55,13 @@ export function useUpdateBusinessEntity() {
     mutationFn: async (input: UpdateBusinessEntityInput) => {
       const { data, error } = await supabase
         .from('pharmacies')
-        .update(toLegacyPharmacyPatch(input.updates))
+        .update(toLegacyPatch(input.updates))
         .eq('id', input.id)
         .select('*')
         .single();
 
       if (error) throw error;
-      return toBusinessEntity(data as Pharmacy);
+      return toBusinessEntity(data as never);
     },
     onSuccess: (entity) => {
       queryClient.invalidateQueries({ queryKey: ['business-entities'] });

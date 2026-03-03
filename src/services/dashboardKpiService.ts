@@ -3,7 +3,10 @@ import { summarizePipeline, type OpportunityInput } from '@/services/pipelineSer
 export interface PharmacyRow {
   id: string;
   commercial_status: string;
-  client_type: string;
+  /** DB column name - Supabase returns this */
+  client_type?: string;
+  /** BusinessEntity field - use when available */
+  typeKey?: string;
 }
 
 export interface OpportunityRow extends OpportunityInput {
@@ -34,13 +37,19 @@ const CONVERSION_STATUSES = new Set([
 
 export const STALE_THRESHOLD_MS = 60 * 24 * 60 * 60 * 1000;
 
-export function filterPharmaciesByClientType(
-  pharmacies: readonly PharmacyRow[],
-  clientType: string,
-): PharmacyRow[] {
-  if (clientType === 'all') return pharmacies as PharmacyRow[];
-  return pharmacies.filter((p) => p.client_type === clientType);
+/** Row that has a type identifier (typeKey on BusinessEntity or client_type from DB) */
+type EntityTypeRow = { typeKey?: string; client_type?: string };
+
+export function filterEntitiesByTypeKey<T extends EntityTypeRow>(
+  entities: readonly T[],
+  entityTypeKey: string,
+): T[] {
+  if (entityTypeKey === 'all') return entities as T[];
+  return entities.filter((e) => (e.typeKey ?? e.client_type) === entityTypeKey);
 }
+
+/** @deprecated Use filterEntitiesByTypeKey. Re-exported for backward compatibility. */
+export const filterPharmaciesByClientType = filterEntitiesByTypeKey;
 
 export function filterOpportunitiesByTimeRange(
   opportunities: readonly OpportunityRow[],
@@ -105,17 +114,17 @@ export interface ComputeKpisInput {
   pharmacies: readonly PharmacyRow[];
   opportunities: readonly OpportunityRow[];
   documents: readonly DocumentRow[];
-  clientType: string;
+  entityTypeKey: string;
   cutoffIso: string | null;
   nowMs?: number;
 }
 
 export function computeDashboardKpis(input: ComputeKpisInput): DashboardKpis {
-  const filteredPharmacies = filterPharmaciesByClientType(input.pharmacies, input.clientType);
+  const filteredPharmacies = filterEntitiesByTypeKey(input.pharmacies, input.entityTypeKey);
   const pharmIds = new Set(filteredPharmacies.map((p) => p.id));
 
   let filteredOpps = filterOpportunitiesByTimeRange(input.opportunities, input.cutoffIso);
-  if (input.clientType !== 'all') {
+  if (input.entityTypeKey !== 'all') {
     filteredOpps = filterOpportunitiesByPharmacyIds(filteredOpps, pharmIds);
   }
 

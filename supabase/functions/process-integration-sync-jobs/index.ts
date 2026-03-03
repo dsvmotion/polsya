@@ -3,6 +3,16 @@ import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 import { handleCors, corsHeaders as makeCorsHeaders } from '../_shared/cors.ts';
 import { requireOrgRoleAccess } from '../_shared/auth.ts';
 import { requireBillingAccessForOrg } from '../_shared/billing.ts';
+import { logEdgeEvent } from '../_shared/observability.ts';
+import {
+  buildIntegrationHealthSummary,
+  parseIntegrationMetricsSampleLimit,
+  parseLookbackHours,
+  parseStuckThresholdMinutes,
+  type IntegrationHealthJobRow,
+  type IntegrationHealthRunRow,
+} from '../_shared/integration-job-metrics.ts';
+import { planRetryTransition } from '../_shared/integration-job-retry.ts';
 import {
   getIntegrationConnector,
   parseSyncTargets,
@@ -10,6 +20,7 @@ import {
   type SyncTarget,
   type SyncRecord,
 } from '../_shared/integration-connectors.ts';
+import { resolveCredentials } from '../_shared/credential-resolver.ts';
 
 type IntegrationSyncJobRow = {
   id: string;
@@ -42,15 +53,6 @@ type IntegrationConnectionRow = {
   metadata: Record<string, unknown> | null;
   last_sync_at: string | null;
   last_error: string | null;
-};
-
-type IntegrationOAuthTokenRow = {
-  access_token: string;
-  refresh_token: string | null;
-  expires_at: string | null;
-  token_type: string | null;
-  scope: string | null;
-  provider_account_email: string | null;
 };
 
 type PersistResult = {
@@ -96,12 +98,6 @@ function retryMaxDelayMs(): number {
   return Number.isFinite(value) && value > 0 ? value : 1_800_000;
 }
 
-function computeRetryDelayMs(attemptCount: number): number {
-  const exponent = Math.max(0, attemptCount - 1);
-  const delay = retryBaseDelayMs() * (2 ** exponent);
-  return Math.min(delay, retryMaxDelayMs());
-}
-
 async function transitionJobAfterFailure(
   supabaseAdmin: ReturnType<typeof createClient>,
   params: {
@@ -110,11 +106,15 @@ async function transitionJobAfterFailure(
     finishedAt: string;
   },
 ): Promise<RetryTransition> {
-  const attemptCount = Math.max(1, Number(params.job.attempt_count ?? 1));
-  const maxAttempts = Math.max(1, Number(params.job.max_attempts ?? 3));
-  const exhausted = attemptCount >= maxAttempts;
+  const plan = planRetryTransition({
+    attemptCountRaw: params.job.attempt_count,
+    maxAttemptsRaw: params.job.max_attempts,
+    nowMs: Date.now(),
+    baseDelayMs: retryBaseDelayMs(),
+    maxDelayMs: retryMaxDelayMs(),
+  });
 
-  if (exhausted) {
+  if (plan.deadLettered) {
     const { error: jobUpdateError } = await supabaseAdmin
       .from('integration_sync_jobs')
       .update({
@@ -142,8 +142,8 @@ async function transitionJobAfterFailure(
           provider: params.job.provider,
           job_type: params.job.job_type,
           payload: params.job.payload ?? {},
-          attempt_count: attemptCount,
-          max_attempts: maxAttempts,
+          attempt_count: plan.attemptCount,
+          max_attempts: plan.maxAttempts,
           error_message: params.errorMessage,
           first_created_at: params.job.created_at,
           failed_at: params.finishedAt,
@@ -155,18 +155,8 @@ async function transitionJobAfterFailure(
       throw new Error(`Failed to write dead-letter record: ${dlqError.message}`);
     }
 
-    return {
-      status: 'error',
-      retryScheduled: false,
-      deadLettered: true,
-      nextRetryAt: null,
-      attemptCount,
-      maxAttempts,
-    };
+    return plan;
   }
-
-  const delayMs = computeRetryDelayMs(attemptCount);
-  const nextRetryAt = new Date(Date.now() + delayMs).toISOString();
 
   const { error: jobUpdateError } = await supabaseAdmin
     .from('integration_sync_jobs')
@@ -174,7 +164,7 @@ async function transitionJobAfterFailure(
       status: 'queued',
       started_at: null,
       finished_at: null,
-      next_retry_at: nextRetryAt,
+      next_retry_at: plan.nextRetryAt,
       dead_lettered_at: null,
       error_message: params.errorMessage,
     })
@@ -185,14 +175,7 @@ async function transitionJobAfterFailure(
     throw new Error(`Failed to schedule integration job retry: ${jobUpdateError.message}`);
   }
 
-  return {
-    status: 'queued',
-    retryScheduled: true,
-    deadLettered: false,
-    nextRetryAt,
-    attemptCount,
-    maxAttempts,
-  };
+  return plan;
 }
 
 function runStep(
@@ -226,251 +209,6 @@ function chunk<T>(items: T[], size: number): T[][] {
 function asMetadata(value: unknown): Record<string, unknown> {
   if (typeof value !== 'object' || value === null || Array.isArray(value)) return {};
   return { ...(value as Record<string, unknown>) };
-}
-
-async function refreshGmailAccessToken(params: {
-  refreshToken: string;
-}): Promise<{ accessToken: string; tokenType: string | null; scope: string | null; expiresAt: string | null }> {
-  const clientId = Deno.env.get('GMAIL_CLIENT_ID') ?? '';
-  const clientSecret = Deno.env.get('GMAIL_CLIENT_SECRET') ?? '';
-
-  if (!clientId || !clientSecret) {
-    throw new Error('Missing GMAIL_CLIENT_ID or GMAIL_CLIENT_SECRET for token refresh');
-  }
-
-  const tokenParams = new URLSearchParams({
-    client_id: clientId,
-    client_secret: clientSecret,
-    refresh_token: params.refreshToken,
-    grant_type: 'refresh_token',
-  });
-
-  const response = await fetch('https://oauth2.googleapis.com/token', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-    body: tokenParams,
-  });
-
-  const body = await response.json().catch(() => ({})) as {
-    access_token?: string;
-    token_type?: string;
-    scope?: string;
-    expires_in?: number;
-    error?: string;
-    error_description?: string;
-  };
-
-  if (!response.ok || !body.access_token) {
-    const detail = body.error_description || body.error || `status ${response.status}`;
-    throw new Error(`Failed to refresh Gmail access token: ${detail}`);
-  }
-
-  const expiresAt = typeof body.expires_in === 'number'
-    ? new Date(Date.now() + body.expires_in * 1000).toISOString()
-    : null;
-
-  return {
-    accessToken: body.access_token,
-    tokenType: body.token_type ?? null,
-    scope: body.scope ?? null,
-    expiresAt,
-  };
-}
-
-async function refreshOutlookAccessToken(params: {
-  refreshToken: string;
-  tenant: string;
-}): Promise<{ accessToken: string; tokenType: string | null; scope: string | null; expiresAt: string | null }> {
-  const clientId = Deno.env.get('OUTLOOK_CLIENT_ID') ?? '';
-  const clientSecret = Deno.env.get('OUTLOOK_CLIENT_SECRET') ?? '';
-  const scopes = Deno.env.get('OUTLOOK_OAUTH_SCOPES')
-    ?? 'offline_access openid profile email User.Read Mail.Read';
-
-  if (!clientId || !clientSecret) {
-    throw new Error('Missing OUTLOOK_CLIENT_ID or OUTLOOK_CLIENT_SECRET for token refresh');
-  }
-
-  const tokenParams = new URLSearchParams({
-    client_id: clientId,
-    client_secret: clientSecret,
-    refresh_token: params.refreshToken,
-    grant_type: 'refresh_token',
-    scope: scopes,
-  });
-
-  const response = await fetch(`https://login.microsoftonline.com/${encodeURIComponent(params.tenant)}/oauth2/v2.0/token`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-    body: tokenParams,
-  });
-
-  const body = await response.json().catch(() => ({})) as {
-    access_token?: string;
-    token_type?: string;
-    scope?: string;
-    expires_in?: number;
-    error?: string;
-    error_description?: string;
-  };
-
-  if (!response.ok || !body.access_token) {
-    const detail = body.error_description || body.error || `status ${response.status}`;
-    throw new Error(`Failed to refresh Outlook access token: ${detail}`);
-  }
-
-  const expiresAt = typeof body.expires_in === 'number'
-    ? new Date(Date.now() + body.expires_in * 1000).toISOString()
-    : null;
-
-  return {
-    accessToken: body.access_token,
-    tokenType: body.token_type ?? null,
-    scope: body.scope ?? null,
-    expiresAt,
-  };
-}
-
-async function resolveConnectorMetadata(
-  supabaseAdmin: ReturnType<typeof createClient>,
-  integration: IntegrationConnectionRow,
-): Promise<Record<string, unknown>> {
-  const metadata = asMetadata(integration.metadata);
-
-  if (integration.provider === 'email_imap') {
-    const { data: credsRow, error: credsError } = await supabaseAdmin
-      .from('integration_email_credentials')
-      .select('account_email, username, password, imap_host, imap_port, imap_secure, smtp_host, smtp_port, smtp_secure')
-      .eq('organization_id', integration.organization_id)
-      .eq('integration_id', integration.id)
-      .eq('provider', 'email_imap')
-      .maybeSingle();
-
-    if (credsError) {
-      throw new Error(`Failed to load IMAP credentials: ${credsError.message}`);
-    }
-    if (!credsRow) {
-      throw new Error('IMAP/SMTP credentials not found. Configure email_imap first.');
-    }
-
-    return {
-      ...metadata,
-      account_email: (credsRow as Record<string, unknown>).account_email,
-      username: (credsRow as Record<string, unknown>).username,
-      password: (credsRow as Record<string, unknown>).password,
-      imap_host: (credsRow as Record<string, unknown>).imap_host,
-      imap_port: (credsRow as Record<string, unknown>).imap_port,
-      imap_secure: (credsRow as Record<string, unknown>).imap_secure,
-      smtp_host: (credsRow as Record<string, unknown>).smtp_host,
-      smtp_port: (credsRow as Record<string, unknown>).smtp_port,
-      smtp_secure: (credsRow as Record<string, unknown>).smtp_secure,
-    };
-  }
-
-  if (integration.provider === 'brevo') {
-    const { data: credsRow, error: credsError } = await supabaseAdmin
-      .from('integration_api_credentials')
-      .select('api_key')
-      .eq('organization_id', integration.organization_id)
-      .eq('integration_id', integration.id)
-      .eq('provider', 'brevo')
-      .maybeSingle();
-
-    if (credsError) {
-      throw new Error(`Failed to load Brevo API credentials: ${credsError.message}`);
-    }
-    if (!credsRow) {
-      throw new Error('Brevo API key not found. Configure Brevo credentials first.');
-    }
-
-    return {
-      ...metadata,
-      brevo_api_key: (credsRow as Record<string, unknown>).api_key,
-    };
-  }
-
-  if (integration.provider !== 'gmail' && integration.provider !== 'outlook') {
-    return metadata;
-  }
-
-  const oauthProvider = integration.provider as 'gmail' | 'outlook';
-
-  const { data: tokenRow, error: tokenError } = await supabaseAdmin
-    .from('integration_oauth_tokens')
-    .select('access_token, refresh_token, expires_at, token_type, scope, provider_account_email')
-    .eq('organization_id', integration.organization_id)
-    .eq('integration_id', integration.id)
-    .eq('provider', oauthProvider)
-    .maybeSingle();
-
-  if (tokenError) {
-    throw new Error(`Failed to load ${oauthProvider} OAuth token: ${tokenError.message}`);
-  }
-
-  if (!tokenRow) {
-    throw new Error(`${oauthProvider} OAuth token not found. Connect ${oauthProvider} first.`);
-  }
-
-  const token = tokenRow as unknown as IntegrationOAuthTokenRow;
-  let accessToken = token.access_token;
-  let tokenType = token.token_type;
-  let scope = token.scope;
-  let expiresAt = token.expires_at;
-
-  const expiresSoon = !!expiresAt && Date.parse(expiresAt) <= Date.now() + 60_000;
-  if (expiresSoon) {
-    if (!token.refresh_token) {
-      throw new Error(`${oauthProvider} OAuth token expired and no refresh token is available. Reconnect ${oauthProvider}.`);
-    }
-
-    const refreshed = oauthProvider === 'gmail'
-      ? await refreshGmailAccessToken({ refreshToken: token.refresh_token })
-      : await refreshOutlookAccessToken({
-        refreshToken: token.refresh_token,
-        tenant: (typeof metadata.tenant_id === 'string' && metadata.tenant_id.length > 0)
-          ? metadata.tenant_id
-          : (Deno.env.get('OUTLOOK_TENANT_ID') ?? 'common'),
-      });
-    accessToken = refreshed.accessToken;
-    tokenType = refreshed.tokenType;
-    scope = refreshed.scope;
-    expiresAt = refreshed.expiresAt;
-
-    const { error: updateTokenError } = await supabaseAdmin
-      .from('integration_oauth_tokens')
-      .update({
-        access_token: accessToken,
-        token_type: tokenType,
-        scope,
-        expires_at: expiresAt,
-      })
-      .eq('organization_id', integration.organization_id)
-      .eq('integration_id', integration.id)
-      .eq('provider', oauthProvider);
-
-    if (updateTokenError) {
-      throw new Error(`Failed to persist refreshed ${oauthProvider} token: ${updateTokenError.message}`);
-    }
-  }
-
-  if (oauthProvider === 'outlook') {
-    return {
-      ...metadata,
-      outlook_access_token: accessToken,
-      outlook_account_email: token.provider_account_email,
-      outlook_token_type: tokenType,
-      outlook_scope: scope,
-      outlook_token_expires_at: expiresAt,
-    };
-  }
-
-  return {
-    ...metadata,
-    gmail_access_token: accessToken,
-    gmail_account_email: token.provider_account_email,
-    gmail_token_type: tokenType,
-    gmail_scope: scope,
-    gmail_token_expires_at: expiresAt,
-  };
 }
 
 async function persistStepRecords(
@@ -587,6 +325,66 @@ serve(async (req) => {
 
   try {
     const body = await req.json().catch(() => ({}));
+    if (body?.mode === 'metrics') {
+      const lookbackHours = parseLookbackHours((body as Record<string, unknown>).lookbackHours);
+      const stuckThresholdMinutes = parseStuckThresholdMinutes((body as Record<string, unknown>).stuckThresholdMinutes);
+      const sampleLimit = parseIntegrationMetricsSampleLimit(
+        Deno.env.get('INTEGRATION_METRICS_SAMPLE_LIMIT'),
+      );
+      const cutoffIso = new Date(Date.now() - lookbackHours * 60 * 60 * 1000).toISOString();
+
+      const [{ data: jobs, error: jobsError }, { data: runs, error: runsError }] = await Promise.all([
+        supabaseAdmin
+          .from('integration_sync_jobs')
+          .select('provider,status,created_at,next_retry_at,dead_lettered_at')
+          .eq('organization_id', auth.organizationId)
+          .gte('created_at', cutoffIso)
+          .order('created_at', { ascending: false })
+          .limit(sampleLimit),
+        supabaseAdmin
+          .from('integration_sync_runs')
+          .select('provider,status,duration_ms,created_at')
+          .eq('organization_id', auth.organizationId)
+          .gte('created_at', cutoffIso)
+          .order('created_at', { ascending: false })
+          .limit(sampleLimit),
+      ]);
+
+      if (jobsError) {
+        return jsonResponse({ error: `Failed to fetch integration jobs metrics: ${jobsError.message}` }, 500, corsHeaders);
+      }
+      if (runsError) {
+        return jsonResponse({ error: `Failed to fetch integration runs metrics: ${runsError.message}` }, 500, corsHeaders);
+      }
+
+      const summary = buildIntegrationHealthSummary({
+        jobs: (jobs ?? []) as unknown as IntegrationHealthJobRow[],
+        runs: (runs ?? []) as unknown as IntegrationHealthRunRow[],
+        lookbackHours,
+        stuckThresholdMinutes,
+      });
+
+      logEdgeEvent('info', {
+        action: 'integration_sync_metrics_exported',
+        organization_id: auth.organizationId,
+        integration_id: null,
+        job_id: null,
+        lookback_hours: lookbackHours,
+        queue_depth: summary.queueDepth,
+        queued_ready_jobs: summary.queuedReadyJobs,
+        running_jobs: summary.runningJobs,
+        dead_lettered_jobs: summary.deadLetteredJobs,
+        stuck_queued_jobs: summary.stuckQueuedJobs,
+        p95_duration_ms: summary.p95DurationMs,
+        avg_duration_ms: summary.avgDurationMs,
+        error_rate_pct: summary.errorRatePct,
+        sample_jobs: summary.sampleJobs,
+        sample_runs: summary.sampleRuns,
+      });
+
+      return jsonResponse(summary as unknown as Record<string, unknown>, 200, corsHeaders);
+    }
+
     const requestedJobId = typeof body.jobId === 'string' ? body.jobId : null;
 
     let job: IntegrationSyncJobRow | null = null;
@@ -648,6 +446,14 @@ serve(async (req) => {
     }
 
     if (!job) {
+      logEdgeEvent('info', {
+        action: 'integration_sync_job_scan',
+        organization_id: auth.organizationId,
+        integration_id: null,
+        job_id: null,
+        processed: false,
+        reason: 'no_queued_jobs',
+      });
       return jsonResponse({ processed: false, message: 'No queued jobs for this organization' }, 200, corsHeaders);
     }
 
@@ -691,6 +497,15 @@ serve(async (req) => {
     }
 
     const activeJob = claimedJob as unknown as IntegrationSyncJobRow;
+    logEdgeEvent('info', {
+      action: 'integration_sync_job_claimed',
+      organization_id: auth.organizationId,
+      integration_id: activeJob.integration_id,
+      job_id: activeJob.id,
+      attempt_count: activeJob.attempt_count,
+      max_attempts: activeJob.max_attempts,
+      requested_job_id: requestedJobId,
+    });
 
     const { data: integrationData, error: integrationError } = await supabaseAdmin
       .from('integration_connections')
@@ -706,6 +521,17 @@ serve(async (req) => {
         job: activeJob,
         errorMessage: errMsg,
         finishedAt,
+      });
+      logEdgeEvent('error', {
+        action: 'integration_sync_job_failed',
+        organization_id: auth.organizationId,
+        integration_id: activeJob.integration_id,
+        job_id: activeJob.id,
+        status: retry.status,
+        retry_scheduled: retry.retryScheduled,
+        next_retry_at: retry.nextRetryAt,
+        dead_lettered: retry.deadLettered,
+        error: errMsg,
       });
 
       return jsonResponse(
@@ -733,6 +559,14 @@ serve(async (req) => {
         .update({ status: 'cancelled', error_message: errMsg, finished_at: new Date().toISOString() })
         .eq('id', activeJob.id)
         .eq('organization_id', auth.organizationId);
+      logEdgeEvent('warn', {
+        action: 'integration_sync_job_cancelled',
+        organization_id: auth.organizationId,
+        integration_id: integration.id,
+        job_id: activeJob.id,
+        status: 'cancelled',
+        reason: 'integration_disabled',
+      });
       return jsonResponse({ processed: false, jobId: activeJob.id, status: 'cancelled', message: errMsg }, 200, corsHeaders);
     }
 
@@ -753,6 +587,17 @@ serve(async (req) => {
         job: activeJob,
         errorMessage: runCreateError.message,
         finishedAt,
+      });
+      logEdgeEvent('error', {
+        action: 'integration_sync_job_failed',
+        organization_id: auth.organizationId,
+        integration_id: integration.id,
+        job_id: activeJob.id,
+        status: retry.status,
+        retry_scheduled: retry.retryScheduled,
+        next_retry_at: retry.nextRetryAt,
+        dead_lettered: retry.deadLettered,
+        error: `run_create_failed: ${runCreateError.message}`,
       });
 
       await supabaseAdmin
@@ -794,7 +639,17 @@ serve(async (req) => {
 
     try {
       const connector = getIntegrationConnector(integration.provider);
-      const connectorMetadata = await resolveConnectorMetadata(supabaseAdmin, integration);
+      const baseMetadata = {
+        ...asMetadata(integration.metadata),
+        _organization_id: integration.organization_id,
+      };
+      const resolved = await resolveCredentials(
+        supabaseAdmin,
+        integration.provider,
+        integration.id,
+        baseMetadata,
+      );
+      const { _organization_id: _, ...connectorMetadata } = resolved.metadata;
       const connectorCtx: IntegrationConnectorContext = {
         organizationId: auth.organizationId,
         integrationId: integration.id,
@@ -899,6 +754,40 @@ serve(async (req) => {
         .eq('id', integration.id)
         .eq('organization_id', auth.organizationId);
 
+      if (runStatus === 'success') {
+        logEdgeEvent('info', {
+          action: 'integration_sync_job_completed',
+          organization_id: auth.organizationId,
+          integration_id: integration.id,
+          job_id: activeJob.id,
+          run_id: runId,
+          status: 'success',
+          duration_ms: durationMs,
+          records_processed: totalProcessed,
+          records_failed: totalFailed,
+          records_created: totalCreated,
+          records_updated: totalUpdated,
+        });
+      } else {
+        logEdgeEvent('warn', {
+          action: 'integration_sync_job_failed',
+          organization_id: auth.organizationId,
+          integration_id: integration.id,
+          job_id: activeJob.id,
+          run_id: runId,
+          status: retry?.status ?? 'error',
+          retry_scheduled: retry?.retryScheduled ?? false,
+          next_retry_at: retry?.nextRetryAt ?? null,
+          dead_lettered: retry?.deadLettered ?? false,
+          duration_ms: durationMs,
+          records_processed: totalProcessed,
+          records_failed: totalFailed,
+          records_created: totalCreated,
+          records_updated: totalUpdated,
+          summary: joinedSummary,
+        });
+      }
+
       return jsonResponse(
         {
           processed: true,
@@ -961,6 +850,24 @@ serve(async (req) => {
         .eq('id', integration.id)
         .eq('organization_id', auth.organizationId);
 
+      logEdgeEvent('error', {
+        action: 'integration_sync_job_failed',
+        organization_id: auth.organizationId,
+        integration_id: integration.id,
+        job_id: activeJob.id,
+        run_id: runId,
+        status: retry.status,
+        retry_scheduled: retry.retryScheduled,
+        next_retry_at: retry.nextRetryAt,
+        dead_lettered: retry.deadLettered,
+        duration_ms: durationMs,
+        records_processed: totalProcessed,
+        records_failed: totalFailed + 1,
+        records_created: totalCreated,
+        records_updated: totalUpdated,
+        error: message,
+      });
+
       return jsonResponse(
         {
           processed: true,
@@ -985,6 +892,13 @@ serve(async (req) => {
       );
     }
   } catch (error) {
+    logEdgeEvent('error', {
+      action: 'integration_sync_job_unhandled_error',
+      organization_id: auth.organizationId,
+      integration_id: null,
+      job_id: null,
+      error: safeErrorMessage(error),
+    });
     return jsonResponse({ error: safeErrorMessage(error) }, 500, corsHeaders);
   }
 });

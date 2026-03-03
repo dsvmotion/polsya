@@ -1,5 +1,5 @@
 import { useState, useMemo, useEffect } from 'react';
-import { ShoppingCart, Building2, Users, MapPin, RefreshCw, AlertCircle, ClipboardList, X, Leaf } from 'lucide-react';
+import { ShoppingCart, Building2, Users, MapPin, RefreshCw, AlertCircle, ClipboardList, X } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { SalesMap } from '@/components/SalesMap';
 import { useWooCommerceOrders } from '@/hooks/useWooCommerceOrders';
@@ -14,6 +14,8 @@ import { UserMenu } from '@/components/auth/UserMenu';
 import { IntegrationsCard } from '@/components/dashboard/IntegrationsCard';
 import { AgentActionsCard } from '@/components/dashboard/AgentActionsCard';
 import { KpiStrip } from '@/components/dashboard/KpiStrip';
+import { IntegrationHealthCard } from '@/components/dashboard/IntegrationHealthCard';
+import { useEntityTypes, resolveEntityTypeLabel } from '@/hooks/useEntityTypes';
 
 const normalizeCountry = (country: string): string => {
   if (!country) return '';
@@ -58,7 +60,8 @@ const normalizeProvince = (province: string, country: string): string => {
 
 const Index = () => {
   const [selectedSale, setSelectedSale] = useState<Sale | null>(null);
-  
+  const { data: entityTypes = [] } = useEntityTypes();
+
   const [filters, setFilters] = useState({
     country: '',
     province: '',
@@ -177,6 +180,14 @@ const Index = () => {
     [displayedSales]
   );
 
+  const entityTypeColorMap = useMemo(() => {
+    const map: Record<string, string> = {};
+    for (const et of entityTypes) {
+      if (et.color) map[et.key] = et.color;
+    }
+    return map;
+  }, [entityTypes]);
+
   const stats = useMemo(() => {
     // WooCommerce orders filtered by geography
     const filteredWooOrders = sales.filter(sale => {
@@ -254,50 +265,32 @@ const Index = () => {
             <p className="text-sm text-gray-500">Global overview of sales and revenue</p>
           </div>
           <div className="grid grid-cols-2 sm:flex sm:flex-wrap items-center gap-2 w-full sm:w-auto">
-            <Link to="/operations/entities">
-              <Button 
-                variant="outline" 
-                className="w-full sm:w-auto gap-2 bg-white border-gray-300 text-gray-700 hover:bg-gray-100 hover:text-gray-900"
-                size="sm"
-              >
-                <ClipboardList className="h-4 w-4" />
-                <span className="hidden md:inline">Saved Pharmacies</span>
-                <span className="md:hidden">Saved</span>
-              </Button>
-            </Link>
-            <Link to="/prospecting/entities">
-              <Button 
-                variant="outline" 
-                className="w-full sm:w-auto gap-2 bg-white border-gray-300 text-gray-700 hover:bg-gray-100 hover:text-gray-900"
-                size="sm"
-              >
-                <MapPin className="h-4 w-4" />
-                <span className="hidden md:inline">Search Pharmacies</span>
-                <span className="md:hidden">Search</span>
-              </Button>
-            </Link>
-            <Link to="/operations/entities/herbalists">
-              <Button 
-                variant="outline" 
-                className="w-full sm:w-auto gap-2 bg-white border-gray-300 text-gray-700 hover:bg-gray-100 hover:text-gray-900"
-                size="sm"
-              >
-                <ClipboardList className="h-4 w-4" />
-                <span className="hidden md:inline">Saved Herbalists</span>
-                <span className="md:hidden">Herbalists</span>
-              </Button>
-            </Link>
-            <Link to="/prospecting/entities/herbalists">
-              <Button 
-                variant="outline" 
-                className="w-full sm:w-auto gap-2 bg-white border-gray-300 text-gray-700 hover:bg-gray-100 hover:text-gray-900"
-                size="sm"
-              >
-                <MapPin className="h-4 w-4" />
-                <span className="hidden md:inline">Search Herbalists</span>
-                <span className="md:hidden">Search H.</span>
-              </Button>
-            </Link>
+            {entityTypes.map((et) => (
+              <Link key={`ops-${et.key}`} to={`/operations/entities/${et.key}`}>
+                <Button 
+                  variant="outline" 
+                  className="w-full sm:w-auto gap-2 bg-white border-gray-300 text-gray-700 hover:bg-gray-100 hover:text-gray-900"
+                  size="sm"
+                >
+                  <ClipboardList className="h-4 w-4" />
+                  <span className="hidden md:inline">Saved {et.label}</span>
+                  <span className="md:hidden">Saved</span>
+                </Button>
+              </Link>
+            ))}
+            {entityTypes.map((et) => (
+              <Link key={`prosp-${et.key}`} to={`/prospecting/entities/${et.key}`}>
+                <Button 
+                  variant="outline" 
+                  className="w-full sm:w-auto gap-2 bg-white border-gray-300 text-gray-700 hover:bg-gray-100 hover:text-gray-900"
+                  size="sm"
+                >
+                  <MapPin className="h-4 w-4" />
+                  <span className="hidden md:inline">Search {et.label}</span>
+                  <span className="md:hidden">Search</span>
+                </Button>
+              </Link>
+            ))}
             <div className="col-span-2 sm:col-span-1 justify-self-end">
               <UserMenu />
             </div>
@@ -327,18 +320,18 @@ const Index = () => {
               </div>
               <div>
                 <p className="text-2xl font-bold text-gray-900">{stats.pharmacyCount}</p>
-                <p className="text-sm text-gray-500">Pharmacies in DB</p>
+                <p className="text-sm text-gray-500">{resolveEntityTypeLabel('pharmacy', entityTypes, 'Pharmacies')} in DB</p>
               </div>
             </div>
           </div>
           <div className="p-4 rounded-lg border border-gray-200 bg-gray-50">
             <div className="flex items-center gap-3">
               <div className="p-2 rounded-lg bg-gray-200">
-                <Leaf className="h-5 w-5 text-gray-700" />
+                <Building2 className="h-5 w-5 text-gray-700" />
               </div>
               <div>
                 <p className="text-2xl font-bold text-gray-900">{stats.herbalistCount}</p>
-                <p className="text-sm text-gray-500">Herbalists in DB</p>
+                <p className="text-sm text-gray-500">{resolveEntityTypeLabel('herbalist', entityTypes, 'Herbalists')} in DB</p>
               </div>
             </div>
           </div>
@@ -416,8 +409,9 @@ const Index = () => {
                 </SelectTrigger>
                 <SelectContent className="bg-white border-gray-200 z-50">
                   <SelectItem value="all">All Types</SelectItem>
-                  <SelectItem value="pharmacy">Pharmacies</SelectItem>
-                  <SelectItem value="herbalist">Herbalist</SelectItem>
+                  {entityTypes.map((et) => (
+                    <SelectItem key={et.key} value={et.key}>{et.label}</SelectItem>
+                  ))}
                   <SelectItem value="client">Clients</SelectItem>
                 </SelectContent>
               </Select>
@@ -441,14 +435,12 @@ const Index = () => {
             </div>
             
             <div className="flex flex-wrap items-center gap-3 text-xs">
-              <div className="flex items-center gap-2">
-                <div className="w-3 h-3 rounded-full" style={{ backgroundColor: '#16a34a' }} />
-                <span className="text-gray-600">Pharmacy (not contacted)</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <div className="w-3 h-3 rounded-full" style={{ backgroundColor: '#166534' }} />
-                <span className="text-gray-600">Herbalist (not contacted)</span>
-              </div>
+              {entityTypes.map((et) => (
+                <div key={et.key} className="flex items-center gap-2">
+                  <div className="w-3 h-3 rounded-full" style={{ backgroundColor: et.color ?? '#16a34a' }} />
+                  <span className="text-gray-600">{et.label} (not contacted)</span>
+                </div>
+              ))}
               <div className="flex items-center gap-2">
                 <div className="w-3 h-3 rounded-full" style={{ backgroundColor: '#3b82f6' }} />
                 <span className="text-gray-600">Contacted</span>
@@ -467,7 +459,7 @@ const Index = () => {
 
         {pharmacySales.length === 0 && savedPharmacies.length > 0 && (
           <p className="text-sm text-gray-500 mb-4">
-            Select Pharmacy or Herbalist type to show database locations on map
+            Select an entity type to show database locations on map
           </p>
         )}
 
@@ -505,6 +497,7 @@ const Index = () => {
                     sales={mapSales} 
                     onSaleSelect={setSelectedSale}
                     selectedSaleId={selectedSale?.id}
+                    entityTypeColors={entityTypeColorMap}
                   />
                 )}
               </div>
@@ -584,6 +577,11 @@ const Index = () => {
         {/* Integrations */}
         <div className="mt-6">
           <IntegrationsCard />
+        </div>
+
+        {/* Integration Health */}
+        <div className="mt-6">
+          <IntegrationHealthCard />
         </div>
 
         {/* Agent Actions */}

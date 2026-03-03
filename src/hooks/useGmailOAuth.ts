@@ -1,72 +1,19 @@
-import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { buildEdgeFunctionHeaders } from '@/lib/edge-function-headers';
+import { useStartOAuth, useExchangeOAuth } from './useOAuth';
 
-const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
-
-interface StartGmailOAuthInput {
-  integrationId: string;
-}
-
-interface StartGmailOAuthResponse {
-  authUrl: string;
-  state: string;
-  expiresAt: string;
-}
-
-interface ExchangeGmailOAuthInput {
-  code: string;
-  state: string;
-}
-
-interface ExchangeGmailOAuthResponse {
-  connected: boolean;
-  integrationId: string;
-  provider: 'gmail';
-  accountEmail: string | null;
-  expiresAt: string | null;
-}
-
+/** @deprecated Use useStartOAuth() from useOAuth.ts directly */
 export function useStartGmailOAuth() {
-  return useMutation({
-    mutationFn: async (input: StartGmailOAuthInput): Promise<StartGmailOAuthResponse> => {
-      const headers = await buildEdgeFunctionHeaders({ 'Content-Type': 'application/json' });
-      const response = await fetch(`${SUPABASE_URL}/functions/v1/gmail-oauth-url`, {
-        method: 'POST',
-        headers,
-        body: JSON.stringify({ integrationId: input.integrationId }),
-      });
+  const generic = useStartOAuth();
 
-      const body = await response.json().catch(() => ({}));
-      if (!response.ok) {
-        throw new Error(body.error ?? `Failed to start Gmail OAuth (${response.status})`);
-      }
-
-      return body as StartGmailOAuthResponse;
-    },
-  });
+  return {
+    ...generic,
+    mutateAsync: (input: { integrationId: string }) =>
+      generic.mutateAsync({ integrationId: input.integrationId, provider: 'gmail' }),
+    mutate: (input: { integrationId: string }) =>
+      generic.mutate({ integrationId: input.integrationId, provider: 'gmail' }),
+  };
 }
 
+/** @deprecated Use useExchangeOAuth() from useOAuth.ts directly */
 export function useExchangeGmailOAuth() {
-  const qc = useQueryClient();
-
-  return useMutation({
-    mutationFn: async (input: ExchangeGmailOAuthInput): Promise<ExchangeGmailOAuthResponse> => {
-      const headers = await buildEdgeFunctionHeaders({ 'Content-Type': 'application/json' });
-      const response = await fetch(`${SUPABASE_URL}/functions/v1/gmail-oauth-exchange`, {
-        method: 'POST',
-        headers,
-        body: JSON.stringify({ code: input.code, state: input.state }),
-      });
-
-      const body = await response.json().catch(() => ({}));
-      if (!response.ok) {
-        throw new Error(body.error ?? `Failed to complete Gmail OAuth (${response.status})`);
-      }
-
-      return body as ExchangeGmailOAuthResponse;
-    },
-    onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ['integration-connections'] });
-    },
-  });
+  return useExchangeOAuth();
 }

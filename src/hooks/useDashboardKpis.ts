@@ -8,11 +8,11 @@ import {
   type DocumentRow,
 } from '@/services/dashboardKpiService';
 
-export type KpiClientType = 'all' | 'pharmacy' | 'herbalist';
+export type KpiEntityTypeFilter = 'all' | string;
 export type KpiTimeRange = '30d' | '60d' | '90d' | '365d' | 'all';
 
 export interface KpiFilters {
-  clientType: KpiClientType;
+  entityTypeKey: KpiEntityTypeFilter;
   timeRange: KpiTimeRange;
 }
 
@@ -35,11 +35,11 @@ function cutoffDate(range: KpiTimeRange): string | null {
 }
 
 export function useDashboardKpis(filters?: KpiFilters) {
-  const clientType = filters?.clientType ?? 'all';
+  const entityTypeKey = filters?.entityTypeKey ?? 'all';
   const timeRange = filters?.timeRange ?? '90d';
 
   return useQuery<DashboardKpis>({
-    queryKey: ['dashboard-kpis', clientType, timeRange],
+    queryKey: ['dashboard-kpis', entityTypeKey, timeRange],
     queryFn: async () => {
       const [oppResult, pharmResult, docResult] = await Promise.all([
         supabase
@@ -61,7 +61,7 @@ export function useDashboardKpis(filters?: KpiFilters) {
         pharmacies: (pharmResult.data ?? []) as unknown as PharmacyRow[],
         opportunities: (oppResult.data ?? []) as unknown as OpportunityRow[],
         documents: (docResult.data ?? []) as unknown as DocumentRow[],
-        clientType,
+        entityTypeKey,
         cutoffIso: cutoffDate(timeRange),
       });
     },

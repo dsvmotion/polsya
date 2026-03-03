@@ -78,7 +78,7 @@ export default function PharmacyProspecting({ clientType = 'pharmacy' }: Props) 
         province: detectedLocation.province || prev.province,
       }));
     }
-  }, [detectedLocation]);
+  }, [detectedLocation, filters.country, filters.city]);
 
   // Save pharmacies mutation
   const savePharmacies = useSavePharmacies(clientType);
@@ -97,7 +97,7 @@ export default function PharmacyProspecting({ clientType = 'pharmacy' }: Props) 
       }
 
       // Status filter
-      if (filters.status !== 'all' && pharmacy.commercial_status !== filters.status) return false;
+      if (filters.status !== 'all' && pharmacy.status !== filters.status) return false;
 
       return true;
     });

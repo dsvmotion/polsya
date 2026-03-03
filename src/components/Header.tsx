@@ -9,7 +9,7 @@ export function Header() {
         </div>
         <div>
           <h1 className="text-xl font-bold tracking-tight">
-            Pharmacy Tracker
+            Sales Compass
           </h1>
           <p className="text-sm text-muted-foreground">
             CRM Dashboard

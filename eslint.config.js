@@ -25,4 +25,10 @@ export default tseslint.config(
       "@typescript-eslint/no-require-imports": "off",
     },
   },
+  {
+    files: ["src/components/ui/**/*.{ts,tsx}", "src/contexts/AuthContext.tsx"],
+    rules: {
+      "react-refresh/only-export-components": "off",
+    },
+  },
 );

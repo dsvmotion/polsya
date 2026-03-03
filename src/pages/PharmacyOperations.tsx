@@ -297,7 +297,7 @@ export default function PharmacyOperations({ clientType = 'pharmacy' }: Props) {
           )}
         </div>
 
-        <div className="flex items-center gap-2 shrink-0">
+        <div className="flex items-center gap-2 shrink-0 flex-wrap justify-end">
           <BulkImportDialog
             defaultClientType={clientType}
             industryTemplateKey={organization?.industry_template_key}
@@ -350,7 +350,7 @@ export default function PharmacyOperations({ clientType = 'pharmacy' }: Props) {
       ) : (
         <>
           {/* Pipeline Summary + Risk Alerts */}
-          <div className="grid grid-cols-1 xl:grid-cols-[1fr_320px] gap-4 px-4 md:px-6 py-4 border-b border-gray-200 bg-gray-50/50">
+          <div className="grid grid-cols-1 xl:grid-cols-[minmax(0,1fr)_320px] gap-4 px-3 md:px-6 py-4 border-b border-gray-200 bg-gray-50/50">
             <PipelineSummaryCards />
             <RiskAlertsCard
               clientType={clientType}
@@ -385,7 +385,7 @@ export default function PharmacyOperations({ clientType = 'pharmacy' }: Props) {
           />
 
           {/* Main Content */}
-          <div className="flex flex-col 2xl:flex-row items-start">
+          <div className="flex flex-col xl:flex-row items-start">
             {/* Table */}
             <div className="w-full flex-1 overflow-auto">
               <OperationsTable
@@ -426,7 +426,7 @@ export default function PharmacyOperations({ clientType = 'pharmacy' }: Props) {
 
             {/* Detail Panel */}
             {selectedPharmacy && (
-              <div className="w-full 2xl:w-[400px] border-t 2xl:border-t-0 2xl:border-l border-gray-200 bg-gray-50">
+              <div className="w-full xl:w-[380px] 2xl:w-[420px] border-t xl:border-t-0 xl:border-l border-gray-200 bg-gray-50">
                 <PharmacyOperationsDetail
                   pharmacy={selectedPharmacy}
                   onClose={() => setSelectedPharmacy(null)}

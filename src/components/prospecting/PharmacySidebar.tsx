@@ -65,9 +65,9 @@ export function PharmacySidebar({
   isSaving,
   labels,
 }: PharmacySidebarProps) {
-  const sidebarTitle = labels?.sidebarTitle ?? 'Pharmacies';
-  const searchButtonLabel = labels?.searchButton ?? 'Search Pharmacies';
-  const noFoundLabel = labels?.noFound ?? 'No pharmacies found';
+  const sidebarTitle = labels?.sidebarTitle ?? 'Entities';
+  const searchButtonLabel = labels?.searchButton ?? 'Search Entities';
+  const noFoundLabel = labels?.noFound ?? 'No entities found';
   // Filter displayed pharmacies by text search and status
   const displayedPharmacies = useMemo(() => {
     return pharmacies.filter((pharmacy) => {
@@ -82,7 +82,7 @@ export function PharmacySidebar({
       }
 
       // Status filter
-      if (filters.status !== 'all' && pharmacy.commercial_status !== filters.status) return false;
+      if (filters.status !== 'all' && pharmacy.status !== filters.status) return false;
 
       return true;
     });
@@ -92,7 +92,7 @@ export function PharmacySidebar({
   const stats = useMemo(() => {
     const statusCounts = displayedPharmacies.reduce(
       (acc, p) => {
-        acc[p.commercial_status] = (acc[p.commercial_status] || 0) + 1;
+        acc[p.status] = (acc[p.status] || 0) + 1;
         return acc;
       },
       {} as Record<string, number>
@@ -213,7 +213,7 @@ export function PharmacySidebar({
                 onCheck={(checked) => onToggleSelect(pharmacy.id)}
                 onClick={() => onSelectPharmacy(pharmacy)}
                 onSaveOne={onSaveOne}
-                isSavedToOperations={pharmacy.saved_at != null || savedIds.has(pharmacy.id)}
+                isSavedToOperations={pharmacy.savedAt != null || savedIds.has(pharmacy.id)}
                 isSaving={isSaving}
               />
             ))

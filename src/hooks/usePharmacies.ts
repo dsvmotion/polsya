@@ -3,6 +3,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { Pharmacy, type ClientType } from '@/types/pharmacy';
 import type { Json } from '@/integrations/supabase/types';
 import { buildEdgeFunctionHeaders } from '@/lib/edge-function-headers';
+import { toBusinessEntity, toBusinessEntities } from '@/services/entityService';
 
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
 
@@ -18,7 +19,7 @@ export function usePharmacies(clientType?: ClientType, entityTypeId?: string) {
       if (entityTypeId) {
         query = query.eq('entity_type_id', entityTypeId);
       } else if (clientType) {
-        query = query.eq('client_type', clientType);
+        query = query.eq('client_type', clientType as never);
       }
       
       const { data, error } = await query;
@@ -28,7 +29,7 @@ export function usePharmacies(clientType?: ClientType, entityTypeId?: string) {
         throw error;
       }
       
-      return (data || []) as Pharmacy[];
+      return toBusinessEntities((data || []) as never[]);
     },
   });
 }
@@ -50,7 +51,7 @@ export function usePharmacy(id: string | null) {
         throw error;
       }
       
-      return data as Pharmacy;
+      return toBusinessEntity(data as never);
     },
     enabled: !!id,
   });
@@ -65,7 +66,7 @@ export function useUpdatePharmacy() {
       updates 
     }: { 
       id: string; 
-      updates: Partial<Pick<Pharmacy, 'commercial_status' | 'notes' | 'email'>> 
+      updates: Record<string, unknown> 
     }) => {
       const { data, error } = await supabase
         .from('pharmacies')
@@ -75,7 +76,7 @@ export function useUpdatePharmacy() {
         .single();
       
       if (error) throw error;
-      return data as Pharmacy;
+      return toBusinessEntity(data as never);
     },
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ['pharmacies'] });
@@ -94,7 +95,7 @@ export function useUpdatePharmacyStatus() {
       updates 
     }: { 
       id: string; 
-      updates: Partial<Pick<Pharmacy, 'commercial_status' | 'notes'>> 
+      updates: Record<string, unknown> 
     }) => {
       const { data, error } = await supabase
         .from('pharmacies')
@@ -104,7 +105,7 @@ export function useUpdatePharmacyStatus() {
         .single();
       
       if (error) throw error;
-      return data as Pharmacy;
+      return toBusinessEntity(data as never);
     },
     onSuccess: (data) => {
       // Invalidate all pharmacy-related queries to ensure UI updates everywhere
@@ -161,7 +162,7 @@ export function useCachePharmacy() {
           .single();
         
         if (error) throw error;
-        return data as Pharmacy;
+        return toBusinessEntity(data as never);
       }
       
       // Insert new
@@ -186,7 +187,7 @@ export function useCachePharmacy() {
         .single();
       
       if (error) throw error;
-      return data as Pharmacy;
+      return toBusinessEntity(data as never);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['pharmacies'] });

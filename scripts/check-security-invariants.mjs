@@ -78,9 +78,11 @@ for (const dir of functionDirs) {
 // 3. Check that sensitive functions use organization-aware authz helper
 const REQUIRE_ORG_AUTHZ = [
   'google-places-pharmacies',
+  'google-places-search',
   'woocommerce-orders',
   'woocommerce-orders-detailed',
   'geocode-pharmacies',
+  'geocode-entities',
   'populate-geography',
   'create-checkout-session',
   'create-customer-portal-session',
@@ -89,20 +91,26 @@ const REQUIRE_ORG_AUTHZ = [
   'gmail-oauth-exchange',
   'outlook-oauth-url',
   'outlook-oauth-exchange',
+  'oauth-start',
+  'oauth-exchange',
   'email-imap-upsert',
   'email-marketing-key-upsert',
 ];
 
 const REQUIRE_BILLING_GUARD = [
   'google-places-pharmacies',
+  'google-places-search',
   'woocommerce-orders',
   'woocommerce-orders-detailed',
   'geocode-pharmacies',
+  'geocode-entities',
   'process-integration-sync-jobs',
   'gmail-oauth-url',
   'gmail-oauth-exchange',
   'outlook-oauth-url',
   'outlook-oauth-exchange',
+  'oauth-start',
+  'oauth-exchange',
   'email-imap-upsert',
   'email-marketing-key-upsert',
 ];

@@ -1,7 +1,8 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { useDashboardKpis } from '@/hooks/useDashboardKpis';
-import type { KpiClientType, KpiTimeRange } from '@/hooks/useDashboardKpis';
+import type { KpiEntityTypeFilter, KpiTimeRange } from '@/hooks/useDashboardKpis';
 import { useCurrentOrganization } from '@/hooks/useOrganizationContext';
+import { useEntityTypes } from '@/hooks/useEntityTypes';
 import { TrendingUp, Target, AlertTriangle, Users, Percent } from 'lucide-react';
 import {
   Select,
@@ -11,12 +12,6 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import type { ReactNode } from 'react';
-
-const CLIENT_TYPE_OPTIONS: { value: KpiClientType; label: string }[] = [
-  { value: 'all', label: 'All types' },
-  { value: 'pharmacy', label: 'Pharmacies' },
-  { value: 'herbalist', label: 'Herbalists' },
-];
 
 const TIME_RANGE_OPTIONS: { value: KpiTimeRange; label: string }[] = [
   { value: '30d', label: 'Last 30 days' },
@@ -72,11 +67,17 @@ function SkeletonCard() {
 }
 
 export function KpiStrip() {
-  const [clientType, setClientType] = useState<KpiClientType>('all');
+  const [entityTypeKey, setEntityTypeKey] = useState<KpiEntityTypeFilter>('all');
   const [timeRange, setTimeRange] = useState<KpiTimeRange>('90d');
   const { organization } = useCurrentOrganization();
+  const { data: entityTypes = [] } = useEntityTypes();
 
-  const { data: kpis, isLoading } = useDashboardKpis({ clientType, timeRange });
+  const entityTypeOptions = useMemo<{ value: KpiEntityTypeFilter; label: string }[]>(() => {
+    const dynamic = entityTypes.map((et) => ({ value: et.key as KpiEntityTypeFilter, label: et.label }));
+    return [{ value: 'all' as KpiEntityTypeFilter, label: 'All types' }, ...dynamic];
+  }, [entityTypes]);
+
+  const { data: kpis, isLoading } = useDashboardKpis({ entityTypeKey, timeRange });
   const orgCurrency = organization?.currency ?? 'EUR';
   const orgLocale = organization?.locale ?? 'es-ES';
   const entityPlural = organization?.entity_label_plural ?? 'Clients';
@@ -85,14 +86,14 @@ export function KpiStrip() {
     <div className="mb-6 space-y-2">
       <div className="flex flex-wrap items-center gap-3">
         <Select
-          value={clientType}
-          onValueChange={(v) => setClientType(v as KpiClientType)}
+          value={entityTypeKey}
+          onValueChange={(v) => setEntityTypeKey(v as KpiEntityTypeFilter)}
         >
           <SelectTrigger className="h-7 w-32 text-xs bg-white border-gray-300">
             <SelectValue />
           </SelectTrigger>
           <SelectContent className="bg-white border-gray-200 z-50">
-            {CLIENT_TYPE_OPTIONS.map((o) => (
+            {entityTypeOptions.map((o) => (
               <SelectItem key={o.value} value={o.value} className="text-xs">
                 {o.label}
               </SelectItem>
@@ -116,7 +117,7 @@ export function KpiStrip() {
           </SelectContent>
         </Select>
 
-        {(clientType !== 'all' || timeRange !== '90d') && (
+        {(entityTypeKey !== 'all' || timeRange !== '90d') && (
           <span className="text-[10px] text-gray-400">
             Filtered
           </span>

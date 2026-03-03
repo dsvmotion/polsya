@@ -1,7 +1,19 @@
-import type { AccountContact } from '@/types/entity';
-import type { PharmacyContact } from '@/types/pharmacy';
+import type { AccountContact, ContactRole } from '@/types/entity';
 
-export function toAccountContact(row: PharmacyContact): AccountContact {
+export interface ContactRow {
+  id: string;
+  pharmacy_id: string;
+  name: string;
+  role: ContactRole | null;
+  email: string | null;
+  phone: string | null;
+  is_primary: boolean;
+  notes: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export function toAccountContact(row: ContactRow): AccountContact {
   return {
     id: row.id,
     entityId: row.pharmacy_id,
@@ -16,6 +28,6 @@ export function toAccountContact(row: PharmacyContact): AccountContact {
   };
 }
 
-export function toAccountContacts(rows: readonly PharmacyContact[]): AccountContact[] {
+export function toAccountContacts(rows: readonly ContactRow[]): AccountContact[] {
   return rows.map(toAccountContact);
 }

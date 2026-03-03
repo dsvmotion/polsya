@@ -1,6 +1,8 @@
 import { useState, useCallback, useRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import { Pharmacy, type ClientType } from '@/types/pharmacy';
+import type { BusinessEntity } from '@/types/entity';
+import type { ClientType } from '@/types/pharmacy';
+import { toBusinessEntity } from '@/services/entityService';
 import { toast } from 'sonner';
 import type { Json } from '@/integrations/supabase/types';
 import { buildEdgeFunctionHeaders } from '@/lib/edge-function-headers';
@@ -91,7 +93,7 @@ async function runWithConcurrency<T, R>(
  * - Caches results to local DB.
  */
 export function useProspectingSearch() {
-  const [results, setResults] = useState<Pharmacy[]>([]);
+  const [results, setResults] = useState<BusinessEntity[]>([]);
   const [isSearching, setIsSearching] = useState(false);
   const [hasSearched, setHasSearched] = useState(false);
   const [progress, setProgress] = useState({ found: 0, cached: 0, processed: 0, failed: 0 });
@@ -211,7 +213,7 @@ export function useProspectingSearch() {
       }
 
       // Fetch details and cache each pharmacy with controlled concurrency
-      const cachedPharmacies: Pharmacy[] = [];
+      const cachedPharmacies: BusinessEntity[] = [];
       let processed = 0;
       let failed = 0;
 
@@ -232,7 +234,7 @@ export function useProspectingSearch() {
             .maybeSingle();
 
           if (existing) {
-            cachedPharmacies.push(existing as Pharmacy);
+            cachedPharmacies.push(toBusinessEntity(existing as never));
             processed++;
             flushProgress();
             return;
@@ -268,7 +270,7 @@ export function useProspectingSearch() {
             .maybeSingle();
 
           if (existingByPlaceId) {
-            cachedPharmacies.push(existingByPlaceId as Pharmacy);
+            cachedPharmacies.push(toBusinessEntity(existingByPlaceId as never));
             processed++;
             flushProgress();
             return;
@@ -307,7 +309,7 @@ export function useProspectingSearch() {
               .select()
               .single();
 
-            cachedPharmacies.push((updated ?? existingByName) as Pharmacy);
+            cachedPharmacies.push(toBusinessEntity((updated ?? existingByName) as never));
           } else {
             const { data: inserted, error: insertError } = await supabase
               .from('pharmacies')
@@ -325,7 +327,7 @@ export function useProspectingSearch() {
                   lat: details.lat,
                   lng: details.lng,
                   google_data: details.google_data ? (JSON.parse(JSON.stringify(details.google_data)) as Json) : null,
-                  client_type: filters.clientType || 'pharmacy',
+                  client_type: (filters.clientType || 'pharmacy') as 'pharmacy' | 'herbalist',
                 },
               ])
               .select()
@@ -338,12 +340,12 @@ export function useProspectingSearch() {
                 .eq('google_place_id', basic.google_place_id)
                 .maybeSingle();
               if (refetched) {
-                cachedPharmacies.push(refetched as Pharmacy);
+                cachedPharmacies.push(toBusinessEntity(refetched as never));
               } else {
                 failed++;
               }
             } else if (inserted) {
-              cachedPharmacies.push(inserted as Pharmacy);
+              cachedPharmacies.push(toBusinessEntity(inserted as never));
             }
           }
 
@@ -368,7 +370,7 @@ export function useProspectingSearch() {
       if (firstWithCountry) {
         setDetectedLocation({
           country: firstWithCountry.country ?? '',
-          province: firstWithCountry.province ?? '',
+          province: firstWithCountry.region ?? '',
         });
       }
 

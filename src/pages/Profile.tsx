@@ -11,6 +11,7 @@ import { useCurrentOrganization } from '@/hooks/useOrganizationContext';
 import { evaluateBillingAccess, useBillingOverview } from '@/hooks/useBilling';
 import { useUpdateOrganizationSettings } from '@/hooks/useOrganizationSettings';
 import { toast } from 'sonner';
+import { canManageWorkspace as canManageWorkspaceRole } from '@/lib/rbac';
 import {
   getIndustryTemplate,
   getIndustryTemplateOptions,
@@ -44,7 +45,7 @@ export default function Profile() {
   const { organization, membership } = useCurrentOrganization();
   const { data: billingOverview } = useBillingOverview(organization?.id ?? null);
   const updateWorkspace = useUpdateOrganizationSettings();
-  const canManageWorkspace = membership?.role === 'admin' || membership?.role === 'manager';
+  const canManageWorkspace = canManageWorkspaceRole(membership?.role ?? null);
   const [workspaceForm, setWorkspaceForm] = useState({
     name: '',
     logo_url: '',

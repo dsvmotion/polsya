@@ -1,6 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import type { PharmacyActivity, ActivityType } from '@/types/pharmacy';
+import { toAccountActivity, toAccountActivities, type ActivityRow } from '@/services/activityService';
 
 function activitiesKey(pharmacyId: string) {
   return ['pharmacy-activities', pharmacyId] as const;
@@ -18,7 +19,7 @@ export function usePharmacyActivities(pharmacyId: string | null) {
         .order('created_at', { ascending: false });
 
       if (error) throw new Error(error.message);
-      return (data ?? []) as PharmacyActivity[];
+      return toAccountActivities((data ?? []) as ActivityRow[]);
     },
   });
 }
@@ -51,7 +52,7 @@ export function useCreatePharmacyActivity() {
         .single();
 
       if (error) throw new Error(error.message);
-      return data as PharmacyActivity;
+      return toAccountActivity(data as ActivityRow);
     },
     onSuccess: (_data, variables) => {
       qc.invalidateQueries({ queryKey: activitiesKey(variables.pharmacyId) });
@@ -85,7 +86,7 @@ export function useUpdatePharmacyActivity() {
         .single();
 
       if (error) throw new Error(error.message);
-      return data as PharmacyActivity;
+      return toAccountActivity(data as ActivityRow);
     },
     onSuccess: (_data, variables) => {
       qc.invalidateQueries({ queryKey: activitiesKey(variables.pharmacyId) });
@@ -134,7 +135,7 @@ export function useCompletePharmacyActivity() {
         .single();
 
       if (error) throw new Error(error.message);
-      return data as PharmacyActivity;
+      return toAccountActivity(data as ActivityRow);
     },
     onSuccess: (_data, variables) => {
       qc.invalidateQueries({ queryKey: activitiesKey(variables.pharmacyId) });

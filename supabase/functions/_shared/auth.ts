@@ -1,4 +1,10 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
+import {
+  hasAllowedMembershipRole,
+  hasAnyAllowedRole,
+  resolveMembershipScope,
+  type MembershipRow,
+} from './authz-policy.ts';
 
 interface RoleAccessOptions {
   action: string;
@@ -28,11 +34,6 @@ interface AuthFailure {
 
 export type AuthResult = AuthSuccess | AuthFailure;
 export type OrgAuthResult = OrgAuthSuccess | AuthFailure;
-
-type MembershipRow = {
-  organization_id: string;
-  role: string;
-};
 
 function parseAllowlist(envKey: string): string[] {
   return (Deno.env.get(envKey) ?? '')
@@ -99,10 +100,11 @@ export async function requireRoleAccess(
     };
   }
 
-  const userRole = (user.app_metadata?.role as string) ?? '';
-  const userRoles = (user.app_metadata?.roles as string[]) ?? [];
-  const hasPrivilegedRole =
-    allowedRoles.includes(userRole) || userRoles.some((r) => allowedRoles.includes(r));
+  const hasPrivilegedRole = hasAnyAllowedRole({
+    userRole: (user.app_metadata?.role as string) ?? '',
+    userRoles: (user.app_metadata?.roles as string[]) ?? [],
+    allowedRoles,
+  });
 
   const allowedUserIds = (Deno.env.get(allowlistEnvKey) ?? '')
     .split(',')
@@ -213,25 +215,20 @@ export async function requireOrgRoleAccess(
   }
 
   const requestedOrgId = resolveOrgHeader(req, orgHeaderName);
-  let membership: MembershipRow | null = null;
-
-  if (requestedOrgId) {
-    membership = activeMemberships.find((m) => m.organization_id === requestedOrgId) ?? null;
-    if (!membership) {
-      console.log(
-        JSON.stringify({ action, user_id: user.id, allowed: false, reason: 'org_forbidden', organization_id: requestedOrgId }),
-      );
-      return {
-        ok: false,
-        response: new Response(JSON.stringify({ error: 'Forbidden: organization access denied' }), {
-          status: 403,
-          headers,
-        }),
-      };
-    }
-  } else if (activeMemberships.length === 1) {
-    membership = activeMemberships[0];
-  } else {
+  const scope = resolveMembershipScope({ activeMemberships, requestedOrgId });
+  if (scope.kind === 'org_forbidden') {
+    console.log(
+      JSON.stringify({ action, user_id: user.id, allowed: false, reason: 'org_forbidden', organization_id: scope.requestedOrgId }),
+    );
+    return {
+      ok: false,
+      response: new Response(JSON.stringify({ error: 'Forbidden: organization access denied' }), {
+        status: 403,
+        headers,
+      }),
+    };
+  }
+  if (scope.kind === 'org_context_missing') {
     console.log(JSON.stringify({ action, user_id: user.id, allowed: false, reason: 'org_context_missing' }));
     return {
       ok: false,
@@ -241,10 +238,24 @@ export async function requireOrgRoleAccess(
       }),
     };
   }
+  if (scope.kind !== 'ok') {
+    console.log(JSON.stringify({ action, user_id: user.id, allowed: false, reason: 'no_membership' }));
+    return {
+      ok: false,
+      response: new Response(JSON.stringify({ error: 'Forbidden: no active organization membership' }), {
+        status: 403,
+        headers,
+      }),
+    };
+  }
+  const membership = scope.membership;
 
   const allowedUserIds = parseAllowlist(allowlistEnvKey);
   const isInAllowlist = allowedUserIds.includes(user.id);
-  const hasRoleAccess = allowedRoles.includes(membership.role);
+  const hasRoleAccess = hasAllowedMembershipRole({
+    membershipRole: membership.role,
+    allowedRoles,
+  });
 
   if (!hasRoleAccess && !isInAllowlist) {
     console.log(

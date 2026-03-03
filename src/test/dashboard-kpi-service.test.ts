@@ -213,7 +213,7 @@ describe('computeDashboardKpis', () => {
       pharmacies: [],
       opportunities: [],
       documents: [],
-      clientType: 'all',
+      entityTypeKey: 'all',
       cutoffIso: null,
     });
     expect(result).toEqual({
@@ -234,14 +234,14 @@ describe('computeDashboardKpis', () => {
         makeOpp({ id: 'o3', pharmacy_id: 'p1', amount: 500, probability: 100, stage: 'won' }),
       ],
       documents: [],
-      clientType: 'all',
+      entityTypeKey: 'all',
       cutoffIso: null,
     });
     expect(result.pipelineTotal).toBe(3000);
     expect(result.weightedForecast).toBe(1000 * 0.5 + 2000 * 0.8);
   });
 
-  it('filters opportunities by clientType=pharmacy', () => {
+  it('filters opportunities by entityTypeKey=pharmacy', () => {
     const result = computeDashboardKpis({
       pharmacies: [
         makePharmacy({ id: 'p1', client_type: 'pharmacy' }),
@@ -252,7 +252,7 @@ describe('computeDashboardKpis', () => {
         makeOpp({ id: 'o2', pharmacy_id: 'p2', amount: 2000, probability: 80, stage: 'qualified' }),
       ],
       documents: [],
-      clientType: 'pharmacy',
+      entityTypeKey: 'pharmacy',
       cutoffIso: null,
     });
     expect(result.pipelineTotal).toBe(1000);
@@ -266,7 +266,7 @@ describe('computeDashboardKpis', () => {
         makeOpp({ id: 'o2', pharmacy_id: 'p1', amount: 2000, stage: 'qualified', created_at: daysAgoIso(100) }),
       ],
       documents: [],
-      clientType: 'all',
+      entityTypeKey: 'all',
       cutoffIso: daysAgoIso(30),
     });
     expect(result.pipelineTotal).toBe(1000);
@@ -283,7 +283,7 @@ describe('computeDashboardKpis', () => {
       documents: [
         { pharmacy_id: 'p1', uploaded_at: new Date(now - 1000).toISOString() },
       ],
-      clientType: 'all',
+      entityTypeKey: 'all',
       cutoffIso: null,
       nowMs: now,
     });
@@ -291,7 +291,7 @@ describe('computeDashboardKpis', () => {
     expect(result.activeClientsCount).toBe(2);
   });
 
-  it('computes conversion rate scoped by clientType', () => {
+  it('computes conversion rate scoped by entityTypeKey', () => {
     const result = computeDashboardKpis({
       pharmacies: [
         makePharmacy({ id: 'p1', commercial_status: 'contacted', client_type: 'pharmacy' }),
@@ -300,14 +300,14 @@ describe('computeDashboardKpis', () => {
       ],
       opportunities: [],
       documents: [],
-      clientType: 'pharmacy',
+      entityTypeKey: 'pharmacy',
       cutoffIso: null,
     });
     expect(result.conversionRate).toBe(50);
     expect(result.activeClientsCount).toBe(1);
   });
 
-  it('combined: clientType + timeRange + at-risk', () => {
+  it('combined: entityTypeKey + timeRange + at-risk', () => {
     const now = Date.now();
     const result = computeDashboardKpis({
       pharmacies: [
@@ -319,7 +319,7 @@ describe('computeDashboardKpis', () => {
         makeOpp({ id: 'o2', pharmacy_id: 'p2', amount: 800, probability: 40, stage: 'qualified', created_at: daysAgoIso(5) }),
       ],
       documents: [],
-      clientType: 'pharmacy',
+      entityTypeKey: 'pharmacy',
       cutoffIso: daysAgoIso(30),
       nowMs: now,
     });
