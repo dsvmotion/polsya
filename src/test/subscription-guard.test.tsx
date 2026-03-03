@@ -75,6 +75,7 @@ describe('SubscriptionGuard', () => {
     mockUseBillingOverview.mockReturnValue({
       data: null,
       isLoading: false,
+      isError: false,
     });
 
     renderGuarded();
@@ -89,6 +90,7 @@ describe('SubscriptionGuard', () => {
     mockUseBillingOverview.mockReturnValue({
       data: null,
       isLoading: true,
+      isError: false,
     });
 
     renderGuarded();
@@ -103,6 +105,7 @@ describe('SubscriptionGuard', () => {
     mockUseBillingOverview.mockReturnValue({
       data: billingOverviewWithStatus('active'),
       isLoading: false,
+      isError: false,
     });
 
     renderGuarded();
@@ -117,6 +120,7 @@ describe('SubscriptionGuard', () => {
     mockUseBillingOverview.mockReturnValue({
       data: billingOverviewWithStatus('trialing'),
       isLoading: false,
+      isError: false,
     });
 
     renderGuarded();
@@ -135,6 +139,7 @@ describe('SubscriptionGuard', () => {
     mockUseBillingOverview.mockReturnValue({
       data: billingOverviewWithStatus('past_due', periodEnd),
       isLoading: false,
+      isError: false,
     });
 
     renderGuarded();
@@ -154,6 +159,7 @@ describe('SubscriptionGuard', () => {
     mockUseBillingOverview.mockReturnValue({
       data: billingOverviewWithStatus('past_due', periodEnd),
       isLoading: false,
+      isError: false,
     });
 
     renderGuarded();
@@ -169,9 +175,63 @@ describe('SubscriptionGuard', () => {
     mockUseBillingOverview.mockReturnValue({
       data: billingOverviewWithStatus('canceled'),
       isLoading: false,
+      isError: false,
     });
 
     renderGuarded();
     expect(screen.getByText('Billing Page')).toBeInTheDocument();
+  });
+
+  it('renders protected content when no subscription but org within trial period', () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date('2026-03-10T12:00:00.000Z')); // 7 days after org creation
+
+    mockUseCurrentOrganization.mockReturnValue({
+      organization: { id: 'org-1', created_at: '2026-03-03T12:00:00.000Z' },
+      isLoading: false,
+    });
+    mockUseBillingOverview.mockReturnValue({
+      data: { customer: null, subscription: null, invoices: [] },
+      isLoading: false,
+      isError: false,
+    });
+
+    renderGuarded();
+    expect(screen.getByText('Protected Content')).toBeInTheDocument();
+    vi.useRealTimers();
+  });
+
+  it('redirects to billing when no subscription and trial expired', () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date('2026-04-01T12:00:00.000Z')); // 29 days after org creation (past 14-day trial)
+
+    mockUseCurrentOrganization.mockReturnValue({
+      organization: { id: 'org-1', created_at: '2026-03-03T12:00:00.000Z' },
+      isLoading: false,
+    });
+    mockUseBillingOverview.mockReturnValue({
+      data: { customer: null, subscription: null, invoices: [] },
+      isLoading: false,
+      isError: false,
+    });
+
+    renderGuarded();
+    expect(screen.getByText('Billing Page')).toBeInTheDocument();
+    vi.useRealTimers();
+  });
+
+  it('allows access when billing query fails (fail-open for dev)', () => {
+    mockUseCurrentOrganization.mockReturnValue({
+      organization: { id: 'org-1' },
+      isLoading: false,
+    });
+    mockUseBillingOverview.mockReturnValue({
+      data: undefined,
+      isLoading: false,
+      isError: true,
+    });
+
+    renderGuarded();
+    expect(screen.getByText('Protected Content')).toBeInTheDocument();
   });
 });
