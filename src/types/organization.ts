@@ -5,6 +5,7 @@ export interface Organization {
   id: string;
   name: string;
   slug: string;
+  industry_template_key: string;
   logo_url: string | null;
   primary_color: string;
   locale: string;

@@ -13,6 +13,7 @@ export interface UpdateOrganizationSettingsInput {
     currency?: string;
     entity_label_singular?: string;
     entity_label_plural?: string;
+    industry_template_key?: string;
   };
 }
 

@@ -32,6 +32,7 @@ interface OperationsFiltersBarProps {
   smartSegment: SmartSegmentKey;
   onSmartSegmentChange: (key: SmartSegmentKey) => void;
   smartSegmentCounts?: SmartSegmentCounts;
+  smartSegmentLabels?: Partial<Record<SmartSegmentKey, string>>;
 }
 
 export function OperationsFiltersBar({
@@ -50,6 +51,7 @@ export function OperationsFiltersBar({
   smartSegment,
   onSmartSegmentChange,
   smartSegmentCounts,
+  smartSegmentLabels,
 }: OperationsFiltersBarProps) {
   const [showSaveInput, setShowSaveInput] = useState(false);
   const [segmentName, setSegmentName] = useState('');
@@ -151,7 +153,7 @@ export function OperationsFiltersBar({
               const count = key !== 'none' && smartSegmentCounts ? smartSegmentCounts[key] : undefined;
               return (
                 <SelectItem key={key} value={key}>
-                  {SMART_SEGMENT_LABELS[key]}
+                  {smartSegmentLabels?.[key] ?? SMART_SEGMENT_LABELS[key]}
                   {count !== undefined ? ` (${count})` : ''}
                 </SelectItem>
               );

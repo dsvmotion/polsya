@@ -115,6 +115,7 @@ export type Database = {
         Row: {
           created_at: string
           id: string
+          industry_template_key: string
           logo_url: string | null
           primary_color: string
           locale: string
@@ -129,6 +130,7 @@ export type Database = {
         Insert: {
           created_at?: string
           id?: string
+          industry_template_key?: string
           logo_url?: string | null
           primary_color?: string
           locale?: string
@@ -143,6 +145,7 @@ export type Database = {
         Update: {
           created_at?: string
           id?: string
+          industry_template_key?: string
           logo_url?: string | null
           primary_color?: string
           locale?: string

@@ -25,6 +25,8 @@ import { useCreatePharmacyActivity } from '@/hooks/usePharmacyActivities';
 import { toast } from 'sonner';
 import type { ClientType } from '@/types/pharmacy';
 import { useEntityTypes, resolveEntityTypeLabel } from '@/hooks/useEntityTypes';
+import { useCurrentOrganization } from '@/hooks/useOrganizationContext';
+import { getIndustrySmartSegmentLabels } from '@/lib/industry-templates';
 
 interface Props {
   clientType?: ClientType;
@@ -52,6 +54,7 @@ export default function PharmacyOperations({ clientType = 'pharmacy' }: Props) {
   const [selectedSegmentId, setSelectedSegmentId] = useState<string | null>(null);
   const [pendingOpenPharmacyId, setPendingOpenPharmacyId] = useState<string | null>(null);
   const [smartSegment, setSmartSegment] = useState<SmartSegmentKey>('none');
+  const { organization } = useCurrentOrganization();
 
   const { data: segments = [] } = useSavedSegments('operations');
   const { data: entityTypes = [] } = useEntityTypes();
@@ -132,6 +135,10 @@ export default function PharmacyOperations({ clientType = 'pharmacy' }: Props) {
   );
 
   const smartSegmentCounts = useSmartSegmentCounts(displayedPharmacies);
+  const smartSegmentLabels = useMemo(
+    () => getIndustrySmartSegmentLabels(organization?.industry_template_key),
+    [organization?.industry_template_key],
+  );
   const entityLabelSingular = resolveEntityTypeLabel(
     clientType,
     entityTypes,
@@ -291,7 +298,11 @@ export default function PharmacyOperations({ clientType = 'pharmacy' }: Props) {
         </div>
 
         <div className="flex items-center gap-2 shrink-0">
-          <BulkImportDialog defaultClientType={clientType} onSuccess={handleRefresh} />
+          <BulkImportDialog
+            defaultClientType={clientType}
+            industryTemplateKey={organization?.industry_template_key}
+            onSuccess={handleRefresh}
+          />
           <Link to={clientType === 'pharmacy' ? '/prospecting/entities' : '/prospecting/entities/herbalists'}>
             <Button variant="outline" size="sm" className="border-gray-300">
               <MapPin className="h-4 w-4 mr-2" />
@@ -370,6 +381,7 @@ export default function PharmacyOperations({ clientType = 'pharmacy' }: Props) {
             smartSegment={smartSegment}
             onSmartSegmentChange={handleSmartSegmentChange}
             smartSegmentCounts={smartSegmentCounts}
+            smartSegmentLabels={smartSegmentLabels}
           />
 
           {/* Main Content */}
