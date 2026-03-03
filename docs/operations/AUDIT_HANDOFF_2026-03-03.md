@@ -4,6 +4,10 @@ Quick handoff for external review/audit after the latest stabilization wave on b
 
 ## 1) Recent commits (latest first)
 
+- `922be6d` — `chore(test): suppress known react-router future flag warnings in test output`
+- `02208b5` — `chore(ci): enforce premium route subscription guards contract`
+- `b5dc60f` — `test(bill): cover frontend subscription guard redirects and loading states`
+- `8ed4695` — `test(bill): add backend billing guard enforcement coverage`
 - `12f32b7` — `perf(int): parallelize Gmail message detail sync with bounded concurrency`
 - `222400d` — `chore(ci): enforce integration provider/target contract invariants`
 - `649672f` — `test(int): cover connector target parsing and supported provider routing`
@@ -24,8 +28,12 @@ Quick handoff for external review/audit after the latest stabilization wave on b
   - `fetchWithRetry` has dedicated contract tests (retryable statuses, network errors, timeout, exhaustion).
   - Connector routing/target parsing has dedicated contract tests.
   - Gmail connector sync now fetches message details with bounded concurrency (faster sync runs).
+- Billing enforcement reliability:
+  - Backend access guard (`requireBillingAccessForOrg`) has direct tests for `active`, `trialing`, `past_due` grace/expired, no-subscription, and DB lookup failure.
+  - Frontend route guard (`SubscriptionGuard`) has direct tests for loading/allow/redirect behavior.
 - CI contract gates:
   - Added `check:design-system` and `check:integration-contracts`.
+  - Added `check:route-guards` to guarantee premium routes remain subscription-guarded.
 
 ## 3) Canonical verification commands
 
@@ -37,6 +45,7 @@ npm run typecheck
 npm run check:migrations
 npm run check:security
 npm run check:integration-contracts
+npm run check:route-guards
 npm run check:observability
 npm run check:release-ops
 npm run check:design-system
@@ -46,7 +55,7 @@ npm run build
 
 ## 4) Expected current baseline
 
-- Tests: `229` passing.
+- Tests: `239` passing.
 - Lint: clean.
 - Build: successful with split vendor chunks.
 - Security/migration/observability/release-ops/design-system/integration-contract checks: all green.
