@@ -6,13 +6,13 @@ import { requireBillingAccessForOrg } from '../_shared/billing.ts';
 import { logEdgeEvent } from '../_shared/observability.ts';
 import {
   buildIntegrationHealthSummary,
-  computeRetryBackoffMs,
   parseIntegrationMetricsSampleLimit,
   parseLookbackHours,
   parseStuckThresholdMinutes,
   type IntegrationHealthJobRow,
   type IntegrationHealthRunRow,
 } from '../_shared/integration-job-metrics.ts';
+import { planRetryTransition } from '../_shared/integration-job-retry.ts';
 import {
   getIntegrationConnector,
   parseSyncTargets,
@@ -106,10 +106,6 @@ function retryMaxDelayMs(): number {
   return Number.isFinite(value) && value > 0 ? value : 1_800_000;
 }
 
-function computeRetryDelayMs(attemptCount: number): number {
-  return computeRetryBackoffMs(attemptCount, retryBaseDelayMs(), retryMaxDelayMs());
-}
-
 async function transitionJobAfterFailure(
   supabaseAdmin: ReturnType<typeof createClient>,
   params: {
@@ -118,11 +114,15 @@ async function transitionJobAfterFailure(
     finishedAt: string;
   },
 ): Promise<RetryTransition> {
-  const attemptCount = Math.max(1, Number(params.job.attempt_count ?? 1));
-  const maxAttempts = Math.max(1, Number(params.job.max_attempts ?? 3));
-  const exhausted = attemptCount >= maxAttempts;
+  const plan = planRetryTransition({
+    attemptCountRaw: params.job.attempt_count,
+    maxAttemptsRaw: params.job.max_attempts,
+    nowMs: Date.now(),
+    baseDelayMs: retryBaseDelayMs(),
+    maxDelayMs: retryMaxDelayMs(),
+  });
 
-  if (exhausted) {
+  if (plan.deadLettered) {
     const { error: jobUpdateError } = await supabaseAdmin
       .from('integration_sync_jobs')
       .update({
@@ -150,8 +150,8 @@ async function transitionJobAfterFailure(
           provider: params.job.provider,
           job_type: params.job.job_type,
           payload: params.job.payload ?? {},
-          attempt_count: attemptCount,
-          max_attempts: maxAttempts,
+          attempt_count: plan.attemptCount,
+          max_attempts: plan.maxAttempts,
           error_message: params.errorMessage,
           first_created_at: params.job.created_at,
           failed_at: params.finishedAt,
@@ -163,18 +163,8 @@ async function transitionJobAfterFailure(
       throw new Error(`Failed to write dead-letter record: ${dlqError.message}`);
     }
 
-    return {
-      status: 'error',
-      retryScheduled: false,
-      deadLettered: true,
-      nextRetryAt: null,
-      attemptCount,
-      maxAttempts,
-    };
+    return plan;
   }
-
-  const delayMs = computeRetryDelayMs(attemptCount);
-  const nextRetryAt = new Date(Date.now() + delayMs).toISOString();
 
   const { error: jobUpdateError } = await supabaseAdmin
     .from('integration_sync_jobs')
@@ -182,7 +172,7 @@ async function transitionJobAfterFailure(
       status: 'queued',
       started_at: null,
       finished_at: null,
-      next_retry_at: nextRetryAt,
+      next_retry_at: plan.nextRetryAt,
       dead_lettered_at: null,
       error_message: params.errorMessage,
     })
@@ -193,14 +183,7 @@ async function transitionJobAfterFailure(
     throw new Error(`Failed to schedule integration job retry: ${jobUpdateError.message}`);
   }
 
-  return {
-    status: 'queued',
-    retryScheduled: true,
-    deadLettered: false,
-    nextRetryAt,
-    attemptCount,
-    maxAttempts,
-  };
+  return plan;
 }
 
 function runStep(
