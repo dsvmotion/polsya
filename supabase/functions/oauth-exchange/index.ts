@@ -47,7 +47,7 @@ async function fetchProviderAccountEmail(
 ): Promise<{ email: string | null; enrichedMetadata: Record<string, unknown> }> {
   const enriched = { ...metadata };
 
-  if (provider === 'gmail') {
+  if (provider === 'gmail' || provider === 'google_drive') {
     try {
       const res = await fetch('https://www.googleapis.com/oauth2/v2/userinfo', {
         headers: { Authorization: `Bearer ${accessToken}` },

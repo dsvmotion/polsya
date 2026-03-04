@@ -251,7 +251,7 @@ CATCH-ALL
 - [x] Stripe Checkout para nuevos suscriptores (desde landing y desde /billing)
 - [x] Customer Portal para gestión (cambiar plan, método de pago)
 - [x] Webhooks robustos: `customer.subscription.created`, `invoice.paid`, `invoice.payment_failed`
-- [ ] Emails de recordatorio (Stripe + lógica propia o servicio externo)
+- [x] Emails de recordatorio (Stripe) — ver docs/STRIPE_EMAILS.md
 - [x] UI de /billing sin bugs, estados claros
 - [x] Precios y planes en BD alineados con Stripe Products/Prices (bill_seed_plans)
 
@@ -270,11 +270,11 @@ CATCH-ALL
 ### 11.2 Ampliaciones
 - [x] Lista de organizaciones/tenants con búsqueda y filtros
 - [x] Detalle de organización: miembros, suscripción, uso
-- [ ] Impersonación o vista "como cliente" (opcional)
+- [x] Impersonación o vista "como cliente" — "Ver como cliente" en org detail, ?as_org=
 - [x] Logs de auditoría (platform_audit_logs, /platform/logs)
-- [ ] Configuración global (feature flags, límites)
-- [ ] Analytics agregados (MRR, churn, nuevos usuarios)
-- [ ] Gestión de usuarios platform (añadir/quitar owners)
+- [x] Configuración global (feature flags) — platform_settings, /platform/settings
+- [x] Analytics agregados (MRR, churn, nuevos usuarios) — /platform/analytics
+- [x] Gestión de usuarios platform (añadir/quitar owners) — /platform/settings, platform_owner_emails
 
 ---
 
@@ -287,10 +287,11 @@ CATCH-ALL
 
 ### 12.2 Previstas
 - [x] **Notion** — OAuth listo; sync datos pendiente
-- [ ] **Figma** — (evaluar caso de uso)
+- [ ] **Figma** — (evaluar) docs/INTEGRATIONS_EVALUATION.md
 - [ ] **Google** — Drive, Sheets, Calendar
-- [ ] **AWS** — S3, Lambda, etc.
-- [ ] **Claude / OpenAI** — Chat, análisis, embeddings
+- [ ] **AWS** — S3, Lambda (roadmap) docs/INTEGRATIONS_EVALUATION.md
+- [x] **OpenAI** — Chat (ai-chat-proxy), embeddings (ai-embeddings)
+- [x] **Claude/Anthropic** — Chat alternativo (ai_chat_config.provider; ver AI_CHAT_CLAUDE_SETUP.md)
 - [ ] Otras: Slack, HubSpot, Salesforce (según demanda)
 
 ### 12.3 Patrón
@@ -309,7 +310,7 @@ CATCH-ALL
 - Ningún leak entre tenants
 
 ### 13.2 Robustez
-- [ ] Backups automáticos (Supabase)
+- [x] Backups automáticos (Supabase) — docs/BACKUPS_SUPABASE.md
 - [ ] Migraciones seguras (ya con gen_01a resiliente)
 - [ ] Índices para consultas frecuentes
 - [ ] Límites por plan (ej. máximo entidades en tier Starter)
@@ -378,9 +379,9 @@ CATCH-ALL
 
 | # | Tarea | Descripción |
 |---|-------|-------------|
-| 6.1 | Notion | ✅ OAuth; sync pendiente |
-| 6.2 | Google (Drive/Sheets) | OAuth, sync |
-| 6.3 | Claude/OpenAI | API key, chat, embeddings |
+| 6.1 | Notion | ✅ OAuth + sync databases |
+| 6.2 | Google (Drive/Sheets) | ✅ OAuth + sync files |
+| 6.3 | Claude/OpenAI | ✅ Chat (OpenAI + Claude vía ai_chat_config) + embeddings |
 | 6.4 | AWS | Evaluar casos de uso |
 | 6.5 | Figma | Evaluar necesidad |
 
@@ -427,7 +428,7 @@ Fase 8 (legales)     → Paralelo, baja prioridad técnica
 - [x] Checkout y Customer Portal operativos
 - [x] Webhooks Stripe probados (customer.subscription.*, invoice.*)
 - [x] Platform admin para gestión
-- [ ] Emails de pago/impago (Stripe Dashboard)
+- [x] Emails de pago/impago (Stripe Dashboard) — docs/STRIPE_EMAILS.md
 - [x] Términos y privacidad publicados
 - [x] Tests críticos pasando (279 tests)
 - [x] Sin bugs conocidos en billing

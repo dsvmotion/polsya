@@ -1,16 +1,25 @@
 import { Outlet, Link, Navigate } from 'react-router-dom';
-import { LayoutDashboard, CreditCard, Mail, ScrollText, Compass } from 'lucide-react';
+import { LayoutDashboard, CreditCard, Mail, ScrollText, Compass, BarChart3, Settings } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
-import { isPlatformOwner } from '@/lib/platform';
+import { usePlatformOwnerStatus } from '@/hooks/usePlatformOwnerStatus';
 import { Button } from '@/components/ui/button';
 import { UserMenu } from '@/components/auth/UserMenu';
 
 export function PlatformLayout() {
   const { user } = useAuth();
+  const { isOwner, isLoading } = usePlatformOwnerStatus();
 
   if (!user) return null;
 
-  if (!isPlatformOwner(user)) {
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <p className="text-muted-foreground">Cargando…</p>
+      </div>
+    );
+  }
+
+  if (!isOwner) {
     return <Navigate to="/dashboard" replace />;
   }
 
@@ -42,9 +51,21 @@ export function PlatformLayout() {
               </Link>
             </Button>
             <Button variant="ghost" size="sm" asChild>
+              <Link to="/platform/analytics" className="gap-2">
+                <BarChart3 className="h-4 w-4" />
+                Analytics
+              </Link>
+            </Button>
+            <Button variant="ghost" size="sm" asChild>
               <Link to="/platform/logs" className="gap-2">
                 <ScrollText className="h-4 w-4" />
                 Logs
+              </Link>
+            </Button>
+            <Button variant="ghost" size="sm" asChild>
+              <Link to="/platform/settings" className="gap-2">
+                <Settings className="h-4 w-4" />
+                Ajustes
               </Link>
             </Button>
           </nav>

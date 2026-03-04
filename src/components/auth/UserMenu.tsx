@@ -12,12 +12,14 @@ import {
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { CreditCard, LogOut, User, Shield } from 'lucide-react';
 import { useCurrentOrganization } from '@/hooks/useOrganizationContext';
+import { usePlatformOwnerStatus } from '@/hooks/usePlatformOwnerStatus';
 import { isPlatformOwner } from '@/lib/platform';
 
 export function UserMenu() {
   const { user, signOut } = useAuth();
   const { organization, membership } = useCurrentOrganization();
-  const platformOwner = isPlatformOwner(user);
+  const { isOwner, isLoading } = usePlatformOwnerStatus();
+  const platformOwner = isLoading ? isPlatformOwner(user) : isOwner;
 
   if (!user) return null;
 

@@ -6,6 +6,7 @@ export type IntegrationProvider =
   | 'email_imap'
   | 'brevo'
   | 'notion'
+  | 'google_drive'
   | 'openai'
   | 'anthropic'
   | 'custom_api'
@@ -40,6 +41,7 @@ export const PROVIDER_LABELS: Record<IntegrationProvider, string> = {
   email_imap: 'IMAP/SMTP',
   brevo: 'Brevo',
   notion: 'Notion',
+  google_drive: 'Google Drive',
   openai: 'OpenAI',
   anthropic: 'Anthropic',
   custom_api: 'Custom API',
@@ -59,6 +61,7 @@ export const PROVIDER_ICONS: Record<IntegrationProvider, string> = {
   email_imap: '📮',
   brevo: '📣',
   notion: '📓',
+  google_drive: '📁',
   openai: '🤖',
   anthropic: '🧠',
   custom_api: '🔌',
@@ -83,6 +86,7 @@ export interface OutlookMetadata { workspace_email?: string; tenant_id?: string 
 export interface EmailImapMetadata { account_email: string; sender_name?: string }
 export interface BrevoMetadata { api_base_url: string; sender_email?: string }
 export interface NotionMetadata { workspace_id?: string }
+export interface GoogleDriveMetadata { workspace_email?: string }
 export interface OpenAIMetadata { project_id?: string }
 export interface AnthropicMetadata { workspace_id?: string }
 export interface CustomApiMetadata { base_url: string }
@@ -101,6 +105,7 @@ export interface IntegrationMetadataByProvider {
   email_imap: EmailImapMetadata;
   brevo: BrevoMetadata;
   notion: NotionMetadata;
+  google_drive: GoogleDriveMetadata;
   openai: OpenAIMetadata;
   anthropic: AnthropicMetadata;
   custom_api: CustomApiMetadata;

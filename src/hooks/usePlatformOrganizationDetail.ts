@@ -1,7 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { useAuth } from '@/contexts/AuthContext';
-import { isPlatformOwner } from '@/lib/platform';
+import { usePlatformOwnerStatus } from '@/hooks/usePlatformOwnerStatus';
 
 export interface OrgMemberRow {
   id: string;
@@ -9,6 +8,13 @@ export interface OrgMemberRow {
   role: string;
   status: string;
   created_at: string;
+}
+
+export interface AiChatConfigRow {
+  id: string;
+  organization_id: string;
+  provider: 'openai' | 'anthropic';
+  model: string;
 }
 
 export interface OrganizationDetail {
@@ -26,18 +32,19 @@ export interface OrganizationDetail {
   stripeSubscriptionId: string | null;
   entityCount: number;
   integrationCount: number;
+  aiChatConfig: AiChatConfigRow | null;
 }
 
 export function usePlatformOrganizationDetail(orgId: string | undefined) {
-  const { user } = useAuth();
+  const { isOwner } = usePlatformOwnerStatus();
 
   return useQuery<OrganizationDetail | null>({
     queryKey: ['platform-org-detail', orgId ?? ''],
-    enabled: !!orgId && isPlatformOwner(user),
+    enabled: !!orgId && isOwner,
     queryFn: async () => {
       if (!orgId) return null;
 
-      const [orgRes, membersRes, subRes, entityRes, integrationsRes] = await Promise.all([
+      const [orgRes, membersRes, subRes, entityRes, integrationsRes, aiConfigRes] = await Promise.all([
         supabase
           .from('organizations')
           .select('id, name, slug, created_at, locale, timezone, currency')
@@ -64,6 +71,11 @@ export function usePlatformOrganizationDetail(orgId: string | undefined) {
           .from('integration_connections')
           .select('id', { count: 'exact', head: true })
           .eq('organization_id', orgId),
+        supabase
+          .from('ai_chat_config')
+          .select('id, organization_id, provider, model')
+          .eq('organization_id', orgId)
+          .maybeSingle(),
       ]);
 
       if (orgRes.error) throw new Error(orgRes.error.message);
@@ -90,6 +102,7 @@ export function usePlatformOrganizationDetail(orgId: string | undefined) {
         stripeSubscriptionId: sub?.stripe_subscription_id ?? null,
         entityCount,
         integrationCount,
+        aiChatConfig: aiConfigRes.data ?? null,
       };
     },
     staleTime: 30_000,

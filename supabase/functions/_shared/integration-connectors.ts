@@ -6,6 +6,8 @@ import { pipedriveConnector } from './connectors/pipedrive-connector.ts';
 import { prestashopConnector } from './connectors/prestashop-connector.ts';
 import { whatsappConnector } from './connectors/whatsapp-connector.ts';
 import { slackConnector } from './connectors/slack-connector.ts';
+import { notionConnector } from './connectors/notion-connector.ts';
+import { googleDriveConnector } from './connectors/google-drive-connector.ts';
 
 export type SyncTarget =
   | 'entities' | 'orders' | 'products' | 'inventory'
@@ -861,7 +863,8 @@ const connectorMap: Record<string, IntegrationConnector> = {
   prestashop: prestashopConnector,
   whatsapp: whatsappConnector,
   slack: slackConnector,
-  notion: unsupportedConnector,
+  notion: notionConnector,
+  google_drive: googleDriveConnector,
   openai: unsupportedConnector,
   anthropic: unsupportedConnector,
   custom_api: unsupportedConnector,

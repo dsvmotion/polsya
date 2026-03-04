@@ -6,6 +6,7 @@ import { CommandPalette } from './CommandPalette';
 import { AiChatSheet } from './AiChatSheet';
 import { SubscriptionBanner } from '@/components/auth/SubscriptionBanner';
 import { ActivateSubscriptionGate } from '@/components/auth/ActivateSubscriptionGate';
+import { ImpersonationBanner } from '@/components/auth/ImpersonationBanner';
 import { cn } from '@/lib/utils';
 
 interface LayoutContextType {
@@ -66,6 +67,7 @@ export function AppLayout() {
             onMenuClick={() => setSidebarOpen(true)}
             onSearchClick={() => setCommandOpen(true)}
           />
+          <ImpersonationBanner />
           <SubscriptionBanner />
           <main className="flex-1">
             <ActivateSubscriptionGate />

@@ -54,6 +54,8 @@ Si ves `woocommerce-orders-detailed 401 (Unauthorized)` o similar:
    supabase functions deploy woocommerce-orders-detailed
    supabase functions deploy woocommerce-orders
    supabase functions deploy process-integration-sync-jobs
+   supabase functions deploy ai-chat-proxy
+   supabase functions deploy ai-embeddings
    # ... y el resto de funciones que uses
    ```
 
@@ -104,6 +106,7 @@ Los platform owners:
 - Acceden al dashboard de plataforma en `/platform`
 - Gestionan pagos de clientes en `/platform/billing`
 - Ven enlace "Platform Admin" en el menú de usuario cuando usan el CRM
+- Pueden añadir/quitar otros admins en `/platform/settings` (tabla `platform_owner_emails`)
 
 ---
 

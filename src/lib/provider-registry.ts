@@ -151,6 +151,26 @@ export const PROVIDER_REGISTRY: Record<string, ProviderDefinition> = {
       extraAuthParams: { owner: 'user' },
     },
   },
+  google_drive: {
+    key: 'google_drive',
+    label: 'Google Drive',
+    icon: '📁',
+    category: 'ai',
+    authType: 'oauth2',
+    syncTargets: ['entities'],
+    defaultTargets: ['entities'],
+    metadataSchema: [],
+    oauthConfig: {
+      authUrl: 'https://accounts.google.com/o/oauth2/v2/auth',
+      tokenUrl: 'https://oauth2.googleapis.com/token',
+      scopes: [
+        'https://www.googleapis.com/auth/drive.readonly',
+        'https://www.googleapis.com/auth/spreadsheets.readonly',
+      ],
+      envPrefix: 'GOOGLE_DRIVE',
+      extraAuthParams: { access_type: 'offline', prompt: 'consent' },
+    },
+  },
   openai: {
     key: 'openai',
     label: 'OpenAI',

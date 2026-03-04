@@ -49,26 +49,30 @@ serve(async (req) => {
     return jsonResponse({ error: `Message is required (max ${MAX_MESSAGE_LENGTH} chars)` }, 400, headers);
   }
 
-  // Platform-level API key: set once in Supabase Edge Function secrets.
-  // This is YOUR key as the platform owner - clients never see or configure it.
-  const apiKey = Deno.env.get('OPENAI_API_KEY');
-  if (!apiKey) {
-    logEdgeEvent('error', { fn: 'ai-chat-proxy', error: 'OPENAI_API_KEY not configured' });
-    return jsonResponse({ error: 'AI assistant is temporarily unavailable' }, 503, headers);
-  }
-
   const supabaseUrl = Deno.env.get('SUPABASE_URL') ?? '';
   const serviceRoleKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? Deno.env.get('SB_SERVICE_ROLE_KEY') ?? '';
   const supabaseAdmin = createClient(supabaseUrl, serviceRoleKey);
 
-  // Check if the org has an optional model override
+  // Check if the org has an optional provider/model override
   const { data: config } = await supabaseAdmin
     .from('ai_chat_config')
-    .select('model')
+    .select('provider, model')
     .eq('organization_id', organizationId)
     .maybeSingle();
 
-  const model = config?.model || DEFAULT_MODEL;
+  const provider = (config?.provider === 'anthropic' ? 'anthropic' : 'openai') as 'openai' | 'anthropic';
+  const model = config?.model || (provider === 'anthropic' ? 'claude-3-5-sonnet-20241022' : DEFAULT_MODEL);
+
+  const openaiKey = Deno.env.get('OPENAI_API_KEY');
+  const anthropicKey = Deno.env.get('ANTHROPIC_API_KEY');
+  if (provider === 'anthropic' && !anthropicKey) {
+    logEdgeEvent('error', { fn: 'ai-chat-proxy', error: 'ANTHROPIC_API_KEY not configured for anthropic provider' });
+    return jsonResponse({ error: 'AI assistant is temporarily unavailable' }, 503, headers);
+  }
+  if (provider === 'openai' && !openaiKey) {
+    logEdgeEvent('error', { fn: 'ai-chat-proxy', error: 'OPENAI_API_KEY not configured' });
+    return jsonResponse({ error: 'AI assistant is temporarily unavailable' }, 503, headers);
+  }
 
   // ── Gather workspace context ──────────────────────────────────────
   const { data: org } = await supabaseAdmin
@@ -137,44 +141,84 @@ serve(async (req) => {
     .order('created_at', { ascending: true })
     .limit(MAX_CONTEXT_MESSAGES);
 
-  const messages = [
-    { role: 'system', content: systemPrompt },
-    ...(history ?? []).map((m: { role: string; content: string }) => ({ role: m.role, content: m.content })),
-    { role: 'user', content: userMessage },
-  ];
+  const historyArr = (history ?? []).map((m: { role: string; content: string }) => ({ role: m.role, content: m.content }));
 
-  // ── Call OpenAI (server-side, key never reaches client) ───────────
   let assistantContent: string;
-  try {
-    const openaiResponse = await fetch('https://api.openai.com/v1/chat/completions', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${apiKey}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        model,
-        messages,
-        max_tokens: 1500,
-        temperature: 0.7,
-      }),
-    });
-
-    if (!openaiResponse.ok) {
-      const errBody = await openaiResponse.text();
-      logEdgeEvent('error', { fn: 'ai-chat-proxy', status: openaiResponse.status, error: errBody });
-
-      if (openaiResponse.status === 429) {
-        return jsonResponse({ error: 'The assistant is busy right now. Please wait a moment and try again.' }, 429, headers);
-      }
-      return jsonResponse({ error: 'AI assistant encountered an error. Please try again.' }, 502, headers);
+  if (provider === 'anthropic') {
+    const hist = historyArr.filter((m) => m.role !== 'system');
+    const anthropicMessages = [
+      ...hist,
+      { role: 'user' as const, content: userMessage },
+    ];
+    if (anthropicMessages.length > 0 && anthropicMessages[0].role !== 'user') {
+      anthropicMessages.unshift({ role: 'user' as const, content: 'Hi' });
     }
-
-    const result = await openaiResponse.json();
-    assistantContent = result.choices?.[0]?.message?.content ?? 'No response generated.';
-  } catch (err) {
-    logEdgeEvent('error', { fn: 'ai-chat-proxy', error: err instanceof Error ? err.message : String(err) });
-    return jsonResponse({ error: 'Failed to communicate with AI assistant' }, 502, headers);
+    try {
+      const anthropicRes = await fetch('https://api.anthropic.com/v1/messages', {
+        method: 'POST',
+        headers: {
+          'x-api-key': anthropicKey!,
+          'anthropic-version': '2023-06-01',
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          model,
+          max_tokens: 1500,
+          system: systemPrompt,
+          messages: anthropicMessages.map((m) => ({
+            role: m.role === 'assistant' ? 'assistant' as const : 'user' as const,
+            content: m.content,
+          })),
+        }),
+      });
+      if (!anthropicRes.ok) {
+        const errBody = await anthropicRes.text();
+        logEdgeEvent('error', { fn: 'ai-chat-proxy', provider: 'anthropic', status: anthropicRes.status, error: errBody });
+        if (anthropicRes.status === 429) {
+          return jsonResponse({ error: 'The assistant is busy right now. Please wait a moment and try again.' }, 429, headers);
+        }
+        return jsonResponse({ error: 'AI assistant encountered an error. Please try again.' }, 502, headers);
+      }
+      const result = await anthropicRes.json() as { content?: Array<{ type: string; text?: string }> };
+      assistantContent = result.content?.[0]?.text ?? 'No response generated.';
+    } catch (err) {
+      logEdgeEvent('error', { fn: 'ai-chat-proxy', provider: 'anthropic', error: err instanceof Error ? err.message : String(err) });
+      return jsonResponse({ error: 'Failed to communicate with AI assistant' }, 502, headers);
+    }
+  } else {
+    const messages = [
+      { role: 'system' as const, content: systemPrompt },
+      ...historyArr,
+      { role: 'user' as const, content: userMessage },
+    ];
+    try {
+      const openaiResponse = await fetch('https://api.openai.com/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${openaiKey}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          model,
+          messages,
+          max_tokens: 1500,
+          temperature: 0.7,
+        }),
+      });
+      if (!openaiResponse.ok) {
+        const errBody = await openaiResponse.text();
+        logEdgeEvent('error', { fn: 'ai-chat-proxy', provider: 'openai', status: openaiResponse.status, error: errBody });
+        if (openaiResponse.status === 429) {
+          return jsonResponse({ error: 'The assistant is busy right now. Please wait a moment and try again.' }, 429, headers);
+        }
+        return jsonResponse({ error: 'AI assistant encountered an error. Please try again.' }, 502, headers);
+      }
+      const result = await openaiResponse.json();
+      assistantContent = result.choices?.[0]?.message?.content ?? 'No response generated.';
+    } catch (err) {
+      logEdgeEvent('error', { fn: 'ai-chat-proxy', provider: 'openai', error: err instanceof Error ? err.message : String(err) });
+      return jsonResponse({ error: 'Failed to communicate with AI assistant' }, 502, headers);
+    }
   }
 
   // ── Persist both messages (private to this user) ──────────────────
@@ -191,7 +235,7 @@ serve(async (req) => {
     logEdgeEvent('warn', { fn: 'ai-chat-proxy', op: 'persist', error: insertError.message });
   }
 
-  logEdgeEvent('info', { fn: 'ai-chat-proxy', organizationId, userId: user.id, model });
+  logEdgeEvent('info', { fn: 'ai-chat-proxy', organizationId, userId: user.id, provider, model });
 
   return jsonResponse({ reply: assistantContent }, 200, headers);
 });

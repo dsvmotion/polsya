@@ -41,6 +41,7 @@ export const PROVIDER_METADATA_SCHEMA: Record<IntegrationProvider, MetadataField
   notion: [
     { key: 'workspace_id', label: 'Workspace ID', placeholder: 'abc123...', required: false, type: 'text' },
   ],
+  google_drive: [],
   openai: [
     { key: 'project_id', label: 'Project ID', placeholder: 'proj_abc123', required: false, type: 'text' },
   ],

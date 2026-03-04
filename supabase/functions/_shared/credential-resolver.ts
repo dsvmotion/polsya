@@ -63,14 +63,43 @@ async function refreshOAuthAccessToken(
     );
   }
 
+  let tokenUrl = oauthConfig.tokenUrl;
+
+  if (provider === 'notion') {
+    const basicAuth = btoa(`${clientId}:${clientSecret}`);
+    const res = await fetch(tokenUrl, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Basic ${basicAuth}`,
+      },
+      body: JSON.stringify({ grant_type: 'refresh_token', refresh_token: refreshToken }),
+    });
+    const body = (await res.json().catch(() => ({}))) as {
+      access_token?: string;
+      token_type?: string;
+      scope?: string;
+      expires_in?: number;
+      error?: string;
+      error_description?: string;
+    };
+    if (!res.ok || !body.access_token) {
+      const detail = body.error_description || body.error || `status ${res.status}`;
+      throw new Error(`Failed to refresh ${provider} access token: ${detail}`);
+    }
+    const expiresAt =
+      typeof body.expires_in === 'number'
+        ? new Date(Date.now() + body.expires_in * 1000).toISOString()
+        : null;
+    return { accessToken: body.access_token, tokenType: body.token_type ?? null, scope: body.scope ?? null, expiresAt };
+  }
+
   const tokenParams = new URLSearchParams({
     client_id: clientId,
     client_secret: clientSecret,
     refresh_token: refreshToken,
     grant_type: 'refresh_token',
   });
-
-  let tokenUrl = oauthConfig.tokenUrl;
 
   if (provider === 'outlook') {
     const tenant =

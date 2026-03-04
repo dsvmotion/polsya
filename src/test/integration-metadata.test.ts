@@ -51,6 +51,11 @@ describe('validateIntegrationMetadata', () => {
     expect(r.valid).toBe(true);
   });
 
+  it('passes google_drive with no metadata', () => {
+    const r = validateIntegrationMetadata('google_drive', {});
+    expect(r.valid).toBe(true);
+  });
+
   it('passes openai with no metadata', () => {
     const r = validateIntegrationMetadata('openai', {});
     expect(r.valid).toBe(true);
@@ -225,7 +230,7 @@ describe('validateIntegrationMetadata', () => {
   // --- Schema coverage ---
 
   it('has schema defined for every provider', () => {
-    const providers = ['woocommerce', 'shopify', 'gmail', 'outlook', 'email_imap', 'brevo', 'notion', 'openai', 'anthropic', 'custom_api'] as const;
+    const providers = ['woocommerce', 'shopify', 'gmail', 'outlook', 'email_imap', 'brevo', 'notion', 'google_drive', 'openai', 'anthropic', 'custom_api'] as const;
     for (const p of providers) {
       expect(PROVIDER_METADATA_SCHEMA[p]).toBeDefined();
       expect(Array.isArray(PROVIDER_METADATA_SCHEMA[p])).toBe(true);

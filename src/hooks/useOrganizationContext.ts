@@ -1,9 +1,14 @@
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import type { Organization, OrganizationMember } from '@/types/organization';
+import { useImpersonation } from '@/contexts/ImpersonationContext';
+import { usePlatformOwnerStatus } from '@/hooks/usePlatformOwnerStatus';
 
 export function useCurrentOrganizationMembership() {
-  return useQuery<OrganizationMember | null>({
+  const { impersonateOrgId } = useImpersonation();
+  const { isOwner } = usePlatformOwnerStatus();
+
+  const normalMembership = useQuery<OrganizationMember | null>({
     queryKey: ['organization-membership', 'current'],
     queryFn: async () => {
       const { data: { session } } = await supabase.auth.getSession();
@@ -23,22 +28,48 @@ export function useCurrentOrganizationMembership() {
       return (data ?? null) as OrganizationMember | null;
     },
   });
+
+  const impersonating = !!impersonateOrgId && isOwner;
+  const effectiveOrgId = impersonating ? impersonateOrgId : normalMembership.data?.organization_id ?? null;
+
+  const membership: OrganizationMember | null = impersonating && effectiveOrgId
+    ? ({
+        id: 'impersonation',
+        organization_id: effectiveOrgId,
+        user_id: '',
+        role: 'admin',
+        status: 'active',
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      } as OrganizationMember)
+    : normalMembership.data ?? null;
+
+  return {
+    data: membership,
+    isLoading: impersonating ? false : normalMembership.isLoading,
+    error: normalMembership.error,
+  };
 }
 
 export function useCurrentOrganization() {
-  const membership = useCurrentOrganizationMembership();
+  const { impersonateOrgId } = useImpersonation();
+  const { isOwner } = usePlatformOwnerStatus();
+  const membershipResult = useCurrentOrganizationMembership();
+
+  const effectiveOrgId = !!impersonateOrgId && isOwner
+    ? impersonateOrgId
+    : membershipResult.data?.organization_id ?? null;
 
   const organization = useQuery<Organization | null>({
-    queryKey: ['organization', membership.data?.organization_id ?? null],
-    enabled: !!membership.data?.organization_id,
+    queryKey: ['organization', effectiveOrgId ?? null],
+    enabled: !!effectiveOrgId,
     queryFn: async () => {
-      const orgId = membership.data?.organization_id;
-      if (!orgId) return null;
+      if (!effectiveOrgId) return null;
 
       const { data, error } = await supabase
         .from('organizations')
         .select('*')
-        .eq('id', orgId)
+        .eq('id', effectiveOrgId)
         .maybeSingle();
 
       if (error) throw new Error(error.message);
@@ -47,10 +78,11 @@ export function useCurrentOrganization() {
   });
 
   return {
-    membership: membership.data ?? null,
+    membership: membershipResult.data ?? null,
     organization: organization.data ?? null,
-    isLoading: membership.isLoading || organization.isLoading,
-    error: membership.error ?? organization.error ?? null,
+    isLoading: membershipResult.isLoading || organization.isLoading,
+    error: membershipResult.error ?? organization.error ?? null,
+    isImpersonating: !!impersonateOrgId && isOwner,
   };
 }
 

@@ -6,6 +6,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate, useParams } from "react-router-dom";
 import { ThemeProvider } from "next-themes";
 import { AuthProvider } from "@/contexts/AuthContext";
+import { ImpersonationProvider } from "@/contexts/ImpersonationContext";
 import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
 import { PageLoader } from "@/components/ui/page-loader";
 import { WorkspaceThemeBridge } from "@/components/layout/WorkspaceThemeBridge";
@@ -20,6 +21,7 @@ import Billing from "./pages/Billing";
 import GmailOAuthCallback from "./pages/GmailOAuthCallback";
 import OutlookOAuthCallback from "./pages/OutlookOAuthCallback";
 import NotionOAuthCallback from "./pages/NotionOAuthCallback";
+import GoogleDriveOAuthCallback from "./pages/GoogleDriveOAuthCallback";
 import NotFound from "./pages/NotFound";
 import Features from "./pages/Features";
 import Pricing from "./pages/Pricing";
@@ -40,6 +42,8 @@ const IntegrationsPage = lazy(() => import("./pages/Integrations"));
 const PlatformDashboard = lazy(() => import("./pages/PlatformDashboard"));
 const PlatformBilling = lazy(() => import("./pages/PlatformBilling"));
 const PlatformOrganizationDetail = lazy(() => import("./pages/PlatformOrganizationDetail"));
+const PlatformAnalytics = lazy(() => import("./pages/PlatformAnalytics"));
+const PlatformSettings = lazy(() => import("./pages/PlatformSettings"));
 const PlatformContactMessages = lazy(() => import("./pages/PlatformContactMessages"));
 const PlatformLogs = lazy(() => import("./pages/PlatformLogs"));
 
@@ -65,6 +69,7 @@ const App = () => (
             <Toaster />
             <Sonner />
             <BrowserRouter>
+              <ImpersonationProvider>
               <Suspense fallback={<PageLoader />}>
                 <Routes>
                   {/* Public routes - landing, features, pricing, contact, legal */}
@@ -115,6 +120,7 @@ const App = () => (
                     <Route path="integrations/gmail/callback" element={<GmailOAuthCallback />} />
                     <Route path="integrations/outlook/callback" element={<OutlookOAuthCallback />} />
                     <Route path="integrations/notion/callback" element={<NotionOAuthCallback />} />
+                    <Route path="integrations/google-drive/callback" element={<GoogleDriveOAuthCallback />} />
                   </Route>
 
                   {/* Platform admin routes (solo propietarios de la plataforma) */}
@@ -127,6 +133,8 @@ const App = () => (
                     <Route path="billing" element={<PlatformBilling />} />
                     <Route path="contact-messages" element={<PlatformContactMessages />} />
                     <Route path="logs" element={<PlatformLogs />} />
+                    <Route path="analytics" element={<PlatformAnalytics />} />
+                    <Route path="settings" element={<PlatformSettings />} />
                     <Route path="org/:orgId" element={<PlatformOrganizationDetail />} />
                   </Route>
 
@@ -138,6 +146,7 @@ const App = () => (
                   <Route path="*" element={<NotFound />} />
                 </Routes>
               </Suspense>
+              </ImpersonationProvider>
               <CookieConsent />
             </BrowserRouter>
           </TooltipProvider>

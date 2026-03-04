@@ -63,4 +63,4 @@ supabase functions deploy oauth-exchange
 ## Notas
 
 - El token se guarda en `integration_oauth_tokens`; el `workspace_id` y `workspace_name` en `metadata`.
-- Sync de datos (bases de datos, páginas) se implementa en el connector; el OAuth solo habilita la conexión.
+- **Sync:** El connector sincroniza las bases de datos accesibles (Search API). Tras conectar, ve a Integrations → "Queue sync" para sincronizar.

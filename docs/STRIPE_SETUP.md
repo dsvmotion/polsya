@@ -90,3 +90,9 @@ supabase functions deploy stripe-webhook
 4. Tras completar (o cancelar), volver a `/billing`.
 
 Si ves errores como "No such price", revisa que los `stripe_price_id` en `billing_plans` coincidan con los Price IDs de tu proyecto Stripe (y modo Test/Live correcto).
+
+---
+
+## 7. Emails (factura, recibo, pago fallido)
+
+Ver [STRIPE_EMAILS.md](./STRIPE_EMAILS.md) para configurar los emails automáticos de Stripe.

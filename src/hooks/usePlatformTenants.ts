@@ -1,7 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { useAuth } from '@/contexts/AuthContext';
-import { isPlatformOwner } from '@/lib/platform';
+import { usePlatformOwnerStatus } from '@/hooks/usePlatformOwnerStatus';
 
 export interface TenantWithBilling {
   id: string;
@@ -14,11 +13,11 @@ export interface TenantWithBilling {
 }
 
 export function usePlatformTenants() {
-  const { user } = useAuth();
+  const { isOwner } = usePlatformOwnerStatus();
 
   return useQuery<TenantWithBilling[]>({
     queryKey: ['platform-tenants'],
-    enabled: isPlatformOwner(user),
+    enabled: isOwner,
     queryFn: async () => {
       const { data: orgs, error: orgError } = await supabase
         .from('organizations')
