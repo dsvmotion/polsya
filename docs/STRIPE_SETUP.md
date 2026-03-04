@@ -18,7 +18,12 @@ Para que Checkout y Customer Portal funcionen, debes crear Products y Prices en 
    - Repite con `Sales Compass Pro`, precio (ej. 79€/mes).
    - Anota el Price ID.
 
-4. (Opcional) **Producto Enterprise** — para "Contact sales" no necesitas Price, solo el plan en la UI.
+4. **Producto Business**
+   - Repite con `Sales Compass Business`, precio (ej. 149€/mes).
+   - Anota el Price ID.
+   - La migración `bill_business_plan` inserta el plan; actualiza `stripe_price_id` tras crear el Price en Stripe.
+
+5. (Opcional) **Producto Enterprise** — para "Contact sales" no necesitas Price, solo el plan en la UI.
 
 ---
 
@@ -33,9 +38,10 @@ Ve a **SQL Editor** y ejecuta:
 ```sql
 UPDATE public.billing_plans SET stripe_price_id = 'price_XXXXXXXXXXXX' WHERE code = 'starter';
 UPDATE public.billing_plans SET stripe_price_id = 'price_YYYYYYYYYYYY' WHERE code = 'pro';
+UPDATE public.billing_plans SET stripe_price_id = 'price_ZZZZZZZZZZZZ' WHERE code = 'business';
 ```
 
-Sustituye `price_XXXXXXXXXXXX` y `price_YYYYYYYYYYYY` por los Price IDs que copiaste de Stripe.
+Sustituye los placeholders por los Price IDs que copiaste de Stripe.
 
 **Opción B – Si usas modo Test/Live**
 

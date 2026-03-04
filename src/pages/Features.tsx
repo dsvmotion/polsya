@@ -8,6 +8,7 @@ import {
   MapPin,
   Users,
   ArrowRight,
+  Workflow,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
@@ -17,7 +18,7 @@ const features = [
     title: 'Prospecting',
     icon: Search,
     description: 'Find and qualify leads with powerful filters, maps, and search.',
-    bullets: ['Entity types (pharmacies, clients, distributors)', 'Interactive map with clustering', 'Territory planning and assignment', 'Advanced filters and bulk actions'],
+    bullets: ['Custom entity types (accounts, leads, distributors)', 'Interactive map with clustering', 'Territory planning and assignment', 'Advanced filters and bulk actions'],
   },
   {
     id: 'operations',
@@ -31,7 +32,14 @@ const features = [
     title: 'Integrations',
     icon: Plug,
     description: 'Connect your existing tools. Data flows in and out seamlessly.',
-    bullets: ['WooCommerce (orders, products)', 'Gmail & Outlook (email sync)', 'Google Maps (geocoding, maps)', 'More coming: Notion, Slack, HubSpot'],
+    bullets: [
+      'WooCommerce (orders, products)',
+      'Gmail & Outlook (email sync)',
+      'Google Maps (geocoding, maps)',
+      'Notion, Google Drive',
+      'OpenAI & Claude (AI chat)',
+      'Roadmap: Slack, HubSpot, Salesforce, Pipedrive',
+    ],
   },
   {
     id: 'ai',
@@ -61,6 +69,13 @@ const features = [
     description: 'Invite team members. Assign roles and permissions.',
     bullets: ['Admin, manager, rep, ops roles', 'Organization-level access', 'Audit and activity logs', 'Invite via email'],
   },
+  {
+    id: 'workflows',
+    title: 'Custom Workflows',
+    icon: Workflow,
+    description: 'Define entity types, fields, and processes. The platform adapts to you.',
+    bullets: ['Custom entity types per vertical', 'Flexible field schemas', 'B2B-focused workflows', 'No generic CRM bloat'],
+  },
 ];
 
 export default function Features() {
@@ -72,7 +87,7 @@ export default function Features() {
             Everything you need to sell smarter
           </h1>
           <p className="mt-4 text-lg text-muted-foreground">
-            Prospecting, operations, integrations, AI, and reporting—built for teams that sell to pharmacies, distributors, and B2B accounts.
+            Prospecting, operations, integrations, AI, and reporting—built for B2B teams. Fully customizable for any vertical.
           </p>
         </div>
 

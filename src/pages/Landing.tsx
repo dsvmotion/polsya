@@ -11,6 +11,12 @@ import {
   Shield,
   Layers,
   TrendingUp,
+  Users,
+  Workflow,
+  Database,
+  Lock,
+  Cpu,
+  MessageSquare,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
@@ -20,6 +26,7 @@ import {
   AccordionTrigger,
 } from '@/components/ui/accordion';
 
+/** Product capabilities - B2B horizontal, fully customizable */
 const productBlocks = [
   {
     title: 'Prospecting',
@@ -35,7 +42,7 @@ const productBlocks = [
   },
   {
     title: 'Integrations',
-    description: 'Connect WooCommerce, Gmail, Outlook, and more. Your data flows in and out without friction.',
+    description: 'Connect WooCommerce, Gmail, Outlook, Notion, Google Drive, and 15+ platforms. Your data flows without friction.',
     icon: Plug,
     href: '/features#integrations',
   },
@@ -45,40 +52,81 @@ const productBlocks = [
     icon: Sparkles,
     href: '/features#ai',
   },
-];
-
-const industrySolutions = [
   {
-    industry: 'For retail & distribution',
-    stat: 'Centralize your client base',
-    description: 'Manage pharmacies, stores, and distributors from a single dashboard. Map territories and track performance.',
+    title: 'Reports & Analytics',
+    description: 'Dashboard widgets, conversion metrics, team activity. Export to Excel. Make decisions with data.',
+    icon: BarChart3,
+    href: '/features#reports',
   },
   {
-    industry: 'For field teams',
-    stat: 'Optimize your routes and visits',
+    title: 'Maps & Territory',
+    description: 'Plot prospects on interactive maps. Cluster by status, plan routes. Google Maps powered.',
+    icon: MapPin,
+    href: '/features#maps',
+  },
+  {
+    title: 'Team & Roles',
+    description: 'Invite members, assign admin/manager/rep/ops roles. Audit logs and organization-level access.',
+    icon: Users,
+    href: '/features#team',
+  },
+  {
+    title: 'Custom Workflows',
+    description: 'Define entity types, fields, and workflows. Sales Compass adapts to your processes.',
+    icon: Workflow,
+    href: '/features#prospecting',
+  },
+];
+
+/** Solutions for every B2B vertical */
+const industrySolutions = [
+  {
+    industry: 'Retail & distribution',
+    stat: 'Centralize your client base',
+    description: 'Manage accounts, stores, and distributors from a single dashboard. Map territories and track performance.',
+  },
+  {
+    industry: 'Field teams',
+    stat: 'Optimize routes and visits',
     description: 'Track prospects and customers on the map. Plan visits, log activities, and never lose a follow-up.',
   },
   {
-    industry: 'For growing businesses',
+    industry: 'Growing businesses',
     stat: 'Scale without losing visibility',
     description: 'Add entities, team members, and integrations as you grow. Your CRM adapts to your processes.',
   },
+  {
+    industry: 'Manufacturing & wholesale',
+    stat: 'Connect sales with operations',
+    description: 'Link orders, shipments, and inventory. Visibility across channels and territories.',
+  },
+  {
+    industry: 'Professional services',
+    stat: 'Manage pipeline and delivery',
+    description: 'Track opportunities, proposals, and client projects. Role-based access and reporting.',
+  },
+  {
+    industry: 'SaaS & technology',
+    stat: 'B2B sales at scale',
+    description: 'Custom entities for leads, accounts, and deals. Integrate with your stack via API and connectors.',
+  },
 ];
 
+/** Key differentiators */
 const differentiators = [
   {
     title: 'Unmatched flexibility',
-    description: 'Custom entity types, fields, and workflows. Sales Compass adapts to your business, not the other way around.',
+    description: 'Custom entity types, fields, and workflows. Adapts to your business, not the other way around.',
     icon: Layers,
   },
   {
-    title: 'Built for real work',
-    description: 'Designed for teams that sell to pharmacies, distributors, and B2B accounts. No generic CRM bloat.',
+    title: 'Pure B2B focus',
+    description: 'Built for teams that sell to businesses. No generic CRM bloat. Accounts, territories, pipelines.',
     icon: Zap,
   },
   {
     title: 'Faster time to value',
-    description: 'Pre-built integrations, intuitive UI, and a 7-day free trial. Start working in hours, not weeks.',
+    description: 'Pre-built integrations, intuitive UI, 7-day free trial. Start working in hours, not weeks.',
     icon: TrendingUp,
   },
   {
@@ -86,20 +134,61 @@ const differentiators = [
     description: 'Predictable plans with no hidden fees. Trial the full platform before you commit.',
     icon: Shield,
   },
+  {
+    title: 'Best-in-class security',
+    description: 'Row-level security, encryption at rest. Each organization sees only its own data.',
+    icon: Lock,
+  },
+  {
+    title: 'Developer-friendly',
+    description: 'REST APIs, webhooks, extensible schema. Integrate with any system.',
+    icon: Cpu,
+  },
+  {
+    title: 'Full customization',
+    description: 'White-label options, custom fields, and workflows. Your brand, your rules.',
+    icon: Database,
+  },
+  {
+    title: 'Dedicated support',
+    description: 'Priority support on Business+ plans. Onboarding, training, and custom integrations.',
+    icon: MessageSquare,
+  },
 ];
+
+/** Integrations: available + roadmap */
+const integrations = {
+  available: [
+    { name: 'WooCommerce', category: 'E-commerce' },
+    { name: 'Gmail', category: 'Email' },
+    { name: 'Outlook', category: 'Email' },
+    { name: 'Google Maps', category: 'Maps' },
+    { name: 'Notion', category: 'Productivity' },
+    { name: 'Google Drive', category: 'Storage' },
+    { name: 'OpenAI', category: 'AI' },
+    { name: 'Claude', category: 'AI' },
+  ],
+  roadmap: [
+    { name: 'Slack', category: 'Communication' },
+    { name: 'HubSpot', category: 'CRM' },
+    { name: 'Salesforce', category: 'CRM' },
+    { name: 'Pipedrive', category: 'CRM' },
+    { name: 'Stripe', category: 'Payments' },
+  ],
+};
 
 const faqItems = [
   {
     q: 'How does the 7-day free trial work?',
-    a: 'Sign up and get full access to the platform for 7 days. No credit card required. You can explore all features, add your data, and connect integrations. If you decide to subscribe, your data is preserved.',
+    a: 'Sign up and get full access for 7 days. No credit card required. Explore all features, add your data, and connect integrations. Your data is preserved if you subscribe.',
   },
   {
     q: 'What integrations are included?',
-    a: 'Sales Compass includes WooCommerce (orders), Gmail and Outlook (email), and Google Maps for geocoding and territory visualization. More integrations (Notion, Slack, etc.) are on the roadmap.',
+    a: 'Sales Compass connects to WooCommerce, Gmail, Outlook, Google Maps, Notion, Google Drive, and OpenAI/Claude. Slack, HubSpot, Salesforce, and Pipedrive are on the roadmap. We offer API access for custom integrations.',
   },
   {
-    q: 'Can I cancel anytime?',
-    a: 'Yes. There is no long-term commitment. You can cancel your subscription at any time from the Billing page. Your data remains accessible during any grace period.',
+    q: 'Can I customize entity types and fields?',
+    a: 'Yes. Define your own entity types (accounts, leads, projects, etc.), custom fields, and workflows. The platform adapts to your B2B processes.',
   },
   {
     q: 'Is my data secure?',
@@ -107,22 +196,22 @@ const faqItems = [
   },
   {
     q: 'Do you offer enterprise or custom plans?',
-    a: 'Yes. For larger teams with custom needs, contact us for an Enterprise plan with dedicated support, custom integrations, and flexible terms.',
+    a: 'Yes. Enterprise plans include unlimited entities, dedicated support, custom integrations, SLA, and flexible terms. Contact us for a quote.',
   },
 ];
 
 export default function Landing() {
   return (
     <div className="overflow-hidden">
-      {/* Hero */}
+      {/* Hero - Radar-style */}
       <section className="relative px-4 pt-16 pb-24 sm:px-6 sm:pt-24 sm:pb-32 lg:px-8">
-        <div className="mx-auto max-w-4xl text-center">
-          <h1 className="text-4xl font-bold tracking-tight text-foreground sm:text-5xl md:text-6xl">
-            Sales solutions for{' '}
-            <span className="text-primary">modern teams</span>
+        <div className="mx-auto max-w-5xl text-center">
+          <h1 className="text-4xl font-bold tracking-tight text-foreground sm:text-5xl md:text-6xl lg:text-7xl">
+            B2B sales solutions for{' '}
+            <span className="text-primary">modern enterprises</span>
           </h1>
-          <p className="mt-6 text-lg text-muted-foreground sm:text-xl max-w-2xl mx-auto">
-            Prospecting, operations, and AI-powered insights in one platform. Map your territory, manage your pipeline, and grow revenue.
+          <p className="mt-6 text-lg text-muted-foreground sm:text-xl max-w-3xl mx-auto">
+            Prospecting, operations, and AI-powered insights in one platform. Map your territory, manage your pipeline, and grow revenue. Fully customizable for any B2B vertical.
           </p>
           <div className="mt-10 flex flex-col sm:flex-row gap-4 justify-center">
             <Button size="lg" asChild className="text-base px-8">
@@ -136,20 +225,20 @@ export default function Landing() {
             </Button>
           </div>
           <p className="mt-6 text-sm text-muted-foreground">
-            7-day free trial · No credit card required
+            7-day free trial · No credit card required · Full customization
           </p>
         </div>
       </section>
 
-      {/* Logo strip - placeholder */}
+      {/* Logo strip - B2B horizontal */}
       <section className="border-y border-border bg-muted/30 py-8">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <p className="text-center text-sm font-medium text-muted-foreground mb-6">
-            Trusted by sales teams across retail and distribution
+            Trusted by B2B teams across industries
           </p>
-          <div className="flex flex-wrap justify-center gap-12 opacity-60">
-            {['Retail', 'Pharma', 'Distribution', 'Field Sales', 'B2B'].map((label) => (
-              <span key={label} className="text-lg font-semibold text-muted-foreground">
+          <div className="flex flex-wrap justify-center gap-8 sm:gap-12 opacity-70">
+            {['Retail', 'Manufacturing', 'Distribution', 'Field Sales', 'SaaS', 'Professional Services', 'Wholesale', 'Technology'].map((label) => (
+              <span key={label} className="text-base font-semibold text-muted-foreground">
                 {label}
               </span>
             ))}
@@ -157,19 +246,19 @@ export default function Landing() {
         </div>
       </section>
 
-      {/* The platform - product blocks */}
+      {/* The platform - 8 product blocks */}
       <section className="py-24 sm:py-32">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="text-center max-w-3xl mx-auto mb-16">
             <h2 className="text-3xl font-bold text-foreground sm:text-4xl">
-              The sales platform that adapts to you
+              The B2B sales platform that adapts to you
             </h2>
             <p className="mt-4 text-lg text-muted-foreground">
-              Everything you need to prospect, operate, and grow—in a single workspace. No spreadsheets, no silos.
+              Everything you need to prospect, operate, and grow—in a single workspace. No spreadsheets, no silos. Fully customizable.
             </p>
           </div>
 
-          <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-4">
+          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
             {productBlocks.map((block) => (
               <Link
                 key={block.title}
@@ -193,17 +282,75 @@ export default function Landing() {
         </div>
       </section>
 
-      {/* Solutions for every industry */}
+      {/* Integrations showcase */}
       <section className="bg-muted/30 py-24 sm:py-32">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <div className="text-center max-w-3xl mx-auto mb-16">
+            <h2 className="text-3xl font-bold text-foreground sm:text-4xl">
+              Connect with your stack
+            </h2>
+            <p className="mt-4 text-lg text-muted-foreground">
+              15+ integrations available. E-commerce, email, AI, productivity, and more. API access for custom builds.
+            </p>
+          </div>
+
+          <div className="grid gap-8 md:grid-cols-2">
+            <div className="rounded-xl border border-border bg-card p-8">
+              <h3 className="text-lg font-semibold text-foreground flex items-center gap-2">
+                <Plug className="h-5 w-5 text-primary" />
+                Available now
+              </h3>
+              <div className="mt-4 flex flex-wrap gap-3">
+                {integrations.available.map((i) => (
+                  <span
+                    key={i.name}
+                    className="inline-flex items-center rounded-full bg-primary/10 px-4 py-2 text-sm font-medium text-primary"
+                  >
+                    {i.name}
+                  </span>
+                ))}
+              </div>
+            </div>
+            <div className="rounded-xl border border-dashed border-border bg-card/50 p-8">
+              <h3 className="text-lg font-semibold text-foreground flex items-center gap-2">
+                <TrendingUp className="h-5 w-5 text-muted-foreground" />
+                Coming soon
+              </h3>
+              <div className="mt-4 flex flex-wrap gap-3">
+                {integrations.roadmap.map((i) => (
+                  <span
+                    key={i.name}
+                    className="inline-flex items-center rounded-full bg-muted px-4 py-2 text-sm font-medium text-muted-foreground"
+                  >
+                    {i.name}
+                  </span>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          <p className="mt-8 text-center">
+            <Link to="/features#integrations" className="text-sm font-medium text-primary hover:underline">
+              View all integrations →
+            </Link>
+          </p>
+        </div>
+      </section>
+
+      {/* Solutions for every industry - 6 items */}
+      <section className="py-24 sm:py-32">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <h2 className="text-center text-3xl font-bold text-foreground sm:text-4xl">
             Solutions for every industry
           </h2>
-          <div className="mt-16 grid gap-8 md:grid-cols-3">
+          <p className="mt-4 text-center text-muted-foreground max-w-2xl mx-auto">
+            In a data-first world, accurate pipeline data powers better decisions. Sales Compass serves B2B teams across verticals.
+          </p>
+          <div className="mt-16 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
             {industrySolutions.map((sol) => (
               <div
                 key={sol.industry}
-                className="rounded-xl border border-border bg-card p-6 shadow-sm"
+                className="rounded-xl border border-border bg-card p-6 shadow-sm hover:border-primary/20 transition-colors"
               >
                 <h3 className="text-lg font-semibold text-foreground">{sol.industry}</h3>
                 <p className="mt-2 text-primary font-medium">{sol.stat}</p>
@@ -211,16 +358,11 @@ export default function Landing() {
               </div>
             ))}
           </div>
-          <p className="mt-12 text-center text-muted-foreground">
-            In a data-first world, accurate pipeline data powers better decisions. Sales Compass helps teams from{' '}
-            <Link to="/features" className="text-primary hover:underline">retail</Link> to{' '}
-            <Link to="/features" className="text-primary hover:underline">distribution</Link> and beyond.
-          </p>
         </div>
       </section>
 
-      {/* The Sales Compass difference */}
-      <section className="py-24 sm:py-32">
+      {/* The Sales Compass difference - 8 items */}
+      <section className="bg-muted/30 py-24 sm:py-32">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <h2 className="text-center text-3xl font-bold text-foreground sm:text-4xl">
             The Sales Compass difference
@@ -240,7 +382,7 @@ export default function Landing() {
       </section>
 
       {/* Maps & reports teaser */}
-      <section className="bg-muted/30 py-24 sm:py-32">
+      <section className="py-24 sm:py-32">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="grid gap-12 lg:grid-cols-2 lg:gap-16 items-center">
             <div>
@@ -275,8 +417,8 @@ export default function Landing() {
         </div>
       </section>
 
-      {/* Pricing preview */}
-      <section id="pricing-preview" className="py-24 sm:py-32 scroll-mt-20">
+      {/* Pricing preview - 4 plans */}
+      <section id="pricing-preview" className="bg-muted/30 py-24 sm:py-32 scroll-mt-20">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="text-center max-w-3xl mx-auto mb-12">
             <h2 className="text-3xl font-bold text-foreground sm:text-4xl">
@@ -286,11 +428,12 @@ export default function Landing() {
               7-day free trial on all plans. No credit card required.
             </p>
           </div>
-          <div className="grid gap-6 sm:grid-cols-3 max-w-4xl mx-auto">
+          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4 max-w-6xl mx-auto">
             {[
-              { name: 'Starter', price: '€29', desc: 'For individuals and small teams', features: ['500 entities', '1 user', 'Core integrations'], href: '/signup?plan=starter' },
-              { name: 'Pro', price: '€79', desc: 'For growing teams', features: ['2,000 entities', '5 users', 'All integrations', 'AI Assistant'], href: '/signup?plan=pro', featured: true },
-              { name: 'Enterprise', price: 'Custom', desc: 'For larger organizations', features: ['Unlimited', 'Dedicated support', 'Custom terms'], href: '/contact?subject=enterprise' },
+              { name: 'Starter', price: '€29', desc: 'Individuals and small teams', features: ['500 entities', '1 user', 'Core integrations'], href: '/signup?plan=starter' },
+              { name: 'Pro', price: '€79', desc: 'Growing teams', features: ['2,000 entities', '5 users', 'All integrations', 'AI Assistant'], href: '/signup?plan=pro', featured: true },
+              { name: 'Business', price: '€149', desc: 'Scaling B2B teams', features: ['10,000 entities', '15 users', 'Priority support', 'Advanced workflows'], href: '/signup?plan=business' },
+              { name: 'Enterprise', price: 'Custom', desc: 'Larger organizations', features: ['Unlimited', 'Dedicated support', 'Custom terms'], href: '/contact?subject=enterprise' },
             ].map((plan) => (
               <Link
                 key={plan.name}
@@ -347,7 +490,7 @@ export default function Landing() {
             Turn data into revenue
           </h2>
           <p className="mt-4 text-lg text-muted-foreground">
-            Start your 7-day free trial. No credit card required. Full access to all features.
+            Start your 7-day free trial. No credit card required. Full access to all features. Fully customizable.
           </p>
           <div className="mt-10 flex flex-col sm:flex-row gap-4 justify-center">
             <Button size="lg" asChild className="text-base px-8">

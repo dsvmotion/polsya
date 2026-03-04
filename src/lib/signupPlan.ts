@@ -1,13 +1,13 @@
 const STORAGE_KEY = 'sales_compass_signup_plan';
 
-export type SignupPlanCode = 'starter' | 'pro';
+export type SignupPlanCode = 'starter' | 'pro' | 'business';
 
 export function getPendingSignupPlan(): SignupPlanCode | null {
   try {
     const stored = localStorage.getItem(STORAGE_KEY);
     if (!stored) return null;
     const code = stored.toLowerCase();
-    if (code === 'starter' || code === 'pro') return code;
+    if (code === 'starter' || code === 'pro' || code === 'business') return code;
     return null;
   } catch {
     return null;
@@ -31,5 +31,5 @@ export function clearPendingSignupPlan(): void {
 }
 
 export function isValidSignupPlan(value: string | null): value is SignupPlanCode {
-  return value === 'starter' || value === 'pro';
+  return value === 'starter' || value === 'pro' || value === 'business';
 }

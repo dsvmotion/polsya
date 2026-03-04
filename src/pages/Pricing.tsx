@@ -43,6 +43,16 @@ const PLAN_CONFIG = [
     contactOnly: false,
   },
   {
+    code: 'business',
+    name: 'Business',
+    description: 'For scaling B2B teams with advanced needs.',
+    priceFallback: '€149',
+    period: '/month',
+    features: ['Up to 10,000 entities', 'Up to 15 users', 'All integrations', 'Priority support', 'Advanced workflows', 'Dedicated onboarding', '7-day free trial'],
+    featured: false,
+    contactOnly: false,
+  },
+  {
     code: 'enterprise',
     name: 'Enterprise',
     description: 'For larger organizations with custom needs.',
@@ -92,7 +102,7 @@ export default function Pricing() {
           </p>
         </div>
 
-        <div className="grid gap-8 lg:grid-cols-3 lg:gap-0">
+        <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-4 lg:gap-4">
           {PLAN_CONFIG.map((config) => {
             const apiPlan = !config.contactOnly ? findPlanByCode(apiPlans, config.code) : null;
             const canSubscribe = user && organization && canManageBilling && apiPlan && !config.contactOnly;
