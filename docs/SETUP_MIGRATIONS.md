@@ -135,13 +135,12 @@ Las migraciones se aplican por timestamp. Orden aproximado:
 
 ## Planes de facturación y Stripe (para /pricing y /billing)
 
-Para que la página `/pricing` muestre botones "Subscribe" en lugar de "Start free trial" para usuarios logueados:
+La migración `bill_seed_plans` inserta los planes Starter y Pro con placeholders. Para que Checkout funcione:
 
-1. Crea Products y Prices en Stripe Dashboard.
-2. Inserta filas en `billing_plans` con `code` igual a `starter` y `pro` (case-insensitive) para que coincidan con la UI de pricing.
-3. Configura las Edge Functions con `STRIPE_SECRET_KEY`, `APP_BASE_URL`, etc.
-4. Despliega `create-checkout-session` y `stripe-webhook`.
-5. **Trial:** Configura `BILLING_TRIAL_DAYS` en Edge Functions (por defecto 7). El checkout añade trial automáticamente.
+1. **Crea Products y Prices** en Stripe Dashboard (véase [STRIPE_SETUP.md](./STRIPE_SETUP.md)).
+2. **Actualiza** `billing_plans`: `UPDATE billing_plans SET stripe_price_id = 'price_xxx' WHERE code = 'starter';` (y `pro`).
+3. **Secrets** en Edge Functions: `STRIPE_SECRET_KEY`, `APP_BASE_URL`, `STRIPE_WEBHOOK_SECRET`.
+4. **Despliega** `create-checkout-session`, `create-customer-portal-session`, `stripe-webhook`.
 
 El plan `Enterprise` siempre muestra "Contact sales" y no usa checkout.
 

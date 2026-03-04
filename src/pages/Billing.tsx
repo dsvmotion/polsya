@@ -67,15 +67,14 @@ export default function Billing() {
     if (!preselectedPlanCode) return null;
     return plans.find((p) => p.code?.toLowerCase() === preselectedPlanCode.toLowerCase()) ?? null;
   }, [plans, preselectedPlanCode]);
-  const showPreselectedBanner = preselectedPlan && currentPlan?.id !== preselectedPlan.id;
-  const canManageBilling = canManageBillingRole(membership?.role ?? null);
-  const orgLocale = organization?.locale ?? 'es-ES';
-  const orgTimezone = organization?.timezone ?? 'Europe/Madrid';
-
   const currentPlan = useMemo(() => {
     if (!overview?.subscription) return null;
     return plans.find((p) => p.stripe_price_id === overview.subscription?.stripe_price_id) ?? null;
   }, [overview?.subscription, plans]);
+  const showPreselectedBanner = preselectedPlan && currentPlan?.id !== preselectedPlan.id;
+  const canManageBilling = canManageBillingRole(membership?.role ?? null);
+  const orgLocale = organization?.locale ?? 'es-ES';
+  const orgTimezone = organization?.timezone ?? 'Europe/Madrid';
 
   const access = evaluateBillingAccess(overview?.subscription ?? null);
   const hasAccess = access.hasAccess;

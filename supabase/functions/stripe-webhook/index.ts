@@ -160,6 +160,35 @@ async function upsertBillingSubscription(
   }
 }
 
+async function insertAuditLog(
+  supabaseAdmin: ReturnType<typeof createClient>,
+  entry: {
+    action: string;
+    resource_type: string;
+    resource_id: string | null;
+    organization_id: string | null;
+    actor_type: 'system' | 'user' | 'webhook';
+    actor_id?: string | null;
+    actor_email?: string | null;
+    metadata?: Record<string, unknown>;
+  },
+): Promise<void> {
+  try {
+    await supabaseAdmin.from('platform_audit_logs').insert({
+      action: entry.action,
+      resource_type: entry.resource_type,
+      resource_id: entry.resource_id,
+      organization_id: entry.organization_id,
+      actor_type: entry.actor_type,
+      actor_id: entry.actor_id ?? null,
+      actor_email: entry.actor_email ?? null,
+      metadata: (entry.metadata ?? {}) as Record<string, unknown>,
+    });
+  } catch (e) {
+    console.warn('platform_audit_logs insert failed (non-fatal):', e);
+  }
+}
+
 async function upsertBillingInvoice(
   supabaseAdmin: ReturnType<typeof createClient>,
   organizationId: string,
@@ -336,6 +365,14 @@ serve(async (req) => {
           }
 
           await upsertBillingSubscription(supabaseAdmin, organizationId, stripeSubscription.data);
+          await insertAuditLog(supabaseAdmin, {
+            action: 'subscription.created',
+            resource_type: 'subscription',
+            resource_id: stripeSubscriptionId,
+            organization_id: organizationId,
+            actor_type: 'webhook',
+            metadata: { source: 'checkout.session.completed', status: stripeSubscription.data.status },
+          });
         }
         break;
       }
@@ -362,6 +399,14 @@ serve(async (req) => {
         }
 
         await upsertBillingSubscription(supabaseAdmin, organizationId, subscription);
+        await insertAuditLog(supabaseAdmin, {
+          action: `subscription.${event.type === 'customer.subscription.deleted' ? 'deleted' : 'updated'}`,
+          resource_type: 'subscription',
+          resource_id: subscription.id,
+          organization_id: organizationId,
+          actor_type: 'webhook',
+          metadata: { status: subscription.status },
+        });
         break;
       }
 
@@ -381,6 +426,14 @@ serve(async (req) => {
         }
 
         await upsertBillingInvoice(supabaseAdmin, organizationId, invoice);
+        await insertAuditLog(supabaseAdmin, {
+          action: 'invoice.payment_failed',
+          resource_type: 'invoice',
+          resource_id: invoice.id,
+          organization_id: organizationId,
+          actor_type: 'webhook',
+          metadata: { amount_due: invoice.amount_due, currency: invoice.currency },
+        });
 
         const stripeSubscriptionId = extractObjectId(invoice.subscription);
         if (stripeSubscriptionId) {
@@ -394,6 +447,33 @@ serve(async (req) => {
             throw new Error(`Failed to mark subscription as past_due: ${updateSubError.message}`);
           }
         }
+        break;
+      }
+
+      case 'invoice.paid': {
+        handled = true;
+        const invoice = event.data.object as unknown as StripeInvoice;
+        const stripeCustomerId = extractObjectId(invoice.customer);
+
+        const organizationId =
+          invoice.metadata?.organization_id ??
+          (await resolveOrganizationIdByCustomer(supabaseAdmin, stripeCustomerId));
+        resolvedOrganizationId = organizationId;
+
+        if (!organizationId) {
+          console.log(JSON.stringify({ action: 'stripe_webhook', event: event.type, event_id: event.id, handled: false, reason: 'organization_not_found' }));
+          break;
+        }
+
+        await upsertBillingInvoice(supabaseAdmin, organizationId, invoice);
+        await insertAuditLog(supabaseAdmin, {
+          action: 'invoice.paid',
+          resource_type: 'invoice',
+          resource_id: invoice.id,
+          organization_id: organizationId,
+          actor_type: 'webhook',
+          metadata: { amount_paid: invoice.amount_due ?? invoice.amount_paid, currency: invoice.currency },
+        });
         break;
       }
 
