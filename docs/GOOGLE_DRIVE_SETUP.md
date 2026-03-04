@@ -11,13 +11,13 @@ Para conectar Google Drive y Google Sheets mediante OAuth (sin API key manual).
 3. **Create Credentials** → **OAuth client ID**.
 4. Si es la primera vez, configura la **OAuth consent screen** (External o Internal según tu uso).
 5. Application type: **Web application**.
-6. Name: `Sales Compass` (o el nombre de tu app).
+6. Name: `Polsya` (o el nombre de tu app).
 7. En **Authorized redirect URIs**, añade:
    ```
    https://<TU_DOMINIO>/integrations/google-drive/callback
    ```
    Ejemplos:
-   - Producción: `https://sales-compass.app/integrations/google-drive/callback`
+   - Producción: `https://polsya.com/integrations/google-drive/callback`
    - Local: `http://localhost:5173/integrations/google-drive/callback`
 8. Guarda y copia el **Client ID** y **Client secret**.
 
@@ -39,7 +39,7 @@ En Supabase Dashboard → **Edge Functions** → **Secrets**:
 |----------|-------------|
 | `GOOGLE_DRIVE_CLIENT_ID` | OAuth client ID |
 | `GOOGLE_DRIVE_CLIENT_SECRET` | OAuth client secret |
-| `GOOGLE_DRIVE_REDIRECT_URI` | URL de callback (ej. `https://sales-compass.app/integrations/google-drive/callback`) |
+| `GOOGLE_DRIVE_REDIRECT_URI` | URL de callback (ej. `https://polsya.com/integrations/google-drive/callback`) |
 
 **Nota:** Puedes reutilizar las mismas credenciales de Gmail si quieres (proyecto compartido). En ese caso usa `GMAIL_CLIENT_ID` como fallback o crea credenciales separadas para Drive con redirect distinto.
 

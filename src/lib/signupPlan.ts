@@ -1,4 +1,4 @@
-const STORAGE_KEY = 'sales_compass_signup_plan';
+const STORAGE_KEY = 'polsya_signup_plan';
 
 export type SignupPlanCode = 'starter' | 'pro' | 'business';
 

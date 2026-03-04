@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 
-const STORAGE_KEY = 'sales-compass-cookies-accepted';
+const STORAGE_KEY = 'polsya-cookies-accepted';
 
 export function CookieBanner() {
   const [visible, setVisible] = useState(false);

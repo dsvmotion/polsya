@@ -22,7 +22,7 @@ Deno.serve(async (req: Request) => {
   try {
     const body = await req.json() // { to, subject, html, text, from? }
     const payload: Record<string, unknown> = {
-      from: body.from ?? 'no-reply@example.com', // cambia por tu remitente verificado en Resend
+      from: body.from ?? 'Polsya <noreply@polsya.com>',
       to: Array.isArray(body.to) ? body.to : [body.to],
       subject: body.subject ?? 'No subject',
     }

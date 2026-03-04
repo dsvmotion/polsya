@@ -1,4 +1,4 @@
-# Configuración de Stripe para Sales Compass
+# Configuración de Stripe para Polsya
 
 Para que Checkout y Customer Portal funcionen, debes crear Products y Prices en Stripe y actualizar `billing_plans` con los IDs reales.
 
@@ -9,17 +9,17 @@ Para que Checkout y Customer Portal funcionen, debes crear Products y Prices en 
 1. Entra en [Stripe Dashboard](https://dashboard.stripe.com) → **Products** → **Add product**.
 
 2. **Producto Starter**
-   - Name: `Sales Compass Starter`
+   - Name: `Polsya Starter`
    - Description: opcional
    - Pricing: **Recurring** → **Monthly** → precio (ej. 29€)
    - Crea el producto. En la sección **Pricing**, anota el **Price ID** (formato `price_1ABC123...`).
 
 3. **Producto Pro**
-   - Repite con `Sales Compass Pro`, precio (ej. 79€/mes).
+   - Repite con `Polsya Pro`, precio (ej. 79€/mes).
    - Anota el Price ID.
 
 4. **Producto Business**
-   - Repite con `Sales Compass Business`, precio (ej. 149€/mes).
+   - Repite con `Polsya Business`, precio (ej. 149€/mes).
    - Anota el Price ID.
    - La migración `bill_business_plan` inserta el plan; actualiza `stripe_price_id` tras crear el Price en Stripe.
 
@@ -57,7 +57,7 @@ En Supabase Dashboard → **Edge Functions** → **Secrets** (o tu `.env` local 
 | Variable | Descripción |
 |----------|-------------|
 | `STRIPE_SECRET_KEY` | Secret key de Stripe (sk_test_... o sk_live_...) |
-| `APP_BASE_URL` | URL de tu app (ej. `https://sales-compass.app` o `http://localhost:5173`) |
+| `APP_BASE_URL` | URL de tu app (ej. `https://polsya.com` o `http://localhost:5173`) |
 | `BILLING_TRIAL_DAYS` | Días de trial (opcional, por defecto 7) |
 
 Las variables `SUPABASE_URL` y `SUPABASE_SERVICE_ROLE_KEY` suelen estar ya configuradas.

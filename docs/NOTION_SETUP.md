@@ -7,7 +7,7 @@ Para conectar workspaces de Notion mediante OAuth (sin API key manual).
 ## 1. Crear integración en Notion
 
 1. Entra en [Notion Integrations](https://www.notion.so/my-integrations) → **New integration**.
-2. Name: `Sales Compass` (o el nombre de tu app).
+2. Name: `Polsya` (o el nombre de tu app).
 3. Asocia el workspace que quieres usar para desarrollo.
 4. En **Capabilities**, activa:
    - **Content capabilities:** Read content, Update content, Insert content (según lo que necesites).
@@ -25,7 +25,7 @@ https://<TU_DOMINIO>/integrations/notion/callback
 ```
 
 Ejemplos:
-- Producción: `https://sales-compass.app/integrations/notion/callback`
+- Producción: `https://polsya.com/integrations/notion/callback`
 - Local: `http://localhost:5173/integrations/notion/callback`
 
 ---
@@ -38,7 +38,7 @@ En Supabase Dashboard → **Edge Functions** → **Secrets**:
 |----------|-------------|
 | `NOTION_CLIENT_ID` | OAuth client ID de tu integración |
 | `NOTION_CLIENT_SECRET` | OAuth client secret |
-| `NOTION_REDIRECT_URI` | URL de callback (ej. `https://sales-compass.app/integrations/notion/callback`) |
+| `NOTION_REDIRECT_URI` | URL de callback (ej. `https://polsya.com/integrations/notion/callback`) |
 
 ---
 

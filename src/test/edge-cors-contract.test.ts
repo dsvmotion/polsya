@@ -75,11 +75,11 @@ beforeEach(() => {
 });
 
 describe('isOriginAllowed', () => {
-  it('returns true for polsya.com (default-allowed)', () => {
+  it('returns true for polsya.com (primary)', () => {
     expect(isOriginAllowed('https://polsya.com')).toBe(true);
   });
 
-  it('returns true for moodlycrm.com (legacy)', () => {
+  it('returns true for moodlycrm.com (secondary)', () => {
     expect(isOriginAllowed('https://moodlycrm.com')).toBe(true);
   });
 

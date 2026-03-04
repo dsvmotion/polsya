@@ -9,4 +9,4 @@ Disallow: /profile
 Disallow: /billing
 Disallow: /platform
 
-Sitemap: https://sales-compass.app/sitemap.xml
+Sitemap: https://polsya.com/sitemap.xml

@@ -1,30 +1,31 @@
-# Rebrand: Moodly → Polsya
+# Rebrand: Polsya (polsya.com)
 
-Checklist de cambios que debes hacer manualmente cuando migres al nuevo dominio y correos.
+Checklist de cambios completados para la migración al dominio polsya.com.
 
 ## 1. Dominio en Vercel
 
-- [ ] Añadir dominio `polsya.com` (y `www.polsya.com`) en Vercel → Project Settings → Domains
-- [ ] Configurar DNS según las instrucciones de Vercel
-- [ ] (Opcional) Mantener moodlycrm.com temporalmente como redirect
+- [ ] Dominio `polsya.com` (y `www.polsya.com`) añadido en Vercel → Project Settings → Domains
+- [ ] DNS configurado según las instrucciones de Vercel
+- [ ] SSL activo (Vercel lo genera automáticamente)
 
 ## 2. Supabase
 
 - [ ] **Authentication** → URL Configuration:
   - Site URL: `https://polsya.com`
-  - Redirect URLs: añadir `https://polsya.com`, `https://polsya.com/**`, `https://www.polsya.com`, `https://www.polsya.com/**`
+  - Redirect URLs: añadidas `https://polsya.com`, `https://polsya.com/**`, `https://www.polsya.com`, `https://www.polsya.com/**`
 
 ## 3. Resend (emails)
 
-- [ ] Añadir dominio `polsya.com` en Resend → Domains
-- [ ] Configurar registros DNS (SPF, DKIM) en tu proveedor (Hostinger, etc.)
-- [ ] Esperar verificación del dominio
+- [ ] Dominio `polsya.com` añadido en Resend → Domains
+- [ ] Registros DNS (SPF, DKIM) configurados en Hostinger → DNS Zone
+- [ ] Dominio verificado en Resend
+- [ ] **NOTA**: No necesitas tener email hosting activo ni web en el dominio — solo acceso a los registros DNS
 
 ## 4. Secrets en Supabase (Edge Functions)
 
 ```bash
 # Email donde recibir formularios de contacto
-supabase secrets set CONTACT_FORM_TO="hello@polsya.com"
+supabase secrets set CONTACT_FORM_TO="contact@polsya.com"
 
 # Remitente (dominio debe estar verificado en Resend)
 supabase secrets set CONTACT_FROM="Polsya <noreply@polsya.com>"
@@ -32,7 +33,7 @@ supabase secrets set CONTACT_FROM="Polsya <noreply@polsya.com>"
 
 ## 5. Callbacks OAuth (si aplica)
 
-Los callbacks usan el dominio. Actualizar en cada integración (Google, Microsoft, etc.):
+Actualizar en cada integración (Google, Microsoft, etc.):
 
 - Gmail: `https://polsya.com/integrations/gmail/callback`
 - Outlook: `https://polsya.com/integrations/outlook/callback`
@@ -41,7 +42,7 @@ Los callbacks usan el dominio. Actualizar en cada integración (Google, Microsof
 
 ## 6. CORS (Edge Functions)
 
-El archivo `supabase/functions/_shared/cors.ts` ya incluye `polsya.com`. Si usas un dominio personalizado (ej. `app.polsya.com`), añádelo a `EDGE_ALLOWED_ORIGINS` en los secrets de Supabase:
+El archivo `supabase/functions/_shared/cors.ts` ya incluye `polsya.com` y `moodlycrm.com`. Si usas un subdominio personalizado, añádelo:
 
 ```bash
 supabase secrets set EDGE_ALLOWED_ORIGINS="https://polsya.com,https://www.polsya.com,https://app.polsya.com"
@@ -49,8 +50,11 @@ supabase secrets set EDGE_ALLOWED_ORIGINS="https://polsya.com,https://www.polsya
 
 ## Ya actualizado en el código
 
-- `index.html` – meta tags, título, canonical
+- `index.html` – meta tags, título, canonical → polsya.com
 - `src/lib/brand.ts` – APP_NAME = "Polsya"
-- `supabase/functions/submit-contact` – defaults y subject
-- `supabase/functions/_shared/cors.ts` – polsya.com en allowlist
+- `supabase/functions/submit-contact` – sender default: `Polsya <noreply@polsya.com>`
+- `supabase/functions/resend` – fallback sender: `Polsya <noreply@polsya.com>`
+- `supabase/functions/_shared/cors.ts` – polsya.com primary, moodlycrm.com secondary
+- `public/robots.txt` – Sitemap → polsya.com
+- `public/sitemap.xml` – todas las URLs → polsya.com
 - Tests – referencias actualizadas

@@ -1,38 +1,104 @@
-# Desplegar a moodlycrm.com
+# Desplegar en polsya.com
 
-Guía para que las landings (/, /features, /pricing, etc.) funcionen en moodlycrm.com igual que en localhost.
-
----
-
-## 1. Forzar nuevo deploy en Vercel
-
-El dominio ya está en Vercel. Para que muestre el código más reciente:
-
-1. Ve a [vercel.com/dashboard](https://vercel.com/dashboard) y abre el proyecto vinculado a moodlycrm.com.
-2. Pestaña **Deployments** → comprueba que el último deploy sea posterior a tu último `git push`.
-3. Si no hay deploy reciente o falló:
-   - Haz clic en los **tres puntos (⋯)** del último deploy → **Redeploy**.
-   - O en **Settings** → **Git** confirma que el repo es `dsvmotion/sales-compass-95` y la rama `main`.
-4. Espera 2–3 minutos a que termine el build.
+Guía paso a paso para poner la app en producción en polsya.com.
 
 ---
 
-## 2. Supabase: URLs para moodlycrm.com
+## Orden de operaciones (importante)
 
-Para que Login, Signup y OAuth funcionen en producción:
-
-1. **Supabase Dashboard** → tu proyecto → **Authentication** → **URL Configuration**.
-2. **Site URL**: `https://moodlycrm.com`
-3. **Redirect URLs** (añade):
-   ```
-   https://moodlycrm.com/**
-   https://moodlycrm.com
-   ```
-4. Guarda los cambios.
+1. **Añadir dominio en Vercel** (no requiere web activa)
+2. **Configurar DNS en Hostinger** (apuntar polsya.com a Vercel)
+3. **Verificar dominio en Resend** (solo DNS, no requiere email hosting)
+4. **Configurar Supabase** (URLs, secrets)
+5. **Deploy y probar**
 
 ---
 
-## 3. Variables de entorno en Vercel
+## 1. Añadir dominio en Vercel
+
+1. Ve a [vercel.com/dashboard](https://vercel.com/dashboard) → abre tu proyecto
+2. **Settings** → **Domains** → Add `polsya.com`
+3. Vercel te dará registros DNS para configurar:
+   - **Tipo A**: `76.76.21.21` para `polsya.com`
+   - **Tipo CNAME**: `cname.vercel-dns.com` para `www.polsya.com`
+4. Vercel generará SSL automáticamente una vez los DNS propaguen
+
+---
+
+## 2. Configurar DNS en Hostinger
+
+En **Hostinger** → tu dominio polsya.com → **DNS Zone**:
+
+### Para Vercel (hosting de la web):
+| Tipo | Nombre | Valor | TTL |
+|------|--------|-------|-----|
+| A | @ | `76.76.21.21` | 3600 |
+| CNAME | www | `cname.vercel-dns.com` | 3600 |
+
+### Para Resend (envío de emails):
+Resend te dará registros específicos al añadir el dominio. Típicamente:
+| Tipo | Nombre | Valor |
+|------|--------|-------|
+| TXT | @ o resend._domainkey | (valor SPF de Resend) |
+| CNAME | resend._domainkey | (valor DKIM de Resend) |
+
+**NOTA**: Si Hostinger ya tiene registros A apuntando a sus servidores, deberás **eliminarlos** y poner solo el de Vercel. Esto NO afecta al email — Resend no necesita hosting, solo DNS.
+
+---
+
+## 3. Verificar dominio en Resend
+
+1. Crea cuenta en [resend.com](https://resend.com) si no la tienes
+2. **Domains** → **Add Domain** → `polsya.com`
+3. Añade los registros DNS que Resend te indique (paso 2 arriba)
+4. Haz clic en **Verify** — suele tardar 1-5 minutos
+5. Crea un **API Key** en Resend → API Keys
+
+**NO necesitas**:
+- Web activa en polsya.com
+- Email creado en Hostinger
+- Hosting de email (MX records)
+
+Solo necesitas que los registros DNS de Resend estén configurados.
+
+---
+
+## 4. Configurar Supabase
+
+### 4.1 Authentication URLs
+
+**Supabase Dashboard** → tu proyecto → **Authentication** → **URL Configuration**:
+
+- **Site URL**: `https://polsya.com`
+- **Redirect URLs** (añade):
+  ```
+  https://polsya.com
+  https://polsya.com/**
+  https://www.polsya.com
+  https://www.polsya.com/**
+  ```
+
+### 4.2 Edge Function Secrets
+
+```bash
+# Email (Resend)
+supabase secrets set RESEND_API_KEY="re_xxxxxxxxxx"
+supabase secrets set CONTACT_FORM_TO="contact@polsya.com"
+supabase secrets set CONTACT_FROM="Polsya <noreply@polsya.com>"
+
+# App URL
+supabase secrets set APP_BASE_URL="https://polsya.com"
+```
+
+### 4.3 Deploy Edge Functions
+
+```bash
+supabase functions deploy
+```
+
+---
+
+## 5. Variables de entorno en Vercel
 
 En el proyecto de Vercel → **Settings** → **Environment Variables**:
 
@@ -43,37 +109,34 @@ En el proyecto de Vercel → **Settings** → **Environment Variables**:
 | `VITE_PLATFORM_OWNER_EMAILS` | tu@email.com | Production (opcional) |
 | `VITE_GOOGLE_MAPS_API_KEY` | (si usas mapas) | Production (opcional) |
 
-Después de cambiar variables, haz **Redeploy** para que se apliquen.
+Después de cambiar variables, haz **Redeploy**.
 
 ---
 
-## 4. OAuth (Gmail, Notion, Google Drive, etc.)
+## 6. OAuth (si aplica)
 
-Si usas integraciones con OAuth, en cada proveedor (Google Cloud, Notion, etc.) añade la URL de callback de producción:
+En cada proveedor OAuth, actualiza las URLs de callback:
 
-- Gmail: `https://moodlycrm.com/integrations/gmail/callback`
-- Notion: `https://moodlycrm.com/integrations/notion/callback`
-- Google Drive: `https://moodlycrm.com/integrations/google-drive/callback`
-- etc.
+- Gmail: `https://polsya.com/integrations/gmail/callback`
+- Notion: `https://polsya.com/integrations/notion/callback`
+- Google Drive: `https://polsya.com/integrations/google-drive/callback`
 
-Y en los **Secrets** de las Edge Functions (`oauth-start`, `oauth-exchange`), configura `NOTION_REDIRECT_URI`, `GOOGLE_DRIVE_REDIRECT_URI`, etc. con esas URLs.
-
----
-
-## 5. Migraciones (plan Business)
-
-```bash
-supabase link --project-ref taetxohwuuzufmkzpzhb
-supabase db push
-```
+Y en los **Secrets** de las Edge Functions, configura los redirect URIs correspondientes.
 
 ---
 
 ## Checklist rápido
 
-- [ ] Último deploy en Vercel después del push
-- [ ] Supabase: Site URL = https://moodlycrm.com, Redirect URLs incluyen moodlycrm.com
-- [ ] Vercel: `VITE_SUPABASE_URL` y `VITE_SUPABASE_PUBLISHABLE_KEY` en Production
-- [ ] Probar: https://moodlycrm.com → landing
-- [ ] Probar: https://moodlycrm.com/features, /pricing, /contact
+- [ ] Dominio `polsya.com` añadido en Vercel
+- [ ] DNS en Hostinger: A record → Vercel
+- [ ] DNS en Hostinger: registros SPF/DKIM de Resend
+- [ ] Dominio verificado en Resend
+- [ ] Supabase: Site URL = `https://polsya.com`
+- [ ] Supabase: Redirect URLs incluyen polsya.com
+- [ ] Supabase: Secrets configurados (RESEND_API_KEY, CONTACT_FROM, etc.)
+- [ ] Vercel: variables de entorno (VITE_SUPABASE_URL, etc.)
+- [ ] Edge Functions desplegadas
+- [ ] Probar: https://polsya.com → landing
+- [ ] Probar: /features, /pricing, /contact
 - [ ] Probar: login y signup
+- [ ] Probar: formulario de contacto → email recibido
