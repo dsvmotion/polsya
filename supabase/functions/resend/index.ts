@@ -1,13 +1,21 @@
+import { handleCors, corsHeaders as makeCorsHeaders } from '../_shared/cors.ts';
+
 Deno.serve(async (req: Request) => {
+  const corsResponse = handleCors(req);
+  if (corsResponse) return corsResponse;
+
+  const origin = req.headers.get('Origin') || '';
+  const corsHeaders = makeCorsHeaders(origin);
+
   if (req.method !== 'POST') {
-    return new Response('method not allowed', { status: 405 })
+    return new Response('method not allowed', { status: 405, headers: corsHeaders })
   }
 
   const RESEND_API_KEY = Deno.env.get('RESEND_API_KEY') ?? ''
   if (!RESEND_API_KEY) {
     return new Response(
       JSON.stringify({ error: 'missing RESEND_API_KEY' }),
-      { status: 500, headers: { 'Content-Type': 'application/json' } }
+      { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     )
   }
 
@@ -33,13 +41,13 @@ Deno.serve(async (req: Request) => {
     const data = await res.json()
     return new Response(
       JSON.stringify(data),
-      { status: res.status, headers: { 'Content-Type': 'application/json' } }
+      { status: res.status, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     )
-  } catch (err: any) {
+  } catch (err: unknown) {
     console.error(err)
     return new Response(
-      JSON.stringify({ error: err?.message ?? String(err) }),
-      { status: 500, headers: { 'Content-Type': 'application/json' } }
+      JSON.stringify({ error: err instanceof Error ? err.message : String(err) }),
+      { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     )
   }
 })
