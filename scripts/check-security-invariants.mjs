@@ -14,7 +14,7 @@ function fail(msg) {
 }
 
 // 1. Check config.toml for verify_jwt = false (allowlist explicit public endpoints)
-const ALLOWED_PUBLIC_FUNCTIONS = new Set(['stripe-webhook']);
+const ALLOWED_PUBLIC_FUNCTIONS = new Set(['stripe-webhook', 'submit-contact']);
 try {
   const config = readFileSync(CONFIG_PATH, 'utf-8');
   const lines = config.split(/\r?\n/);

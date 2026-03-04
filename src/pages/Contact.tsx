@@ -32,24 +32,30 @@ export default function Contact() {
     setError(null);
     setIsLoading(true);
     const form = e.currentTarget;
-    const name = (form.elements.namedItem('name') as HTMLInputElement)?.value;
-    const email = (form.elements.namedItem('email') as HTMLInputElement)?.value;
-    const company = (form.elements.namedItem('company') as HTMLInputElement)?.value || null;
-    const message = (form.elements.namedItem('message') as HTMLTextAreaElement)?.value;
+    const name = (form.elements.namedItem('name') as HTMLInputElement)?.value?.trim();
+    const email = (form.elements.namedItem('email') as HTMLInputElement)?.value?.trim();
+    const company = (form.elements.namedItem('company') as HTMLInputElement)?.value?.trim() || null;
+    const message = (form.elements.namedItem('message') as HTMLTextAreaElement)?.value?.trim();
 
-    const { error: err } = await supabase.from('contact_messages').insert({
-      name,
-      email,
-      company: company || null,
-      subject: subject || null,
-      message,
-    });
-    setIsLoading(false);
-    if (err) {
-      setError(err.message);
-      return;
+    try {
+      const { data, error: fnError } = await supabase.functions.invoke('submit-contact', {
+        body: { name, email, company, subject: subject || null, message },
+      });
+
+      if (fnError) {
+        setError(fnError.message || 'Failed to send message');
+        return;
+      }
+      if (data?.error) {
+        setError(typeof data.error === 'string' ? data.error : 'Invalid input');
+        return;
+      }
+      setSubmitted(true);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to send message');
+    } finally {
+      setIsLoading(false);
     }
-    setSubmitted(true);
   };
 
   return (
