@@ -24,7 +24,8 @@
     "check:design-system": "node scripts/check-design-system-invariants.mjs",
     "check:release-ops": "node scripts/check-release-ops.mjs",
     "test:contracts": "vitest run src/test/edge-cors-contract.test.ts",
-    "test:critical": "vitest run src/test/critical-flows.test.ts"
+    "test:critical": "vitest run src/test/critical-flows.test.ts",
+    "ci": "npm run test && npm run check:route-guards && npm run build"
   },
   "dependencies": {
     "@googlemaps/markerclusterer": "^2.6.2",

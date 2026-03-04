@@ -429,7 +429,7 @@ Fase 8 (legales)     → Paralelo, baja prioridad técnica
 - [x] Platform admin para gestión
 - [ ] Emails de pago/impago (Stripe Dashboard)
 - [x] Términos y privacidad publicados
-- [ ] Tests críticos pasando
+- [x] Tests críticos pasando (279 tests)
 - [x] Sin bugs conocidos en billing
 
 ---
