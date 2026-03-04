@@ -122,6 +122,20 @@ La web **nunca bloquea** el acceso. Principios:
 
 El banner (`SubscriptionBanner`) es informativo y se puede cerrar. El periodo de cortesía se configura con `VITE_BILLING_PAST_DUE_GRACE_DAYS` (por defecto 7).
 
+### Trial implícito para nuevas organizaciones
+
+Si la organización se creó hace menos de 7 días (configurable con `VITE_BILLING_TRIAL_DAYS`) y no tiene suscripción en Stripe, el usuario tiene acceso completo. Útil para pruebas y onboarding.
+
+### Bypass para desarrollo local
+
+Para desactivar completamente el gate de suscripción en desarrollo:
+
+```
+VITE_BILLING_SKIP_GATE=true
+```
+
+Añade esto a tu `.env.local`. **No uses en producción.**
+
 ---
 
 ## Orden de migraciones (referencia)

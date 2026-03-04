@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { ShoppingCart, Building2, Users, MapPin, RefreshCw, AlertCircle, ClipboardList, X } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
-import { isPlatformOwner } from '@/lib/platform';
+import { usePlatformOwnerStatus } from '@/hooks/usePlatformOwnerStatus';
 import { getPendingSignupPlan, clearPendingSignupPlan } from '@/lib/signupPlan';
 import { SalesMap } from '@/components/SalesMap';
 import { useWooCommerceOrders } from '@/hooks/useWooCommerceOrders';
@@ -63,6 +63,7 @@ const normalizeProvince = (province: string, country: string): string => {
 const Index = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
+  const { isOwner } = usePlatformOwnerStatus();
   const [selectedSale, setSelectedSale] = useState<Sale | null>(null);
   const [onboardingDismissed, setOnboardingDismissed] = useState(false);
   const { data: entityTypes = [] } = useEntityTypes();
@@ -72,15 +73,16 @@ const Index = () => {
     !(user.user_metadata as Record<string, unknown>)?.onboarding_completed &&
     !onboardingDismissed;
 
-  // Redirect to billing when user has pending plan from signup (e.g. came from /pricing → /signup?plan=starter)
+  // Redirect to billing when user has pending plan from signup (e.g. came from /pricing → /signup?plan=starter).
+  // Platform owners skip this redirect.
   useEffect(() => {
-    if (!user || isPlatformOwner(user)) return;
+    if (!user || isOwner) return;
     const plan = getPendingSignupPlan();
     if (plan) {
       clearPendingSignupPlan();
       navigate(`/billing?plan=${plan}`, { replace: true });
     }
-  }, [user, navigate]);
+  }, [user, isOwner, navigate]);
 
   const [filters, setFilters] = useState({
     country: '',
