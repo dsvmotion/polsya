@@ -248,16 +248,16 @@ CATCH-ALL
 - Edge functions o API routes para Checkout/Customer Portal
 
 ### 10.2 Mejoras pendientes
-- [ ] Stripe Checkout para nuevos suscriptores (desde landing y desde /billing)
-- [ ] Customer Portal para gestión (cambiar plan, método de pago)
-- [ ] Webhooks robustos: `customer.subscription.created`, `invoice.paid`, `invoice.payment_failed`
+- [x] Stripe Checkout para nuevos suscriptores (desde landing y desde /billing)
+- [x] Customer Portal para gestión (cambiar plan, método de pago)
+- [x] Webhooks robustos: `customer.subscription.created`, `invoice.paid`, `invoice.payment_failed`
 - [ ] Emails de recordatorio (Stripe + lógica propia o servicio externo)
-- [ ] UI de /billing sin bugs, estados claros
-- [ ] Precios y planes en BD alineados con Stripe Products/Prices
+- [x] UI de /billing sin bugs, estados claros
+- [x] Precios y planes en BD alineados con Stripe Products/Prices (bill_seed_plans)
 
 ### 10.3 Landings + Stripe
-- [ ] CTAs en landing que lleven a Checkout con plan preseleccionado
-- [ ] Página /pricing con links a Checkout por plan
+- [x] CTAs en landing que lleven a Checkout con plan preseleccionado
+- [x] Página /pricing con links a Checkout por plan
 
 ---
 
@@ -268,10 +268,10 @@ CATCH-ALL
 - `/platform/billing` — Gestión pagos clientes
 
 ### 11.2 Ampliaciones
-- [ ] Lista de organizaciones/tenants con búsqueda y filtros
-- [ ] Detalle de organización: miembros, suscripción, uso
+- [x] Lista de organizaciones/tenants con búsqueda y filtros
+- [x] Detalle de organización: miembros, suscripción, uso
 - [ ] Impersonación o vista "como cliente" (opcional)
-- [ ] Logs de auditoría (acciones, cambios críticos)
+- [x] Logs de auditoría (platform_audit_logs, /platform/logs)
 - [ ] Configuración global (feature flags, límites)
 - [ ] Analytics agregados (MRR, churn, nuevos usuarios)
 - [ ] Gestión de usuarios platform (añadir/quitar owners)
@@ -420,17 +420,17 @@ Fase 8 (legales)     → Paralelo, baja prioridad técnica
 
 ## 16. CHECKLIST PRE-LANZAMIENTO
 
-- [ ] Landing pública operativa
-- [ ] Registro y login sin errores
-- [ ] Trial 7 días funcionando
-- [ ] Tres planes en Stripe y BD
-- [ ] Checkout y Customer Portal operativos
-- [ ] Webhooks Stripe probados
-- [ ] Platform admin para gestión
-- [ ] Emails de pago/impago
-- [ ] Términos y privacidad publicados
+- [x] Landing pública operativa
+- [x] Registro y login sin errores
+- [x] Trial 7 días funcionando (evaluateBillingAccess, BILLING_TRIAL_DAYS)
+- [x] Tres planes en Stripe y BD (bill_seed_plans; configurar price IDs en Stripe)
+- [x] Checkout y Customer Portal operativos
+- [x] Webhooks Stripe probados (customer.subscription.*, invoice.*)
+- [x] Platform admin para gestión
+- [ ] Emails de pago/impago (Stripe Dashboard)
+- [x] Términos y privacidad publicados
 - [ ] Tests críticos pasando
-- [ ] Sin bugs conocidos en billing
+- [x] Sin bugs conocidos en billing
 
 ---
 
