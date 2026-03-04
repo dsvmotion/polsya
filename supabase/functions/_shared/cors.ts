@@ -1,4 +1,6 @@
 const DEFAULT_ORIGINS = [
+  'https://polsya.com',
+  'https://www.polsya.com',
   'https://moodlycrm.com',
   'https://www.moodlycrm.com',
   'http://localhost:8080',

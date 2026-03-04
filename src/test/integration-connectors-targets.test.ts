@@ -53,8 +53,8 @@ describe('getIntegrationConnector', () => {
       integrationId: 'int-1',
       provider: 'email_imap',
       metadata: {
-        account_email: 'contact@moodly.com',
-        username: 'contact@moodly.com',
+        account_email: 'contact@polsya.com',
+        username: 'contact@polsya.com',
         imap_host: 'imap.hostinger.com',
         smtp_host: 'smtp.hostinger.com',
       },
@@ -63,7 +63,7 @@ describe('getIntegrationConnector', () => {
     expect(result.processed).toBe(1);
     expect(result.failed).toBe(0);
     expect(result.records).toHaveLength(1);
-    expect(result.records[0].externalId).toBe('email_imap_config:contact@moodly.com');
+    expect(result.records[0].externalId).toBe('email_imap_config:contact@polsya.com');
     expect(result.records[0].payload.sync_mode).toBe('config_only');
   });
 });

@@ -1,9 +1,22 @@
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react-swc";
 import path from "path";
+import { copyFileSync } from "node:fs";
 
 // https://vitejs.dev/config/
 export default defineConfig({
+  plugins: [
+    react(),
+    {
+      name: "copy-404",
+      closeBundle() {
+        const outDir = path.resolve(__dirname, "dist");
+        try {
+          copyFileSync(path.join(outDir, "index.html"), path.join(outDir, "404.html"));
+        } catch {}
+      },
+    },
+  ],
   server: {
     host: "::",
     port: 8080,
@@ -11,7 +24,6 @@ export default defineConfig({
       overlay: false,
     },
   },
-  plugins: [react()],
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "./src"),

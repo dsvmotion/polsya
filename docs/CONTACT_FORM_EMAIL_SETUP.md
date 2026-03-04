@@ -1,11 +1,11 @@
 # Contact Form Email Setup
 
-The contact form (and demo request flow) sends email notifications to the Moodly team via [Resend](https://resend.com).
+The contact form (and demo request flow) sends email notifications to the team via [Resend](https://resend.com).
 
 ## Prerequisites
 
 1. Create a [Resend](https://resend.com) account
-2. Verify your domain (e.g. `moodlycrm.com`) or use the Resend sandbox domain for testing
+2. Verify your domain (e.g. `polsya.com`) or use the Resend sandbox domain for testing
 3. Create an API key in Resend Dashboard → API Keys
 
 ### Hostinger + Resend
@@ -13,10 +13,10 @@ The contact form (and demo request flow) sends email notifications to the Moodly
 If your domain is hosted on Hostinger and you want to send from an email like `noreply@tudominio.com`:
 
 1. In [Resend Dashboard](https://resend.com/domains) → Domains → Add Domain
-2. Add your domain (e.g. `moodlycrm.com`)
+2. Add your domain (e.g. `polsya.com`)
 3. Resend will show DNS records (SPF, DKIM). Add them in **Hostinger** → Hosting → DNS Zone
 4. Wait for Resend to verify the domain (usually a few minutes)
-5. Use `Moodly <noreply@tudominio.com>` as `CONTACT_FROM`
+5. Use `Polsya <noreply@tudominio.com>` as `CONTACT_FROM`
 
 **Testing without domain verification**: Use Resend sandbox `onboarding@resend.dev` as sender – emails only go to the email of your Resend account.
 
@@ -34,7 +34,7 @@ Configure these secrets in your Supabase project (Dashboard → Project Settings
 
 ```bash
 supabase secrets set CONTACT_FORM_TO="tu-email@ejemplo.com"
-supabase secrets set CONTACT_FROM="Moodly <noreply@tudominio.com>"
+supabase secrets set CONTACT_FROM="Polsya <noreply@tudominio.com>"
 ```
 
 ## Deploy the Edge Function

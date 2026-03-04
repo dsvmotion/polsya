@@ -8,6 +8,8 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 
 const DEFAULT_ORIGINS = [
+  'https://polsya.com',
+  'https://www.polsya.com',
   'https://moodlycrm.com',
   'https://www.moodlycrm.com',
   'http://localhost:8080',
@@ -73,7 +75,11 @@ beforeEach(() => {
 });
 
 describe('isOriginAllowed', () => {
-  it('returns true for a default-allowed origin', () => {
+  it('returns true for polsya.com (default-allowed)', () => {
+    expect(isOriginAllowed('https://polsya.com')).toBe(true);
+  });
+
+  it('returns true for moodlycrm.com (legacy)', () => {
     expect(isOriginAllowed('https://moodlycrm.com')).toBe(true);
   });
 
@@ -88,29 +94,29 @@ describe('isOriginAllowed', () => {
   it('respects EDGE_ALLOWED_ORIGINS env override', () => {
     envGet.mockReturnValue('https://custom.io, https://other.io');
     expect(isOriginAllowed('https://custom.io')).toBe(true);
-    expect(isOriginAllowed('https://moodlycrm.com')).toBe(false);
+    expect(isOriginAllowed('https://polsya.com')).toBe(false);
   });
 });
 
 describe('corsHeaders', () => {
   it('includes Vary: Origin', () => {
-    const headers = corsHeaders('https://moodlycrm.com');
+    const headers = corsHeaders('https://polsya.com');
     expect(headers['Vary']).toBe('Origin');
   });
 
   it('returns exact origin when allowed', () => {
-    const headers = corsHeaders('https://moodlycrm.com');
-    expect(headers['Access-Control-Allow-Origin']).toBe('https://moodlycrm.com');
+    const headers = corsHeaders('https://polsya.com');
+    expect(headers['Access-Control-Allow-Origin']).toBe('https://polsya.com');
   });
 
   it('returns first allowlisted origin when blocked', () => {
     const headers = corsHeaders('https://evil.com');
-    expect(headers['Access-Control-Allow-Origin']).toBe('https://moodlycrm.com');
+    expect(headers['Access-Control-Allow-Origin']).toBe('https://polsya.com');
   });
 
   it('returns first allowlisted origin for empty origin', () => {
     const headers = corsHeaders('');
-    expect(headers['Access-Control-Allow-Origin']).toBe('https://moodlycrm.com');
+    expect(headers['Access-Control-Allow-Origin']).toBe('https://polsya.com');
   });
 });
 
@@ -118,12 +124,12 @@ describe('handleCors', () => {
   it('OPTIONS + allowed origin => 204 with allow-origin header', () => {
     const req = new Request('https://edge.fn/test', {
       method: 'OPTIONS',
-      headers: { Origin: 'https://moodlycrm.com' },
+      headers: { Origin: 'https://polsya.com' },
     });
     const res = handleCors(req)!;
     expect(res).not.toBeNull();
     expect(res.status).toBe(204);
-    expect(res.headers.get('Access-Control-Allow-Origin')).toBe('https://moodlycrm.com');
+    expect(res.headers.get('Access-Control-Allow-Origin')).toBe('https://polsya.com');
     expect(res.headers.get('Vary')).toBe('Origin');
   });
 

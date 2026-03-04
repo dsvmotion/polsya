@@ -2,13 +2,13 @@
  * Submit contact form – public endpoint (no auth required).
  * 1. Validates input
  * 2. Inserts into contact_messages
- * 3. Sends email notification to Moodly team via Resend
+ * 3. Sends email notification to team via Resend
  * 4. Optionally sends confirmation to submitter
  *
  * Required Supabase secrets:
  *   RESEND_API_KEY       – Resend API key (https://resend.com)
  *   CONTACT_FORM_TO      – Email address(es) to receive notifications (comma-separated)
- *   CONTACT_FROM         – Sender email (e.g. "Moodly <noreply@moodlycrm.com>")
+ *   CONTACT_FROM         – Sender email (e.g. "Polsya <noreply@polsya.com>")
  */
 import { serve } from 'https://deno.land/std@0.168.0/http/server.ts';
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
@@ -44,7 +44,7 @@ serve(async (req) => {
   const serviceRoleKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? Deno.env.get('SB_SERVICE_ROLE_KEY');
   const resendKey = Deno.env.get('RESEND_API_KEY') ?? '';
   const contactTo = Deno.env.get('CONTACT_FORM_TO') ?? '';
-  const contactFrom = Deno.env.get('CONTACT_FROM') ?? 'Moodly <noreply@moodlycrm.com>';
+  const contactFrom = Deno.env.get('CONTACT_FROM') ?? 'Polsya <noreply@polsya.com>';
 
   if (!supabaseUrl || !serviceRoleKey) {
     return jsonResponse({ error: 'Server misconfiguration' }, 500, corsHeaders);
@@ -116,7 +116,7 @@ serve(async (req) => {
           from: contactFrom,
           to: toList,
           reply_to: email,
-          subject: `[Moodly Contact] ${subjectLabel} – ${name}`,
+          subject: `[Polsya Contact] ${subjectLabel} – ${name}`,
           html,
         }),
       });
