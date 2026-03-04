@@ -96,22 +96,22 @@ Escalado por capacidades y servicios (por definir en detalle).
 ## Implementación por fases
 
 ### Fase 1: Routing y landing pública
-- [ ] Crear estructura de rutas: público vs autenticado
-- [ ] Landing/portfolio como página principal para no logueados
-- [ ] Redirect a app internas solo cuando hay sesión válida
+- [x] Crear estructura de rutas: público vs autenticado
+- [x] Landing/portfolio como página principal para no logueados
+- [x] Redirect a app internas solo cuando hay sesión válida
 
 ### Fase 2: Gating por suscripción (refinado)
-- [ ] Trial 7 días tras onboarding
-- [ ] Bloqueo de servicios si no hay suscripción activa/trial (mostrar pantalla "Activa tu suscripción", no redirect a billing)
-- [ ] Grace 5-7 días en impago, luego bloqueo (datos intactos)
+- [x] Trial 7 días tras onboarding
+- [x] Bloqueo de servicios si no hay suscripción activa/trial (ActivaSubscriptionCard, no redirect)
+- [x] Grace 5-7 días en impago, luego bloqueo (datos intactos)
 
 ### Fase 3: Landing y pricing
-- [ ] Landing tipo Radar con features, CTAs
-- [ ] Páginas de pricing con los 3 planes
-- [ ] Conexión Stripe en landings
+- [x] Landing tipo Radar con features, CTAs
+- [x] Páginas de pricing con los 3 planes
+- [x] Conexión Stripe en landings
 
 ### Fase 4: Herramientas propietarias
-- [ ] Ampliar `/platform` con más controles y gestión de clientes
+- [x] Ampliar `/platform` con controles, billing, logs, contact-messages, org detail
 
 ### Fase 5: Integraciones y base de datos
 - [ ] Notion, Figma, Google, AWS, Claude, OpenAI

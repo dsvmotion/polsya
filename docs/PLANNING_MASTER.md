@@ -327,44 +327,44 @@ CATCH-ALL
 
 | # | Tarea | Descripción |
 |---|-------|-------------|
-| 1.1 | Layout público | Crear `PublicLayout` con header/footer para rutas públicas |
-| 1.2 | Página Landing | Hero, features, CTAs, estructura lista para contenido |
-| 1.3 | Rutas públicas | `/`, `/features`, `/pricing`, `/contact`, `/terms`, `/privacy` |
-| 1.4 | Lógica de redirect | Si logueado en `/` → `/dashboard` o `/platform` según rol |
-| 1.5 | Header público | Logo, nav, "Entrar", "Registrarse" |
-| 1.6 | Footer público | Links legales, contacto |
+| 1.1 | Layout público | ✅ Crear `PublicLayout` con header/footer para rutas públicas |
+| 1.2 | Página Landing | ✅ Hero, features, CTAs, estructura lista para contenido |
+| 1.3 | Rutas públicas | ✅ `/`, `/features`, `/pricing`, `/contact`, `/terms`, `/privacy` |
+| 1.4 | Lógica de redirect | ✅ Si logueado en `/` → `/dashboard` o `/platform` según rol |
+| 1.5 | Header público | ✅ Logo, nav, "Entrar", "Registrarse" |
+| 1.6 | Footer público | ✅ Links legales, contacto |
 | 1.7 | Contenido | Textos, imágenes, copy (iterativo) |
 
 ### Fase 2: Gating y suscripción (1 sprint)
 
 | # | Tarea | Descripción |
 |---|-------|-------------|
-| 2.1 | Trial 7 días | Lógica en `evaluateBillingAccess` o equivalente |
-| 2.2 | Pantalla "Activa suscripción" | Componente para usuarios sin acceso, no bloqueante |
-| 2.3 | Gracia impago | 5-7 días, avisos, luego bloqueo |
-| 2.4 | Bloqueo sin pérdida de datos | Solo ocultar acciones, mostrar mensaje claro |
-| 2.5 | SubscriptionBanner | Ajustar mensajes según nuevo flujo |
+| 2.1 | Trial 7 días | ✅ Lógica en `evaluateBillingAccess` |
+| 2.2 | Pantalla "Activa suscripción" | ✅ `ActivateSubscriptionCard` + `ActivateSubscriptionGate` |
+| 2.3 | Gracia impago | ✅ 5-7 días en `evaluateBillingAccess`, `VITE_BILLING_PAST_DUE_GRACE_DAYS` |
+| 2.4 | Bloqueo sin pérdida de datos | ✅ No bloquea; muestra card invitando a /billing |
+| 2.5 | SubscriptionBanner | ✅ Banner informativo en AppLayout |
 
 ### Fase 3: Pricing y Stripe (1-2 sprints)
 
 | # | Tarea | Descripción |
 |---|-------|-------------|
-| 3.1 | Página /pricing | Tabla 3 planes, precios, CTA |
-| 3.2 | Stripe Products/Prices | Crear en Stripe Dashboard, sync con billing_plans |
-| 3.3 | Stripe Checkout | Flujo desde /pricing y /billing |
-| 3.4 | Customer Portal | Gestión de suscripción por cliente |
-| 3.5 | Webhooks | customer.subscription.*, invoice.* |
-| 3.6 | Emails Stripe | Invoice, receipt, payment failed |
+| 3.1 | Página /pricing | ✅ Tabla 3 planes, precios, CTA |
+| 3.2 | Stripe Products/Prices | ✅ bill_seed_plans + docs/STRIPE_SETUP.md |
+| 3.3 | Stripe Checkout | ✅ Flujo desde /pricing y /billing |
+| 3.4 | Customer Portal | ✅ create-customer-portal-session, "Open customer portal" en /billing |
+| 3.5 | Webhooks | ✅ customer.subscription.*, invoice.paid, invoice.payment_failed |
+| 3.6 | Emails Stripe | Configuración Stripe Dashboard (invoice, receipt, payment failed) |
 | 3.7 | Pruebas | Flujos de pago, trial, cancelación |
 
 ### Fase 4: Platform admin (1 sprint)
 
 | # | Tarea | Descripción |
 |---|-------|-------------|
-| 4.1 | Lista de organizaciones | Tabla con búsqueda, estado suscripción |
-| 4.2 | Detalle organización | Miembros, plan, datos de uso |
-| 4.3 | Gestión pagos | Mejorar PlatformBilling |
-| 4.4 | Logs básicos | Auditoría de acciones críticas |
+| 4.1 | Lista de organizaciones | ✅ PlatformDashboard con tabla, búsqueda, estado suscripción |
+| 4.2 | Detalle organización | ✅ /platform/org/:orgId (PlatformOrganizationDetail) |
+| 4.3 | Gestión pagos | ✅ PlatformBilling |
+| 4.4 | Logs básicos | ✅ platform_audit_logs + /platform/logs |
 
 ### Fase 5: Onboarding (0.5 sprint)
 
@@ -388,18 +388,18 @@ CATCH-ALL
 
 | # | Tarea | Descripción |
 |---|-------|-------------|
-| 7.1 | Definir límites | Entidades, usuarios, almacenamiento por tier |
-| 7.2 | Checks en backend | Validar antes de crear recursos |
-| 7.3 | UI de límites | Mostrar uso vs límite |
+| 7.1 | Definir límites | ✅ bill_02a: entity_limit, user_limit por plan |
+| 7.2 | Checks en backend | ✅ Triggers check_entity_limit, check_user_limit |
+| 7.3 | UI de límites | ✅ /billing muestra Usage (entities, users) |
 
 ### Fase 8: Legales y SEO (0.5 sprint)
 
 | # | Tarea | Descripción |
 |---|-------|-------------|
-| 8.1 | Términos de uso | /terms |
-| 8.2 | Privacidad | /privacy, política de datos |
-| 8.3 | Cookies | Banner si aplica |
-| 8.4 | SEO | Meta tags, sitemap, robots.txt |
+| 8.1 | Términos de uso | ✅ /terms |
+| 8.2 | Privacidad | ✅ /privacy, política de datos |
+| 8.3 | Cookies | ✅ CookieConsent banner, sección en /privacy |
+| 8.4 | SEO | ✅ Meta tags index.html, sitemap.xml, robots.txt |
 
 ---
 

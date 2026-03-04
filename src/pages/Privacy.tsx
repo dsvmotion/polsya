@@ -30,7 +30,15 @@ export default function Privacy() {
             </p>
           </section>
           <section>
-            <h2 className="text-lg font-semibold text-foreground">4. Your rights</h2>
+            <h2 className="text-lg font-semibold text-foreground">4. Cookies</h2>
+            <p className="mt-2">
+              We use essential cookies to run the service (e.g. session, preferences). We may use
+              optional analytics cookies to improve the product. You can accept or decline non-essential
+              cookies via the cookie banner. See your browser settings to manage cookies.
+            </p>
+          </section>
+          <section>
+            <h2 className="text-lg font-semibold text-foreground">5. Your rights</h2>
             <p className="mt-2">
               You may access, correct, or delete your data. You may export your data and request
               portability. Contact us to exercise your rights.

@@ -29,6 +29,7 @@ import ForgotPassword from "./pages/ForgotPassword";
 import ResetPassword from "./pages/ResetPassword";
 import { LandingOrRedirect } from "@/components/landing/LandingOrRedirect";
 import { PublicLayout } from "@/components/layout/PublicLayout";
+import { CookieConsent } from "@/components/CookieConsent";
 
 const PharmacyProspecting = lazy(() => import("./pages/PharmacyProspecting"));
 const PharmacyOperations = lazy(() => import("./pages/PharmacyOperations"));
@@ -135,6 +136,7 @@ const App = () => (
                   <Route path="*" element={<NotFound />} />
                 </Routes>
               </Suspense>
+              <CookieConsent />
             </BrowserRouter>
           </TooltipProvider>
         </AuthProvider>
