@@ -1,7 +1,7 @@
 import { useEffect } from 'react';
 import { useCurrentOrganization } from '@/hooks/useOrganizationContext';
 
-const DEFAULT_PRIMARY = '#2563eb';
+const DEFAULT_PRIMARY = '#000000'; /* Black - Vanta-style primary */
 
 function hexToHsl(hex: string): { h: number; s: number; l: number } | null {
   const normalized = hex.trim().replace('#', '');

@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom';
+import { APP_NAME } from '@/lib/brand';
 
 export default function Terms() {
   return (
@@ -11,14 +12,14 @@ export default function Terms() {
           <section>
             <h2 className="text-lg font-semibold text-foreground">1. Acceptance</h2>
             <p className="mt-2">
-              By accessing or using Sales Compass, you agree to be bound by these Terms of Service.
+              By accessing or using {APP_NAME}, you agree to be bound by these Terms of Service.
               If you do not agree, do not use the service.
             </p>
           </section>
           <section>
             <h2 className="text-lg font-semibold text-foreground">2. Use of the Service</h2>
             <p className="mt-2">
-              You may use Sales Compass for lawful purposes only. You are responsible for your
+              You may use {APP_NAME} for lawful purposes only. You are responsible for your
               account, your data, and compliance with applicable laws.
             </p>
           </section>

@@ -1,75 +1,79 @@
 # Desplegar a moodlycrm.com
 
-Guía para publicar los cambios en tu dominio de producción.
+Guía para que las landings (/, /features, /pricing, etc.) funcionen en moodlycrm.com igual que en localhost.
 
 ---
 
-## 1. Subir cambios a Git
+## 1. Forzar nuevo deploy en Vercel
 
-```bash
-# Añadir todos los archivos modificados
-git add docs/STRIPE_SETUP.md src/lib/signupPlan.ts src/pages/Features.tsx src/pages/Landing.tsx src/pages/Pricing.tsx supabase/migrations/20250218120000_bill_business_plan.sql
+El dominio ya está en Vercel. Para que muestre el código más reciente:
 
-# Commit
-git commit -m "feat: landing B2B profesional, plan Business, integraciones visibles"
-
-# Push a tu repositorio (GitHub/GitLab)
-git push origin main
-```
+1. Ve a [vercel.com/dashboard](https://vercel.com/dashboard) y abre el proyecto vinculado a moodlycrm.com.
+2. Pestaña **Deployments** → comprueba que el último deploy sea posterior a tu último `git push`.
+3. Si no hay deploy reciente o falló:
+   - Haz clic en los **tres puntos (⋯)** del último deploy → **Redeploy**.
+   - O en **Settings** → **Git** confirma que el repo es `dsvmotion/sales-compass-95` y la rama `main`.
+4. Espera 2–3 minutos a que termine el build.
 
 ---
 
-## 2. Vercel (despliegue automático)
+## 2. Supabase: URLs para moodlycrm.com
 
-Si tu proyecto está conectado a Vercel:
+Para que Login, Signup y OAuth funcionen en producción:
 
-1. **Vercel** despliega automáticamente al hacer push a `main`.
-2. **Dominio**: [vercel.com/dashboard](https://vercel.com/dashboard) → tu proyecto → **Settings** → **Domains** → añade `moodlycrm.com`.
-3. En el DNS de tu proveedor (donde gestionas moodlycrm.com):
-   - Añade un registro **CNAME**: `www` → `cname.vercel-dns.com`
-   - O un registro **A** con la IP que te indique Vercel.
-4. Espera a que el deploy termine (unos minutos).
+1. **Supabase Dashboard** → tu proyecto → **Authentication** → **URL Configuration**.
+2. **Site URL**: `https://moodlycrm.com`
+3. **Redirect URLs** (añade):
+   ```
+   https://moodlycrm.com/**
+   https://moodlycrm.com
+   ```
+4. Guarda los cambios.
 
 ---
 
 ## 3. Variables de entorno en Vercel
 
-En **Settings** → **Environment Variables**, asegúrate de tener:
+En el proyecto de Vercel → **Settings** → **Environment Variables**:
 
-| Variable | Descripción |
-|----------|-------------|
-| `VITE_SUPABASE_URL` | URL de tu proyecto Supabase |
-| `VITE_SUPABASE_ANON_KEY` | Clave anónima de Supabase |
-| `VITE_GOOGLE_MAPS_API_KEY` | (opcional) Para mapas |
-| `VITE_PLATFORM_OWNER_EMAILS` | (opcional) Tu email para bypass de suscripción |
-| `VITE_BILLING_SKIP_GATE` | (opcional) `true` solo para pruebas en staging |
+| Variable | Valor | Entorno |
+|----------|-------|---------|
+| `VITE_SUPABASE_URL` | `https://taetxohwuuzufmkzpzhb.supabase.co` | Production |
+| `VITE_SUPABASE_PUBLISHABLE_KEY` | (tu anon key de Supabase) | Production |
+| `VITE_PLATFORM_OWNER_EMAILS` | tu@email.com | Production (opcional) |
+| `VITE_GOOGLE_MAPS_API_KEY` | (si usas mapas) | Production (opcional) |
 
-Tras añadir o cambiar variables, haz **Redeploy** para que se apliquen.
+Después de cambiar variables, haz **Redeploy** para que se apliquen.
 
 ---
 
-## 4. Aplicar migraciones en Supabase
+## 4. OAuth (Gmail, Notion, Google Drive, etc.)
 
-Para el plan Business y el resto de cambios en BD:
+Si usas integraciones con OAuth, en cada proveedor (Google Cloud, Notion, etc.) añade la URL de callback de producción:
+
+- Gmail: `https://moodlycrm.com/integrations/gmail/callback`
+- Notion: `https://moodlycrm.com/integrations/notion/callback`
+- Google Drive: `https://moodlycrm.com/integrations/google-drive/callback`
+- etc.
+
+Y en los **Secrets** de las Edge Functions (`oauth-start`, `oauth-exchange`), configura `NOTION_REDIRECT_URI`, `GOOGLE_DRIVE_REDIRECT_URI`, etc. con esas URLs.
+
+---
+
+## 5. Migraciones (plan Business)
 
 ```bash
-supabase link --project-ref <TU_PROJECT_REF>
+supabase link --project-ref taetxohwuuzufmkzpzhb
 supabase db push
 ```
 
-Sustituye `<TU_PROJECT_REF>` por el ID de tu proyecto Supabase (Dashboard → Settings → General).
-
 ---
 
-## 5. Verificar
+## Checklist rápido
 
-1. Ve a `https://moodlycrm.com`.
-2. Comprueba que la landing B2B se ve correctamente.
-3. Prueba login, registro y flujo de billing.
-
----
-
-## Si usas otro proveedor (Netlify, etc.)
-
-- **Netlify**: Conecta el repo, configura el build command `npm run build` y publish directory `dist`.
-- **Otros**: El build de Vite genera la carpeta `dist/`. Sube su contenido a tu hosting estático o configúralo según la documentación de tu proveedor.
+- [ ] Último deploy en Vercel después del push
+- [ ] Supabase: Site URL = https://moodlycrm.com, Redirect URLs incluyen moodlycrm.com
+- [ ] Vercel: `VITE_SUPABASE_URL` y `VITE_SUPABASE_PUBLISHABLE_KEY` en Production
+- [ ] Probar: https://moodlycrm.com → landing
+- [ ] Probar: https://moodlycrm.com/features, /pricing, /contact
+- [ ] Probar: login y signup

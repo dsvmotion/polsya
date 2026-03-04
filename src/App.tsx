@@ -28,6 +28,7 @@ import Pricing from "./pages/Pricing";
 import Contact from "./pages/Contact";
 import Terms from "./pages/Terms";
 import Privacy from "./pages/Privacy";
+import Trust from "./pages/Trust";
 import ForgotPassword from "./pages/ForgotPassword";
 import ResetPassword from "./pages/ResetPassword";
 import { LandingOrRedirect } from "@/components/landing/LandingOrRedirect";
@@ -80,6 +81,7 @@ const App = () => (
                     <Route path="contact" element={<Contact />} />
                     <Route path="terms" element={<Terms />} />
                     <Route path="privacy" element={<Privacy />} />
+                    <Route path="trust" element={<Trust />} />
                   </Route>
 
                   <Route path="/login" element={<Login />} />

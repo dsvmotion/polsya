@@ -116,8 +116,18 @@ export default function Features() {
                     ))}
                   </ul>
                 </div>
-                <div className="rounded-xl border border-border bg-muted/30 p-8 flex items-center justify-center min-h-[200px]">
-                  <span className="text-sm text-muted-foreground">Feature demo placeholder</span>
+                <div className="rounded-xl border border-border bg-gradient-to-br from-muted/50 to-muted overflow-hidden shadow-lg min-h-[200px]">
+                  <div className="p-4 border-b border-border/50 flex items-center gap-2">
+                    <feature.icon className="h-4 w-4 text-primary" />
+                    <span className="text-sm font-medium text-muted-foreground">{feature.title}</span>
+                  </div>
+                  <div className="p-6">
+                    <div className="grid grid-cols-3 gap-2 opacity-60">
+                      {[1, 2, 3, 4, 5, 6].map((i) => (
+                        <div key={i} className="h-12 rounded bg-primary/10" />
+                      ))}
+                    </div>
+                  </div>
                 </div>
               </div>
             </section>

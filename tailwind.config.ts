@@ -73,6 +73,8 @@ export default {
           border: "hsl(var(--sidebar-border))",
           ring: "hsl(var(--sidebar-ring))",
         },
+        "rock-blue": "hsl(var(--color-rock-blue))",
+        linen: "hsl(var(--color-linen))",
       },
       borderRadius: {
         lg: "var(--radius)",
@@ -100,8 +102,8 @@ export default {
       },
       backgroundImage: {
         "gradient-radial": "radial-gradient(var(--tw-gradient-stops))",
-        "gradient-primary": "linear-gradient(135deg, hsl(var(--primary)), hsl(190 80% 50%))",
-        "gradient-accent": "linear-gradient(135deg, hsl(var(--accent)), hsl(300 70% 50%))",
+        "gradient-primary": "linear-gradient(135deg, hsl(var(--primary)), hsl(var(--color-rock-blue)))",
+        "gradient-accent": "linear-gradient(135deg, hsl(var(--color-linen)), hsl(var(--color-rock-blue) / 0.5))",
       },
     },
   },

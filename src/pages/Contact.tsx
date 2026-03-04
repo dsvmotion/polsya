@@ -22,9 +22,10 @@ export default function Contact() {
   const [subject, setSubject] = useState('');
 
   useEffect(() => {
-    const s = searchParams.get('subject') || '';
-    setSubject(s);
+    setSubject(searchParams.get('subject') || '');
   }, [searchParams]);
+
+  const prefillEmail = searchParams.get('email') || '';
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -87,7 +88,7 @@ export default function Contact() {
               </div>
               <div className="space-y-2">
                 <Label htmlFor="email">Email</Label>
-                <Input id="email" name="email" type="email" placeholder="you@company.com" required />
+                <Input id="email" name="email" type="email" placeholder="you@company.com" defaultValue={prefillEmail} required />
               </div>
             </div>
             <div className="space-y-2">

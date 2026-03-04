@@ -1,4 +1,5 @@
 import { Building2 } from 'lucide-react';
+import { APP_NAME } from '@/lib/brand';
 
 export function Header() {
   return (
@@ -9,7 +10,7 @@ export function Header() {
         </div>
         <div>
           <h1 className="text-xl font-bold tracking-tight">
-            Sales Compass
+            {APP_NAME}
           </h1>
           <p className="text-sm text-muted-foreground">
             CRM Dashboard

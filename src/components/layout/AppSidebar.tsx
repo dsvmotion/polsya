@@ -10,7 +10,7 @@ import {
   Users,
   ChevronLeft,
   ChevronRight,
-  Compass,
+  Sparkles,
   Moon,
   Sun,
   X,
@@ -24,6 +24,7 @@ import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip
 import { useTheme } from 'next-themes';
 import { useEntityTypes } from '@/hooks/useEntityTypes';
 import { useCurrentOrganization } from '@/hooks/useOrganizationContext';
+import { APP_NAME } from '@/lib/brand';
 
 interface AppSidebarProps {
   open: boolean;
@@ -96,11 +97,11 @@ export function AppSidebar({ open, onOpenChange, collapsed, onCollapsedChange, o
               <img src={logoUrl} alt="" className="h-8 w-8 rounded-lg object-cover" />
             ) : (
               <div className="h-8 w-8 rounded-lg bg-primary flex items-center justify-center shrink-0">
-                <Compass className="h-4.5 w-4.5 text-primary-foreground" />
+                <Sparkles className="h-4.5 w-4.5 text-primary-foreground" />
               </div>
             )}
             <span className="font-semibold text-sm text-sidebar-foreground truncate">
-              {organization?.name || 'Sales Compass'}
+              {organization?.name || APP_NAME}
             </span>
           </Link>
         )}
@@ -110,7 +111,7 @@ export function AppSidebar({ open, onOpenChange, collapsed, onCollapsedChange, o
               <img src={logoUrl} alt="" className="h-8 w-8 rounded-lg object-cover" />
             ) : (
               <div className="h-8 w-8 rounded-lg bg-primary flex items-center justify-center">
-                <Compass className="h-4.5 w-4.5 text-primary-foreground" />
+                <Sparkles className="h-4.5 w-4.5 text-primary-foreground" />
               </div>
             )}
           </Link>

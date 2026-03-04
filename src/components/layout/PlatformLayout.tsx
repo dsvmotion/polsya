@@ -1,5 +1,6 @@
 import { Outlet, Link, Navigate } from 'react-router-dom';
-import { LayoutDashboard, CreditCard, Mail, ScrollText, Compass, BarChart3, Settings } from 'lucide-react';
+import { LayoutDashboard, CreditCard, Mail, ScrollText, Sparkles, BarChart3, Settings } from 'lucide-react';
+import { APP_NAME } from '@/lib/brand';
 import { useAuth } from '@/contexts/AuthContext';
 import { usePlatformOwnerStatus } from '@/hooks/usePlatformOwnerStatus';
 import { Button } from '@/components/ui/button';
@@ -28,8 +29,8 @@ export function PlatformLayout() {
       <header className="sticky top-0 z-20 h-14 border-b border-border flex items-center justify-between px-4 backdrop-blur supports-[backdrop-filter]:bg-background/80 bg-background/90">
         <div className="flex items-center gap-6">
           <Link to="/platform" className="flex items-center gap-2">
-            <Compass className="h-6 w-6 text-primary" />
-            <span className="font-semibold">Sales Compass — Admin</span>
+            <Sparkles className="h-6 w-6 text-primary" />
+            <span className="font-semibold">{APP_NAME} — Admin</span>
           </Link>
           <nav className="hidden sm:flex items-center gap-1">
             <Button variant="ghost" size="sm" asChild>

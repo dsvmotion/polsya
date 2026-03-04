@@ -9,15 +9,16 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
-import { Compass, BarChart3, MapPin, Plug, CreditCard, ArrowRight, Sparkles } from 'lucide-react';
+import { BarChart3, MapPin, Plug, CreditCard, ArrowRight, Sparkles } from 'lucide-react';
+import { APP_NAME } from '@/lib/brand';
 import { supabase } from '@/integrations/supabase/client';
 
 const STEPS = [
   {
     id: 'welcome',
-    title: 'Welcome to Sales Compass',
+    title: `Welcome to ${APP_NAME}`,
     description: 'Your 7-day free trial has started. Here’s how to get the most out of the platform.',
-    icon: Compass,
+    icon: Sparkles,
   },
   {
     id: 'dashboard',
