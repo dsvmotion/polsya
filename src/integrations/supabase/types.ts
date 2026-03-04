@@ -18,6 +18,7 @@ export type Database = {
         Row: {
           id: string
           organization_id: string
+          provider: string
           model: string
           created_at: string
           updated_at: string
@@ -25,6 +26,7 @@ export type Database = {
         Insert: {
           id?: string
           organization_id: string
+          provider?: string
           model?: string
           created_at?: string
           updated_at?: string
@@ -32,6 +34,7 @@ export type Database = {
         Update: {
           id?: string
           organization_id?: string
+          provider?: string
           model?: string
           created_at?: string
           updated_at?: string
@@ -1628,6 +1631,100 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      platform_audit_logs: {
+        Row: {
+          id: string
+          created_at: string
+          action: string
+          resource_type: string
+          resource_id: string | null
+          organization_id: string | null
+          actor_type: string
+          actor_id: string | null
+          actor_email: string | null
+          metadata: Json
+        }
+        Insert: {
+          id?: string
+          created_at?: string
+          action: string
+          resource_type: string
+          resource_id?: string | null
+          organization_id?: string | null
+          actor_type?: string
+          actor_id?: string | null
+          actor_email?: string | null
+          metadata?: Json
+        }
+        Update: {
+          id?: string
+          created_at?: string
+          action?: string
+          resource_type?: string
+          resource_id?: string | null
+          organization_id?: string | null
+          actor_type?: string
+          actor_id?: string | null
+          actor_email?: string | null
+          metadata?: Json
+        }
+        Relationships: [
+          {
+            foreignKeyName: "platform_audit_logs_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      platform_owner_emails: {
+        Row: {
+          email: string
+          created_at: string
+          created_by: string | null
+        }
+        Insert: {
+          email: string
+          created_at?: string
+          created_by?: string | null
+        }
+        Update: {
+          email?: string
+          created_at?: string
+          created_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "platform_owner_emails_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      platform_settings: {
+        Row: {
+          key: string
+          value: Json
+          description: string | null
+          updated_at: string
+        }
+        Insert: {
+          key: string
+          value?: Json
+          description?: string | null
+          updated_at?: string
+        }
+        Update: {
+          key?: string
+          value?: Json
+          description?: string | null
+          updated_at?: string
+        }
+        Relationships: []
       }
     }
     Views: {

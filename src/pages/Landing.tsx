@@ -81,15 +81,16 @@ const proofStats = [
   { value: '7', label: 'Day free trial' },
 ];
 
+/** Integration logos with brand colors */
 const integrations = [
-  { name: 'WooCommerce', Icon: SiWoocommerce },
-  { name: 'Gmail', Icon: SiGmail },
-  { name: 'Outlook', Icon: Mail },
-  { name: 'Notion', Icon: SiNotion },
-  { name: 'Google Drive', Icon: SiGoogledrive },
-  { name: 'OpenAI', Icon: SiOpenai },
-  { name: 'Claude', Icon: SiClaude },
-  { name: 'Google Maps', Icon: SiGooglemaps },
+  { name: 'WooCommerce', Icon: SiWoocommerce, color: '#96588A' },
+  { name: 'Gmail', Icon: SiGmail, color: '#EA4335' },
+  { name: 'Outlook', Icon: Mail, color: '#0078D4' },
+  { name: 'Notion', Icon: SiNotion, color: '#000000' },
+  { name: 'Google Drive', Icon: SiGoogledrive, color: '#4285F4' },
+  { name: 'OpenAI', Icon: SiOpenai, color: '#412991' },
+  { name: 'Claude', Icon: SiClaude, color: '#CC785C' },
+  { name: 'Google Maps', Icon: SiGooglemaps, color: '#4285F4' },
 ];
 
 const testimonials = [
@@ -119,9 +120,9 @@ export default function Landing() {
     <div className="overflow-hidden bg-background">
       {/* Hero - Vanta: gradient fades, one CTA focus */}
       <section className="relative px-4 pt-20 pb-20 sm:px-6 sm:pt-28 sm:pb-24 lg:px-8 overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-b from-linen/50 via-transparent to-rock-blue/5 pointer-events-none" />
-        <div className="absolute top-0 left-1/4 w-96 h-96 bg-rock-blue/5 rounded-full blur-3xl pointer-events-none" />
-        <div className="absolute bottom-0 right-1/4 w-80 h-80 bg-rock-blue/5 rounded-full blur-3xl pointer-events-none" />
+        <div className="absolute inset-0 bg-gradient-to-b from-linen/60 via-rock-blue/10 to-rock-blue/5 pointer-events-none" />
+        <div className="absolute top-0 left-1/4 w-96 h-96 bg-rock-blue/15 rounded-full blur-3xl pointer-events-none" />
+        <div className="absolute bottom-0 right-1/4 w-80 h-80 bg-rock-blue/15 rounded-full blur-3xl pointer-events-none" />
         <div className="relative mx-auto max-w-4xl text-center">
             <h1 className="text-4xl font-bold tracking-tight text-foreground sm:text-5xl md:text-6xl">
             Automate prospecting, manage pipelines, and{' '}
@@ -191,8 +192,8 @@ export default function Landing() {
           </div>
           <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
             {productBlocks.map((b) => (
-              <Link key={b.title} to={b.href} className="group block rounded-xl border border-border bg-card p-6 hover:border-primary/20 hover:shadow-lg transition-all duration-300">
-                <div className="rounded-lg bg-rock-blue/10 w-fit p-2">
+              <Link key={b.title} to={b.href} className="group block rounded-xl border-2 border-rock-blue/20 bg-card p-6 hover:border-primary hover:shadow-lg hover:bg-rock-blue/5 transition-all duration-300">
+                <div className="rounded-lg bg-rock-blue/20 w-fit p-2.5">
                   <b.icon className="h-6 w-6 text-primary" />
                 </div>
                 <h3 className="mt-4 font-semibold text-foreground group-hover:text-primary transition-colors">{b.title}</h3>
@@ -215,12 +216,12 @@ export default function Landing() {
             <p className="mt-3 text-muted-foreground">15+ integrations. API access for custom builds.</p>
           </div>
           <div className="flex flex-wrap justify-center gap-4">
-            {integrations.map(({ name, Icon }) => (
+            {integrations.map(({ name, Icon, color }) => (
               <span
                 key={name}
-                className="flex items-center gap-2.5 rounded-lg border border-border bg-card px-4 py-3 text-sm font-medium text-muted-foreground hover:border-primary/20 transition-colors"
+                className="flex items-center gap-2.5 rounded-lg border border-border bg-card px-4 py-3 text-sm font-medium text-foreground hover:border-primary hover:bg-rock-blue/5 transition-colors"
               >
-                <Icon className="h-5 w-5 shrink-0" />
+                <Icon className="h-5 w-5 shrink-0" style={{ color }} />
                 {name}
               </span>
             ))}

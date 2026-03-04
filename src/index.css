@@ -6,9 +6,9 @@
 
 @layer base {
   :root {
-    /* Vanta-style: Black & White primary (95%), Rock Blue & White Linen accent */
-    /* Primary: Black for CTAs, links */
-    --primary: 0 0% 9%;
+    /* Black, White, Rock Blue #9dbecc, White Linen #f6f2e8 */
+    /* Primary: Rock Blue - prominent for CTAs, links, accents */
+    --primary: 200 33% 55%;
     --primary-foreground: 0 0% 100%;
 
     /* Background: White */
@@ -47,10 +47,10 @@
     --client: 200 20% 55%;
     --client-foreground: 0 0% 9%;
 
-    /* Rock Blue tint for borders */
-    --border: 200 20% 90%;
-    --input: 200 20% 90%;
-    --ring: 200 33% 67%;
+    /* Rock Blue tint for borders and focus rings */
+    --border: 200 25% 88%;
+    --input: 200 25% 88%;
+    --ring: 200 33% 55%;
 
     --radius: 0.75rem;
 
@@ -59,7 +59,7 @@
 
     --sidebar-background: 0 0% 100%;
     --sidebar-foreground: 0 0% 9%;
-    --sidebar-primary: 0 0% 9%;
+    --sidebar-primary: 200 33% 55%;
     --sidebar-primary-foreground: 0 0% 100%;
     --sidebar-accent: 200 33% 96%;
     --sidebar-accent-foreground: 0 0% 9%;
@@ -68,8 +68,9 @@
 
     --workspace-primary-hex: #000000;
 
-    /* Brand tokens - Black, White, Rock Blue, White Linen */
+    /* Brand tokens - Black, White, Rock Blue #9dbecc, White Linen #f6f2e8 */
     --color-rock-blue: 200 33% 67%;
+    --color-rock-blue-strong: 200 33% 55%;
     --color-linen: 36 33% 93%;
   }
 

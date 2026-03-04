@@ -13,7 +13,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { usePlatformOrganizationDetail } from '@/hooks/usePlatformOrganizationDetail';
+import { usePlatformOrganizationDetail, type OrganizationDetail } from '@/hooks/usePlatformOrganizationDetail';
 import { useUpsertAiChatConfig } from '@/hooks/useUpsertAiChatConfig';
 
 function truncateId(id: string): string {
@@ -26,7 +26,8 @@ const ANTHROPIC_MODELS = ['claude-3-5-sonnet-20241022', 'claude-3-opus-20240229'
 
 export default function PlatformOrganizationDetail() {
   const { orgId } = useParams<{ orgId: string }>();
-  const { data: org, isLoading, error } = usePlatformOrganizationDetail(orgId);
+  const { data, isLoading, error } = usePlatformOrganizationDetail(orgId);
+  const org: OrganizationDetail | null = data ?? null;
   const upsert = useUpsertAiChatConfig();
   const [provider, setProvider] = useState<'openai' | 'anthropic'>('openai');
   const [model, setModel] = useState('gpt-4o-mini');

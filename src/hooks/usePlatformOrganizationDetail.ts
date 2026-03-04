@@ -102,7 +102,9 @@ export function usePlatformOrganizationDetail(orgId: string | undefined) {
         stripeSubscriptionId: sub?.stripe_subscription_id ?? null,
         entityCount,
         integrationCount,
-        aiChatConfig: aiConfigRes.data ?? null,
+        aiChatConfig: aiConfigRes.data
+          ? { ...aiConfigRes.data, provider: aiConfigRes.data.provider as 'openai' | 'anthropic' }
+          : null,
       };
     },
     staleTime: 30_000,

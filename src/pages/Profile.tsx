@@ -4,7 +4,14 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { User, Mail, Calendar, Shield, Loader2 } from 'lucide-react';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { User, Mail, Calendar, Shield, Loader2, Sparkles } from 'lucide-react';
 import { Navigate } from 'react-router-dom';
 import { useCurrentOrganization } from '@/hooks/useOrganizationContext';
 import { evaluateBillingAccess, useBillingOverview } from '@/hooks/useBilling';
@@ -16,6 +23,8 @@ import {
   getIndustryTemplateOptions,
   isIndustryTemplateKey,
 } from '@/lib/industry-templates';
+import { useAiChatConfig, OPENAI_MODELS, ANTHROPIC_MODELS } from '@/hooks/useAiChatConfig';
+import { useUpsertAiChatConfig } from '@/hooks/useUpsertAiChatConfig';
 
 const LOCALE_OPTIONS = ['es-ES', 'en-US', 'en-GB', 'fr-FR', 'de-DE', 'pt-PT', 'it-IT'] as const;
 const TIMEZONE_OPTIONS = [
@@ -45,6 +54,10 @@ export default function Profile() {
   const { data: billingOverview } = useBillingOverview(organization?.id ?? null);
   const updateWorkspace = useUpdateOrganizationSettings();
   const canManageWorkspace = canManageWorkspaceRole(membership?.role ?? null);
+  const { data: aiChatConfig, isLoading: aiChatConfigLoading } = useAiChatConfig();
+  const upsertAiChat = useUpsertAiChatConfig();
+  const [aiProvider, setAiProvider] = useState<'openai' | 'anthropic'>('openai');
+  const [aiModel, setAiModel] = useState('gpt-4o-mini');
   const [workspaceForm, setWorkspaceForm] = useState({
     name: '',
     logo_url: '',
@@ -56,6 +69,16 @@ export default function Profile() {
     entity_label_plural: 'Clients',
     industry_template_key: 'general_b2b',
   });
+
+  useEffect(() => {
+    if (aiChatConfig) {
+      setAiProvider(aiChatConfig.provider);
+      setAiModel(aiChatConfig.model);
+    } else if (!aiChatConfigLoading) {
+      setAiProvider('openai');
+      setAiModel('gpt-4o-mini');
+    }
+  }, [aiChatConfig?.provider, aiChatConfig?.model, aiChatConfigLoading]);
 
   useEffect(() => {
     if (!organization) return;
@@ -388,6 +411,64 @@ export default function Profile() {
               </div>
             </CardContent>
           </Card>
+
+          {/* AI Chat Provider — only for workspace admins */}
+          {canManageWorkspace && (
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Sparkles className="h-5 w-5" />
+                  AI Chat Provider
+                </CardTitle>
+                <p className="text-sm text-muted-foreground">
+                  Choose the AI provider for the workspace chat assistant (OpenAI or Claude).
+                </p>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="space-y-2">
+                  <Label>Provider</Label>
+                  <Select
+                    value={aiProvider}
+                    onValueChange={(v: 'openai' | 'anthropic') => {
+                      setAiProvider(v);
+                      setAiModel(v === 'openai' ? 'gpt-4o-mini' : 'claude-3-5-sonnet-20241022');
+                    }}
+                  >
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="openai">OpenAI (GPT)</SelectItem>
+                      <SelectItem value="anthropic">Anthropic (Claude)</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-2">
+                  <Label>Model</Label>
+                  <Select value={aiModel} onValueChange={setAiModel}>
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {(aiProvider === 'openai' ? OPENAI_MODELS : ANTHROPIC_MODELS).map((m) => (
+                        <SelectItem key={m} value={m}>{m}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <Button
+                  onClick={() => {
+                    if (!organization?.id) return;
+                    upsertAiChat.mutate({ organizationId: organization.id, provider: aiProvider, model: aiModel });
+                    toast.success('AI provider updated');
+                  }}
+                  disabled={upsertAiChat.isPending}
+                >
+                  {upsertAiChat.isPending ? 'Saving...' : 'Save AI Settings'}
+                </Button>
+              </CardContent>
+            </Card>
+          )}
 
           {/* Organization Billing */}
           <Card>

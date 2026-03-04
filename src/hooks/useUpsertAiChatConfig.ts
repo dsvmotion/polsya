@@ -31,6 +31,7 @@ export function useUpsertAiChatConfig() {
     },
     onSuccess: (_data, vars) => {
       qc.invalidateQueries({ queryKey: ['platform-org-detail', vars.organizationId] });
+      qc.invalidateQueries({ queryKey: ['ai-chat-config', vars.organizationId] });
     },
   });
 }

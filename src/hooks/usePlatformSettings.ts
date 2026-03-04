@@ -1,5 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
+import type { Json } from '@/integrations/supabase/types';
 import { useAuth } from '@/contexts/AuthContext';
 import { usePlatformOwnerStatus } from '@/hooks/usePlatformOwnerStatus';
 
@@ -34,7 +35,7 @@ export function usePlatformSettings() {
     mutationFn: async ({ key, value }: { key: string; value: unknown }) => {
       const { data, error } = await supabase
         .from('platform_settings')
-        .upsert({ key, value: value as object, updated_at: new Date().toISOString() }, { onConflict: 'key' })
+        .upsert({ key, value: value as Json, updated_at: new Date().toISOString() }, { onConflict: 'key' })
         .select('key, value')
         .single();
 
