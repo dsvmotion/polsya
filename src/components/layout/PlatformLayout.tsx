@@ -1,5 +1,5 @@
 import { Outlet, Link, Navigate } from 'react-router-dom';
-import { LayoutDashboard, CreditCard, LogOut, Compass } from 'lucide-react';
+import { LayoutDashboard, CreditCard, Mail, Compass } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { isPlatformOwner } from '@/lib/platform';
 import { Button } from '@/components/ui/button';
@@ -33,6 +33,12 @@ export function PlatformLayout() {
               <Link to="/platform/billing" className="gap-2">
                 <CreditCard className="h-4 w-4" />
                 Pagos clientes
+              </Link>
+            </Button>
+            <Button variant="ghost" size="sm" asChild>
+              <Link to="/platform/contact-messages" className="gap-2">
+                <Mail className="h-4 w-4" />
+                Contacto
               </Link>
             </Button>
           </nav>

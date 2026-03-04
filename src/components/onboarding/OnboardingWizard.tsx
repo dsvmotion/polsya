@@ -4,126 +4,142 @@ import {
   Dialog,
   DialogContent,
   DialogDescription,
+  DialogFooter,
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
-import { Compass, Search, ClipboardList, BarChart3, Sparkles, ChevronRight } from 'lucide-react';
+import { Compass, BarChart3, MapPin, Plug, CreditCard, ArrowRight, Sparkles } from 'lucide-react';
+import { supabase } from '@/integrations/supabase/client';
 
-const ONBOARDING_KEY = 'sales-compass-onboarding-completed';
-
-export function getOnboardingCompleted(): boolean {
-  try {
-    return localStorage.getItem(ONBOARDING_KEY) === 'true';
-  } catch {
-    return false;
-  }
-}
-
-export function setOnboardingCompleted(): void {
-  try {
-    localStorage.setItem(ONBOARDING_KEY, 'true');
-  } catch {
-    // ignore
-  }
-}
-
-const steps = [
+const STEPS = [
   {
+    id: 'welcome',
     title: 'Welcome to Sales Compass',
-    description: 'Your CRM for prospecting, operations, and sales intelligence. Let\'s get you started.',
+    description: 'Your 7-day free trial has started. Here’s how to get the most out of the platform.',
     icon: Compass,
   },
   {
-    title: 'Prospecting',
-    description: 'Find and qualify leads on the map. Filter by type, territory, and status.',
-    icon: Search,
-  },
-  {
-    title: 'Operations',
-    description: 'Manage orders and daily operations. Track deliveries and follow-ups.',
-    icon: ClipboardList,
-  },
-  {
-    title: 'Reports & AI',
-    description: 'View pipeline metrics and ask questions about your data with the AI assistant.',
+    id: 'dashboard',
+    title: 'Your sales dashboard',
+    description: 'See orders, entities, and revenue at a glance. Filter by geography and customer type.',
     icon: BarChart3,
+    action: { label: 'Go to dashboard', to: '/dashboard' },
   },
   {
-    title: 'You\'re all set',
-    description: 'Explore the dashboard or start adding your first contacts.',
-    icon: Sparkles,
+    id: 'prospecting',
+    title: 'Map your territory',
+    description: 'Search for prospects, plot them on the map, and manage your pipeline with entity types.',
+    icon: MapPin,
+    action: { label: 'Explore prospecting', to: '/prospecting/entities' },
+  },
+  {
+    id: 'integrations',
+    title: 'Connect your tools',
+    description: 'Link WooCommerce, Gmail, Outlook, and more. Your data flows in automatically.',
+    icon: Plug,
+    action: { label: 'Set up integrations', to: '/integrations' },
+  },
+  {
+    id: 'billing',
+    title: 'Full access when you subscribe',
+    description: 'After your trial, choose a plan to keep full access. No surprises.',
+    icon: CreditCard,
+    action: { label: 'View plans', to: '/billing' },
   },
 ];
 
-interface OnboardingWizardProps {
+export function OnboardingWizard({
+  open,
+  onComplete,
+}: {
   open: boolean;
-  onOpenChange: (open: boolean) => void;
-}
-
-export function OnboardingWizard({ open, onOpenChange }: OnboardingWizardProps) {
+  onComplete: () => void;
+}) {
   const [step, setStep] = useState(0);
-  const current = steps[step];
-  const isLast = step === steps.length - 1;
+  const current = STEPS[step];
+  const isLast = step === STEPS.length - 1;
+
+  const handleComplete = async () => {
+    onComplete(); // Close immediately for snappy UX
+    try {
+      await supabase.auth.updateUser({
+        data: { onboarding_completed: true },
+      });
+    } catch {
+      // Ignore; user can skip again next time
+    }
+  };
 
   const handleNext = () => {
     if (isLast) {
-      setOnboardingCompleted();
-      onOpenChange(false);
+      handleComplete();
     } else {
       setStep((s) => s + 1);
     }
   };
 
   const handleSkip = () => {
-    setOnboardingCompleted();
-    onOpenChange(false);
+    handleComplete();
   };
+
+  if (!current) return null;
 
   const Icon = current.icon;
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <Dialog open={open} onOpenChange={(o) => !o && handleSkip()}>
       <DialogContent className="sm:max-w-md" onPointerDownOutside={(e) => e.preventDefault()}>
         <DialogHeader>
-          <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-primary/10 text-primary mb-2">
-            <Icon className="h-6 w-6" />
+          <div className="flex items-center justify-center mb-4">
+            <div className="p-3 rounded-full bg-primary/10">
+              <Icon className="h-8 w-8 text-primary" />
+            </div>
           </div>
           <DialogTitle className="text-center">{current.title}</DialogTitle>
           <DialogDescription className="text-center">{current.description}</DialogDescription>
         </DialogHeader>
 
-        <div className="flex justify-center gap-1 py-4">
-          {steps.map((_, i) => (
+        {/* Progress */}
+        <div className="flex gap-2 justify-center pt-2">
+          {STEPS.map((_, i) => (
             <div
               key={i}
-              className={`h-1.5 w-8 rounded-full transition-colors ${
+              className={`h-1.5 rounded-full w-8 transition-colors ${
                 i <= step ? 'bg-primary' : 'bg-muted'
               }`}
             />
           ))}
         </div>
 
-        <div className="flex flex-col gap-2">
-          <Button onClick={handleNext} className="w-full gap-2">
-            {isLast ? (
-              <>
-                Go to Dashboard
-                <ChevronRight className="h-4 w-4" />
-              </>
-            ) : (
-              <>
-                Next
-                <ChevronRight className="h-4 w-4" />
-              </>
-            )}
+        <DialogFooter className="flex-col sm:flex-row gap-2 pt-4">
+          <Button variant="ghost" onClick={handleSkip} className="order-2 sm:order-1">
+            Skip
           </Button>
-          {!isLast && (
-            <Button variant="ghost" onClick={handleSkip} className="w-full text-muted-foreground">
-              Skip tutorial
+          <div className="flex gap-2 order-1 sm:order-2">
+            {current.action ? (
+              <Button asChild variant="outline">
+                <Link to={current.action.to} onClick={handleComplete}>
+                  {current.action.label}
+                  <ArrowRight className="ml-2 h-4 w-4" />
+                </Link>
+              </Button>
+            ) : null}
+            <Button onClick={handleNext}>
+              {isLast ? (
+                <>
+                  Get started
+                  <Sparkles className="ml-2 h-4 w-4" />
+                </>
+              ) : (
+                <>
+                  Next
+                  <ArrowRight className="ml-2 h-4 w-4" />
+                </>
+              )}
             </Button>
-          )}
-        </div>
+          </div>
+        </DialogFooter>
       </DialogContent>
     </Dialog>
   );

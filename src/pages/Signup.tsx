@@ -1,5 +1,7 @@
-import { useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useState, useEffect } from 'react';
+import { useNavigate, useSearchParams, Link } from 'react-router-dom';
+import { isValidSignupPlan, setPendingSignupPlan } from '@/lib/signupPlan';
+import { isPlatformOwner } from '@/lib/platform';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -20,6 +22,7 @@ const signupSchema = z.object({
 });
 
 export default function Signup() {
+  const [searchParams] = useSearchParams();
   const [fullName, setFullName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -27,9 +30,23 @@ export default function Signup() {
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [showConfirmation, setShowConfirmation] = useState(false);
-  
-  const { signUp } = useAuth();
+
+  const { signUp, user } = useAuth();
   const navigate = useNavigate();
+
+  // Persist plan from URL for post-login redirect to billing
+  useEffect(() => {
+    const plan = searchParams.get('plan');
+    if (isValidSignupPlan(plan)) {
+      setPendingSignupPlan(plan);
+    }
+  }, [searchParams]);
+
+  // Redirect if already logged in (unless we're showing post-signup confirmation)
+  useEffect(() => {
+    if (!user || showConfirmation) return;
+    navigate(isPlatformOwner(user) ? '/platform' : '/dashboard', { replace: true });
+  }, [user, navigate, showConfirmation]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -92,7 +109,10 @@ export default function Signup() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 p-4">
+    <div className="min-h-screen flex flex-col items-center justify-center bg-gray-50 p-4">
+      <Link to="/" className="absolute left-4 top-4 text-sm text-gray-500 hover:text-gray-900">
+        ← Back to home
+      </Link>
       <Card className="w-full max-w-md border-gray-200 bg-white">
         <CardHeader className="space-y-1">
           <CardTitle className="text-2xl font-bold text-gray-900">Create an account</CardTitle>

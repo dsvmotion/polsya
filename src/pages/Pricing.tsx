@@ -147,7 +147,7 @@ export default function Pricing() {
               ctaLabel = 'Start free trial';
               ctaElement = (
                 <Button className={linkButtonClass} variant={linkButtonVariant} asChild>
-                  <Link to="/signup?trial=1">
+                  <Link to={`/signup?plan=${config.code}`}>
                     {ctaLabel}
                     <ArrowRight className="ml-2 h-4 w-4" />
                   </Link>

@@ -126,7 +126,7 @@ export default function Landing() {
           </p>
           <div className="mt-10 flex flex-col sm:flex-row gap-4 justify-center">
             <Button size="lg" asChild className="text-base px-8">
-              <Link to="/signup">
+              <Link to="/signup?plan=starter">
                 Get started free
                 <ArrowRight className="ml-2 h-4 w-4" />
               </Link>
@@ -275,6 +275,54 @@ export default function Landing() {
         </div>
       </section>
 
+      {/* Pricing preview */}
+      <section id="pricing-preview" className="py-24 sm:py-32 scroll-mt-20">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <div className="text-center max-w-3xl mx-auto mb-12">
+            <h2 className="text-3xl font-bold text-foreground sm:text-4xl">
+              Simple, transparent pricing
+            </h2>
+            <p className="mt-4 text-lg text-muted-foreground">
+              7-day free trial on all plans. No credit card required.
+            </p>
+          </div>
+          <div className="grid gap-6 sm:grid-cols-3 max-w-4xl mx-auto">
+            {[
+              { name: 'Starter', price: '€29', desc: 'For individuals and small teams', features: ['500 entities', '1 user', 'Core integrations'], href: '/signup?plan=starter' },
+              { name: 'Pro', price: '€79', desc: 'For growing teams', features: ['2,000 entities', '5 users', 'All integrations', 'AI Assistant'], href: '/signup?plan=pro', featured: true },
+              { name: 'Enterprise', price: 'Custom', desc: 'For larger organizations', features: ['Unlimited', 'Dedicated support', 'Custom terms'], href: '/contact?subject=enterprise' },
+            ].map((plan) => (
+              <Link
+                key={plan.name}
+                to={plan.href}
+                className={`rounded-xl border p-6 text-center transition-all hover:border-primary/50 hover:shadow-lg ${
+                  plan.featured ? 'border-primary bg-primary/5 ring-1 ring-primary/20' : 'border-border bg-card'
+                }`}
+              >
+                <h3 className="font-semibold text-foreground">{plan.name}</h3>
+                <p className="mt-2 text-2xl font-bold text-foreground">{plan.price}</p>
+                {plan.price !== 'Custom' && <span className="text-sm text-muted-foreground">/month</span>}
+                <p className="mt-2 text-sm text-muted-foreground">{plan.desc}</p>
+                <ul className="mt-4 space-y-2 text-sm text-muted-foreground">
+                  {plan.features.map((f) => (
+                    <li key={f}>{f}</li>
+                  ))}
+                </ul>
+                <Button className="mt-6 w-full" variant={plan.featured ? 'default' : 'outline'} size="sm">
+                  {plan.price === 'Custom' ? 'Contact sales' : 'Start free trial'}
+                  <ArrowRight className="ml-2 h-4 w-4" />
+                </Button>
+              </Link>
+            ))}
+          </div>
+          <p className="mt-8 text-center">
+            <Link to="/pricing" className="text-sm font-medium text-primary hover:underline">
+              Compare all plans →
+            </Link>
+          </p>
+        </div>
+      </section>
+
       {/* FAQ */}
       <section id="faq" className="py-24 sm:py-32 scroll-mt-20">
         <div className="mx-auto max-w-3xl px-4 sm:px-6 lg:px-8">
@@ -303,7 +351,7 @@ export default function Landing() {
           </p>
           <div className="mt-10 flex flex-col sm:flex-row gap-4 justify-center">
             <Button size="lg" asChild className="text-base px-8">
-              <Link to="/signup">
+              <Link to="/signup?plan=starter">
                 Get started free
                 <ArrowRight className="ml-2 h-4 w-4" />
               </Link>

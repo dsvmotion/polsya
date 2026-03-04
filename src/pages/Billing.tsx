@@ -62,6 +62,12 @@ export default function Billing() {
   const createPortal = useCreateCustomerPortalSession();
 
   const checkoutResult = searchParams.get('checkout');
+  const preselectedPlanCode = searchParams.get('plan');
+  const preselectedPlan = useMemo(() => {
+    if (!preselectedPlanCode) return null;
+    return plans.find((p) => p.code?.toLowerCase() === preselectedPlanCode.toLowerCase()) ?? null;
+  }, [plans, preselectedPlanCode]);
+  const showPreselectedBanner = preselectedPlan && currentPlan?.id !== preselectedPlan.id;
   const canManageBilling = canManageBillingRole(membership?.role ?? null);
   const orgLocale = organization?.locale ?? 'es-ES';
   const orgTimezone = organization?.timezone ?? 'Europe/Madrid';
@@ -134,6 +140,15 @@ export default function Billing() {
         {checkoutResult === 'cancel' && (
           <div className="rounded-md border border-amber-200 bg-amber-50 p-3 text-sm text-amber-800">
             Checkout was canceled.
+          </div>
+        )}
+
+        {showPreselectedBanner && (
+          <div className="rounded-md border border-primary/30 bg-primary/5 p-4 text-sm text-foreground">
+            <p className="font-medium">Complete your subscription</p>
+            <p className="mt-1 text-muted-foreground">
+              You selected the {preselectedPlan.name} plan. Click below to start your 7-day free trial.
+            </p>
           </div>
         )}
 
@@ -221,12 +236,16 @@ export default function Billing() {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {plans.map((plan) => {
             const isCurrent = currentPlan?.id === plan.id;
+            const isPreselected = preselectedPlan?.id === plan.id;
             return (
-              <Card key={plan.id}>
+              <Card key={plan.id} className={isPreselected ? 'ring-2 ring-primary' : undefined}>
                 <CardHeader>
-                  <CardTitle className="flex items-center justify-between">
+                  <CardTitle className="flex items-center justify-between gap-2">
                     <span>{plan.name}</span>
-                    {isCurrent && <Badge>Current</Badge>}
+                    <span className="flex gap-2">
+                      {isPreselected && !isCurrent && <Badge variant="secondary">Selected</Badge>}
+                      {isCurrent && <Badge>Current</Badge>}
+                    </span>
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-3">

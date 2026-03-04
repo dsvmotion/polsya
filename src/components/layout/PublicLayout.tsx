@@ -40,7 +40,7 @@ export function PublicLayout() {
               <Link to="/login">Log in</Link>
             </Button>
             <Button asChild>
-              <Link to="/signup">Get started</Link>
+              <Link to="/signup?plan=starter">Get started</Link>
             </Button>
           </div>
 
@@ -71,7 +71,7 @@ export function PublicLayout() {
                 <Link to="/login" onClick={() => setMobileMenuOpen(false)}>Log in</Link>
               </Button>
               <Button asChild className="w-full">
-                <Link to="/signup" onClick={() => setMobileMenuOpen(false)}>Get started</Link>
+                <Link to="/signup?plan=starter" onClick={() => setMobileMenuOpen(false)}>Get started</Link>
               </Button>
             </div>
           </div>

@@ -1,6 +1,10 @@
 import { useState, useMemo, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { ShoppingCart, Building2, Users, MapPin, RefreshCw, AlertCircle, ClipboardList, X } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { useAuth } from '@/contexts/AuthContext';
+import { isPlatformOwner } from '@/lib/platform';
+import { getPendingSignupPlan, clearPendingSignupPlan } from '@/lib/signupPlan';
 import { SalesMap } from '@/components/SalesMap';
 import { useWooCommerceOrders } from '@/hooks/useWooCommerceOrders';
 import { usePharmaciesWithOrders } from '@/hooks/usePharmacyOperations';
@@ -13,6 +17,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { KpiStrip } from '@/components/dashboard/KpiStrip';
 import { ErrorBoundary } from '@/components/layout/ErrorBoundary';
 import { useEntityTypes, resolveEntityTypeLabel } from '@/hooks/useEntityTypes';
+import { OnboardingWizard } from '@/components/onboarding/OnboardingWizard';
 
 const normalizeCountry = (country: string): string => {
   if (!country) return '';
@@ -56,8 +61,26 @@ const normalizeProvince = (province: string, country: string): string => {
 };
 
 const Index = () => {
+  const navigate = useNavigate();
+  const { user } = useAuth();
   const [selectedSale, setSelectedSale] = useState<Sale | null>(null);
+  const [onboardingDismissed, setOnboardingDismissed] = useState(false);
   const { data: entityTypes = [] } = useEntityTypes();
+
+  const showOnboarding =
+    user &&
+    !(user.user_metadata as Record<string, unknown>)?.onboarding_completed &&
+    !onboardingDismissed;
+
+  // Redirect to billing when user has pending plan from signup (e.g. came from /pricing → /signup?plan=starter)
+  useEffect(() => {
+    if (!user || isPlatformOwner(user)) return;
+    const plan = getPendingSignupPlan();
+    if (plan) {
+      clearPendingSignupPlan();
+      navigate(`/billing?plan=${plan}`, { replace: true });
+    }
+  }, [user, navigate]);
 
   const [filters, setFilters] = useState({
     country: '',
@@ -254,6 +277,7 @@ const Index = () => {
 
   return (
     <div className="p-3 md:p-6">
+      <OnboardingWizard open={!!showOnboarding} onComplete={() => setOnboardingDismissed(true)} />
       <div className="max-w-[1600px] mx-auto w-full">
         {/* Header */}
         <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between mb-6">

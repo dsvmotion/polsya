@@ -1,10 +1,12 @@
 import { useState, useMemo } from 'react';
-import { Compass, Building2, CreditCard, Users, Search, ChevronRight } from 'lucide-react';
+import { Building2, CreditCard, Users, Search, ChevronRight, Mail } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { useQuery } from '@tanstack/react-query';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { usePlatformTenants } from '@/hooks/usePlatformTenants';
+import { supabase } from '@/integrations/supabase/client';
 
 export default function PlatformDashboard() {
   const { data: tenants = [], isLoading } = usePlatformTenants();
@@ -23,6 +25,17 @@ export default function PlatformDashboard() {
   const activeCount = tenants.filter((t) =>
     ['active', 'trialing'].includes(t.subscriptionStatus ?? '')
   ).length;
+
+  const { data: contactCount = 0 } = useQuery({
+    queryKey: ['platform', 'contact-count'],
+    queryFn: async () => {
+      const { count, error } = await supabase
+        .from('contact_messages')
+        .select('*', { count: 'exact', head: true });
+      if (error) throw error;
+      return count ?? 0;
+    },
+  });
 
   return (
     <div className="p-4 md:p-6 space-y-6 max-w-5xl mx-auto">
@@ -60,6 +73,21 @@ export default function PlatformDashboard() {
             </div>
           </CardContent>
         </Card>
+        <Link to="/platform/contact-messages">
+          <Card className="hover:border-primary/30 transition-colors">
+            <CardContent className="pt-6">
+              <div className="flex items-center gap-3">
+                <div className="p-2 rounded-lg bg-muted">
+                  <Mail className="h-5 w-5 text-muted-foreground" />
+                </div>
+                <div>
+                  <p className="text-2xl font-bold">{contactCount}</p>
+                  <p className="text-sm text-muted-foreground">Mensajes contacto</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </Link>
       </div>
 
       <Card>

@@ -111,7 +111,7 @@ export default function Features() {
 
         <div className="mt-24 text-center">
           <Button size="lg" asChild>
-            <Link to="/signup">
+            <Link to="/signup?plan=starter">
               Start your free trial
               <ArrowRight className="ml-2 h-4 w-4" />
             </Link>

@@ -6,7 +6,6 @@ import { CommandPalette } from './CommandPalette';
 import { AiChatSheet } from './AiChatSheet';
 import { SubscriptionBanner } from '@/components/auth/SubscriptionBanner';
 import { ActivateSubscriptionGate } from '@/components/auth/ActivateSubscriptionGate';
-import { OnboardingWizard, getOnboardingCompleted } from '@/components/onboarding/OnboardingWizard';
 import { cn } from '@/lib/utils';
 
 interface LayoutContextType {
@@ -29,14 +28,7 @@ export function AppLayout() {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [commandOpen, setCommandOpen] = useState(false);
   const [aiChatOpen, setAiChatOpen] = useState(false);
-  const [onboardingOpen, setOnboardingOpen] = useState(false);
   const location = useLocation();
-
-  useEffect(() => {
-    if (!getOnboardingCompleted()) {
-      setOnboardingOpen(true);
-    }
-  }, []);
 
   useEffect(() => {
     setSidebarOpen(false);
@@ -82,7 +74,6 @@ export function AppLayout() {
 
         <CommandPalette open={commandOpen} onOpenChange={setCommandOpen} />
         <AiChatSheet open={aiChatOpen} onOpenChange={setAiChatOpen} />
-        <OnboardingWizard open={onboardingOpen} onOpenChange={setOnboardingOpen} />
       </div>
     </LayoutContext.Provider>
   );

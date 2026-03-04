@@ -38,6 +38,7 @@ const IntegrationsPage = lazy(() => import("./pages/Integrations"));
 const PlatformDashboard = lazy(() => import("./pages/PlatformDashboard"));
 const PlatformBilling = lazy(() => import("./pages/PlatformBilling"));
 const PlatformOrganizationDetail = lazy(() => import("./pages/PlatformOrganizationDetail"));
+const PlatformContactMessages = lazy(() => import("./pages/PlatformContactMessages"));
 
 const queryClient = new QueryClient();
 
@@ -120,6 +121,7 @@ const App = () => (
                   }>
                     <Route index element={<PlatformDashboard />} />
                     <Route path="billing" element={<PlatformBilling />} />
+                    <Route path="contact-messages" element={<PlatformContactMessages />} />
                     <Route path="org/:orgId" element={<PlatformOrganizationDetail />} />
                   </Route>
 

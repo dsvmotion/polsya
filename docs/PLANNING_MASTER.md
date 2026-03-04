@@ -370,9 +370,9 @@ CATCH-ALL
 
 | # | Tarea | Descripción |
 |---|-------|-------------|
-| 5.1 | Wizard post-registro | 3-5 pasos guiados |
-| 5.2 | Flag onboarding_completed | En organization o user metadata |
-| 5.3 | Skip opcional | Permitir saltar onboarding |
+| 5.1 | Wizard post-registro | ✅ 5 pasos guiados (Welcome, Dashboard, Prospecting, Integrations, Billing) |
+| 5.2 | Flag onboarding_completed | ✅ En `user_metadata` vía `supabase.auth.updateUser` |
+| 5.3 | Skip opcional | ✅ Botón "Skip" en cada paso |
 
 ### Fase 6: Integraciones nuevas (2+ sprints)
 

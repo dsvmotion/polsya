@@ -24,7 +24,7 @@ const NotFound = () => {
           <Button asChild>
             <Link to="/">
               <Home className="h-4 w-4 mr-2" />
-              Dashboard
+              Go home
             </Link>
           </Button>
           <Button variant="outline" onClick={() => window.history.back()}>

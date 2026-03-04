@@ -31,6 +31,7 @@ Si ves en consola errores como:
    - `organizations`, `organization_members`
    - `entity_types`, `entities` (antiguo `pharmacies`)
    - `billing_plans`, `billing_customers`, `billing_subscriptions`, `billing_invoices`
+   - `contact_messages` (formulario de contacto público)
 
 ---
 
