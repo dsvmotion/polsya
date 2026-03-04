@@ -134,12 +134,19 @@ export const PROVIDER_REGISTRY: Record<string, ProviderDefinition> = {
     label: 'Notion',
     icon: '📓',
     category: 'ai',
-    authType: 'api_key',
+    authType: 'oauth2',
     syncTargets: ['entities'],
     defaultTargets: ['entities'],
     metadataSchema: [
       { key: 'workspace_id', label: 'Workspace ID', type: 'text', required: false },
     ],
+    oauthConfig: {
+      authUrl: 'https://api.notion.com/v1/oauth/authorize',
+      tokenUrl: 'https://api.notion.com/v1/oauth/token',
+      scopes: [],
+      envPrefix: 'NOTION',
+      extraAuthParams: { owner: 'user' },
+    },
   },
   openai: {
     key: 'openai',

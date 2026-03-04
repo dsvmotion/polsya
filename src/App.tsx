@@ -19,6 +19,7 @@ import Profile from "./pages/Profile";
 import Billing from "./pages/Billing";
 import GmailOAuthCallback from "./pages/GmailOAuthCallback";
 import OutlookOAuthCallback from "./pages/OutlookOAuthCallback";
+import NotionOAuthCallback from "./pages/NotionOAuthCallback";
 import NotFound from "./pages/NotFound";
 import Features from "./pages/Features";
 import Pricing from "./pages/Pricing";
@@ -113,6 +114,7 @@ const App = () => (
                     {/* OAuth callbacks */}
                     <Route path="integrations/gmail/callback" element={<GmailOAuthCallback />} />
                     <Route path="integrations/outlook/callback" element={<OutlookOAuthCallback />} />
+                    <Route path="integrations/notion/callback" element={<NotionOAuthCallback />} />
                   </Route>
 
                   {/* Platform admin routes (solo propietarios de la plataforma) */}

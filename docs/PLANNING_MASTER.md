@@ -286,7 +286,7 @@ CATCH-ALL
 - WooCommerce (pedidos)
 
 ### 12.2 Previstas
-- [ ] **Notion** — Sincronizar datos, docs
+- [x] **Notion** — OAuth listo; sync datos pendiente
 - [ ] **Figma** — (evaluar caso de uso)
 - [ ] **Google** — Drive, Sheets, Calendar
 - [ ] **AWS** — S3, Lambda, etc.
@@ -378,7 +378,7 @@ CATCH-ALL
 
 | # | Tarea | Descripción |
 |---|-------|-------------|
-| 6.1 | Notion | OAuth, sync, UI |
+| 6.1 | Notion | ✅ OAuth; sync pendiente |
 | 6.2 | Google (Drive/Sheets) | OAuth, sync |
 | 6.3 | Claude/OpenAI | API key, chat, embeddings |
 | 6.4 | AWS | Evaluar casos de uso |

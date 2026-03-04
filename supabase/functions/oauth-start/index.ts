@@ -122,15 +122,15 @@ serve(async (req) => {
       return jsonResponse({ error: `Could not persist OAuth state: ${stateError.message}` }, 500, corsHeaders);
     }
 
-    const scopes = oauthConfig.scopes.join(' ');
     const params = new URLSearchParams({
       client_id: clientId,
       redirect_uri: redirectUri,
       response_type: 'code',
-      scope: scopes,
       state,
       ...(oauthConfig.extraAuthParams ?? {}),
     });
+    const scopes = oauthConfig.scopes?.filter(Boolean).join(' ');
+    if (scopes) params.set('scope', scopes);
 
     const fullAuthUrl = `${authUrl}?${params.toString()}`;
 

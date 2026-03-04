@@ -171,21 +171,37 @@ serve(async (req) => {
     const metadata = asMetadata(integration.metadata);
     const tokenUrl = resolveTenantPlaceholder(oauthConfig.tokenUrl, metadata);
 
-    const tokenParams = new URLSearchParams({
-      code,
-      client_id: clientId,
-      client_secret: clientSecret,
-      redirect_uri: redirectUri,
-      grant_type: 'authorization_code',
-    });
+    let tokenRes: Response;
+    if (provider === 'notion') {
+      const basicAuth = btoa(`${clientId}:${clientSecret}`);
+      tokenRes = await fetch(tokenUrl, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Basic ${basicAuth}`,
+        },
+        body: JSON.stringify({
+          grant_type: 'authorization_code',
+          code,
+          redirect_uri: redirectUri,
+        }),
+      });
+    } else {
+      const tokenParams = new URLSearchParams({
+        code,
+        client_id: clientId,
+        client_secret: clientSecret,
+        redirect_uri: redirectUri,
+        grant_type: 'authorization_code',
+      });
+      tokenRes = await fetch(tokenUrl, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: tokenParams,
+      });
+    }
 
-    const tokenRes = await fetch(tokenUrl, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-      body: tokenParams,
-    });
-
-    const tokenJson = await tokenRes.json() as TokenExchangeResponse;
+    const tokenJson = await tokenRes.json() as TokenExchangeResponse & { workspace_id?: string; workspace_name?: string };
     if (!tokenRes.ok || !tokenJson.access_token) {
       const detail = tokenJson.error_description || tokenJson.error || `status ${tokenRes.status}`;
       return jsonResponse({ error: `${provider} token exchange failed: ${detail}` }, 400, corsHeaders);
@@ -203,11 +219,20 @@ serve(async (req) => {
       || (previous.data?.refresh_token as string | null)
       || null;
 
-    const { email: providerEmail, enrichedMetadata } = await fetchProviderAccountEmail(
+    let enrichedMetadata = asMetadata(integration.metadata);
+    if (provider === 'notion') {
+      const wsId = (tokenJson as { workspace_id?: string }).workspace_id;
+      const wsName = (tokenJson as { workspace_name?: string }).workspace_name;
+      if (wsId) enrichedMetadata.workspace_id = wsId;
+      if (wsName) enrichedMetadata.workspace_name = wsName;
+    }
+
+    const { email: providerEmail, enrichedMetadata: withEmail } = await fetchProviderAccountEmail(
       provider,
       tokenJson.access_token,
-      metadata,
+      enrichedMetadata,
     );
+    enrichedMetadata = withEmail;
 
     const expiresAt = typeof tokenJson.expires_in === 'number'
       ? new Date(Date.now() + tokenJson.expires_in * 1000).toISOString()

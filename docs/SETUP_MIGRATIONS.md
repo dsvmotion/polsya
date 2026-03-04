@@ -49,6 +49,8 @@ Si ves `woocommerce-orders-detailed 401 (Unauthorized)` o similar:
 
 4. **Desplegar Edge Functions** si usas proyecto remoto:
    ```bash
+   supabase functions deploy oauth-start
+   supabase functions deploy oauth-exchange
    supabase functions deploy woocommerce-orders-detailed
    supabase functions deploy woocommerce-orders
    supabase functions deploy process-integration-sync-jobs
