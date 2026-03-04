@@ -1,4 +1,4 @@
-# Sales Compass 95
+# Polsya
 
 App de gestión de ventas para equipos comerciales. Incluye prospección de farmacias (mapas, búsqueda, filtros geográficos), operaciones (pedidos WooCommerce, documentos) y autenticación con Supabase.
 
@@ -21,7 +21,7 @@ App de gestión de ventas para equipos comerciales. Incluye prospección de farm
 ```bash
 # Clonar y entrar al proyecto
 git clone <URL_DEL_REPO>
-cd sales-compass-95
+cd Polsya
 
 # Instalar dependencias
 npm install
@@ -55,7 +55,7 @@ npm install
 ## Estructura del proyecto
 
 ```
-sales-compass-95/
+Polsya/
 ├── public/                 # Assets estáticos
 │   ├── robots.txt
 │   └── placeholder.svg
