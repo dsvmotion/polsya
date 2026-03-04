@@ -1,6 +1,8 @@
 import { useState } from 'react';
 import { useNavigate, useLocation, Link } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
+import { isPlatformOwner } from '@/lib/platform';
+import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -23,32 +25,31 @@ export default function Login() {
   const { signIn } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
-  
-  const from = location.state?.from?.pathname || '/';
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
-    
-    // Validate input
+
     const result = loginSchema.safeParse({ email, password });
     if (!result.success) {
       setError(result.error.errors[0].message);
       return;
     }
-    
+
     setIsLoading(true);
-    
+
     const { error: signInError } = await signIn(email, password);
-    
+
     if (signInError) {
       setError(signInError.message);
       setIsLoading(false);
       return;
     }
-    
-    // Navigate to the page they tried to visit or home
-    navigate(from, { replace: true });
+
+    const { data: { session } } = await supabase.auth.getSession();
+    const target = isPlatformOwner(session?.user) ? '/platform' : (location.state?.from?.pathname ?? '/dashboard');
+    navigate(target, { replace: true });
+    setIsLoading(false);
   };
 
   return (
@@ -87,7 +88,15 @@ export default function Login() {
             </div>
             
             <div className="space-y-2">
-              <Label htmlFor="password">Password</Label>
+              <div className="flex items-center justify-between">
+                <Label htmlFor="password">Password</Label>
+                <Link
+                  to="/forgot-password"
+                  className="text-sm text-muted-foreground hover:text-primary hover:underline"
+                >
+                  Forgot password?
+                </Link>
+              </div>
               <div className="relative">
                 <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                 <Input

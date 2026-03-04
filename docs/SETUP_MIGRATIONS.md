@@ -80,6 +80,42 @@ Para distinguir administradores de plataforma de usuarios normales:
    - Los roles `owner`/`developer` podrían usar `service_role` o bypass RLS solo en operaciones admin (logs, backfills, etc.).
    - Los usuarios normales nunca ven datos de otras organizaciones.
 
+### Cómo configurar platform owner (implementado)
+
+Para que un usuario sea administrador de plataforma (acceso a `/platform`, gestión de pagos de clientes):
+
+**Opción A – app_metadata (recomendado):** En Supabase Dashboard → Authentication → Users → tu usuario → editar `app_metadata`:
+```json
+{ "role": "platform_owner" }
+```
+También valen: `owner`, `developer`, `platform_admin`.
+
+**Opción B – Variable de entorno:** En tu `.env`:
+```
+VITE_PLATFORM_OWNER_EMAILS=tu@email.com,otro@email.com
+```
+Lista de emails separados por comas (case-insensitive).
+
+Los platform owners:
+- No requieren suscripción (no ven el banner de suscripción)
+- Acceden al dashboard de plataforma en `/platform`
+- Gestionan pagos de clientes en `/platform/billing`
+- Ven enlace "Platform Admin" en el menú de usuario cuando usan el CRM
+
+---
+
+## Modelo de suscripciones (no bloqueante)
+
+La web **nunca bloquea** el acceso. Principios:
+
+- **Platform owners:** Acceso total sin comprobaciones de pago.
+- **Clientes sin suscripción:** Acceso completo. Pueden suscribirse desde `/billing` cuando quieran.
+- **Suscripción activa/trial:** Acceso completo.
+- **Impago (past_due):** 7 días de cortesía con acceso completo. Tras la cortesía, se muestra un banner de aviso (no se bloquea el uso).
+- **Cancelada/vencida:** Banner de aviso con enlace a Billing. La app sigue funcionando.
+
+El banner (`SubscriptionBanner`) es informativo y se puede cerrar. El periodo de cortesía se configura con `VITE_BILLING_PAST_DUE_GRACE_DAYS` (por defecto 7).
+
 ---
 
 ## Orden de migraciones (referencia)
@@ -93,3 +129,28 @@ Las migraciones se aplican por timestamp. Orden aproximado:
 5. … resto de migraciones
 
  `supabase db push` aplica todas en el orden correcto.
+
+---
+
+## Planes de facturación y Stripe (para /pricing y /billing)
+
+Para que la página `/pricing` muestre botones "Subscribe" en lugar de "Start free trial" para usuarios logueados:
+
+1. Crea Products y Prices en Stripe Dashboard.
+2. Inserta filas en `billing_plans` con `code` igual a `starter` y `pro` (case-insensitive) para que coincidan con la UI de pricing.
+3. Configura las Edge Functions con `STRIPE_SECRET_KEY`, `APP_BASE_URL`, etc.
+4. Despliega `create-checkout-session` y `stripe-webhook`.
+5. **Trial:** Configura `BILLING_TRIAL_DAYS` en Edge Functions (por defecto 7). El checkout añade trial automáticamente.
+
+El plan `Enterprise` siempre muestra "Contact sales" y no usa checkout.
+
+---
+
+## Límites por plan (Fase 7)
+
+La migración `bill_02a_plan_limits` añade `entity_limit` y `user_limit` a `billing_plans`. Por defecto:
+- **Starter:** 500 entidades, 1 usuario
+- **Pro:** 2000 entidades, 5 usuarios
+- **Enterprise:** ilimitado (null)
+
+Los triggers impiden crear entidades o miembros por encima del límite cuando la org tiene suscripción activa o en trial. Para ajustar límites: `UPDATE billing_plans SET entity_limit = X, user_limit = Y WHERE code = 'starter';`

@@ -169,6 +169,11 @@ serve(async (req) => {
     params.set('subscription_data[metadata][organization_id]', auth.organizationId);
     params.set('subscription_data[metadata][requested_by]', auth.user.id);
 
+    const trialDays = Math.floor(Number(Deno.env.get('BILLING_TRIAL_DAYS') ?? 7) || 0);
+    if (trialDays > 0) {
+      params.set('subscription_data[trial_period_days]', String(trialDays));
+    }
+
     const checkout = await stripeFormPost<CheckoutSessionResponse>(
       '/checkout/sessions',
       params,

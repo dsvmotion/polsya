@@ -48,7 +48,7 @@ export function AppSidebar({ open, onOpenChange, collapsed, onCollapsedChange, o
   const { organization } = useCurrentOrganization();
 
   const navItems: NavItem[] = [
-    { label: 'Dashboard', href: '/', icon: LayoutDashboard, match: /^\/$/ },
+    { label: 'Dashboard', href: '/dashboard', icon: LayoutDashboard, match: /^\/dashboard\/?$/ },
     {
       label: 'Prospecting',
       href: '/prospecting/entities',
@@ -91,7 +91,7 @@ export function AppSidebar({ open, onOpenChange, collapsed, onCollapsedChange, o
       {/* Logo */}
       <div className={cn('flex items-center h-14 border-b border-sidebar-border px-3 shrink-0', collapsed && 'justify-center')}>
         {!collapsed && (
-          <Link to="/" className="flex items-center gap-2.5 min-w-0">
+          <Link to="/dashboard" className="flex items-center gap-2.5 min-w-0">
             {logoUrl ? (
               <img src={logoUrl} alt="" className="h-8 w-8 rounded-lg object-cover" />
             ) : (
@@ -105,7 +105,7 @@ export function AppSidebar({ open, onOpenChange, collapsed, onCollapsedChange, o
           </Link>
         )}
         {collapsed && (
-          <Link to="/">
+          <Link to="/dashboard">
             {logoUrl ? (
               <img src={logoUrl} alt="" className="h-8 w-8 rounded-lg object-cover" />
             ) : (

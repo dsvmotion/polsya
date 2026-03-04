@@ -10,12 +10,14 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
-import { CreditCard, LogOut, User } from 'lucide-react';
+import { CreditCard, LogOut, User, Shield } from 'lucide-react';
 import { useCurrentOrganization } from '@/hooks/useOrganizationContext';
+import { isPlatformOwner } from '@/lib/platform';
 
 export function UserMenu() {
   const { user, signOut } = useAuth();
   const { organization, membership } = useCurrentOrganization();
+  const platformOwner = isPlatformOwner(user);
 
   if (!user) return null;
 
@@ -54,6 +56,14 @@ export function UserMenu() {
           </div>
         </DropdownMenuLabel>
         <DropdownMenuSeparator className="bg-gray-100" />
+        {platformOwner && (
+          <DropdownMenuItem asChild className="cursor-pointer text-gray-700 focus:bg-gray-100 focus:text-gray-900">
+            <Link to="/platform" className="flex items-center">
+              <Shield className="mr-2 h-4 w-4" />
+              <span>Platform Admin</span>
+            </Link>
+          </DropdownMenuItem>
+        )}
         <DropdownMenuItem asChild className="cursor-pointer text-gray-700 focus:bg-gray-100 focus:text-gray-900">
           <Link to="/profile" className="flex items-center">
             <User className="mr-2 h-4 w-4" />

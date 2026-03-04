@@ -41,20 +41,208 @@ END $$;
 ALTER TABLE public.entity_types
   ADD COLUMN IF NOT EXISTS metadata jsonb NOT NULL DEFAULT '{}';
 
--- ─── 2. Rename core tables ─────────────────────────────────────────────────
-ALTER TABLE public.pharmacies RENAME TO entities;
-ALTER TABLE public.pharmacy_contacts RENAME TO entity_contacts;
-ALTER TABLE public.pharmacy_activities RENAME TO entity_activities;
-ALTER TABLE public.pharmacy_opportunities RENAME TO entity_opportunities;
-ALTER TABLE public.pharmacy_order_documents RENAME TO entity_order_documents;
+-- ─── 2. Rename or bootstrap core tables ───────────────────────────────────
+-- Path A: All pharmacy_* exist → rename.
+-- Path B: pharmacies exists but pharmacy_contacts missing → rename pharmacies only, create entity_* child tables.
+-- Path C: No pharmacies → full bootstrap.
+DO $mig$
+DECLARE
+  has_pharmacies boolean;
+  has_contacts boolean;
+BEGIN
+  SELECT EXISTS (SELECT 1 FROM information_schema.tables WHERE table_schema = 'public' AND table_name = 'pharmacies') INTO has_pharmacies;
+  SELECT EXISTS (SELECT 1 FROM information_schema.tables WHERE table_schema = 'public' AND table_name = 'pharmacy_contacts') INTO has_contacts;
 
--- ─── 3. Rename FK columns (pharmacy_id → entity_id) ────────────────────────
-ALTER TABLE public.entity_contacts RENAME COLUMN pharmacy_id TO entity_id;
-ALTER TABLE public.entity_activities RENAME COLUMN pharmacy_id TO entity_id;
-ALTER TABLE public.entity_opportunities RENAME COLUMN pharmacy_id TO entity_id;
-ALTER TABLE public.entity_order_documents RENAME COLUMN pharmacy_id TO entity_id;
+  IF has_pharmacies AND has_contacts THEN
+    -- Path A: Full rename
+    ALTER TABLE public.pharmacies RENAME TO entities;
+    ALTER TABLE public.pharmacy_contacts RENAME TO entity_contacts;
+    ALTER TABLE public.pharmacy_activities RENAME TO entity_activities;
+    ALTER TABLE public.pharmacy_opportunities RENAME TO entity_opportunities;
+    ALTER TABLE public.pharmacy_order_documents RENAME TO entity_order_documents;
+    ALTER TABLE public.entity_contacts RENAME COLUMN pharmacy_id TO entity_id;
+    ALTER TABLE public.entity_activities RENAME COLUMN pharmacy_id TO entity_id;
+    ALTER TABLE public.entity_opportunities RENAME COLUMN pharmacy_id TO entity_id;
+    ALTER TABLE public.entity_order_documents RENAME COLUMN pharmacy_id TO entity_id;
+  ELSIF has_pharmacies AND NOT has_contacts THEN
+    -- Path B: Rename pharmacies only, create child tables (partial migration state)
+    ALTER TABLE public.pharmacies RENAME TO entities;
+    CREATE TABLE public.entity_contacts (
+      id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+      organization_id uuid NOT NULL REFERENCES public.organizations(id) ON DELETE CASCADE,
+      entity_id uuid NOT NULL REFERENCES public.entities(id) ON DELETE CASCADE,
+      name text NOT NULL,
+      role text,
+      email text,
+      phone text,
+      is_primary boolean NOT NULL DEFAULT false,
+      notes text,
+      created_at timestamptz NOT NULL DEFAULT now(),
+      updated_at timestamptz NOT NULL DEFAULT now()
+    );
+    CREATE TABLE public.entity_activities (
+      id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+      organization_id uuid NOT NULL REFERENCES public.organizations(id) ON DELETE CASCADE,
+      entity_id uuid NOT NULL REFERENCES public.entities(id) ON DELETE CASCADE,
+      activity_type text NOT NULL CHECK (activity_type IN ('call', 'email', 'visit', 'note', 'task')),
+      title text NOT NULL,
+      description text,
+      due_at timestamptz,
+      completed_at timestamptz,
+      owner text,
+      created_at timestamptz NOT NULL DEFAULT now(),
+      updated_at timestamptz NOT NULL DEFAULT now()
+    );
+    CREATE TABLE public.entity_opportunities (
+      id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+      organization_id uuid NOT NULL REFERENCES public.organizations(id) ON DELETE CASCADE,
+      entity_id uuid NOT NULL REFERENCES public.entities(id) ON DELETE CASCADE,
+      title text NOT NULL,
+      stage text NOT NULL CHECK (stage IN ('qualified', 'proposal', 'negotiation', 'won', 'lost')),
+      amount numeric(12,2) NOT NULL DEFAULT 0,
+      probability int NOT NULL DEFAULT 50 CHECK (probability >= 0 AND probability <= 100),
+      expected_close_date date,
+      notes text,
+      created_at timestamptz NOT NULL DEFAULT now(),
+      updated_at timestamptz NOT NULL DEFAULT now()
+    );
+    CREATE TABLE public.entity_order_documents (
+      id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+      organization_id uuid NOT NULL REFERENCES public.organizations(id) ON DELETE CASCADE,
+      entity_id uuid NOT NULL REFERENCES public.entities(id) ON DELETE CASCADE,
+      order_id text,
+      document_type text NOT NULL CHECK (document_type IN ('invoice', 'receipt')),
+      file_path text NOT NULL,
+      file_name text NOT NULL,
+      uploaded_at timestamptz NOT NULL DEFAULT now(),
+      notes text
+    );
+    CREATE TRIGGER update_entity_contacts_updated_at BEFORE UPDATE ON public.entity_contacts FOR EACH ROW EXECUTE FUNCTION public.update_updated_at_column();
+    CREATE TRIGGER update_entity_activities_updated_at BEFORE UPDATE ON public.entity_activities FOR EACH ROW EXECUTE FUNCTION public.update_updated_at_column();
+    CREATE TRIGGER update_entity_opportunities_updated_at BEFORE UPDATE ON public.entity_opportunities FOR EACH ROW EXECUTE FUNCTION public.update_updated_at_column();
+  ELSE
+    -- Path B: Bootstrap entity_* tables (pharmacy_* never existed)
+    IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'pharmacy_status') THEN
+      CREATE TYPE public.pharmacy_status AS ENUM ('not_contacted', 'contacted', 'qualified', 'proposal', 'client', 'retained', 'lost');
+    END IF;
+    IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'client_type') THEN
+      CREATE TYPE public.client_type AS ENUM ('pharmacy', 'herbalist');
+    END IF;
+
+    CREATE TABLE public.entities (
+      id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+      organization_id uuid NOT NULL REFERENCES public.organizations(id) ON DELETE CASCADE,
+      entity_type_id uuid REFERENCES public.entity_types(id) ON DELETE SET NULL,
+      google_place_id text,
+      name text NOT NULL,
+      address text,
+      city text,
+      province text,
+      country text DEFAULT 'Spain',
+      postal_code text,
+      autonomous_community text,
+      sub_locality text,
+      phone text,
+      secondary_phone text,
+      email text,
+      website text,
+      opening_hours jsonb,
+      lat double precision NOT NULL DEFAULT 0,
+      lng double precision NOT NULL DEFAULT 0,
+      commercial_status public.pharmacy_status NOT NULL DEFAULT 'not_contacted',
+      client_type public.client_type NOT NULL DEFAULT 'pharmacy',
+      legal_form text,
+      activity text,
+      subsector text,
+      notes text,
+      google_data jsonb,
+      saved_at timestamptz,
+      created_at timestamptz NOT NULL DEFAULT now(),
+      updated_at timestamptz NOT NULL DEFAULT now()
+    );
+
+    CREATE TABLE public.entity_contacts (
+      id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+      organization_id uuid NOT NULL REFERENCES public.organizations(id) ON DELETE CASCADE,
+      entity_id uuid NOT NULL REFERENCES public.entities(id) ON DELETE CASCADE,
+      name text NOT NULL,
+      role text,
+      email text,
+      phone text,
+      is_primary boolean NOT NULL DEFAULT false,
+      notes text,
+      created_at timestamptz NOT NULL DEFAULT now(),
+      updated_at timestamptz NOT NULL DEFAULT now()
+    );
+
+    CREATE TABLE public.entity_activities (
+      id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+      organization_id uuid NOT NULL REFERENCES public.organizations(id) ON DELETE CASCADE,
+      entity_id uuid NOT NULL REFERENCES public.entities(id) ON DELETE CASCADE,
+      activity_type text NOT NULL CHECK (activity_type IN ('call', 'email', 'visit', 'note', 'task')),
+      title text NOT NULL,
+      description text,
+      due_at timestamptz,
+      completed_at timestamptz,
+      owner text,
+      created_at timestamptz NOT NULL DEFAULT now(),
+      updated_at timestamptz NOT NULL DEFAULT now()
+    );
+
+    CREATE TABLE public.entity_opportunities (
+      id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+      organization_id uuid NOT NULL REFERENCES public.organizations(id) ON DELETE CASCADE,
+      entity_id uuid NOT NULL REFERENCES public.entities(id) ON DELETE CASCADE,
+      title text NOT NULL,
+      stage text NOT NULL CHECK (stage IN ('qualified', 'proposal', 'negotiation', 'won', 'lost')),
+      amount numeric(12,2) NOT NULL DEFAULT 0,
+      probability int NOT NULL DEFAULT 50 CHECK (probability >= 0 AND probability <= 100),
+      expected_close_date date,
+      notes text,
+      created_at timestamptz NOT NULL DEFAULT now(),
+      updated_at timestamptz NOT NULL DEFAULT now()
+    );
+
+    CREATE TABLE public.entity_order_documents (
+      id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+      organization_id uuid NOT NULL REFERENCES public.organizations(id) ON DELETE CASCADE,
+      entity_id uuid NOT NULL REFERENCES public.entities(id) ON DELETE CASCADE,
+      order_id text,
+      document_type text NOT NULL CHECK (document_type IN ('invoice', 'receipt')),
+      file_path text NOT NULL,
+      file_name text NOT NULL,
+      uploaded_at timestamptz NOT NULL DEFAULT now(),
+      notes text
+    );
+
+    CREATE TRIGGER update_entity_contacts_updated_at BEFORE UPDATE ON public.entity_contacts FOR EACH ROW EXECUTE FUNCTION public.update_updated_at_column();
+    CREATE TRIGGER update_entity_activities_updated_at BEFORE UPDATE ON public.entity_activities FOR EACH ROW EXECUTE FUNCTION public.update_updated_at_column();
+    CREATE TRIGGER update_entity_opportunities_updated_at BEFORE UPDATE ON public.entity_opportunities FOR EACH ROW EXECUTE FUNCTION public.update_updated_at_column();
+  END IF;
+END $mig$;
+
+-- ─── 3. (No-op for bootstrap path; renames done above) ───────────────────────
 
 -- ─── 4. Backward-compatible views ──────────────────────────────────────────
+-- Drop any leftover pharmacy_* tables/views (partial migration state) before creating views
+DO $clean$
+DECLARE
+  objname text;
+  objkind char;
+BEGIN
+  FOR objname IN SELECT unnest(ARRAY['pharmacies', 'pharmacy_contacts', 'pharmacy_activities', 'pharmacy_opportunities', 'pharmacy_order_documents']) LOOP
+    SELECT c.relkind INTO objkind
+    FROM pg_class c
+    JOIN pg_namespace n ON n.oid = c.relnamespace
+    WHERE n.nspname = 'public' AND c.relname = objname;
+    IF objkind = 'v' THEN
+      EXECUTE format('DROP VIEW IF EXISTS public.%I', objname);
+    ELSIF objkind = 'r' THEN
+      EXECUTE format('DROP TABLE IF EXISTS public.%I CASCADE', objname);
+    END IF;
+  END LOOP;
+END $clean$;
+
 CREATE OR REPLACE VIEW public.pharmacies AS
   SELECT * FROM public.entities;
 
@@ -77,6 +265,34 @@ CREATE OR REPLACE VIEW public.pharmacy_order_documents AS
   SELECT id, entity_id AS pharmacy_id, order_id, document_type, file_path, file_name,
          uploaded_at, notes, organization_id
   FROM public.entity_order_documents;
+
+-- ─── 4b. Ensure required columns on entities (legacy DBs may lack them) ──────
+DO $org$
+DECLARE
+  default_org uuid;
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1 FROM information_schema.columns
+    WHERE table_schema = 'public' AND table_name = 'entities' AND column_name = 'organization_id'
+  ) THEN
+    SELECT id INTO default_org FROM public.organizations WHERE slug = 'default-workspace' LIMIT 1;
+    IF default_org IS NULL THEN
+      INSERT INTO public.organizations (name, slug) VALUES ('Default Workspace', 'default-workspace')
+      RETURNING id INTO default_org;
+    END IF;
+    ALTER TABLE public.entities ADD COLUMN organization_id uuid REFERENCES public.organizations(id) ON DELETE CASCADE;
+    UPDATE public.entities SET organization_id = default_org WHERE organization_id IS NULL;
+    ALTER TABLE public.entities ALTER COLUMN organization_id SET NOT NULL;
+    ALTER TABLE public.entities ALTER COLUMN organization_id SET DEFAULT public.current_user_organization_id();
+  END IF;
+
+  IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'client_type') THEN
+    CREATE TYPE public.client_type AS ENUM ('pharmacy', 'herbalist');
+  END IF;
+  ALTER TABLE public.entities ADD COLUMN IF NOT EXISTS client_type public.client_type NOT NULL DEFAULT 'pharmacy';
+
+  ALTER TABLE public.entities ADD COLUMN IF NOT EXISTS entity_type_id uuid REFERENCES public.entity_types(id) ON DELETE SET NULL;
+END $org$;
 
 -- ─── 5. Recreate RLS policies on renamed tables ────────────────────────────
 -- entities (was pharmacies — policies were dropped by rename, recreate)

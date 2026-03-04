@@ -31,7 +31,7 @@ export default function OutlookOAuthCallback() {
           <XCircle className="h-8 w-8 text-red-500 mx-auto" />
           <h1 className="text-lg font-semibold text-gray-900">Outlook connection cancelled</h1>
           <p className="text-sm text-gray-600">Microsoft returned: {oauthError}</p>
-          <Button onClick={() => navigate('/')}>Back to Dashboard</Button>
+          <Button onClick={() => navigate('/dashboard')}>Back to Dashboard</Button>
         </div>
       </div>
     );
@@ -44,7 +44,7 @@ export default function OutlookOAuthCallback() {
           <XCircle className="h-8 w-8 text-red-500 mx-auto" />
           <h1 className="text-lg font-semibold text-gray-900">Missing OAuth parameters</h1>
           <p className="text-sm text-gray-600">The callback URL is missing the required code/state values.</p>
-          <Button onClick={() => navigate('/')}>Back to Dashboard</Button>
+          <Button onClick={() => navigate('/dashboard')}>Back to Dashboard</Button>
         </div>
       </div>
     );
@@ -69,7 +69,7 @@ export default function OutlookOAuthCallback() {
           <XCircle className="h-8 w-8 text-red-500 mx-auto" />
           <h1 className="text-lg font-semibold text-gray-900">Outlook connection failed</h1>
           <p className="text-sm text-gray-600">{exchange.error.message}</p>
-          <Button onClick={() => navigate('/')}>Back to Dashboard</Button>
+          <Button onClick={() => navigate('/dashboard')}>Back to Dashboard</Button>
         </div>
       </div>
     );
@@ -86,7 +86,7 @@ export default function OutlookOAuthCallback() {
               ? `Connected account: ${exchange.data.accountEmail}`
               : 'Connection completed successfully.'}
           </p>
-          <Button onClick={() => navigate('/')}>Continue</Button>
+          <Button onClick={() => navigate('/dashboard')}>Continue</Button>
         </div>
       </div>
     );

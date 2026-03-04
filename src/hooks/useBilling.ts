@@ -292,6 +292,31 @@ export function useCreateCheckoutSession() {
   });
 }
 
+export function usePlanUsage(organizationId: string | null) {
+  return useQuery<{ entities: number; users: number }>({
+    queryKey: ['plan-usage', organizationId ?? ''],
+    enabled: !!organizationId,
+    queryFn: async () => {
+      const [entitiesRes, membersRes] = await Promise.all([
+        supabase
+          .from('pharmacies')
+          .select('id', { count: 'exact', head: true })
+          .eq('organization_id', organizationId!),
+        supabase
+          .from('organization_members')
+          .select('id', { count: 'exact', head: true })
+          .eq('organization_id', organizationId!)
+          .eq('status', 'active'),
+      ]);
+      return {
+        entities: entitiesRes.count ?? 0,
+        users: membersRes.count ?? 0,
+      };
+    },
+    staleTime: 60 * 1000,
+  });
+}
+
 export function useCreateCustomerPortalSession() {
   return useMutation({
     mutationFn: async (input?: { returnUrl?: string }) => {

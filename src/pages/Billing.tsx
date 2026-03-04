@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
-import { useSearchParams } from 'react-router-dom';
-import { CreditCard, Loader2 } from 'lucide-react';
+import { useSearchParams, Link } from 'react-router-dom';
+import { CreditCard, Loader2, ExternalLink, Database, Users } from 'lucide-react';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -12,9 +12,12 @@ import {
   useBillingPlans,
   useCreateCheckoutSession,
   useCreateCustomerPortalSession,
+  usePlanUsage,
 } from '@/hooks/useBilling';
 import { useCurrentOrganization } from '@/hooks/useOrganizationContext';
 import { canManageBilling as canManageBillingRole } from '@/lib/rbac';
+import { useAuth } from '@/contexts/AuthContext';
+import { isPlatformOwner } from '@/lib/platform';
 import type { BillingSubscriptionStatus } from '@/types/billing';
 
 function formatMoney(cents: number, currency: string, locale: string): string {
@@ -49,9 +52,12 @@ function statusVariant(status: BillingSubscriptionStatus | null | undefined): 'd
 
 export default function Billing() {
   const [searchParams] = useSearchParams();
+  const { user } = useAuth();
   const { organization, membership, isLoading: orgLoading } = useCurrentOrganization();
+  const showPlatformLink = isPlatformOwner(user);
   const { data: plans = [], isLoading: plansLoading } = useBillingPlans();
   const { data: overview, isLoading: overviewLoading } = useBillingOverview(organization?.id ?? null);
+  const { data: usage } = usePlanUsage(organization?.id ?? null);
   const createCheckout = useCreateCheckoutSession();
   const createPortal = useCreateCustomerPortalSession();
 
@@ -104,9 +110,19 @@ export default function Billing() {
   return (
     <div className="p-4 md:p-6">
       <main className="max-w-5xl mx-auto space-y-6">
-        <div>
-          <h1 className="text-2xl font-bold">Billing</h1>
-          <p className="text-sm text-muted-foreground">Manage your workspace subscription and invoices.</p>
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+          <div>
+            <h1 className="text-2xl font-bold">Billing</h1>
+            <p className="text-sm text-muted-foreground">Manage your workspace subscription and invoices.</p>
+          </div>
+          {showPlatformLink && (
+            <Link to="/platform/billing">
+              <Button variant="outline" className="gap-2">
+                <ExternalLink className="h-4 w-4" />
+                Gestionar pagos de clientes
+              </Button>
+            </Link>
+          )}
         </div>
 
         {checkoutResult === 'success' && (
@@ -167,6 +183,40 @@ export default function Billing() {
             </div>
           </CardContent>
         </Card>
+
+        {currentPlan && (currentPlan.entity_limit != null || currentPlan.user_limit != null) && usage && (
+          <Card>
+            <CardHeader>
+              <CardTitle>Usage</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                {currentPlan.entity_limit != null && (
+                  <div className="flex items-center gap-3">
+                    <Database className="h-5 w-5 text-muted-foreground" />
+                    <div>
+                      <p className="text-sm font-medium">Entities</p>
+                      <p className="text-sm text-muted-foreground">
+                        {usage.entities} / {currentPlan.entity_limit}
+                      </p>
+                    </div>
+                  </div>
+                )}
+                {currentPlan.user_limit != null && (
+                  <div className="flex items-center gap-3">
+                    <Users className="h-5 w-5 text-muted-foreground" />
+                    <div>
+                      <p className="text-sm font-medium">Team members</p>
+                      <p className="text-sm text-muted-foreground">
+                        {usage.users} / {currentPlan.user_limit}
+                      </p>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </CardContent>
+          </Card>
+        )}
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {plans.map((plan) => {

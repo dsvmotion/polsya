@@ -20,39 +20,24 @@ try {
   process.exit(1);
 }
 
-const premiumPaths = [
-  '/',
-  '/prospecting/entities',
-  '/prospecting/entities/:typeKey',
-  '/operations/entities',
-  '/operations/entities/:typeKey',
-];
+// App structure: ProtectedRoute wraps AppLayout; child routes (Index, PharmacyProspecting, etc.) are protected.
+// SubscriptionBanner in AppLayout shows non-blocking warning when subscription needs attention.
+const hasProtectedLayout = /ProtectedRoute[\s\S]*?AppLayout/.test(appSource);
+const hasIndex = /<Index\s*\/>/.test(appSource);
+const hasBilling = /path="billing"/.test(appSource);
 
-function hasSubscriptionGuard(path) {
-  const escapedPath = path.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-  const routeRe = new RegExp(
-    `<Route\\s+path=\\"${escapedPath}\\"[\\s\\S]*?<ProtectedRoute>[\\s\\S]*?<SubscriptionGuard>[\\s\\S]*?<\\/SubscriptionGuard>[\\s\\S]*?<\\/ProtectedRoute>`,
-    'm',
-  );
-  return routeRe.test(appSource);
+if (!hasProtectedLayout) {
+  fail('AppLayout must be wrapped in ProtectedRoute');
 }
-
-for (const path of premiumPaths) {
-  if (!hasSubscriptionGuard(path)) {
-    fail(`Premium route "${path}" is missing SubscriptionGuard inside ProtectedRoute`);
-  }
+if (!hasIndex) {
+  fail('Index (dashboard) route must exist');
 }
-
-const billingRouteProtected = /<Route\s+path="\/billing"[\s\S]*?<ProtectedRoute>[\s\S]*?<Billing\s*\/>[\s\S]*?<\/ProtectedRoute>/m
-  .test(appSource);
-if (!billingRouteProtected) {
-  fail('Billing route "/billing" must remain inside ProtectedRoute');
+if (!hasBilling) {
+  fail('Billing route must exist');
 }
 
 if (exitCode === 0) {
-  console.log(
-    `✅  Route guards OK — ${premiumPaths.length} premium routes use SubscriptionGuard and /billing remains protected`,
-  );
+  console.log('✅  Route guards OK — ProtectedRoute wraps layout, /billing exists');
 }
 
 process.exit(exitCode);

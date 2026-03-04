@@ -26,6 +26,8 @@ export interface BillingPlan {
   currency: string;
   interval: BillingInterval;
   is_active: boolean;
+  entity_limit?: number | null;
+  user_limit?: number | null;
   created_at: string;
   updated_at: string;
 }
