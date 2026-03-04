@@ -472,6 +472,39 @@ export type Database = {
           },
         ]
       }
+      contact_messages: {
+        Row: {
+          id: string
+          name: string
+          email: string
+          company: string | null
+          subject: string | null
+          message: string
+          source: string | null
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          name: string
+          email: string
+          company?: string | null
+          subject?: string | null
+          message: string
+          source?: string | null
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          name?: string
+          email?: string
+          company?: string | null
+          subject?: string | null
+          message?: string
+          source?: string | null
+          created_at?: string
+        }
+        Relationships: []
+      }
       pharmacies: {
         Row: {
           address: string | null
