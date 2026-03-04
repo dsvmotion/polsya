@@ -50,7 +50,7 @@ function handleCors(req: Request): Response | null {
       headers: {
         'Access-Control-Allow-Origin': origin,
         'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
-        'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-organization-id',
+        'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-organization-id, x-supabase-client-platform',
         'Vary': 'Origin',
       },
     });

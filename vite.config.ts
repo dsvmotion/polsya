@@ -13,7 +13,9 @@ export default defineConfig({
         const outDir = path.resolve(__dirname, "dist");
         try {
           copyFileSync(path.join(outDir, "index.html"), path.join(outDir, "404.html"));
-        } catch {}
+        } catch {
+          // Silently ignore if 404.html copy fails
+        }
       },
     },
   ],
