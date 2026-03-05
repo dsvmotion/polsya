@@ -1,7 +1,7 @@
 import { Outlet } from 'react-router-dom';
 import { Link } from 'react-router-dom';
 import { useState, useEffect } from 'react';
-import { Sparkles, Menu, X } from 'lucide-react';
+import { Menu, X } from 'lucide-react';
 import { APP_NAME } from '@/lib/brand';
 import { Button } from '@/components/ui/button';
 import { CookieBanner } from '@/components/landing/CookieBanner';
@@ -31,8 +31,7 @@ export function PublicLayout() {
       <header className="sticky top-0 z-50 w-full border-b border-white/5 bg-black/80 backdrop-blur-xl">
         <div className="mx-auto flex h-14 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
           <Link to="/" className="flex items-center gap-2 font-semibold text-white hover:opacity-90">
-            <Sparkles className="h-6 w-6 text-brand-sage" />
-            <span>{APP_NAME}</span>
+            <img src="/polsya-logo-white.png" alt={APP_NAME} className="h-6 w-auto" />
           </Link>
 
           <nav className="hidden md:flex items-center gap-8">
@@ -149,8 +148,7 @@ export function PublicLayout() {
           </div>
           <div className="mt-12 pt-8 border-t border-white/5 flex flex-col sm:flex-row justify-between items-center gap-4">
             <div className="flex items-center gap-2">
-              <Sparkles className="h-5 w-5 text-brand-sage" />
-              <span className="text-sm font-medium text-white">{APP_NAME}</span>
+              <img src="/polsya-logo-white.png" alt={APP_NAME} className="h-5 w-auto" />
             </div>
             <p className="text-sm text-white/30">&copy; {new Date().getFullYear()} {APP_NAME}. All rights reserved.</p>
           </div>

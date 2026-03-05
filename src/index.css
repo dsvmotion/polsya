@@ -1,4 +1,57 @@
-@import url('https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800;900&display=swap');
+/* Plus Jakarta Sans — primary UI font (variable weight) */
+@font-face {
+  font-family: 'Plus Jakarta Sans';
+  src: url('/fonts/PlusJakartaSans-VariableFont_wght.ttf') format('truetype');
+  font-weight: 200 800;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Plus Jakarta Sans';
+  src: url('/fonts/PlusJakartaSans-Italic-VariableFont_wght.ttf') format('truetype');
+  font-weight: 200 800;
+  font-style: italic;
+  font-display: swap;
+}
+
+/* Labil Grotesk — display / heading font */
+@font-face {
+  font-family: 'Labil Grotesk';
+  src: url('/fonts/LabilGrotesk-Light.ttf') format('truetype');
+  font-weight: 300;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Labil Grotesk';
+  src: url('/fonts/LabilGrotesk-Regular.ttf') format('truetype');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Labil Grotesk';
+  src: url('/fonts/LabilGrotesk-Medium.ttf') format('truetype');
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Labil Grotesk';
+  src: url('/fonts/LabilGrotesk-Bold.ttf') format('truetype');
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* Pixelated Display — accent font for small headers (NEVER use capitals) */
+@font-face {
+  font-family: 'Pixelated Display';
+  src: url('/fonts/PixelatedDisplay.ttf') format('truetype');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
 
 @tailwind base;
 @tailwind components;
@@ -146,7 +199,7 @@
 
   body {
     @apply bg-background text-foreground antialiased;
-    font-family: 'Manrope', ui-sans-serif, system-ui, -apple-system, Segoe UI, sans-serif;
+    font-family: 'Plus Jakarta Sans', ui-sans-serif, system-ui, -apple-system, Segoe UI, sans-serif;
   }
 }
 

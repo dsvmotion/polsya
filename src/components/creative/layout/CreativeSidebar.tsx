@@ -114,11 +114,15 @@ export function CreativeSidebar({
       {/* Header */}
       <div className={cn('flex items-center h-14 px-4 border-b border-sidebar-border', collapsed && 'justify-center px-2')}>
         {collapsed ? (
-          <span className="text-lg font-bold text-sidebar-primary">P</span>
+          <>
+            <img src="/polsya-logo-black.png" alt="Polsya" className="h-6 w-auto dark:hidden" />
+            <img src="/polsya-logo-white.png" alt="Polsya" className="h-6 w-auto hidden dark:block" />
+          </>
         ) : (
           <div className="flex items-center justify-between w-full">
             <div className="flex items-center gap-2">
-              <span className="text-lg font-bold text-sidebar-primary">Polsya</span>
+              <img src="/polsya-logo-black.png" alt="Polsya" className="h-6 w-auto dark:hidden" />
+              <img src="/polsya-logo-white.png" alt="Polsya" className="h-6 w-auto hidden dark:block" />
               <span className="text-xs px-1.5 py-0.5 rounded bg-primary/10 text-primary font-medium">Creative</span>
             </div>
           </div>
