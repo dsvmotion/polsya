@@ -2,7 +2,7 @@
 // Zod schemas for creative entity form validation.
 
 import { z } from 'zod';
-import { CLIENT_STATUSES, CLIENT_SIZES, PROJECT_STATUSES, OPPORTUNITY_STAGES } from '@/types/creative';
+import { CLIENT_STATUSES, CLIENT_SIZES, PROJECT_STATUSES, OPPORTUNITY_STAGES, CONTACT_STATUSES } from '@/types/creative';
 
 export const clientSchema = z.object({
   name: z.string().min(1, 'Name is required'),
@@ -49,3 +49,19 @@ export const opportunitySchema = z.object({
 });
 
 export type OpportunityFormValues = z.infer<typeof opportunitySchema>;
+
+export const contactSchema = z.object({
+  firstName: z.string().min(1, 'First name is required'),
+  lastName: z.string().optional(),
+  email: z.string().email('Invalid email').or(z.literal('')).optional(),
+  phone: z.string().optional(),
+  title: z.string().optional(),
+  role: z.string().optional(),
+  clientId: z.string().uuid('Select a client').optional(),
+  linkedinUrl: z.string().url('Invalid URL').or(z.literal('')).optional(),
+  isDecisionMaker: z.boolean().default(false),
+  status: z.enum(CONTACT_STATUSES).default('active'),
+  tags: z.array(z.string()).optional(),
+});
+
+export type ContactFormValues = z.infer<typeof contactSchema>;

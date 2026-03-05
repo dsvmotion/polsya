@@ -134,3 +134,40 @@ export interface CreativeOpportunity {
   createdAt: string;
   updatedAt: string;
 }
+
+// ─── Contact ────────────────────────────────
+
+export const CONTACT_STATUSES = ['active', 'inactive', 'archived'] as const;
+export type ContactStatus = (typeof CONTACT_STATUSES)[number];
+
+export const CONTACT_STATUS_LABELS: Record<ContactStatus, string> = {
+  active: 'Active',
+  inactive: 'Inactive',
+  archived: 'Archived',
+};
+
+export const CONTACT_STATUS_COLORS: Record<ContactStatus, { bg: string; text: string }> = {
+  active: { bg: 'bg-green-100', text: 'text-green-800' },
+  inactive: { bg: 'bg-gray-100', text: 'text-gray-800' },
+  archived: { bg: 'bg-slate-100', text: 'text-slate-600' },
+};
+
+export interface CreativeContact {
+  id: string;
+  organizationId: string;
+  clientId: string | null;
+  firstName: string;
+  lastName: string | null;
+  email: string | null;
+  phone: string | null;
+  title: string | null;
+  role: string | null;
+  linkedinUrl: string | null;
+  avatarUrl: string | null;
+  isDecisionMaker: boolean;
+  status: ContactStatus;
+  tags: string[];
+  metadata: Record<string, unknown>;
+  createdAt: string;
+  updatedAt: string;
+}
