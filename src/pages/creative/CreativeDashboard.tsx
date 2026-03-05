@@ -1,20 +1,31 @@
 import { WorkspaceContainer } from '@/components/creative/layout/WorkspaceContainer';
-import { Users, FolderKanban, Briefcase, TrendingUp, Activity, BarChart3 } from 'lucide-react';
+import { Users, FolderKanban, Briefcase, TrendingUp, Activity, BarChart3, Zap, Shield, GitMerge, Layers } from 'lucide-react';
+import { Link } from 'react-router-dom';
 import { useCreativeDashboard } from '@/hooks/useCreativeDashboard';
+import { useRecentSignals } from '@/hooks/useSignals';
+import { useResolutionCandidates } from '@/hooks/useEntityResolution';
 import { OPPORTUNITY_STAGE_LABELS, OPPORTUNITY_STAGE_COLORS } from '@/types/creative';
 import type { OpportunityStage } from '@/types/creative';
+import { SIGNAL_SEVERITY_COLORS } from '@/types/signal-engine';
+import { Badge } from '@/components/ui/badge';
 
 const formatCurrency = (cents: number) =>
   new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(cents / 100);
 
 export default function CreativeDashboard() {
   const { data, isLoading } = useCreativeDashboard();
+  const { data: recentSignals = [] } = useRecentSignals(5);
+  const { data: pendingCandidates = [] } = useResolutionCandidates('pending');
 
   const totalClients = data?.totalClients ?? 0;
   const activeProjects = data?.activeProjects ?? 0;
   const pipelineValueCents = data?.pipelineValueCents ?? 0;
   const winRate = data?.winRate ?? 0;
   const stageBreakdown = data?.stageBreakdown ?? {};
+  const newSignals = data?.newSignals ?? 0;
+  const activeRules = data?.activeRules ?? 0;
+  const pendingResolutions = data?.pendingResolutions ?? 0;
+  const remainingCredits = data?.remainingCredits ?? 0;
 
   return (
     <WorkspaceContainer
@@ -51,6 +62,14 @@ export default function CreativeDashboard() {
           trend="Won vs lost"
           loading={isLoading}
         />
+      </div>
+
+      {/* Engine metrics row */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+        <MetricCard icon={Zap} label="New Signals" value={String(newSignals)} trend="Unread" loading={isLoading} />
+        <MetricCard icon={Shield} label="Active Rules" value={String(activeRules)} trend="Monitoring" loading={isLoading} />
+        <MetricCard icon={GitMerge} label="Pending Merges" value={String(pendingResolutions)} trend="Awaiting review" loading={isLoading} />
+        <MetricCard icon={Layers} label="Enrichment Credits" value={String(remainingCredits)} trend="Remaining" loading={isLoading} />
       </div>
 
       {/* Stage Breakdown */}
@@ -96,26 +115,66 @@ export default function CreativeDashboard() {
         )}
       </div>
 
-      {/* Activity and signals placeholder */}
+      {/* Recent Signals and Pending Resolutions */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <div className="rounded-lg border bg-card p-6">
-          <div className="flex items-center gap-2 mb-4">
-            <Activity className="h-5 w-5 text-muted-foreground" />
-            <h2 className="text-lg font-semibold">Recent Activity</h2>
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center gap-2">
+              <Activity className="h-5 w-5 text-muted-foreground" />
+              <h2 className="text-lg font-semibold">Recent Signals</h2>
+            </div>
+            <Link to="/creative/signals" className="text-sm text-primary hover:underline">View all →</Link>
           </div>
-          <div className="flex items-center justify-center h-40 text-sm text-muted-foreground">
-            Activity feed will appear here once data flows through the ingestion engine
-          </div>
+          {recentSignals.length === 0 ? (
+            <div className="flex items-center justify-center h-40 text-sm text-muted-foreground">
+              No signals yet. Signals appear when rules are triggered.
+            </div>
+          ) : (
+            <div className="space-y-2">
+              {recentSignals.map((signal) => {
+                const sevColors = SIGNAL_SEVERITY_COLORS[signal.severity];
+                return (
+                  <div key={signal.id} className="flex items-center gap-3 py-1.5">
+                    <div className={`h-2 w-2 rounded-full ${sevColors.bg}`} />
+                    <span className="text-sm flex-1 truncate">{signal.title}</span>
+                    <span className="text-xs text-muted-foreground whitespace-nowrap">
+                      {new Date(signal.createdAt).toLocaleDateString()}
+                    </span>
+                  </div>
+                );
+              })}
+            </div>
+          )}
         </div>
 
         <div className="rounded-lg border bg-card p-6">
-          <div className="flex items-center gap-2 mb-4">
-            <TrendingUp className="h-5 w-5 text-muted-foreground" />
-            <h2 className="text-lg font-semibold">Signals</h2>
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center gap-2">
+              <GitMerge className="h-5 w-5 text-muted-foreground" />
+              <h2 className="text-lg font-semibold">Pending Resolutions</h2>
+            </div>
+            <Link to="/creative/resolution" className="text-sm text-primary hover:underline">View all →</Link>
           </div>
-          <div className="flex items-center justify-center h-40 text-sm text-muted-foreground">
-            Signal detection will populate here once signal rules are configured
-          </div>
+          {pendingCandidates.length === 0 ? (
+            <div className="flex items-center justify-center h-40 text-sm text-muted-foreground">
+              No pending resolutions. Candidates appear when duplicates are detected.
+            </div>
+          ) : (
+            <div className="space-y-3">
+              {pendingCandidates.slice(0, 3).map((c) => (
+                <div key={c.id} className="flex items-center justify-between rounded-lg border px-3 py-2">
+                  <div className="text-sm">
+                    <span className="capitalize">{c.entityAType}</span>
+                    <span className="text-muted-foreground mx-1.5">vs</span>
+                    <span className="capitalize">{c.entityBType}</span>
+                  </div>
+                  <Badge variant="secondary" className="text-xs">
+                    {Math.round(c.confidenceScore * 100)}%
+                  </Badge>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
       </div>
     </WorkspaceContainer>

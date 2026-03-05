@@ -158,3 +158,24 @@ export function useUpdateSignalStatus() {
     },
   });
 }
+
+// ─── Recent Signals ─────────────────────────
+
+export function useRecentSignals(limit: number = 5) {
+  const { membership } = useCurrentOrganization();
+  const orgId = membership?.organization_id ?? null;
+
+  return useQuery<Signal[]>({
+    queryKey: [...signalKeys.signals(orgId ?? ''), 'recent', limit],
+    enabled: !!orgId,
+    queryFn: async () => {
+      const { data, error } = await (supabase.from as any)('creative_signals')
+        .select('*')
+        .eq('organization_id', orgId!)
+        .order('created_at', { ascending: false })
+        .limit(limit);
+      if (error) throw error;
+      return toSignals((data ?? []) as unknown as SignalRow[]);
+    },
+  });
+}

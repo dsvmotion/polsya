@@ -10,6 +10,10 @@ interface DashboardStats {
   pipelineCurrency: string;
   winRate: number;
   stageBreakdown: Record<string, number>;
+  newSignals: number;
+  activeRules: number;
+  pendingResolutions: number;
+  remainingCredits: number;
 }
 
 export function useCreativeDashboard() {
@@ -20,10 +24,14 @@ export function useCreativeDashboard() {
     queryKey: ['creative-dashboard', orgId ?? ''],
     enabled: !!orgId,
     queryFn: async () => {
-      const [clientsRes, projectsRes, oppsRes] = await Promise.all([
+      const [clientsRes, projectsRes, oppsRes, signalsRes, rulesRes, resolutionRes, creditsRes] = await Promise.all([
         (supabase.from as any)('creative_clients').select('id', { count: 'exact', head: true }).eq('organization_id', orgId!),
         (supabase.from as any)('creative_projects').select('id', { count: 'exact', head: true }).eq('organization_id', orgId!).eq('status', 'active'),
         (supabase.from as any)('creative_opportunities').select('stage, value_cents, currency').eq('organization_id', orgId!),
+        (supabase.from as any)('creative_signals').select('id', { count: 'exact', head: true }).eq('organization_id', orgId!).eq('status', 'new'),
+        (supabase.from as any)('creative_signal_rules').select('id', { count: 'exact', head: true }).eq('organization_id', orgId!).eq('is_active', true),
+        (supabase.from as any)('entity_resolution_candidates').select('id', { count: 'exact', head: true }).eq('organization_id', orgId!).eq('status', 'pending'),
+        (supabase.from as any)('enrichment_credits').select('total_credits, used_credits').eq('organization_id', orgId!),
       ]);
 
       const opps: { stage: string; value_cents: number | null; currency: string }[] = oppsRes.data ?? [];
@@ -41,6 +49,9 @@ export function useCreativeDashboard() {
         stageBreakdown[o.stage] = (stageBreakdown[o.stage] ?? 0) + 1;
       });
 
+      const creditRows: { total_credits: number; used_credits: number }[] = creditsRes.data ?? [];
+      const remainingCredits = creditRows.reduce((sum, c) => sum + (c.total_credits - c.used_credits), 0);
+
       return {
         totalClients: clientsRes.count ?? 0,
         activeProjects: projectsRes.count ?? 0,
@@ -48,6 +59,10 @@ export function useCreativeDashboard() {
         pipelineCurrency: 'USD',
         winRate,
         stageBreakdown,
+        newSignals: signalsRes.count ?? 0,
+        activeRules: rulesRes.count ?? 0,
+        pendingResolutions: resolutionRes.count ?? 0,
+        remainingCredits,
       };
     },
   });
