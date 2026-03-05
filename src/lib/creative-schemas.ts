@@ -2,7 +2,7 @@
 // Zod schemas for creative entity form validation.
 
 import { z } from 'zod';
-import { CLIENT_STATUSES, CLIENT_SIZES, PROJECT_STATUSES, OPPORTUNITY_STAGES, CONTACT_STATUSES } from '@/types/creative';
+import { CLIENT_STATUSES, CLIENT_SIZES, PROJECT_STATUSES, OPPORTUNITY_STAGES, CONTACT_STATUSES, PORTFOLIO_CATEGORIES } from '@/types/creative';
 
 export const clientSchema = z.object({
   name: z.string().min(1, 'Name is required'),
@@ -65,3 +65,17 @@ export const contactSchema = z.object({
 });
 
 export type ContactFormValues = z.infer<typeof contactSchema>;
+
+export const portfolioSchema = z.object({
+  title: z.string().min(1, 'Title is required'),
+  description: z.string().optional(),
+  category: z.enum(PORTFOLIO_CATEGORIES).optional(),
+  mediaUrls: z.string().optional(), // Comma-separated URLs for MVP
+  thumbnailUrl: z.string().url('Invalid URL').or(z.literal('')).optional(),
+  isPublic: z.boolean().default(false),
+  projectId: z.string().uuid().optional(),
+  clientId: z.string().uuid().optional(),
+  tags: z.array(z.string()).optional(),
+});
+
+export type PortfolioFormValues = z.infer<typeof portfolioSchema>;

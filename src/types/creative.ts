@@ -171,3 +171,47 @@ export interface CreativeContact {
   createdAt: string;
   updatedAt: string;
 }
+
+// ─── Portfolio ──────────────────────────────
+
+export const PORTFOLIO_CATEGORIES = ['branding', 'web_design', 'illustration', 'photography', 'motion', 'print', 'packaging', 'other'] as const;
+export type PortfolioCategory = (typeof PORTFOLIO_CATEGORIES)[number];
+
+export const PORTFOLIO_CATEGORY_LABELS: Record<PortfolioCategory, string> = {
+  branding: 'Branding',
+  web_design: 'Web Design',
+  illustration: 'Illustration',
+  photography: 'Photography',
+  motion: 'Motion',
+  print: 'Print',
+  packaging: 'Packaging',
+  other: 'Other',
+};
+
+export const PORTFOLIO_CATEGORY_COLORS: Record<PortfolioCategory, { bg: string; text: string }> = {
+  branding: { bg: 'bg-purple-100', text: 'text-purple-800' },
+  web_design: { bg: 'bg-blue-100', text: 'text-blue-800' },
+  illustration: { bg: 'bg-pink-100', text: 'text-pink-800' },
+  photography: { bg: 'bg-amber-100', text: 'text-amber-800' },
+  motion: { bg: 'bg-cyan-100', text: 'text-cyan-800' },
+  print: { bg: 'bg-orange-100', text: 'text-orange-800' },
+  packaging: { bg: 'bg-emerald-100', text: 'text-emerald-800' },
+  other: { bg: 'bg-gray-100', text: 'text-gray-800' },
+};
+
+export interface CreativePortfolio {
+  id: string;
+  organizationId: string;
+  projectId: string | null;
+  clientId: string | null;
+  title: string;
+  description: string | null;
+  category: PortfolioCategory | null;
+  mediaUrls: string[];
+  thumbnailUrl: string | null;
+  isPublic: boolean;
+  tags: string[];
+  metadata: Record<string, unknown>;
+  createdAt: string;
+  updatedAt: string;
+}
