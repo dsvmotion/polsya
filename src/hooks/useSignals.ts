@@ -112,7 +112,7 @@ export function useDeleteSignalRule() {
 
 // ─── Signals ─────────────────────────────────
 
-export function useSignals(filters?: { status?: SignalStatus; severity?: string; entityType?: string }) {
+export function useSignals(filters?: { status?: SignalStatus; severity?: string; entityType?: string; entityId?: string }) {
   const { membership } = useCurrentOrganization();
   const orgId = membership?.organization_id ?? null;
 
@@ -128,6 +128,7 @@ export function useSignals(filters?: { status?: SignalStatus; severity?: string;
       if (filters?.status) query = query.eq('status', filters.status);
       if (filters?.severity) query = query.eq('severity', filters.severity);
       if (filters?.entityType) query = query.eq('entity_type', filters.entityType);
+      if (filters?.entityId) query = query.eq('entity_id', filters.entityId);
       const { data, error } = await query;
       if (error) throw error;
       return toSignals((data ?? []) as unknown as SignalRow[]);

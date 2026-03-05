@@ -7,7 +7,13 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { useToast } from '@/components/ui/use-toast';
-import { Pencil, Trash2, Globe, Building2 } from 'lucide-react';
+import { Pencil, Trash2, Globe, Building2, Zap, Palette, GitMerge } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import { CollapsibleEngineSection } from '@/components/creative/shared/CollapsibleEngineSection';
+import { useSignals } from '@/hooks/useSignals';
+import { useStyleAnalyses } from '@/hooks/useStyleAnalyses';
+import { useResolutionCandidatesForEntity } from '@/hooks/useEntityResolution';
+import { SIGNAL_SEVERITY_COLORS } from '@/types/signal-engine';
 
 interface ClientDetailProps {
   client: CreativeClient;
@@ -19,6 +25,9 @@ export function ClientDetail({ client, onClose }: ClientDetailProps) {
   const deleteMutation = useDeleteCreativeClient();
   const { toast } = useToast();
   const statusColors = CLIENT_STATUS_COLORS[client.status];
+  const { data: signals = [], isLoading: signalsLoading } = useSignals({ entityType: 'client', entityId: client.id });
+  const { data: analyses = [], isLoading: analysesLoading } = useStyleAnalyses(client.id);
+  const { data: candidates = [], isLoading: candidatesLoading } = useResolutionCandidatesForEntity('client', client.id);
 
   async function handleDelete() {
     try {
@@ -107,6 +116,61 @@ export function ClientDetail({ client, onClose }: ClientDetailProps) {
           </div>
         </div>
       )}
+
+      {/* Engine sections */}
+      <div className="space-y-1">
+        <CollapsibleEngineSection icon={Zap} label="Signals" count={signals.length} isLoading={signalsLoading}>
+          {signals.length === 0 ? (
+            <p className="text-xs text-muted-foreground py-2">No signals for this client.</p>
+          ) : (
+            <div className="space-y-1">
+              {signals.slice(0, 5).map((s) => {
+                const sevColors = SIGNAL_SEVERITY_COLORS[s.severity];
+                return (
+                  <Link key={s.id} to="/creative/signals" className="flex items-center gap-2 py-1 text-sm hover:text-foreground text-muted-foreground">
+                    <div className={`h-2 w-2 rounded-full ${sevColors.bg}`} />
+                    <span className="truncate flex-1">{s.title}</span>
+                  </Link>
+                );
+              })}
+            </div>
+          )}
+        </CollapsibleEngineSection>
+
+        <CollapsibleEngineSection icon={Palette} label="Style Analyses" count={analyses.length} isLoading={analysesLoading}>
+          {analyses.length === 0 ? (
+            <p className="text-xs text-muted-foreground py-2">No style analyses for this client.</p>
+          ) : (
+            <div className="space-y-2">
+              {analyses.slice(0, 3).map((a) => (
+                <Link key={a.id} to="/creative/style" className="flex items-center gap-2 py-1 hover:bg-muted/50 rounded px-1">
+                  <div className="flex gap-0.5">
+                    {(a.colorPalette ?? []).slice(0, 4).map((swatch, i) => (
+                      <div key={i} className="h-4 w-4 rounded-full border border-border" style={{ backgroundColor: swatch.hex }} />
+                    ))}
+                  </div>
+                  <span className="text-xs text-muted-foreground">{a.confidenceScore ? `${a.confidenceScore}%` : '--'}</span>
+                </Link>
+              ))}
+            </div>
+          )}
+        </CollapsibleEngineSection>
+
+        <CollapsibleEngineSection icon={GitMerge} label="Resolution Candidates" count={candidates.length} isLoading={candidatesLoading}>
+          {candidates.length === 0 ? (
+            <p className="text-xs text-muted-foreground py-2">No resolution candidates.</p>
+          ) : (
+            <div className="space-y-1">
+              {candidates.slice(0, 3).map((c) => (
+                <Link key={c.id} to="/creative/resolution" className="flex items-center justify-between py-1 text-sm hover:text-foreground text-muted-foreground">
+                  <span className="capitalize">{c.entityAType} vs {c.entityBType}</span>
+                  <span className="text-xs">{Math.round(c.confidenceScore * 100)}%</span>
+                </Link>
+              ))}
+            </div>
+          )}
+        </CollapsibleEngineSection>
+      </div>
 
       {/* Metadata */}
       <div className="text-xs text-muted-foreground pt-4 border-t">

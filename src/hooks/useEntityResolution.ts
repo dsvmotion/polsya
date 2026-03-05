@@ -57,6 +57,25 @@ export function useResolveCandidate() {
 
 // ─── Source Mappings ─────────────────────────
 
+export function useResolutionCandidatesForEntity(entityType: string, entityId: string) {
+  const { membership } = useCurrentOrganization();
+  const orgId = membership?.organization_id ?? null;
+
+  return useQuery<ResolutionCandidate[]>({
+    queryKey: ['resolution-candidates', 'entity', orgId ?? '', entityType, entityId],
+    enabled: !!orgId && !!entityId,
+    queryFn: async () => {
+      const { data, error } = await (supabase.from as any)('entity_resolution_candidates')
+        .select('*')
+        .eq('organization_id', orgId!)
+        .or(`entity_a_id.eq.${entityId},entity_b_id.eq.${entityId}`)
+        .order('created_at', { ascending: false });
+      if (error) throw error;
+      return toResolutionCandidates((data ?? []) as unknown as ResolutionCandidateRow[]);
+    },
+  });
+}
+
 export function useEntitySourceMappings(entityType?: string, entityId?: string) {
   const { membership } = useCurrentOrganization();
   const orgId = membership?.organization_id ?? null;
