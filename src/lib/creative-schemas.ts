@@ -3,6 +3,7 @@
 
 import { z } from 'zod';
 import { CLIENT_STATUSES, CLIENT_SIZES, PROJECT_STATUSES, OPPORTUNITY_STAGES, CONTACT_STATUSES, PORTFOLIO_CATEGORIES } from '@/types/creative';
+import { RULE_TYPES } from '@/types/signal-engine';
 
 export const clientSchema = z.object({
   name: z.string().min(1, 'Name is required'),
@@ -90,3 +91,15 @@ export const styleAnalysisSchema = z.object({
 });
 
 export type StyleAnalysisFormValues = z.infer<typeof styleAnalysisSchema>;
+
+export const signalRuleSchema = z.object({
+  name: z.string().min(1, 'Name is required'),
+  description: z.string().optional(),
+  ruleType: z.enum(RULE_TYPES).default('custom'),
+  conditions: z.string().min(1, 'Conditions JSON is required'),
+  actions: z.string().optional(),
+  priority: z.number().int().min(0).default(0),
+  isActive: z.boolean().default(true),
+});
+
+export type SignalRuleFormValues = z.infer<typeof signalRuleSchema>;
