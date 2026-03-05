@@ -13,6 +13,11 @@ import { useCreativeClients } from '@/hooks/useCreativeClients';
 import { useCreativeLayout } from '@/components/creative/layout/CreativeLayout';
 import type { CreativeOpportunity } from '@/types/creative';
 import type { ViewMode } from '@/lib/design-tokens';
+import { KanbanBoard } from '@/components/creative/shared/KanbanBoard';
+import type { KanbanColumn } from '@/components/creative/shared/KanbanBoard';
+import { OPPORTUNITY_STAGES, OPPORTUNITY_STAGE_LABELS, OPPORTUNITY_STAGE_COLORS } from '@/types/creative';
+import type { OpportunityStage } from '@/types/creative';
+import { useUpdateCreativeOpportunity } from '@/hooks/useCreativeOpportunities';
 
 export default function CreativeOpportunities() {
   const [viewMode, setViewMode] = useState<ViewMode>('table');
@@ -23,6 +28,14 @@ export default function CreativeOpportunities() {
 
   const clientMap = useMemo(() => new Map(clients.map((c) => [c.id, c.name])), [clients]);
   const columns = useMemo(() => getOpportunityColumns(clients), [clients]);
+
+  const updateMutation = useUpdateCreativeOpportunity();
+
+  const opportunityColumns: KanbanColumn[] = OPPORTUNITY_STAGES.map((stage) => ({
+    key: stage,
+    label: OPPORTUNITY_STAGE_LABELS[stage],
+    color: OPPORTUNITY_STAGE_COLORS[stage],
+  }));
 
   function handleRowClick(opportunity: CreativeOpportunity) {
     setContextPanelContent(
@@ -44,7 +57,7 @@ export default function CreativeOpportunities() {
       description="Pipeline of creative business opportunities"
       actions={
         <div className="flex items-center gap-2">
-          <ViewSwitcher value={viewMode} onChange={setViewMode} availableViews={['table', 'cards']} />
+          <ViewSwitcher value={viewMode} onChange={setViewMode} availableViews={['table', 'cards', 'board']} />
           <Button size="sm" className="gap-1.5" onClick={() => setFormOpen(true)}>
             <Plus className="h-4 w-4" />
             <span className="hidden sm:inline">New Opportunity</span>
@@ -61,6 +74,30 @@ export default function CreativeOpportunities() {
             searchKey="title"
             searchPlaceholder="Search opportunities..."
             onRowClick={handleRowClick}
+          />
+        ) : viewMode === 'board' ? (
+          <KanbanBoard
+            columns={opportunityColumns}
+            items={opportunities}
+            getColumnKey={(opp) => opp.stage}
+            onMove={(id, newStage) => updateMutation.mutate({ id, values: { stage: newStage as OpportunityStage } })}
+            isLoading={isLoading}
+            renderCard={(opp) => (
+              <div className="space-y-1.5" onClick={() => handleRowClick(opp)}>
+                <p className="text-sm font-medium truncate">{opp.title}</p>
+                {opp.clientId && clientMap.get(opp.clientId) && (
+                  <p className="text-xs text-muted-foreground truncate">{clientMap.get(opp.clientId)}</p>
+                )}
+                <div className="flex items-center justify-between">
+                  {opp.valueCents != null && (
+                    <span className="text-xs font-medium">
+                      {new Intl.NumberFormat('en-US', { style: 'currency', currency: opp.currency ?? 'USD' }).format(opp.valueCents / 100)}
+                    </span>
+                  )}
+                  <span className="text-xs text-muted-foreground">{opp.probability}%</span>
+                </div>
+              </div>
+            )}
           />
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
