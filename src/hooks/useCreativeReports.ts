@@ -1,6 +1,6 @@
 // src/hooks/useCreativeReports.ts
 import { useQuery } from '@tanstack/react-query';
-import { supabase } from '@/integrations/supabase/client';
+import { fromTable } from '@/integrations/supabase/helpers';
 import { useCurrentOrganization } from '@/hooks/useOrganizationContext';
 
 type TimeRange = '7d' | '30d' | '90d' | '365d' | 'all';
@@ -38,17 +38,17 @@ export function useCreativeReports(timeRange: TimeRange) {
       const cutoff = getCutoffDate(timeRange);
 
       // Fetch opportunities and projects
-      let oppsQuery = (supabase.from as any)('creative_opportunities')
+      let oppsQuery = fromTable('creative_opportunities')
         .select('stage, value_cents, currency, created_at')
         .eq('organization_id', orgId!);
       if (cutoff) oppsQuery = oppsQuery.gte('created_at', cutoff.toISOString());
 
-      let projectsQuery = (supabase.from as any)('creative_projects')
+      let projectsQuery = fromTable('creative_projects')
         .select('status, created_at')
         .eq('organization_id', orgId!);
       if (cutoff) projectsQuery = projectsQuery.gte('created_at', cutoff.toISOString());
 
-      let clientsQuery = (supabase.from as any)('creative_clients')
+      let clientsQuery = fromTable('creative_clients')
         .select('created_at')
         .eq('organization_id', orgId!);
       if (cutoff) clientsQuery = clientsQuery.gte('created_at', cutoff.toISOString());

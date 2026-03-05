@@ -1,5 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
+import { fromTable } from '@/integrations/supabase/helpers';
 import type { ResolutionCandidate, ResolutionStatus, EntitySourceMapping } from '@/types/entity-resolution';
 import {
   toResolutionCandidates, type ResolutionCandidateRow,
@@ -65,7 +66,7 @@ export function useResolutionCandidatesForEntity(entityType: string, entityId: s
     queryKey: ['resolution-candidates', 'entity', orgId ?? '', entityType, entityId],
     enabled: !!orgId && !!entityId,
     queryFn: async () => {
-      const { data, error } = await (supabase.from as any)('entity_resolution_candidates')
+      const { data, error } = await fromTable('entity_resolution_candidates')
         .select('*')
         .eq('organization_id', orgId!)
         .or(`entity_a_id.eq.${entityId},entity_b_id.eq.${entityId}`)

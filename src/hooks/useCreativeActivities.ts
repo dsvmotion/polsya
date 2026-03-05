@@ -1,5 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { supabase } from '@/integrations/supabase/client';
+import { fromTable } from '@/integrations/supabase/helpers';
 import { useCurrentOrganization } from '@/hooks/useOrganizationContext';
 import type { Activity, ActivityType } from '@/types/creative-activity';
 
@@ -48,7 +48,7 @@ export function useCreativeActivities(entityType: string, entityId: string) {
     queryKey: activityKeys.forEntity(entityType, entityId),
     enabled: !!entityId,
     queryFn: async () => {
-      const { data, error } = await (supabase.from as any)('creative_activities')
+      const { data, error } = await fromTable('creative_activities')
         .select('*')
         .eq('entity_type', entityType)
         .eq('entity_id', entityId)
@@ -67,7 +67,7 @@ export function useRecentActivities(limit: number = 5) {
     queryKey: activityKeys.recent(orgId ?? ''),
     enabled: !!orgId,
     queryFn: async () => {
-      const { data, error } = await (supabase.from as any)('creative_activities')
+      const { data, error } = await fromTable('creative_activities')
         .select('*')
         .eq('organization_id', orgId!)
         .order('occurred_at', { ascending: false })
@@ -97,7 +97,7 @@ export function useCreateActivity() {
     mutationFn: async (values: CreateActivityInput) => {
       const orgId = membership?.organization_id;
       if (!orgId) throw new Error('No organization');
-      const { data, error } = await (supabase.from as any)('creative_activities')
+      const { data, error } = await fromTable('creative_activities')
         .insert({
           organization_id: orgId,
           entity_type: values.entityType,
@@ -125,7 +125,7 @@ export function useDeleteActivity() {
 
   return useMutation({
     mutationFn: async (id: string) => {
-      const { error } = await (supabase.from as any)('creative_activities').delete().eq('id', id);
+      const { error } = await fromTable('creative_activities').delete().eq('id', id);
       if (error) throw error;
     },
     onSuccess: () => {

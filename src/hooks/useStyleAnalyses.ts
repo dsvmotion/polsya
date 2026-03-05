@@ -1,5 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
+import { rpcCall } from '@/integrations/supabase/helpers';
 import type { StyleAnalysis } from '@/types/style-intelligence';
 import type { StyleAnalysisFormValues } from '@/lib/creative-schemas';
 import { toStyleAnalysis, toStyleAnalyses, type StyleAnalysisRow } from '@/services/styleAnalysisService';
@@ -134,7 +135,7 @@ export function useStyleSimilarity(analysisId: string | null) {
     queryKey: ['style-similarity', orgId ?? '', analysisId ?? ''],
     enabled: !!orgId && !!analysisId,
     queryFn: async () => {
-      const { data, error } = await (supabase.rpc as any)('match_style_analyses', {
+      const { data, error } = await rpcCall('match_style_analyses', {
         query_analysis_id: analysisId,
         match_count: 10,
       });

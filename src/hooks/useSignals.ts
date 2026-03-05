@@ -1,5 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
+import { fromTable } from '@/integrations/supabase/helpers';
 import type { SignalRule, Signal, SignalStatus } from '@/types/signal-engine';
 import type { SignalRuleFormValues } from '@/lib/creative-schemas';
 import { toSignalRule, toSignalRules, type SignalRuleRow, toSignal, toSignals, type SignalRow } from '@/services/signalService';
@@ -170,7 +171,7 @@ export function useRecentSignals(limit: number = 5) {
     queryKey: [...signalKeys.signals(orgId ?? ''), 'recent', limit],
     enabled: !!orgId,
     queryFn: async () => {
-      const { data, error } = await (supabase.from as any)('creative_signals')
+      const { data, error } = await fromTable('creative_signals')
         .select('*')
         .eq('organization_id', orgId!)
         .order('created_at', { ascending: false })
