@@ -93,7 +93,7 @@ export function useCreativeReports(timeRange: TimeRange) {
       opps.forEach((o) => {
         stageCounts.set(o.stage, (stageCounts.get(o.stage) ?? 0) + 1);
       });
-      const totalLeads = stageCounts.get('lead') ?? 0 || 1;
+      const totalLeads = (stageCounts.get('lead') ?? 0) || 1;
       const funnelData = funnelStages.map((stage) => {
         const count = stageCounts.get(stage) ?? 0;
         return { stage, count, percentage: Math.round((count / totalLeads) * 100) };
