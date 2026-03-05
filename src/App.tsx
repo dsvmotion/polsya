@@ -56,6 +56,7 @@ const CreativeProjects = lazy(() => import("./pages/creative/CreativeProjects"))
 const CreativeOpportunities = lazy(() => import("./pages/creative/CreativeOpportunities"));
 const CreativeContacts = lazy(() => import("./pages/creative/CreativeContacts"));
 const CreativePortfolios = lazy(() => import("./pages/creative/CreativePortfolios"));
+const CreativeIngestion = lazy(() => import("./pages/creative/CreativeIngestion"));
 
 const queryClient = new QueryClient();
 
@@ -161,6 +162,7 @@ const App = () => (
                     <Route path="opportunities" element={<CreativeOpportunities />} />
                     <Route path="contacts" element={<CreativeContacts />} />
                     <Route path="portfolios" element={<CreativePortfolios />} />
+                    <Route path="ingestion" element={<CreativeIngestion />} />
                   </Route>
 
                   {/* Legacy redirects */}
