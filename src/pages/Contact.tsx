@@ -59,64 +59,65 @@ export default function Contact() {
   };
 
   return (
-    <div className="py-16 sm:py-24">
+    <div className="py-16 sm:py-24 bg-[#0a0a0a] text-white">
       <div className="mx-auto max-w-2xl px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-12">
-          <h1 className="text-4xl font-bold text-foreground sm:text-5xl">
+          <h1 className="text-4xl font-bold sm:text-5xl">
             Get in touch
           </h1>
-          <p className="mt-4 text-lg text-muted-foreground">
+          <p className="mt-4 text-lg text-white/50">
             Need a demo, custom pricing, or have questions? We'll get back to you within 24 hours.
           </p>
         </div>
 
         {submitted ? (
-          <div className="rounded-xl border border-border bg-card p-8 text-center">
-            <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-primary/10 text-primary">
-              <Mail className="h-7 w-7" />
+          <div className="glass-panel p-8 text-center">
+            <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-gradient-cta">
+              <Mail className="h-7 w-7 text-white" />
             </div>
-            <h2 className="mt-4 text-xl font-semibold text-foreground">Message sent</h2>
-            <p className="mt-2 text-muted-foreground">
+            <h2 className="mt-4 text-xl font-semibold text-white">Message sent</h2>
+            <p className="mt-2 text-white/50">
               Thanks for reaching out. We'll get back to you soon.
             </p>
           </div>
         ) : (
-          <form onSubmit={handleSubmit} className="space-y-6 rounded-xl border border-border bg-card p-8">
+          <form onSubmit={handleSubmit} className="space-y-6 glass-panel p-8">
             {error && (
-              <div className="rounded-md border border-destructive/50 bg-destructive/10 p-3 text-sm text-destructive">
+              <div className="rounded-md border border-red-500/30 bg-red-500/10 p-3 text-sm text-red-400">
                 {error}
               </div>
             )}
             <div className="grid gap-4 sm:grid-cols-2">
               <div className="space-y-2">
-                <Label htmlFor="name">Name</Label>
-                <Input id="name" name="name" placeholder="Your name" required />
+                <Label htmlFor="name" className="text-white/70">Name</Label>
+                <Input id="name" name="name" placeholder="Your name" required className="bg-white/5 border-white/10 text-white placeholder:text-white/30" />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="email">Email</Label>
-                <Input id="email" name="email" type="email" placeholder="you@company.com" defaultValue={prefillEmail} required />
+                <Label htmlFor="email" className="text-white/70">Email</Label>
+                <Input id="email" name="email" type="email" placeholder="you@company.com" defaultValue={prefillEmail} required className="bg-white/5 border-white/10 text-white placeholder:text-white/30" />
               </div>
             </div>
             <div className="space-y-2">
-              <Label htmlFor="company">Company (optional)</Label>
-              <Input id="company" name="company" placeholder="Your company" />
+              <Label htmlFor="company" className="text-white/70">Company (optional)</Label>
+              <Input id="company" name="company" placeholder="Your company" className="bg-white/5 border-white/10 text-white placeholder:text-white/30" />
             </div>
             {subject && SUBJECT_LABELS[subject] && (
-              <div className="rounded-md border border-primary/20 bg-primary/5 px-3 py-2 text-sm text-muted-foreground">
+              <div className="rounded-md border border-white/10 bg-white/5 px-3 py-2 text-sm text-white/60">
                 Subject: {SUBJECT_LABELS[subject]}
               </div>
             )}
             <div className="space-y-2">
-              <Label htmlFor="message">Message</Label>
+              <Label htmlFor="message" className="text-white/70">Message</Label>
               <Textarea
                 id="message"
                 name="message"
                 placeholder="Tell us about your needs, team size, or questions..."
                 rows={5}
                 required
+                className="bg-white/5 border-white/10 text-white placeholder:text-white/30"
               />
             </div>
-            <Button type="submit" disabled={isLoading} className="w-full sm:w-auto">
+            <Button type="submit" disabled={isLoading} className="w-full sm:w-auto bg-gradient-cta text-white hover:opacity-90 border-0">
               {isLoading ? (
                 'Sending...'
               ) : (

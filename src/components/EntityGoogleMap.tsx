@@ -2,7 +2,7 @@ import { forwardRef, useCallback, useMemo, useRef, useEffect, useState } from 'r
 import { GoogleMap, useJsApiLoader, MarkerF, InfoWindowF } from '@react-google-maps/api';
 import { Pharmacy, STATUS_COLORS } from '@/types/pharmacy';
 
-interface PharmacyGoogleMapProps {
+interface EntityGoogleMapProps {
   pharmacies: Pharmacy[];
   onPharmacySelect?: (pharmacy: Pharmacy) => void;
   selectedPharmacyId?: string | null;
@@ -66,8 +66,8 @@ const mapOptions: google.maps.MapOptions = {
   ],
 };
 
-export const PharmacyGoogleMap = forwardRef<google.maps.Map | null, PharmacyGoogleMapProps>(
-  function PharmacyGoogleMap({ pharmacies, onPharmacySelect, selectedPharmacyId }, ref) {
+export const EntityGoogleMap = forwardRef<google.maps.Map | null, EntityGoogleMapProps>(
+  function EntityGoogleMap({ pharmacies, onPharmacySelect, selectedPharmacyId }, ref) {
     const mapRef = useRef<google.maps.Map | null>(null);
     const [activeInfoWindow, setActiveInfoWindow] = useState<string | null>(null);
 

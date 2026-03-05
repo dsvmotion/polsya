@@ -7,7 +7,7 @@ import { usePlatformOwnerStatus } from '@/hooks/usePlatformOwnerStatus';
 import { getPendingSignupPlan, clearPendingSignupPlan } from '@/lib/signupPlan';
 import { SalesMap } from '@/components/SalesMap';
 import { useWooCommerceOrders } from '@/hooks/useWooCommerceOrders';
-import { usePharmaciesWithOrders } from '@/hooks/usePharmacyOperations';
+import { useEntitiesWithOrders } from '@/hooks/useEntityOperations';
 import { Sale } from '@/types/sale';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -95,7 +95,7 @@ const Index = () => {
   const [showAll, setShowAll] = useState(false);
 
   const { data: sales = [], isLoading, error, refetch } = useWooCommerceOrders();
-  const { data: savedPharmacies = [] } = usePharmaciesWithOrders(true);
+  const { data: savedPharmacies = [] } = useEntitiesWithOrders(true);
 
   const pharmacySales: Sale[] = useMemo(() => {
     if (filters.customerType === 'all' || filters.customerType === 'client') {

@@ -4,7 +4,7 @@ import { buildEdgeFunctionHeaders } from '@/lib/edge-function-headers';
 
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
 
-interface UsePharmacyPhotoResult {
+interface UseEntityPhotoResult {
   photoUrl: string | null;
   isLoading: boolean;
   error: Error | null;
@@ -14,7 +14,7 @@ interface UsePharmacyPhotoResult {
  * Hook to fetch and display a pharmacy's Google Places photo.
  * Uses the photo_reference from google_data to construct the photo URL.
  */
-export function usePharmacyPhoto(pharmacyId: string | null): UsePharmacyPhotoResult {
+export function useEntityPhoto(pharmacyId: string | null): UseEntityPhotoResult {
   const { data: photoUrl, isLoading, error } = useQuery({
     queryKey: ['pharmacy-photo', pharmacyId],
     queryFn: async (): Promise<string | null> => {

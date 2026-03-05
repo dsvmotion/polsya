@@ -35,8 +35,8 @@ import { LandingOrRedirect } from "@/components/landing/LandingOrRedirect";
 import { PublicLayout } from "@/components/layout/PublicLayout";
 import { CookieConsent } from "@/components/CookieConsent";
 
-const PharmacyProspecting = lazy(() => import("./pages/PharmacyProspecting"));
-const PharmacyOperations = lazy(() => import("./pages/PharmacyOperations"));
+const EntityProspecting = lazy(() => import("./pages/EntityProspecting"));
+const EntityOperations = lazy(() => import("./pages/EntityOperations"));
 const Reports = lazy(() => import("./pages/Reports"));
 const Team = lazy(() => import("./pages/Team"));
 const IntegrationsPage = lazy(() => import("./pages/Integrations"));
@@ -52,12 +52,12 @@ const queryClient = new QueryClient();
 
 function ProspectingByType() {
   const { typeKey } = useParams<{ typeKey: string }>();
-  return <PharmacyProspecting clientType={typeKey} />;
+  return <EntityProspecting clientType={typeKey} />;
 }
 
 function OperationsByType() {
   const { typeKey } = useParams<{ typeKey: string }>();
-  return <PharmacyOperations clientType={typeKey} />;
+  return <EntityOperations clientType={typeKey} />;
 }
 
 const App = () => (
@@ -98,11 +98,11 @@ const App = () => (
                     <Route path="dashboard" element={<Index />} />
 
                     {/* Prospecting */}
-                    <Route path="prospecting/entities" element={<PharmacyProspecting />} />
+                    <Route path="prospecting/entities" element={<EntityProspecting />} />
                     <Route path="prospecting/entities/:typeKey" element={<ProspectingByType />} />
 
                     {/* Operations */}
-                    <Route path="operations/entities" element={<PharmacyOperations />} />
+                    <Route path="operations/entities" element={<EntityOperations />} />
                     <Route path="operations/entities/:typeKey" element={<OperationsByType />} />
 
                     {/* Reports */}

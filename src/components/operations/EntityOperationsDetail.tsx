@@ -34,19 +34,19 @@ import {
 } from '@/components/ui/select';
 import { PharmacyWithOrders, DetailedOrder, DocumentType, DOCUMENT_TYPE_LABELS } from '@/types/operations';
 import { PharmacyStatus, STATUS_LABELS, STATUS_COLORS, CONTACT_ROLE_LABELS } from '@/types/pharmacy';
-import { usePharmacyContacts } from '@/hooks/usePharmacyContacts';
+import { useEntityContacts } from '@/hooks/useEntityContacts';
 import { 
-  usePharmacyDocuments, 
+  useEntityDocuments, 
   useUploadDocument, 
   useDeleteDocument, 
   useDownloadDocument 
-} from '@/hooks/usePharmacyOperations';
+} from '@/hooks/useEntityOperations';
 import { useUpdatePharmacyStatus } from '@/hooks/usePharmacies';
-import { usePharmacyPhoto } from '@/hooks/usePharmacyPhoto';
+import { useEntityPhoto } from '@/hooks/useEntityPhoto';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 
-interface PharmacyOperationsDetailProps {
+interface EntityOperationsDetailProps {
   pharmacy: PharmacyWithOrders;
   onClose: () => void;
   onStatusUpdate?: () => void;
@@ -73,7 +73,7 @@ function DocumentsSection({ pharmacyId }: { pharmacyId: string }) {
   const [showUploadForm, setShowUploadForm] = useState(false);
   const [selectedType, setSelectedType] = useState<DocumentType>('other');
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const { data: allDocuments = [] } = usePharmacyDocuments();
+  const { data: allDocuments = [] } = useEntityDocuments();
   const uploadDocument = useUploadDocument();
   const deleteDocument = useDeleteDocument();
   const downloadDocument = useDownloadDocument();
@@ -226,7 +226,7 @@ function DocumentsSection({ pharmacyId }: { pharmacyId: string }) {
 function OrderCard({ order, pharmacyId }: { order: DetailedOrder; pharmacyId: string }) {
   const invoiceInputRef = useRef<HTMLInputElement>(null);
   const receiptInputRef = useRef<HTMLInputElement>(null);
-  const { data: allDocuments = [] } = usePharmacyDocuments();
+  const { data: allDocuments = [] } = useEntityDocuments();
   const uploadDocument = useUploadDocument();
   const deleteDocument = useDeleteDocument();
   const downloadDocument = useDownloadDocument();
@@ -447,14 +447,14 @@ function OrderCard({ order, pharmacyId }: { order: DetailedOrder; pharmacyId: st
   );
 }
 
-export function PharmacyOperationsDetail({ pharmacy, onClose, onStatusUpdate }: PharmacyOperationsDetailProps) {
+export function EntityOperationsDetail({ pharmacy, onClose, onStatusUpdate }: EntityOperationsDetailProps) {
   const [status, setStatus] = useState<PharmacyStatus>(pharmacy.commercialStatus);
   const [notes, setNotes] = useState(pharmacy.notes || '');
   const [hasChanges, setHasChanges] = useState(false);
 
   const updateStatus = useUpdatePharmacyStatus();
-  const { photoUrl, isLoading: photoLoading } = usePharmacyPhoto(pharmacy.id);
-  const { data: contacts = [] } = usePharmacyContacts(pharmacy.id);
+  const { photoUrl, isLoading: photoLoading } = useEntityPhoto(pharmacy.id);
+  const { data: contacts = [] } = useEntityContacts(pharmacy.id);
 
   const handleStatusChange = (newStatus: PharmacyStatus) => {
     setStatus(newStatus);

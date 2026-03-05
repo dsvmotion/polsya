@@ -11,6 +11,7 @@ import { useCurrentOrganization } from '@/hooks/useOrganizationContext';
 import { canManageBilling as canManageBillingRole } from '@/lib/rbac';
 import { cn } from '@/lib/utils';
 import type { BillingPlan } from '@/types/billing';
+import { ScrollFadeIn } from '@/components/landing/ScrollFadeIn';
 
 function formatMoney(cents: number, currency: string): string {
   return new Intl.NumberFormat('en-EU', {
@@ -91,19 +92,19 @@ export default function Pricing() {
   const isLoading = user && (orgLoading || plansLoading);
 
   return (
-    <div className="py-16 sm:py-24">
+    <div className="py-16 sm:py-24 bg-[#0a0a0a] text-white">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="text-center max-w-3xl mx-auto mb-16">
-          <h1 className="text-4xl font-bold text-foreground sm:text-5xl">
+          <h1 className="text-4xl font-bold sm:text-5xl">
             Simple, fair pricing
           </h1>
-          <p className="mt-4 text-lg text-muted-foreground">
+          <p className="mt-4 text-lg text-white/50">
             Start with a 7-day free trial. No credit card required. Upgrade or downgrade anytime.
           </p>
         </div>
 
         <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-4 lg:gap-4">
-          {PLAN_CONFIG.map((config) => {
+          {PLAN_CONFIG.map((config, idx) => {
             const apiPlan = !config.contactOnly ? findPlanByCode(apiPlans, config.code) : null;
             const canSubscribe = user && organization && canManageBilling && apiPlan && !config.contactOnly;
             const isContactOnly = config.contactOnly;
@@ -111,13 +112,17 @@ export default function Pricing() {
             let ctaLabel: string;
             let ctaElement: React.ReactNode;
 
-            const linkButtonClass = cn('w-full', config.featured && 'bg-primary hover:bg-primary/90');
-            const linkButtonVariant = config.featured ? 'default' : 'outline';
+            const linkButtonClass = cn(
+              'w-full border-0',
+              config.featured
+                ? 'bg-gradient-cta text-white hover:opacity-90'
+                : 'bg-white/10 text-white hover:bg-white/15'
+            );
 
             if (isContactOnly) {
               ctaLabel = 'Contact sales';
               ctaElement = (
-                <Button className={linkButtonClass} variant={linkButtonVariant} asChild>
+                <Button className={linkButtonClass} asChild>
                   <Link to="/contact?subject=enterprise">
                     {ctaLabel}
                     <ArrowRight className="ml-2 h-4 w-4" />
@@ -129,7 +134,6 @@ export default function Pricing() {
               ctaElement = (
                 <Button
                   className={linkButtonClass}
-                  variant={linkButtonVariant}
                   onClick={() => handleSubscribe(apiPlan!.id)}
                   disabled={createCheckout.isPending}
                 >
@@ -146,7 +150,7 @@ export default function Pricing() {
             } else if (user && !canManageBilling) {
               ctaLabel = 'View billing';
               ctaElement = (
-                <Button className={linkButtonClass} variant={linkButtonVariant} asChild>
+                <Button className={linkButtonClass} asChild>
                   <Link to="/billing">
                     {ctaLabel}
                     <ArrowRight className="ml-2 h-4 w-4" />
@@ -156,7 +160,7 @@ export default function Pricing() {
             } else {
               ctaLabel = 'Start free trial';
               ctaElement = (
-                <Button className={linkButtonClass} variant={linkButtonVariant} asChild>
+                <Button className={linkButtonClass} asChild>
                   <Link to={`/signup?plan=${config.code}`}>
                     {ctaLabel}
                     <ArrowRight className="ml-2 h-4 w-4" />
@@ -170,45 +174,46 @@ export default function Pricing() {
               : config.priceFallback;
 
             return (
-              <div
-                key={config.code}
-                className={cn(
-                  'relative rounded-2xl border p-8',
-                  config.featured
-                    ? 'border-primary bg-primary/5 shadow-lg lg:z-10 lg:scale-105'
-                    : 'border-border bg-card',
-                )}
-              >
-                {config.featured && (
-                  <span className="absolute -top-4 left-1/2 -translate-x-1/2 rounded-full bg-primary px-4 py-1 text-sm font-medium text-primary-foreground">
-                    Most popular
-                  </span>
-                )}
-                <h2 className="text-xl font-bold text-foreground">{config.name}</h2>
-                <p className="mt-2 text-sm text-muted-foreground">{config.description}</p>
-                <div className="mt-6 flex items-baseline gap-1">
-                  <span className="text-3xl font-bold text-foreground">{displayPrice}</span>
-                  {config.period && <span className="text-muted-foreground">{config.period}</span>}
+              <ScrollFadeIn key={config.code} delay={idx * 100}>
+                <div
+                  className={cn(
+                    'relative rounded-2xl p-8 h-full',
+                    config.featured
+                      ? 'bg-gradient-to-b from-white/[0.08] to-white/[0.03] border border-white/20 lg:scale-105'
+                      : 'glass-panel',
+                  )}
+                >
+                  {config.featured && (
+                    <span className="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full bg-gradient-hero px-4 py-1 text-xs font-bold uppercase tracking-wider text-white">
+                      Most popular
+                    </span>
+                  )}
+                  <h2 className="text-xl font-bold text-white">{config.name}</h2>
+                  <p className="mt-2 text-sm text-white/40">{config.description}</p>
+                  <div className="mt-6 flex items-baseline gap-1">
+                    <span className="text-3xl font-black text-white">{displayPrice}</span>
+                    {config.period && <span className="text-white/40">{config.period}</span>}
+                  </div>
+                  <ul className="mt-8 space-y-3">
+                    {config.features.map((feature) => (
+                      <li key={feature} className="flex items-start gap-3">
+                        <Check className="h-4 w-4 shrink-0 text-brand-sage mt-0.5" />
+                        <span className="text-sm text-white/60">{feature}</span>
+                      </li>
+                    ))}
+                  </ul>
+                  <div className="mt-8">{ctaElement}</div>
                 </div>
-                <ul className="mt-8 space-y-4">
-                  {config.features.map((feature) => (
-                    <li key={feature} className="flex items-start gap-3">
-                      <Check className="h-5 w-5 shrink-0 text-primary" />
-                      <span className="text-sm text-muted-foreground">{feature}</span>
-                    </li>
-                  ))}
-                </ul>
-                <div className="mt-8">{ctaElement}</div>
-              </div>
+              </ScrollFadeIn>
             );
           })}
         </div>
 
         {isLoading && (
-          <p className="mt-4 text-center text-sm text-muted-foreground">Loading plans...</p>
+          <p className="mt-4 text-center text-sm text-white/40">Loading plans...</p>
         )}
 
-        <p className="mt-12 text-center text-sm text-muted-foreground">
+        <p className="mt-12 text-center text-sm text-white/40">
           All plans include: 7-day free trial, no long-term commitment, cancel anytime.
         </p>
       </div>

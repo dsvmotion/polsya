@@ -11,7 +11,7 @@ import {
 import { SearchableSelect } from '@/components/ui/searchable-select';
 import { PharmacyFilters as Filters, PharmacyStatus, STATUS_LABELS } from '@/types/pharmacy';
 
-interface PharmacyFiltersProps {
+interface EntityFiltersProps {
   filters: Filters;
   onFiltersChange: (filters: Filters) => void;
   countries: string[];
@@ -23,7 +23,7 @@ interface PharmacyFiltersProps {
   searchButtonLabel?: string;
 }
 
-export function PharmacyFilters({
+export function EntityFilters({
   filters,
   onFiltersChange,
   countries,
@@ -33,7 +33,7 @@ export function PharmacyFilters({
   onSearch,
   isSearching,
   searchButtonLabel = 'Search Pharmacies',
-}: PharmacyFiltersProps) {
+}: EntityFiltersProps) {
   const hasActiveGeoFilter = filters.country !== '' || filters.province !== '' || filters.city !== '';
 
   return (

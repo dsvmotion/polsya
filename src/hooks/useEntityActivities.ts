@@ -7,7 +7,7 @@ function activitiesKey(pharmacyId: string) {
   return ['pharmacy-activities', pharmacyId] as const;
 }
 
-export function usePharmacyActivities(pharmacyId: string | null) {
+export function useEntityActivities(pharmacyId: string | null) {
   return useQuery<PharmacyActivity[]>({
     queryKey: activitiesKey(pharmacyId ?? ''),
     enabled: !!pharmacyId,
@@ -33,7 +33,7 @@ interface CreateActivityInput {
   owner?: string | null;
 }
 
-export function useCreatePharmacyActivity() {
+export function useCreateEntityActivity() {
   const qc = useQueryClient();
 
   return useMutation({
@@ -73,7 +73,7 @@ interface UpdateActivityInput {
   };
 }
 
-export function useUpdatePharmacyActivity() {
+export function useUpdateEntityActivity() {
   const qc = useQueryClient();
 
   return useMutation({
@@ -99,7 +99,7 @@ interface DeleteActivityInput {
   pharmacyId: string;
 }
 
-export function useDeletePharmacyActivity() {
+export function useDeleteEntityActivity() {
   const qc = useQueryClient();
 
   return useMutation({
@@ -122,7 +122,7 @@ interface CompleteActivityInput {
   pharmacyId: string;
 }
 
-export function useCompletePharmacyActivity() {
+export function useCompleteEntityActivity() {
   const qc = useQueryClient();
 
   return useMutation({

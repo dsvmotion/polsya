@@ -4,7 +4,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 
-interface PharmacyListItemProps {
+interface EntityListItemProps {
   pharmacy: Pharmacy;
   isSelected: boolean;
   isChecked: boolean;
@@ -32,7 +32,7 @@ function StatusBadge({ status, isSaved }: { status: PharmacyStatus; isSaved: boo
   );
 }
 
-export function PharmacyListItem({
+export function EntityListItem({
   pharmacy,
   isSelected,
   isChecked,
@@ -41,7 +41,7 @@ export function PharmacyListItem({
   onSaveOne,
   isSavedToOperations = false,
   isSaving = false,
-}: PharmacyListItemProps) {
+}: EntityListItemProps) {
   const isSaved = pharmacy.savedAt !== null;
 
   return (

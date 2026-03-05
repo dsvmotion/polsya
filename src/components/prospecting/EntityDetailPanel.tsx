@@ -23,34 +23,34 @@ import {
   OpportunityStage, OPPORTUNITY_STAGE_LABELS, OPPORTUNITY_STAGE_COLORS,
 } from '@/types/pharmacy';
 import { useUpdatePharmacy } from '@/hooks/usePharmacies';
-import { usePharmacyPhoto } from '@/hooks/usePharmacyPhoto';
+import { useEntityPhoto } from '@/hooks/useEntityPhoto';
 import { useOrdersByPharmacy } from '@/hooks/useWooCommerceOrders';
 import {
-  usePharmacyContacts,
-  useCreatePharmacyContact,
-  useUpdatePharmacyContact,
-  useDeletePharmacyContact,
-} from '@/hooks/usePharmacyContacts';
+  useEntityContacts,
+  useCreateEntityContact,
+  useUpdateEntityContact,
+  useDeleteEntityContact,
+} from '@/hooks/useEntityContacts';
 import {
-  usePharmacyActivities,
-  useCreatePharmacyActivity,
-  useCompletePharmacyActivity,
-  useDeletePharmacyActivity,
-} from '@/hooks/usePharmacyActivities';
+  useEntityActivities,
+  useCreateEntityActivity,
+  useCompleteEntityActivity,
+  useDeleteEntityActivity,
+} from '@/hooks/useEntityActivities';
 import {
-  usePharmacyOpportunities,
-  useCreatePharmacyOpportunity,
-  useUpdatePharmacyOpportunity,
-  useDeletePharmacyOpportunity,
-} from '@/hooks/usePharmacyOpportunities';
+  useEntityOpportunities,
+  useCreateEntityOpportunity,
+  useUpdateEntityOpportunity,
+  useDeleteEntityOpportunity,
+} from '@/hooks/useEntityOpportunities';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 
 function ContactsSection({ pharmacyId }: { pharmacyId: string }) {
-  const { data: contacts = [], isLoading } = usePharmacyContacts(pharmacyId);
-  const createContact = useCreatePharmacyContact();
-  const updateContact = useUpdatePharmacyContact();
-  const deleteContact = useDeletePharmacyContact();
+  const { data: contacts = [], isLoading } = useEntityContacts(pharmacyId);
+  const createContact = useCreateEntityContact();
+  const updateContact = useUpdateEntityContact();
+  const deleteContact = useDeleteEntityContact();
 
   const [showForm, setShowForm] = useState(false);
   const [newName, setNewName] = useState('');
@@ -239,10 +239,10 @@ function ContactsSection({ pharmacyId }: { pharmacyId: string }) {
 }
 
 function ActivitiesSection({ pharmacyId }: { pharmacyId: string }) {
-  const { data: activities = [], isLoading } = usePharmacyActivities(pharmacyId);
-  const createActivity = useCreatePharmacyActivity();
-  const completeActivity = useCompletePharmacyActivity();
-  const deleteActivity = useDeletePharmacyActivity();
+  const { data: activities = [], isLoading } = useEntityActivities(pharmacyId);
+  const createActivity = useCreateEntityActivity();
+  const completeActivity = useCompleteEntityActivity();
+  const deleteActivity = useDeleteEntityActivity();
 
   const [showForm, setShowForm] = useState(false);
   const [newType, setNewType] = useState<ActivityType>('call');
@@ -443,7 +443,7 @@ function OpportunityRow({ opp, pharmacyId, onDelete }: {
   pharmacyId: string;
   onDelete: (id: string) => void;
 }) {
-  const updateOpportunity = useUpdatePharmacyOpportunity();
+  const updateOpportunity = useUpdateEntityOpportunity();
   const [editing, setEditing] = useState(false);
   const [editStage, setEditStage] = useState<OpportunityStage>(opp.stage);
   const [editAmount, setEditAmount] = useState(String(opp.amount));
@@ -627,9 +627,9 @@ function OpportunityRow({ opp, pharmacyId, onDelete }: {
 }
 
 function OpportunitiesSection({ pharmacyId }: { pharmacyId: string }) {
-  const { data: opportunities = [], isLoading } = usePharmacyOpportunities(pharmacyId);
-  const createOpportunity = useCreatePharmacyOpportunity();
-  const deleteOpportunity = useDeletePharmacyOpportunity();
+  const { data: opportunities = [], isLoading } = useEntityOpportunities(pharmacyId);
+  const createOpportunity = useCreateEntityOpportunity();
+  const deleteOpportunity = useDeleteEntityOpportunity();
 
   const [showForm, setShowForm] = useState(false);
   const [newTitle, setNewTitle] = useState('');
@@ -798,12 +798,12 @@ function OpportunitiesSection({ pharmacyId }: { pharmacyId: string }) {
   );
 }
 
-interface PharmacyDetailPanelProps {
+interface EntityDetailPanelProps {
   pharmacy: Pharmacy;
   onClose: () => void;
 }
 
-export function PharmacyDetailPanel({ pharmacy, onClose }: PharmacyDetailPanelProps) {
+export function EntityDetailPanel({ pharmacy, onClose }: EntityDetailPanelProps) {
   const [copiedField, setCopiedField] = useState<string | null>(null);
   const [notes, setNotes] = useState(pharmacy.notes || '');
   const [email, setEmail] = useState(pharmacy.email || '');
@@ -811,7 +811,7 @@ export function PharmacyDetailPanel({ pharmacy, onClose }: PharmacyDetailPanelPr
   const [hasChanges, setHasChanges] = useState(false);
 
   const updatePharmacy = useUpdatePharmacy();
-  const { photoUrl, isLoading: photoLoading } = usePharmacyPhoto(pharmacy.id);
+  const { photoUrl, isLoading: photoLoading } = useEntityPhoto(pharmacy.id);
   
   // Get real WooCommerce orders for this pharmacy
   const relatedOrders = useOrdersByPharmacy(pharmacy.name, pharmacy.city || null);

@@ -34,7 +34,7 @@ import {
 } from '@/components/ui/select';
 import { ErrorBoundary } from '@/components/layout/ErrorBoundary';
 import { useWooCommerceOrders } from '@/hooks/useWooCommerceOrders';
-import { usePharmaciesWithOrders } from '@/hooks/usePharmacyOperations';
+import { useEntitiesWithOrders } from '@/hooks/useEntityOperations';
 import { useDashboardKpis } from '@/hooks/useDashboardKpis';
 
 const CHART_COLORS = [
@@ -53,7 +53,7 @@ type TimeRange = '7d' | '30d' | '90d' | '365d' | 'all';
 export default function Reports() {
   const [timeRange, setTimeRange] = useState<TimeRange>('30d');
   const { data: orders = [] } = useWooCommerceOrders();
-  const { data: entities = [] } = usePharmaciesWithOrders(true);
+  const { data: entities = [] } = useEntitiesWithOrders(true);
   const { data: kpis } = useDashboardKpis();
 
   const filteredOrders = useMemo(() => {

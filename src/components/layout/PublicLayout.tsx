@@ -1,6 +1,6 @@
 import { Outlet } from 'react-router-dom';
 import { Link } from 'react-router-dom';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Sparkles, Menu, X } from 'lucide-react';
 import { APP_NAME } from '@/lib/brand';
 import { Button } from '@/components/ui/button';
@@ -16,12 +16,22 @@ const navLinks = [
 export function PublicLayout() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
+  // Force dark mode on public/marketing pages
+  useEffect(() => {
+    const html = document.documentElement;
+    const hadDark = html.classList.contains('dark');
+    html.classList.add('dark');
+    return () => {
+      if (!hadDark) html.classList.remove('dark');
+    };
+  }, []);
+
   return (
-    <div className="min-h-screen flex flex-col">
-      <header className="sticky top-0 z-50 w-full border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80">
+    <div className="min-h-screen flex flex-col bg-[#0a0a0a] text-white">
+      <header className="sticky top-0 z-50 w-full border-b border-white/5 bg-black/80 backdrop-blur-xl">
         <div className="mx-auto flex h-14 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
-          <Link to="/" className="flex items-center gap-2 font-semibold text-foreground hover:opacity-90">
-            <Sparkles className="h-6 w-6 text-primary" />
+          <Link to="/" className="flex items-center gap-2 font-semibold text-white hover:opacity-90">
+            <Sparkles className="h-6 w-6 text-brand-sage" />
             <span>{APP_NAME}</span>
           </Link>
 
@@ -30,7 +40,7 @@ export function PublicLayout() {
               <Link
                 key={link.href}
                 to={link.href}
-                className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
+                className="text-sm font-medium text-white/60 hover:text-white transition-colors"
               >
                 {link.label}
               </Link>
@@ -38,20 +48,20 @@ export function PublicLayout() {
           </nav>
 
           <div className="hidden md:flex items-center gap-3">
-            <Button variant="ghost" asChild>
+            <Button variant="ghost" asChild className="text-white/70 hover:text-white hover:bg-white/5">
               <Link to="/contact?subject=demo">Request demo</Link>
             </Button>
-            <Button variant="ghost" asChild>
+            <Button variant="ghost" asChild className="text-white/70 hover:text-white hover:bg-white/5">
               <Link to="/login">Log in</Link>
             </Button>
-            <Button asChild>
+            <Button asChild className="bg-gradient-cta text-white hover:opacity-90 transition-opacity border-0">
               <Link to="/signup?plan=starter">Get started</Link>
             </Button>
           </div>
 
           <button
             type="button"
-            className="md:hidden p-2 rounded-lg text-muted-foreground hover:bg-accent"
+            className="md:hidden p-2 rounded-lg text-white/60 hover:bg-white/5"
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
             aria-label="Toggle menu"
           >
@@ -60,25 +70,25 @@ export function PublicLayout() {
         </div>
 
         {mobileMenuOpen && (
-          <div className="md:hidden border-t border-border bg-background px-4 py-4 space-y-2">
+          <div className="md:hidden border-t border-white/5 bg-black/95 px-4 py-4 space-y-2">
             {navLinks.map((link) => (
               <Link
                 key={link.href}
                 to={link.href}
-                className="block py-2 text-sm font-medium text-muted-foreground hover:text-foreground"
+                className="block py-2 text-sm font-medium text-white/60 hover:text-white"
                 onClick={() => setMobileMenuOpen(false)}
               >
                 {link.label}
               </Link>
             ))}
             <div className="flex flex-col gap-2 pt-4">
-              <Button variant="outline" asChild className="w-full">
+              <Button variant="outline" asChild className="w-full border-white/10 text-white hover:bg-white/5">
                 <Link to="/contact?subject=demo" onClick={() => setMobileMenuOpen(false)}>Request demo</Link>
               </Button>
-              <Button variant="outline" asChild className="w-full">
+              <Button variant="outline" asChild className="w-full border-white/10 text-white hover:bg-white/5">
                 <Link to="/login" onClick={() => setMobileMenuOpen(false)}>Log in</Link>
               </Button>
-              <Button asChild className="w-full">
+              <Button asChild className="w-full bg-gradient-cta text-white border-0">
                 <Link to="/signup?plan=starter" onClick={() => setMobileMenuOpen(false)}>Get started</Link>
               </Button>
             </div>
@@ -90,59 +100,59 @@ export function PublicLayout() {
         <Outlet />
       </main>
 
-      <footer className="border-t border-border bg-muted/30">
+      <footer className="border-t border-white/5 bg-black">
         <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
           <div className="grid grid-cols-2 gap-8 md:grid-cols-5">
             <div>
-              <h3 className="text-sm font-semibold text-foreground">Product</h3>
+              <h3 className="text-sm font-semibold text-white">Product</h3>
               <ul className="mt-4 space-y-2">
-                <li><Link to="/features" className="text-sm text-muted-foreground hover:text-foreground">Features</Link></li>
-                <li><Link to="/pricing" className="text-sm text-muted-foreground hover:text-foreground">Pricing</Link></li>
-                <li><Link to="/features#integrations" className="text-sm text-muted-foreground hover:text-foreground">Integrations</Link></li>
-                <li><Link to="/#faq" className="text-sm text-muted-foreground hover:text-foreground">FAQ</Link></li>
+                <li><Link to="/features" className="text-sm text-white/40 hover:text-white transition-colors">Features</Link></li>
+                <li><Link to="/pricing" className="text-sm text-white/40 hover:text-white transition-colors">Pricing</Link></li>
+                <li><Link to="/features#integrations" className="text-sm text-white/40 hover:text-white transition-colors">Integrations</Link></li>
+                <li><Link to="/#faq" className="text-sm text-white/40 hover:text-white transition-colors">FAQ</Link></li>
               </ul>
             </div>
             <div>
-              <h3 className="text-sm font-semibold text-foreground">Company</h3>
+              <h3 className="text-sm font-semibold text-white">Company</h3>
               <ul className="mt-4 space-y-2">
-                <li><Link to="/contact" className="text-sm text-muted-foreground hover:text-foreground">Contact</Link></li>
-                <li><Link to="/contact?subject=demo" className="text-sm text-muted-foreground hover:text-foreground">Request demo</Link></li>
+                <li><Link to="/contact" className="text-sm text-white/40 hover:text-white transition-colors">Contact</Link></li>
+                <li><Link to="/contact?subject=demo" className="text-sm text-white/40 hover:text-white transition-colors">Request demo</Link></li>
               </ul>
             </div>
             <div>
-              <h3 className="text-sm font-semibold text-foreground">Trust & Legal</h3>
+              <h3 className="text-sm font-semibold text-white">Trust & Legal</h3>
               <ul className="mt-4 space-y-2">
-                <li><Link to="/trust" className="text-sm text-muted-foreground hover:text-foreground">Trust Center</Link></li>
-                <li><Link to="/terms" className="text-sm text-muted-foreground hover:text-foreground">Terms</Link></li>
-                <li><Link to="/privacy" className="text-sm text-muted-foreground hover:text-foreground">Privacy</Link></li>
+                <li><Link to="/trust" className="text-sm text-white/40 hover:text-white transition-colors">Trust Center</Link></li>
+                <li><Link to="/terms" className="text-sm text-white/40 hover:text-white transition-colors">Terms</Link></li>
+                <li><Link to="/privacy" className="text-sm text-white/40 hover:text-white transition-colors">Privacy</Link></li>
               </ul>
             </div>
             <div>
-              <h3 className="text-sm font-semibold text-foreground">Resources</h3>
+              <h3 className="text-sm font-semibold text-white">Resources</h3>
               <ul className="mt-4 space-y-2">
-                <li><Link to="/features" className="text-sm text-muted-foreground hover:text-foreground">Documentation</Link></li>
-                <li><Link to="/#pricing-preview" className="text-sm text-muted-foreground hover:text-foreground">Pricing</Link></li>
+                <li><Link to="/features" className="text-sm text-white/40 hover:text-white transition-colors">Documentation</Link></li>
+                <li><Link to="/#pricing-preview" className="text-sm text-white/40 hover:text-white transition-colors">Pricing</Link></li>
               </ul>
             </div>
             <div>
-              <h3 className="text-sm font-semibold text-foreground">Newsletter</h3>
-              <p className="mt-2 text-sm text-muted-foreground">Get the latest updates in your inbox.</p>
+              <h3 className="text-sm font-semibold text-white">Newsletter</h3>
+              <p className="mt-2 text-sm text-white/40">Get the latest updates in your inbox.</p>
               <form className="mt-4 flex gap-2" onSubmit={(e) => e.preventDefault()}>
                 <input
                   type="email"
                   placeholder="Your email"
-                  className="flex-1 min-w-0 rounded-md border border-input bg-background px-3 py-2 text-sm"
+                  className="flex-1 min-w-0 rounded-md border border-white/10 bg-white/5 px-3 py-2 text-sm text-white placeholder:text-white/30"
                 />
-                <Button type="submit" size="sm">Subscribe</Button>
+                <Button type="submit" size="sm" className="bg-white/10 text-white hover:bg-white/15 border-0">Subscribe</Button>
               </form>
             </div>
           </div>
-          <div className="mt-12 pt-8 border-t border-border flex flex-col sm:flex-row justify-between items-center gap-4">
+          <div className="mt-12 pt-8 border-t border-white/5 flex flex-col sm:flex-row justify-between items-center gap-4">
             <div className="flex items-center gap-2">
-              <Sparkles className="h-5 w-5 text-primary" />
-              <span className="text-sm font-medium text-foreground">{APP_NAME}</span>
+              <Sparkles className="h-5 w-5 text-brand-sage" />
+              <span className="text-sm font-medium text-white">{APP_NAME}</span>
             </div>
-            <p className="text-sm text-muted-foreground">© {new Date().getFullYear()} {APP_NAME}. All rights reserved.</p>
+            <p className="text-sm text-white/30">&copy; {new Date().getFullYear()} {APP_NAME}. All rights reserved.</p>
           </div>
         </div>
       </footer>

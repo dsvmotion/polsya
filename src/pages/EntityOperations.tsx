@@ -2,13 +2,13 @@ import { useState, useMemo, useCallback, useEffect } from 'react';
 import { RefreshCw, Building2, Leaf, MapPin, Search } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { usePharmacyOperations } from '@/hooks/usePharmacyOperations';
+import { useEntityOperations } from '@/hooks/useEntityOperations';
 import { OperationsFilters, SortField, SortDirection, PharmacyWithOrders, SavedSegment, RISK_REASON_LABELS } from '@/types/operations';
 import type { RiskReason, SmartSegmentKey } from '@/types/operations';
 import { filterBySmartSegment, useSmartSegmentCounts } from '@/hooks/useSmartSegments';
 import { OperationsTable } from '@/components/operations/OperationsTable';
 import { OperationsFiltersBar } from '@/components/operations/OperationsFiltersBar';
-import { PharmacyOperationsDetail } from '@/components/operations/PharmacyOperationsDetail';
+import { EntityOperationsDetail } from '@/components/operations/EntityOperationsDetail';
 import { useQueryClient } from '@tanstack/react-query';
 import { useGeographyOptions } from '@/hooks/useGeographyOptions';
 import { BulkImportDialog } from '@/components/operations/BulkImportDialog';
@@ -20,7 +20,7 @@ import {
   useDeleteSavedSegment,
   useToggleFavoriteSegment,
 } from '@/hooks/useSavedSegments';
-import { useCreatePharmacyActivity } from '@/hooks/usePharmacyActivities';
+import { useCreateEntityActivity } from '@/hooks/useEntityActivities';
 import { toast } from 'sonner';
 import type { ClientType } from '@/types/pharmacy';
 import { useEntityTypes, resolveEntityTypeLabel } from '@/hooks/useEntityTypes';
@@ -42,7 +42,7 @@ const initialFilters: OperationsFilters = {
   paymentStatus: 'all',
 };
 
-export default function PharmacyOperations({ clientType = 'pharmacy' }: Props) {
+export default function EntityOperations({ clientType = 'pharmacy' }: Props) {
   const [filters, setFilters] = useState<OperationsFilters>(initialFilters);
   const [sortField, setSortField] = useState<SortField>('name');
   const [sortDirection, setSortDirection] = useState<SortDirection>('asc');
@@ -88,7 +88,7 @@ export default function PharmacyOperations({ clientType = 'pharmacy' }: Props) {
   );
 
   // Server-side filtered pharmacies with pagination and sorting
-  const { pharmacies = [], totalCount = 0, isLoading, refetch } = usePharmacyOperations(
+  const { pharmacies = [], totalCount = 0, isLoading, refetch } = useEntityOperations(
     serverFilters,
     page,
     pageSize,
@@ -206,7 +206,7 @@ export default function PharmacyOperations({ clientType = 'pharmacy' }: Props) {
     await toggleFavorite.mutateAsync({ id, scope: 'operations', is_favorite: !current });
   }, [toggleFavorite]);
 
-  const createActivity = useCreatePharmacyActivity();
+  const createActivity = useCreateEntityActivity();
 
   const handleOpenFromAlert = useCallback((pharmacyId: string, pharmacyName: string) => {
     const found = smartFiltered.find((p) => p.id === pharmacyId)
@@ -414,7 +414,7 @@ export default function PharmacyOperations({ clientType = 'pharmacy' }: Props) {
             {/* Detail Panel */}
             {selectedPharmacy && (
               <div className="w-full xl:w-[380px] 2xl:w-[420px] border-t xl:border-t-0 xl:border-l border-border bg-muted/50">
-                <PharmacyOperationsDetail
+                <EntityOperationsDetail
                   pharmacy={selectedPharmacy}
                   onClose={() => setSelectedPharmacy(null)}
                   onStatusUpdate={handleRefresh}

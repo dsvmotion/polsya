@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800;900&display=swap');
 
 @tailwind base;
 @tailwind components;
@@ -6,31 +6,30 @@
 
 @layer base {
   :root {
-    /* Black, White, Rock Blue #9dbecc, White Linen #f6f2e8 */
-    /* Primary: Rock Blue - prominent for CTAs, links, accents */
-    --primary: 200 33% 55%;
+    /* Corporate B&W base — brand colors used ONLY for gradients & decorative accents */
+    /* Primary: Rock Blue - interactive elements (links, focus rings, selected) */
+    --primary: 198 33% 55%;
     --primary-foreground: 0 0% 100%;
 
-    /* Background: White */
+    /* Background: Pure white */
     --background: 0 0% 100%;
-    --foreground: 0 0% 9%;
+    --foreground: 0 0% 5%;
 
     --card: 0 0% 100%;
-    --card-foreground: 0 0% 9%;
+    --card-foreground: 0 0% 5%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 0 0% 9%;
+    --popover-foreground: 0 0% 5%;
 
-    /* Rock Blue #9dbecc - accent, links, subtle highlights */
-    --secondary: 200 33% 94%;
-    --secondary-foreground: 0 0% 9%;
+    /* Neutral gray - no blue/warm tint */
+    --secondary: 0 0% 96%;
+    --secondary-foreground: 0 0% 5%;
 
-    /* White Linen #f6f2e8 - muted sections, alternating bg */
-    --muted: 36 33% 93%;
-    --muted-foreground: 0 0% 40%;
+    --muted: 0 0% 96%;
+    --muted-foreground: 0 0% 45%;
 
-    --accent: 200 33% 96%;
-    --accent-foreground: 0 0% 9%;
+    --accent: 0 0% 97%;
+    --accent-foreground: 0 0% 5%;
 
     --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 100%;
@@ -39,18 +38,18 @@
     --success-foreground: 0 0% 100%;
 
     --warning: 38 92% 50%;
-    --warning-foreground: 0 0% 9%;
+    --warning-foreground: 0 0% 5%;
 
     --pharmacy: 0 0% 9%;
     --pharmacy-foreground: 0 0% 100%;
 
-    --client: 200 20% 55%;
-    --client-foreground: 0 0% 9%;
+    --client: 198 20% 55%;
+    --client-foreground: 0 0% 5%;
 
-    /* Rock Blue tint for borders and focus rings */
-    --border: 200 25% 88%;
-    --input: 200 25% 88%;
-    --ring: 200 33% 55%;
+    /* Neutral gray borders */
+    --border: 0 0% 90%;
+    --input: 0 0% 90%;
+    --ring: 198 33% 55%;
 
     --radius: 0.75rem;
 
@@ -58,43 +57,52 @@
     --shadow-lg: 0 14px 42px rgb(0 0 0 / 0.08);
 
     --sidebar-background: 0 0% 100%;
-    --sidebar-foreground: 0 0% 9%;
-    --sidebar-primary: 200 33% 55%;
+    --sidebar-foreground: 0 0% 5%;
+    --sidebar-primary: 198 33% 55%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 200 33% 96%;
-    --sidebar-accent-foreground: 0 0% 9%;
-    --sidebar-border: 200 20% 90%;
-    --sidebar-ring: 200 33% 67%;
+    --sidebar-accent: 0 0% 97%;
+    --sidebar-accent-foreground: 0 0% 5%;
+    --sidebar-border: 0 0% 92%;
+    --sidebar-ring: 198 33% 67%;
 
     --workspace-primary-hex: #000000;
 
-    /* Brand tokens - Black, White, Rock Blue #9dbecc, White Linen #f6f2e8 */
-    --color-rock-blue: 200 33% 67%;
-    --color-rock-blue-strong: 200 33% 55%;
-    --color-linen: 36 33% 93%;
+    /* Legacy brand tokens (keep for backward compat) */
+    --color-rock-blue: 198 33% 71%;
+    --color-rock-blue-strong: 198 33% 55%;
+    --color-linen: 43 42% 94%;
+
+    /* ===== Brand palette — gradients, glows, decorative ONLY ===== */
+    --brand-red-wine: 338 100% 32%;
+    --brand-clementine: 23 100% 50%;
+    --brand-deep-green: 165 100% 15%;
+    --brand-sage: 128 22% 70%;
+    --brand-cinnamon: 33 100% 28%;
+    --brand-coral: 4 100% 85%;
+    --brand-rock-blue: 198 33% 71%;
   }
 
   .dark {
-    --background: 0 0% 4%;
-    --foreground: 0 0% 98%;
+    --background: 0 0% 3%;
+    --foreground: 0 0% 96%;
 
-    --card: 0 0% 7%;
-    --card-foreground: 0 0% 98%;
+    --card: 0 0% 6%;
+    --card-foreground: 0 0% 96%;
 
-    --popover: 0 0% 7%;
-    --popover-foreground: 0 0% 98%;
+    --popover: 0 0% 6%;
+    --popover-foreground: 0 0% 96%;
 
-    --primary: 200 33% 75%;
-    --primary-foreground: 0 0% 4%;
+    --primary: 198 33% 75%;
+    --primary-foreground: 0 0% 3%;
 
     --secondary: 0 0% 12%;
-    --secondary-foreground: 0 0% 98%;
+    --secondary-foreground: 0 0% 96%;
 
-    --muted: 0 0% 12%;
+    --muted: 0 0% 10%;
     --muted-foreground: 0 0% 60%;
 
-    --accent: 200 20% 14%;
-    --accent-foreground: 0 0% 98%;
+    --accent: 0 0% 12%;
+    --accent-foreground: 0 0% 96%;
 
     --destructive: 0 72% 51%;
     --destructive-foreground: 0 0% 98%;
@@ -105,25 +113,25 @@
     --warning: 38 92% 50%;
     --warning-foreground: 0 0% 9%;
 
-    --border: 0 0% 18%;
-    --input: 0 0% 18%;
-    --ring: 200 33% 50%;
+    --border: 0 0% 15%;
+    --input: 0 0% 15%;
+    --ring: 198 33% 50%;
 
     --shadow-card: 0 1px 2px rgb(0 0 0 / 0.3), 0 10px 28px rgb(0 0 0 / 0.2);
     --shadow-lg: 0 14px 42px rgb(0 0 0 / 0.35);
 
-    --sidebar-background: 0 0% 6%;
-    --sidebar-foreground: 0 0% 98%;
-    --sidebar-primary: 200 33% 75%;
-    --sidebar-primary-foreground: 0 0% 4%;
-    --sidebar-accent: 0 0% 12%;
-    --sidebar-accent-foreground: 0 0% 98%;
-    --sidebar-border: 0 0% 16%;
-    --sidebar-ring: 200 33% 50%;
+    --sidebar-background: 0 0% 5%;
+    --sidebar-foreground: 0 0% 96%;
+    --sidebar-primary: 198 33% 75%;
+    --sidebar-primary-foreground: 0 0% 3%;
+    --sidebar-accent: 0 0% 10%;
+    --sidebar-accent-foreground: 0 0% 96%;
+    --sidebar-border: 0 0% 14%;
+    --sidebar-ring: 198 33% 50%;
 
-    --surface-0: 0 0% 7%;
+    --surface-0: 0 0% 6%;
     --surface-1: 0 0% 10%;
-    --surface-border: 0 0% 18%;
+    --surface-border: 0 0% 15%;
     --state-neutral-bg: 0 0% 10%;
     --state-success-bg: 158 40% 12%;
     --state-warning-bg: 38 40% 12%;
@@ -139,15 +147,6 @@
   body {
     @apply bg-background text-foreground antialiased;
     font-family: 'Manrope', ui-sans-serif, system-ui, -apple-system, Segoe UI, sans-serif;
-    background-image:
-      radial-gradient(70rem 40rem at -10% -15%, hsl(var(--color-rock-blue) / 0.05), transparent 60%),
-      radial-gradient(60rem 36rem at 110% -20%, hsl(var(--color-linen) / 0.5), transparent 62%);
-  }
-
-  .dark body {
-    background-image:
-      radial-gradient(70rem 40rem at -10% -15%, hsl(var(--color-rock-blue) / 0.08), transparent 60%),
-      radial-gradient(60rem 36rem at 110% -20%, hsl(var(--color-rock-blue) / 0.04), transparent 62%);
   }
 }
 
@@ -207,6 +206,15 @@
     box-shadow: var(--shadow-card);
   }
 
+  /* Glass panel — for dark-mode decorative sections (landing, public pages) */
+  .glass-panel {
+    @apply rounded-xl border;
+    background: rgb(255 255 255 / 0.04);
+    border-color: rgb(255 255 255 / 0.08);
+    backdrop-filter: blur(24px);
+    -webkit-backdrop-filter: blur(24px);
+  }
+
   .stat-card {
     @apply glass-card p-6 relative overflow-hidden transition-all duration-300 hover:border-muted-foreground/30;
   }
@@ -215,11 +223,13 @@
     @apply px-4 py-2 rounded-full text-sm font-medium transition-all duration-200 cursor-pointer;
   }
 
-  .filter-chip-pharmacy {
+  .filter-chip-pharmacy,
+  .filter-chip-entity {
     @apply bg-muted text-muted-foreground border border-border hover:bg-accent;
   }
 
-  .filter-chip-pharmacy.active {
+  .filter-chip-pharmacy.active,
+  .filter-chip-entity.active {
     @apply bg-foreground text-background;
   }
 
@@ -246,6 +256,26 @@
     animation: fadeIn 0.5s ease-out forwards;
   }
 
+  .animate-float {
+    animation: float 6s ease-in-out infinite;
+  }
+
+  .animate-slide-up-fade {
+    animation: slideUpFade 0.6s ease-out forwards;
+  }
+
+  .animate-gradient-shift {
+    background-size: 200% 200%;
+    animation: gradientShift 8s ease infinite;
+  }
+
+  /* Gradient text utility */
+  .gradient-text {
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+
   @keyframes fadeIn {
     from {
       opacity: 0;
@@ -254,6 +284,38 @@
     to {
       opacity: 1;
       transform: translateY(0);
+    }
+  }
+
+  @keyframes float {
+    0%, 100% {
+      transform: translateY(0);
+    }
+    50% {
+      transform: translateY(-20px);
+    }
+  }
+
+  @keyframes slideUpFade {
+    from {
+      opacity: 0;
+      transform: translateY(20px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  @keyframes gradientShift {
+    0% {
+      background-position: 0% 50%;
+    }
+    50% {
+      background-position: 100% 50%;
+    }
+    100% {
+      background-position: 0% 50%;
     }
   }
 }

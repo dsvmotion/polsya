@@ -1,12 +1,12 @@
 import { PharmacyStatus, STATUS_LABELS, STATUS_COLORS } from '@/types/pharmacy';
 import { cn } from '@/lib/utils';
 
-interface PharmacyStatusBadgeProps {
+interface EntityStatusBadgeProps {
   status: PharmacyStatus;
   size?: 'sm' | 'md';
 }
 
-export function PharmacyStatusBadge({ status, size = 'md' }: PharmacyStatusBadgeProps) {
+export function EntityStatusBadge({ status, size = 'md' }: EntityStatusBadgeProps) {
   const colors = STATUS_COLORS[status];
   
   return (

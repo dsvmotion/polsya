@@ -2,7 +2,7 @@ import { CheckSquare, Square, Save, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 
-interface PharmacySelectionBarProps {
+interface EntitySelectionBarProps {
   totalCount: number;
   selectedCount: number;
   allSelected: boolean;
@@ -12,7 +12,7 @@ interface PharmacySelectionBarProps {
   isSaving: boolean;
 }
 
-export function PharmacySelectionBar({
+export function EntitySelectionBar({
   totalCount,
   selectedCount,
   allSelected,
@@ -20,7 +20,7 @@ export function PharmacySelectionBar({
   onDeselectAll,
   onSave,
   isSaving,
-}: PharmacySelectionBarProps) {
+}: EntitySelectionBarProps) {
   const hasSelection = selectedCount > 0;
 
   return (

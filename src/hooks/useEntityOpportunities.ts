@@ -7,7 +7,7 @@ function opportunitiesKey(pharmacyId: string) {
   return ['pharmacy-opportunities', pharmacyId] as const;
 }
 
-export function usePharmacyOpportunities(pharmacyId: string | null) {
+export function useEntityOpportunities(pharmacyId: string | null) {
   return useQuery<AccountOpportunity[]>({
     queryKey: opportunitiesKey(pharmacyId ?? ''),
     enabled: !!pharmacyId,
@@ -34,7 +34,7 @@ interface CreateOpportunityInput {
   notes?: string | null;
 }
 
-export function useCreatePharmacyOpportunity() {
+export function useCreateEntityOpportunity() {
   const qc = useQueryClient();
 
   return useMutation({
@@ -75,7 +75,7 @@ interface UpdateOpportunityInput {
   };
 }
 
-export function useUpdatePharmacyOpportunity() {
+export function useUpdateEntityOpportunity() {
   const qc = useQueryClient();
 
   return useMutation({
@@ -101,7 +101,7 @@ interface DeleteOpportunityInput {
   pharmacyId: string;
 }
 
-export function useDeletePharmacyOpportunity() {
+export function useDeleteEntityOpportunity() {
   const qc = useQueryClient();
 
   return useMutation({

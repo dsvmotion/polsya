@@ -14,6 +14,7 @@ import {
   Lock,
   Quote,
   Mail,
+  Check,
 } from 'lucide-react';
 import {
   SiWoocommerce,
@@ -28,8 +29,11 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { APP_NAME, APP_DESCRIPTION } from '@/lib/brand';
+import { GlowOrb } from '@/components/landing/GlowOrb';
+import { ScrollFadeIn } from '@/components/landing/ScrollFadeIn';
+import { AnimatedCounter } from '@/components/landing/AnimatedCounter';
 
-/** Core product pillars - Vanta: 4 focused blocks */
+/** Core product pillars */
 const productBlocks = [
   {
     title: 'Prospecting',
@@ -57,7 +61,7 @@ const productBlocks = [
   },
 ];
 
-/** Solutions by industry - clean 3-column */
+/** Solutions by industry */
 const industrySolutions = [
   { industry: 'Retail & distribution', stat: 'Centralize your client base' },
   { industry: 'Field teams', stat: 'Optimize routes and visits' },
@@ -67,7 +71,7 @@ const industrySolutions = [
   { industry: 'Growing businesses', stat: 'Scale without losing visibility' },
 ];
 
-/** 4 differentiators - Vanta style */
+/** 4 differentiators */
 const differentiators = [
   { title: 'Unmatched flexibility', description: 'Custom entity types, fields, and workflows. Adapts to your business.', icon: Layers },
   { title: 'Faster time to value', description: 'Pre-built integrations, 7-day trial. Start in hours, not weeks.', icon: TrendingUp },
@@ -76,21 +80,21 @@ const differentiators = [
 ];
 
 const proofStats = [
-  { value: '15+', label: 'Integrations' },
-  { value: '10K+', label: 'Entities per workspace' },
-  { value: '7', label: 'Day free trial' },
+  { value: 15, suffix: '+', label: 'Integrations' },
+  { value: 10, suffix: 'K+', label: 'Entities per workspace' },
+  { value: 7, suffix: '', label: 'Day free trial' },
 ];
 
-/** Integration logos with brand colors */
+/** Integration logos */
 const integrations = [
-  { name: 'WooCommerce', Icon: SiWoocommerce, color: '#96588A' },
-  { name: 'Gmail', Icon: SiGmail, color: '#EA4335' },
-  { name: 'Outlook', Icon: Mail, color: '#0078D4' },
-  { name: 'Notion', Icon: SiNotion, color: '#000000' },
-  { name: 'Google Drive', Icon: SiGoogledrive, color: '#4285F4' },
-  { name: 'OpenAI', Icon: SiOpenai, color: '#412991' },
-  { name: 'Claude', Icon: SiClaude, color: '#CC785C' },
-  { name: 'Google Maps', Icon: SiGooglemaps, color: '#4285F4' },
+  { name: 'WooCommerce', Icon: SiWoocommerce },
+  { name: 'Gmail', Icon: SiGmail },
+  { name: 'Outlook', Icon: Mail },
+  { name: 'Notion', Icon: SiNotion },
+  { name: 'Google Drive', Icon: SiGoogledrive },
+  { name: 'OpenAI', Icon: SiOpenai },
+  { name: 'Claude', Icon: SiClaude },
+  { name: 'Google Maps', Icon: SiGooglemaps },
 ];
 
 const testimonials = [
@@ -106,6 +110,13 @@ const faqItems = [
   { q: 'Do you offer enterprise plans?', a: 'Yes. Unlimited entities, dedicated support, custom integrations, SLA. Contact us for a quote.' },
 ];
 
+const pricingPlans = [
+  { name: 'Starter', price: '€29', desc: 'Individuals & small teams', features: ['500 entities', '1 user', 'Core integrations'], href: '/signup?plan=starter' },
+  { name: 'Pro', price: '€79', desc: 'Growing teams', features: ['2,000 entities', '5 users', 'AI assistant', 'All integrations'], href: '/signup?plan=pro', featured: true },
+  { name: 'Business', price: '€149', desc: 'Scaling teams', features: ['10,000 entities', '15 users', 'Priority support'], href: '/signup?plan=business' },
+  { name: 'Enterprise', price: 'Custom', desc: 'Larger orgs', features: ['Unlimited entities', 'Dedicated support', 'Custom SLA'], href: '/contact?subject=enterprise' },
+];
+
 export default function Landing() {
   const navigate = useNavigate();
   const [demoEmail, setDemoEmail] = useState('');
@@ -117,19 +128,22 @@ export default function Landing() {
   };
 
   return (
-    <div className="overflow-hidden bg-background">
-      {/* Hero - Vanta: gradient fades, one CTA focus */}
-      <section className="relative px-4 pt-20 pb-20 sm:px-6 sm:pt-28 sm:pb-24 lg:px-8 overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-b from-linen/60 via-rock-blue/10 to-rock-blue/5 pointer-events-none" />
-        <div className="absolute top-0 left-1/4 w-96 h-96 bg-rock-blue/15 rounded-full blur-3xl pointer-events-none" />
-        <div className="absolute bottom-0 right-1/4 w-80 h-80 bg-rock-blue/15 rounded-full blur-3xl pointer-events-none" />
+    <div className="overflow-hidden bg-[#0a0a0a] text-white">
+
+      {/* ─── HERO ─── */}
+      <section className="relative px-4 pt-24 pb-24 sm:px-6 sm:pt-32 sm:pb-32 lg:px-8 overflow-hidden">
+        {/* Glow orbs */}
+        <GlowOrb color="hsl(var(--brand-red-wine))" size="w-[600px] h-[600px]" position="top-[-200px] left-[-150px]" opacity="opacity-15" />
+        <GlowOrb color="hsl(var(--brand-clementine))" size="w-[500px] h-[500px]" position="top-[-100px] right-[-100px]" delay="2s" opacity="opacity-10" />
+        <GlowOrb color="hsl(var(--brand-deep-green))" size="w-[400px] h-[400px]" position="bottom-[-150px] left-[30%]" delay="4s" opacity="opacity-10" />
+
         <div className="relative mx-auto max-w-4xl text-center">
-            <h1 className="text-4xl font-bold tracking-tight text-foreground sm:text-5xl md:text-6xl">
+          <h1 className="text-4xl font-black tracking-tight sm:text-5xl md:text-7xl leading-tight">
             Automate prospecting, manage pipelines, and{' '}
-            <span className="text-primary">accelerate revenue</span>
+            <span className="bg-gradient-hero gradient-text">accelerate revenue</span>
             {' '}with AI
           </h1>
-          <p className="mt-6 text-lg text-muted-foreground max-w-2xl mx-auto">
+          <p className="mt-6 text-lg text-white/60 max-w-2xl mx-auto">
             {APP_DESCRIPTION}
           </p>
           <form onSubmit={handleDemoSubmit} className="mt-10 flex flex-col sm:flex-row gap-3 justify-center max-w-md mx-auto">
@@ -138,26 +152,26 @@ export default function Landing() {
               placeholder="work@company.com"
               value={demoEmail}
               onChange={(e) => setDemoEmail(e.target.value)}
-              className="h-12 px-4 text-base flex-1 border-border focus-visible:ring-primary/30"
+              className="h-12 px-4 text-base flex-1 bg-white/5 border-white/10 text-white placeholder:text-white/40 focus-visible:ring-white/20"
             />
-            <Button type="submit" size="lg" className="h-12 px-8 shrink-0 bg-primary text-primary-foreground hover:bg-primary/90">
+            <Button type="submit" size="lg" className="h-12 px-8 shrink-0 bg-gradient-cta text-white hover:opacity-90 transition-opacity border-0">
               Get a demo
               <ArrowRight className="ml-2 h-4 w-4" />
             </Button>
           </form>
-          <p className="mt-4 text-sm text-muted-foreground">
+          <p className="mt-4 text-sm text-white/40">
             No credit card required · 7-day free trial · GDPR compliant
           </p>
         </div>
       </section>
 
-      {/* Logo strip - minimal */}
-      <section className="border-y border-border py-10 bg-linen/30">
+      {/* ─── LOGO STRIP ─── */}
+      <section className="border-y border-white/5 py-10">
         <div className="mx-auto max-w-5xl px-4 sm:px-6 lg:px-8">
-          <p className="text-center text-xs font-medium uppercase tracking-wider text-muted-foreground/80 mb-6">
+          <p className="text-center text-xs font-medium uppercase tracking-[0.2em] text-white/30 mb-6">
             Trusted by B2B teams
           </p>
-          <div className="flex flex-wrap justify-center gap-x-12 gap-y-4 text-sm font-medium text-muted-foreground/70">
+          <div className="flex flex-wrap justify-center gap-x-12 gap-y-4 text-sm font-medium text-white/40">
             {['Retail', 'Manufacturing', 'Distribution', 'SaaS', 'Field Sales', 'Professional Services'].map((l) => (
               <span key={l}>{l}</span>
             ))}
@@ -165,212 +179,274 @@ export default function Landing() {
         </div>
       </section>
 
-      {/* Proof in numbers - subtle gradient cards */}
-      <section className="py-16 sm:py-20">
-        <div className="mx-auto max-w-5xl px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-3 gap-8 text-center">
-            {proofStats.map((s) => (
-              <div key={s.label} className="rounded-xl border border-border bg-card p-6">
-                <p className="text-3xl font-bold text-primary">{s.value}</p>
-                <p className="mt-1 text-sm text-muted-foreground">{s.label}</p>
-              </div>
-            ))}
+      {/* ─── PROOF IN NUMBERS ─── */}
+      <ScrollFadeIn>
+        <section className="py-20 sm:py-24">
+          <div className="mx-auto max-w-5xl px-4 sm:px-6 lg:px-8">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 text-center">
+              {proofStats.map((s) => (
+                <div key={s.label} className="glass-panel p-8 relative overflow-hidden group">
+                  <div className="absolute bottom-0 left-0 right-0 h-[1px] bg-gradient-hero opacity-40" />
+                  <p className="text-4xl font-black text-white">
+                    <AnimatedCounter end={s.value} suffix={s.suffix} />
+                  </p>
+                  <p className="mt-2 text-sm text-white/50">{s.label}</p>
+                </div>
+              ))}
+            </div>
           </div>
-        </div>
-      </section>
+        </section>
+      </ScrollFadeIn>
 
-      {/* Platform - 4 product blocks */}
-      <section className="py-20 sm:py-28 bg-linen/30">
-        <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-16">
-            <h2 className="text-2xl font-bold text-foreground sm:text-3xl">
-              The AI sales platform that adapts to you
-            </h2>
-            <p className="mt-3 text-muted-foreground">
-              One workspace. No spreadsheets. Fully customizable.
+      {/* ─── PLATFORM ─── */}
+      <ScrollFadeIn>
+        <section className="py-20 sm:py-28 bg-[#111]">
+          <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
+            <div className="text-center mb-16">
+              <h2 className="text-2xl font-bold sm:text-3xl">
+                The AI sales platform that adapts to you
+              </h2>
+              <p className="mt-3 text-white/50">
+                One workspace. No spreadsheets. Fully customizable.
+              </p>
+            </div>
+            <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+              {productBlocks.map((b, i) => (
+                <ScrollFadeIn key={b.title} delay={i * 100}>
+                  <Link to={b.href} className="group block glass-panel p-6 hover:border-white/20 transition-all duration-300 h-full">
+                    <div className="rounded-lg bg-gradient-warm w-fit p-2.5 opacity-80">
+                      <b.icon className="h-6 w-6 text-white" />
+                    </div>
+                    <h3 className="mt-4 font-semibold text-white group-hover:text-white transition-colors">{b.title}</h3>
+                    <p className="mt-2 text-sm text-white/50">{b.description}</p>
+                    <span className="mt-4 inline-flex items-center text-sm font-medium text-white/70 group-hover:text-white transition-colors">
+                      Explore {b.title}
+                      <ArrowRight className="ml-1 h-4 w-4" />
+                    </span>
+                  </Link>
+                </ScrollFadeIn>
+              ))}
+            </div>
+          </div>
+        </section>
+      </ScrollFadeIn>
+
+      {/* ─── INTEGRATIONS ─── */}
+      <ScrollFadeIn>
+        <section className="py-20 sm:py-28 bg-[#0a0a0a]">
+          <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
+            <div className="text-center mb-12">
+              <h2 className="text-2xl font-bold sm:text-3xl">Connect with your stack</h2>
+              <p className="mt-3 text-white/50">15+ integrations. API access for custom builds.</p>
+            </div>
+            <div className="flex flex-wrap justify-center gap-3">
+              {integrations.map(({ name, Icon }) => (
+                <span
+                  key={name}
+                  className="flex items-center gap-2.5 glass-panel px-5 py-3 text-sm font-medium text-white/70 hover:text-white hover:border-white/20 transition-all duration-200"
+                >
+                  <Icon className="h-5 w-5 shrink-0" />
+                  {name}
+                </span>
+              ))}
+            </div>
+            <p className="mt-8 text-center">
+              <Link to="/features#integrations" className="text-sm font-medium text-white/60 hover:text-white transition-colors">
+                View all integrations →
+              </Link>
             </p>
           </div>
-          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
-            {productBlocks.map((b) => (
-              <Link key={b.title} to={b.href} className="group block rounded-xl border-2 border-rock-blue/20 bg-card p-6 hover:border-primary hover:shadow-lg hover:bg-rock-blue/5 transition-all duration-300">
-                <div className="rounded-lg bg-rock-blue/20 w-fit p-2.5">
-                  <b.icon className="h-6 w-6 text-primary" />
-                </div>
-                <h3 className="mt-4 font-semibold text-foreground group-hover:text-primary transition-colors">{b.title}</h3>
-                <p className="mt-2 text-sm text-muted-foreground">{b.description}</p>
-                <span className="mt-4 inline-flex items-center text-sm font-medium text-primary group-hover:underline">
-                  Explore {b.title}
-                  <ArrowRight className="ml-1 h-4 w-4" />
-                </span>
-              </Link>
-            ))}
-          </div>
-        </div>
-      </section>
+        </section>
+      </ScrollFadeIn>
 
-      {/* Integrations - single row */}
-      <section className="py-20 sm:py-28 bg-background">
-        <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-12">
-            <h2 className="text-2xl font-bold text-foreground sm:text-3xl">Connect with your stack</h2>
-            <p className="mt-3 text-muted-foreground">15+ integrations. API access for custom builds.</p>
-          </div>
-          <div className="flex flex-wrap justify-center gap-4">
-            {integrations.map(({ name, Icon, color }) => (
-              <span
-                key={name}
-                className="flex items-center gap-2.5 rounded-lg border border-border bg-card px-4 py-3 text-sm font-medium text-foreground hover:border-primary hover:bg-rock-blue/5 transition-colors"
-              >
-                <Icon className="h-5 w-5 shrink-0" style={{ color }} />
-                {name}
-              </span>
-            ))}
-          </div>
-          <p className="mt-8 text-center">
-            <Link to="/features#integrations" className="text-sm font-medium text-primary hover:underline">
-              View all integrations →
-            </Link>
-          </p>
-        </div>
-      </section>
-
-      {/* Solutions - 6 clean cards */}
-      <section className="py-20 sm:py-28 bg-linen/50">
-        <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
-          <h2 className="text-center text-2xl font-bold text-foreground sm:text-3xl">Solutions for every industry</h2>
-          <div className="mt-12 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {industrySolutions.map((s) => (
-              <div key={s.industry} className="rounded-xl border border-border bg-card p-5 hover:border-rock-blue/30 transition-colors">
-                <h3 className="font-semibold text-foreground">{s.industry}</h3>
-                <p className="mt-1 text-sm text-muted-foreground">{s.stat}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* The difference - 4 pillars */}
-      <section className="py-20 sm:py-28 bg-background">
-        <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
-          <h2 className="text-center text-2xl font-bold text-foreground sm:text-3xl">The {APP_NAME} difference</h2>
-          <div className="mt-12 grid gap-8 sm:grid-cols-2 lg:grid-cols-4">
-            {differentiators.map((d) => (
-              <div key={d.title} className="text-center">
-                <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-xl bg-rock-blue/10">
-                  <d.icon className="h-6 w-6 text-primary" />
-                </div>
-                <h3 className="mt-4 font-semibold text-foreground">{d.title}</h3>
-                <p className="mt-2 text-sm text-muted-foreground">{d.description}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Testimonials - compact */}
-      <section className="py-20 sm:py-28 bg-linen/30">
-        <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
-          <h2 className="text-center text-2xl font-bold text-foreground sm:text-3xl">Trusted by sales teams</h2>
-          <div className="mt-12 grid gap-6 md:grid-cols-3">
-            {testimonials.map((t) => (
-              <div key={t.name} className="rounded-xl border border-border bg-card p-6 shadow-sm hover:shadow-md hover:border-rock-blue/30 transition-all">
-                <Quote className="h-6 w-6 text-muted-foreground/50" />
-                <p className="mt-4 text-sm text-muted-foreground">{t.quote}</p>
-                <p className="mt-4 font-medium text-foreground">{t.name}</p>
-                <p className="text-xs text-muted-foreground">{t.role}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Maps & Reports - compact */}
-      <section className="py-20 sm:py-28">
-        <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
-          <div className="grid gap-12 lg:grid-cols-2 items-center">
-            <div>
-              <MapPin className="h-8 w-8 text-foreground" />
-              <h2 className="mt-4 text-xl font-bold text-foreground">See your territory at a glance</h2>
-              <p className="mt-3 text-muted-foreground">
-                Interactive maps, clustering, filters. Google Maps powered.
-              </p>
-              <Button variant="outline" asChild className="mt-4">
-                <Link to="/features#maps">Explore maps</Link>
-              </Button>
-            </div>
-            <div>
-              <BarChart3 className="h-8 w-8 text-foreground" />
-              <h2 className="mt-4 text-xl font-bold text-foreground">Reports that drive action</h2>
-              <p className="mt-3 text-muted-foreground">
-                Pipeline metrics, conversion rates. Export to Excel.
-              </p>
-              <Button variant="link" asChild className="mt-4 p-0 h-auto">
-                <Link to="/features#reports">View reporting</Link>
-              </Button>
+      {/* ─── SOLUTIONS ─── */}
+      <ScrollFadeIn>
+        <section className="py-20 sm:py-28 bg-[#111]">
+          <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
+            <h2 className="text-center text-2xl font-bold sm:text-3xl">Solutions for every industry</h2>
+            <div className="mt-12 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+              {industrySolutions.map((s, i) => (
+                <ScrollFadeIn key={s.industry} delay={i * 80}>
+                  <div className="glass-panel p-5 relative overflow-hidden group hover:border-white/15 transition-all">
+                    <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-cta opacity-0 group-hover:opacity-60 transition-opacity" />
+                    <h3 className="font-semibold text-white">{s.industry}</h3>
+                    <p className="mt-1 text-sm text-white/50">{s.stat}</p>
+                  </div>
+                </ScrollFadeIn>
+              ))}
             </div>
           </div>
-        </div>
-      </section>
+        </section>
+      </ScrollFadeIn>
 
-      {/* Pricing */}
-      <section id="pricing-preview" className="py-20 sm:py-28 bg-linen/50 scroll-mt-20">
-        <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-12">
-            <h2 className="text-2xl font-bold text-foreground sm:text-3xl">Simple, transparent pricing</h2>
-            <p className="mt-3 text-muted-foreground">7-day free trial on all plans.</p>
+      {/* ─── DIFFERENTIATORS ─── */}
+      <ScrollFadeIn>
+        <section className="py-20 sm:py-28 bg-[#0a0a0a]">
+          <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
+            <h2 className="text-center text-2xl font-bold sm:text-3xl">The {APP_NAME} difference</h2>
+            <div className="mt-12 grid gap-8 sm:grid-cols-2 lg:grid-cols-4">
+              {differentiators.map((d, i) => (
+                <ScrollFadeIn key={d.title} delay={i * 100}>
+                  <div className="text-center">
+                    <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-cta">
+                      <d.icon className="h-6 w-6 text-white" />
+                    </div>
+                    <h3 className="mt-4 font-semibold text-white">{d.title}</h3>
+                    <p className="mt-2 text-sm text-white/50">{d.description}</p>
+                  </div>
+                </ScrollFadeIn>
+              ))}
+            </div>
           </div>
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-            {[
-              { name: 'Starter', price: '€29', desc: 'Individuals & small teams', features: ['500 entities', '1 user'], href: '/signup?plan=starter' },
-              { name: 'Pro', price: '€79', desc: 'Growing teams', features: ['2,000 entities', '5 users', 'AI'], href: '/signup?plan=pro', featured: true },
-              { name: 'Business', price: '€149', desc: 'Scaling teams', features: ['10,000 entities', '15 users'], href: '/signup?plan=business' },
-              { name: 'Enterprise', price: 'Custom', desc: 'Larger orgs', features: ['Unlimited'], href: '/contact?subject=enterprise' },
-            ].map((p) => (
-              <Link key={p.name} to={p.href} className={`rounded-lg border p-6 text-center transition-colors hover:border-foreground/20 ${p.featured ? 'border-foreground/30 bg-background' : 'border-border bg-background'}`}>
-                <h3 className="font-semibold text-foreground">{p.name}</h3>
-                <p className="mt-2 text-2xl font-bold">{p.price}{p.price !== 'Custom' && <span className="text-sm font-normal text-muted-foreground">/mo</span>}</p>
-                <p className="mt-1 text-sm text-muted-foreground">{p.desc}</p>
-                <ul className="mt-4 space-y-1 text-sm text-muted-foreground">
-                  {p.features.map((f) => <li key={f}>{f}</li>)}
-                </ul>
-                <Button className="mt-4 w-full" variant={p.featured ? 'default' : 'outline'} size="sm">
-                  {p.price === 'Custom' ? 'Contact sales' : 'Start free trial'}
+        </section>
+      </ScrollFadeIn>
+
+      {/* ─── TESTIMONIALS ─── */}
+      <ScrollFadeIn>
+        <section className="py-20 sm:py-28 bg-[#111]">
+          <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
+            <h2 className="text-center text-2xl font-bold sm:text-3xl">Trusted by sales teams</h2>
+            <div className="mt-12 grid gap-6 md:grid-cols-3">
+              {testimonials.map((t, i) => (
+                <ScrollFadeIn key={t.name} delay={i * 120}>
+                  <div className="glass-panel p-6 group hover:border-white/15 transition-all h-full">
+                    <Quote className="h-5 w-5 text-white/20" />
+                    <p className="mt-4 text-sm text-white/60">{t.quote}</p>
+                    <p className="mt-4 font-medium text-white">{t.name}</p>
+                    <p className="text-xs text-white/40">{t.role}</p>
+                  </div>
+                </ScrollFadeIn>
+              ))}
+            </div>
+          </div>
+        </section>
+      </ScrollFadeIn>
+
+      {/* ─── MAPS & REPORTS ─── */}
+      <ScrollFadeIn>
+        <section className="py-20 sm:py-28 bg-[#0a0a0a]">
+          <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
+            <div className="grid gap-12 lg:grid-cols-2 items-start">
+              <div className="glass-panel p-8">
+                <div className="rounded-lg bg-gradient-warm w-fit p-2.5 opacity-80">
+                  <MapPin className="h-6 w-6 text-white" />
+                </div>
+                <h2 className="mt-4 text-xl font-bold text-white">See your territory at a glance</h2>
+                <p className="mt-3 text-white/50">
+                  Interactive maps, clustering, filters. Google Maps powered.
+                </p>
+                <Button variant="outline" asChild className="mt-6 border-white/10 text-white hover:bg-white/5">
+                  <Link to="/features#maps">Explore maps</Link>
                 </Button>
-              </Link>
-            ))}
+              </div>
+              <div className="glass-panel p-8">
+                <div className="rounded-lg bg-gradient-cta w-fit p-2.5 opacity-80">
+                  <BarChart3 className="h-6 w-6 text-white" />
+                </div>
+                <h2 className="mt-4 text-xl font-bold text-white">Reports that drive action</h2>
+                <p className="mt-3 text-white/50">
+                  Pipeline metrics, conversion rates. Export to Excel.
+                </p>
+                <Button variant="outline" asChild className="mt-6 border-white/10 text-white hover:bg-white/5">
+                  <Link to="/features#reports">View reporting</Link>
+                </Button>
+              </div>
+            </div>
           </div>
-          <p className="mt-6 text-center">
-            <Link to="/pricing" className="text-sm font-medium text-foreground hover:underline">Compare plans →</Link>
-          </p>
-        </div>
-      </section>
+        </section>
+      </ScrollFadeIn>
 
-      {/* FAQ */}
-      <section id="faq" className="py-20 sm:py-28 scroll-mt-20">
-        <div className="mx-auto max-w-2xl px-4 sm:px-6 lg:px-8">
-          <h2 className="text-center text-2xl font-bold text-foreground">FAQ</h2>
-          <Accordion type="single" collapsible className="mt-10">
-            {faqItems.map((item, i) => (
-              <AccordionItem key={i} value={`q-${i}`}>
-                <AccordionTrigger className="text-left">{item.q}</AccordionTrigger>
-                <AccordionContent className="text-muted-foreground">{item.a}</AccordionContent>
-              </AccordionItem>
-            ))}
-          </Accordion>
-        </div>
-      </section>
+      {/* ─── PRICING ─── */}
+      <ScrollFadeIn>
+        <section id="pricing-preview" className="py-20 sm:py-28 bg-[#111] scroll-mt-20">
+          <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
+            <div className="text-center mb-12">
+              <h2 className="text-2xl font-bold sm:text-3xl">Simple, transparent pricing</h2>
+              <p className="mt-3 text-white/50">7-day free trial on all plans.</p>
+            </div>
+            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+              {pricingPlans.map((p) => (
+                <Link
+                  key={p.name}
+                  to={p.href}
+                  className={`relative rounded-xl p-6 text-center transition-all duration-300 hover:scale-[1.02] ${
+                    p.featured
+                      ? 'bg-gradient-to-b from-white/[0.08] to-white/[0.03] border border-white/20'
+                      : 'glass-panel'
+                  }`}
+                >
+                  {p.featured && (
+                    <span className="absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-1 text-[10px] font-bold uppercase tracking-wider bg-gradient-hero text-white rounded-full">
+                      Most popular
+                    </span>
+                  )}
+                  <h3 className="font-semibold text-white">{p.name}</h3>
+                  <p className="mt-2 text-3xl font-black text-white">
+                    {p.price}
+                    {p.price !== 'Custom' && <span className="text-sm font-normal text-white/40">/mo</span>}
+                  </p>
+                  <p className="mt-1 text-sm text-white/40">{p.desc}</p>
+                  <ul className="mt-5 space-y-2 text-sm text-white/60 text-left">
+                    {p.features.map((f) => (
+                      <li key={f} className="flex items-center gap-2">
+                        <Check className="h-3.5 w-3.5 text-brand-sage shrink-0" />
+                        {f}
+                      </li>
+                    ))}
+                  </ul>
+                  <Button
+                    className={`mt-6 w-full border-0 ${
+                      p.featured
+                        ? 'bg-gradient-cta text-white hover:opacity-90'
+                        : 'bg-white/10 text-white hover:bg-white/15'
+                    }`}
+                    size="sm"
+                  >
+                    {p.price === 'Custom' ? 'Contact sales' : 'Start free trial'}
+                  </Button>
+                </Link>
+              ))}
+            </div>
+            <p className="mt-8 text-center">
+              <Link to="/pricing" className="text-sm font-medium text-white/50 hover:text-white transition-colors">
+                Compare plans →
+              </Link>
+            </p>
+          </div>
+        </section>
+      </ScrollFadeIn>
 
-      {/* Final CTA */}
-      <section className="relative py-20 sm:py-28 border-t border-border overflow-hidden">
-        <div className="absolute inset-0 bg-rock-blue/5 pointer-events-none" />
+      {/* ─── FAQ ─── */}
+      <ScrollFadeIn>
+        <section id="faq" className="py-20 sm:py-28 bg-[#0a0a0a] scroll-mt-20">
+          <div className="mx-auto max-w-2xl px-4 sm:px-6 lg:px-8">
+            <h2 className="text-center text-2xl font-bold">FAQ</h2>
+            <Accordion type="single" collapsible className="mt-10">
+              {faqItems.map((item, i) => (
+                <AccordionItem key={i} value={`q-${i}`} className="border-white/10">
+                  <AccordionTrigger className="text-left text-white/80 hover:text-white">{item.q}</AccordionTrigger>
+                  <AccordionContent className="text-white/50">{item.a}</AccordionContent>
+                </AccordionItem>
+              ))}
+            </Accordion>
+          </div>
+        </section>
+      </ScrollFadeIn>
+
+      {/* ─── FINAL CTA ─── */}
+      <section className="relative py-24 sm:py-32 overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-mesh pointer-events-none" />
+        <GlowOrb color="hsl(var(--brand-coral))" size="w-[500px] h-[500px]" position="top-[-100px] right-[-100px]" opacity="opacity-10" delay="1s" />
+        <GlowOrb color="hsl(var(--brand-deep-green))" size="w-[400px] h-[400px]" position="bottom-[-100px] left-[-50px]" opacity="opacity-10" delay="3s" />
+
         <div className="relative mx-auto max-w-2xl text-center px-4">
-          <h2 className="text-2xl font-bold text-foreground sm:text-3xl">Ready to accelerate your sales?</h2>
-          <p className="mt-4 text-muted-foreground">Start your 7-day free trial. No credit card required.</p>
+          <h2 className="text-3xl font-black sm:text-4xl">Ready to accelerate your sales?</h2>
+          <p className="mt-4 text-white/50">Start your 7-day free trial. No credit card required.</p>
           <div className="mt-8 flex flex-col sm:flex-row gap-4 justify-center">
-            <Button size="lg" asChild className="bg-primary text-primary-foreground hover:bg-primary/90">
+            <Button size="lg" asChild className="bg-gradient-cta text-white hover:opacity-90 transition-opacity border-0 h-12 px-8">
               <Link to="/signup?plan=starter">Get started free</Link>
             </Button>
-            <Button size="lg" variant="outline" asChild>
+            <Button size="lg" variant="outline" asChild className="border-white/15 text-white hover:bg-white/5 h-12 px-8">
               <Link to="/contact?subject=demo">Request a demo</Link>
             </Button>
           </div>

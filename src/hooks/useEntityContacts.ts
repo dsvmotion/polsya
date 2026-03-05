@@ -7,7 +7,7 @@ function contactsKey(pharmacyId: string) {
   return ['pharmacy-contacts', pharmacyId] as const;
 }
 
-export function usePharmacyContacts(pharmacyId: string | null) {
+export function useEntityContacts(pharmacyId: string | null) {
   return useQuery<PharmacyContact[]>({
     queryKey: contactsKey(pharmacyId ?? ''),
     enabled: !!pharmacyId,
@@ -35,7 +35,7 @@ interface CreateContactInput {
   notes?: string | null;
 }
 
-export function useCreatePharmacyContact() {
+export function useCreateEntityContact() {
   const qc = useQueryClient();
 
   return useMutation({
@@ -76,7 +76,7 @@ interface UpdateContactInput {
   };
 }
 
-export function useUpdatePharmacyContact() {
+export function useUpdateEntityContact() {
   const qc = useQueryClient();
 
   return useMutation({
@@ -102,7 +102,7 @@ interface DeleteContactInput {
   pharmacyId: string;
 }
 
-export function useDeletePharmacyContact() {
+export function useDeleteEntityContact() {
   const qc = useQueryClient();
 
   return useMutation({

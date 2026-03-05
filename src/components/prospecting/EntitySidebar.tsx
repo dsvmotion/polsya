@@ -2,11 +2,11 @@ import { useMemo } from 'react';
 import { Building2, Loader2, Filter } from 'lucide-react';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Pharmacy, PharmacyFilters as Filters } from '@/types/pharmacy';
-import { PharmacyFilters } from './PharmacyFilters';
-import { PharmacyListItem } from './PharmacyListItem';
-import { PharmacySelectionBar } from './PharmacySelectionBar';
+import { EntityFilters } from './EntityFilters';
+import { EntityListItem } from './EntityListItem';
+import { EntitySelectionBar } from './EntitySelectionBar';
 
-interface PharmacySidebarProps {
+interface EntitySidebarProps {
   pharmacies: Pharmacy[];
   isLoading: boolean;
   selectedPharmacyId: string | null;
@@ -40,7 +40,7 @@ interface PharmacySidebarProps {
   };
 }
 
-export function PharmacySidebar({
+export function EntitySidebar({
   pharmacies,
   isLoading,
   selectedPharmacyId,
@@ -64,7 +64,7 @@ export function PharmacySidebar({
   savedIds = new Set(),
   isSaving,
   labels,
-}: PharmacySidebarProps) {
+}: EntitySidebarProps) {
   const sidebarTitle = labels?.sidebarTitle ?? 'Entities';
   const searchButtonLabel = labels?.searchButton ?? 'Search Entities';
   const noFoundLabel = labels?.noFound ?? 'No entities found';
@@ -126,7 +126,7 @@ export function PharmacySidebar({
           )}
         </div>
 
-        <PharmacyFilters
+        <EntityFilters
           filters={filters}
           onFiltersChange={onFiltersChange}
           countries={countries}
@@ -171,7 +171,7 @@ export function PharmacySidebar({
 
       {/* Selection Bar - only show when we have results */}
       {hasSearched && !isSearching && pharmacies.length > 0 && (
-        <PharmacySelectionBar
+        <EntitySelectionBar
           totalCount={displayedPharmacies.length}
           selectedCount={displayedSelectedCount}
           allSelected={allSelected}
@@ -205,7 +205,7 @@ export function PharmacySidebar({
             </div>
           ) : (
             displayedPharmacies.map((pharmacy) => (
-              <PharmacyListItem
+              <EntityListItem
                 key={pharmacy.id}
                 pharmacy={pharmacy}
                 isSelected={selectedPharmacyId === pharmacy.id}

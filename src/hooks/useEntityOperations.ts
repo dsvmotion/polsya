@@ -40,7 +40,7 @@ export function useDetailedOrders() {
   });
 }
 
-export function usePharmacyDocuments() {
+export function useEntityDocuments() {
   return useQuery({
     queryKey: ['pharmacy-documents'],
     queryFn: async (): Promise<PharmacyDocument[]> => {
@@ -94,7 +94,7 @@ const DB_SORT_COLUMNS: Record<string, string> = {
   commercialStatus: 'commercial_status',
 };
 
-export function usePharmacyOperations(
+export function useEntityOperations(
   filters?: PharmacyOperationsFilters,
   page: number = 0,
   pageSize: number = 50,
@@ -258,7 +258,7 @@ export function usePharmacyOperations(
   };
 }
 
-export function usePharmaciesWithOrders(savedOnly: boolean = true, clientType?: ClientType) {
+export function useEntitiesWithOrders(savedOnly: boolean = true, clientType?: ClientType) {
   const { data: pharmacies = [], isLoading: pharmaciesLoading } = useQuery({
     queryKey: ['pharmacies', savedOnly ? 'saved' : 'all', clientType ?? 'all'],
     queryFn: async (): Promise<BusinessEntity[]> => {
@@ -304,7 +304,7 @@ export function usePharmaciesWithOrders(savedOnly: boolean = true, clientType?: 
   });
 
   const { data: orders = [], isLoading: ordersLoading } = useDetailedOrders();
-  const { data: documents = [], isLoading: docsLoading } = usePharmacyDocuments();
+  const { data: documents = [], isLoading: docsLoading } = useEntityDocuments();
 
   const pharmaciesWithOrders: PharmacyWithOrders[] = pharmacies.map((pharmacy) => {
     let pharmacyOrders: DetailedOrder[] = [];

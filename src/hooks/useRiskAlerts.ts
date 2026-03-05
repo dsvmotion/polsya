@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import { usePharmaciesWithOrders } from '@/hooks/usePharmacyOperations';
+import { useEntitiesWithOrders } from '@/hooks/useEntityOperations';
 import type { RiskAlert, RiskReason, RiskLevel, RiskSummary } from '@/types/operations';
 import type { EntityTypeKey } from '@/types/entity';
 
@@ -10,7 +10,7 @@ function daysBetween(dateStr: string, now: number): number {
 }
 
 export function useRiskAlerts(entityTypeKey: EntityTypeKey = 'pharmacy') {
-  const { data: pharmacies, isLoading } = usePharmaciesWithOrders(true, entityTypeKey);
+  const { data: pharmacies, isLoading } = useEntitiesWithOrders(true, entityTypeKey);
 
   const { alerts, summary } = useMemo(() => {
     if (!pharmacies || pharmacies.length === 0) {

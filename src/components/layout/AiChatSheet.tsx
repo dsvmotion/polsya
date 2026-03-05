@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect, useCallback, type KeyboardEvent } from 'react';
+import { useLocation } from 'react-router-dom';
 import {
   Send,
   Loader2,
@@ -25,13 +26,30 @@ function formatTime(dateStr: string): string {
   return date.toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' });
 }
 
+function TypingIndicator() {
+  return (
+    <div className="flex gap-2 px-3 justify-start">
+      <div className="w-7 h-7 rounded-full bg-gradient-cta flex items-center justify-center shrink-0 mt-0.5">
+        <Bot className="h-3.5 w-3.5 text-white" />
+      </div>
+      <div className="rounded-2xl rounded-bl-md px-4 py-3 bg-muted">
+        <div className="flex items-center gap-1">
+          <span className="w-2 h-2 rounded-full bg-muted-foreground/50 animate-bounce [animation-delay:0ms]" />
+          <span className="w-2 h-2 rounded-full bg-muted-foreground/50 animate-bounce [animation-delay:150ms]" />
+          <span className="w-2 h-2 rounded-full bg-muted-foreground/50 animate-bounce [animation-delay:300ms]" />
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function MessageBubble({ message }: { message: ChatMessage }) {
   const isUser = message.role === 'user';
 
   return (
     <div className={cn('flex gap-2 px-3', isUser ? 'justify-end' : 'justify-start')}>
       {!isUser && (
-        <div className="w-7 h-7 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center shrink-0 mt-0.5">
+        <div className="w-7 h-7 rounded-full bg-gradient-cta flex items-center justify-center shrink-0 mt-0.5">
           <Bot className="h-3.5 w-3.5 text-white" />
         </div>
       )}
@@ -39,7 +57,7 @@ function MessageBubble({ message }: { message: ChatMessage }) {
         className={cn(
           'rounded-2xl px-3.5 py-2.5 max-w-[85%] text-sm leading-relaxed',
           isUser
-            ? 'bg-primary text-primary-foreground rounded-br-md'
+            ? 'bg-foreground text-background rounded-br-md'
             : 'bg-muted text-foreground rounded-bl-md',
           message.isStreaming && 'animate-pulse',
         )}
@@ -48,7 +66,7 @@ function MessageBubble({ message }: { message: ChatMessage }) {
         <div
           className={cn(
             'text-[10px] mt-1',
-            isUser ? 'text-primary-foreground/70' : 'text-muted-foreground',
+            isUser ? 'text-background/70' : 'text-muted-foreground',
           )}
         >
           {formatTime(message.createdAt)}
@@ -76,6 +94,7 @@ interface AiChatSheetProps {
 }
 
 export function AiChatSheet({ open, onOpenChange }: AiChatSheetProps) {
+  const location = useLocation();
   const { data: messages = [], isLoading: messagesLoading } = useAiChatMessages();
   const { sendMessage, clearHistory, isLoading: isSending, error } = useAiChat();
 
@@ -120,17 +139,11 @@ export function AiChatSheet({ open, onOpenChange }: AiChatSheetProps) {
       content: text,
       createdAt: new Date().toISOString(),
     };
-    const optimisticAssistant: ChatMessage = {
-      id: `opt-assistant-${Date.now()}`,
-      role: 'assistant',
-      content: 'Thinking...',
-      createdAt: new Date().toISOString(),
-      isStreaming: true,
-    };
-    setLocalMessages([optimisticUser, optimisticAssistant]);
+    setLocalMessages([optimisticUser]);
     scrollToBottom();
 
-    const reply = await sendMessage(text);
+    // Pass page context so AI knows where the user is
+    const reply = await sendMessage(text, { currentPage: location.pathname });
 
     if (reply) {
       setLocalMessages([]);
@@ -138,8 +151,10 @@ export function AiChatSheet({ open, onOpenChange }: AiChatSheetProps) {
       setLocalMessages([
         optimisticUser,
         {
-          ...optimisticAssistant,
+          id: `opt-err-${Date.now()}`,
+          role: 'assistant',
           content: error || 'Something went wrong. Please try again.',
+          createdAt: new Date().toISOString(),
           isStreaming: false,
         },
       ]);
@@ -169,7 +184,7 @@ export function AiChatSheet({ open, onOpenChange }: AiChatSheetProps) {
         side="right"
         className="flex flex-col w-full sm:max-w-md p-0 gap-0"
       >
-        <SheetHeader className="px-4 py-3 border-b bg-gradient-to-r from-blue-600 to-indigo-700 text-white shrink-0 rounded-t-lg">
+        <SheetHeader className="px-4 py-3 border-b bg-gradient-cta text-white shrink-0 rounded-t-lg">
           <div className="flex items-center justify-between w-full">
             <div className="flex items-center gap-2.5">
               <div className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center">
@@ -177,7 +192,7 @@ export function AiChatSheet({ open, onOpenChange }: AiChatSheetProps) {
               </div>
               <div>
                 <SheetTitle className="text-white font-semibold">AI Assistant</SheetTitle>
-                <p className="text-[10px] text-blue-100 flex items-center gap-1 font-normal">
+                <p className="text-[10px] text-white/70 flex items-center gap-1 font-normal">
                   <Shield className="h-2.5 w-2.5" />
                   Private to your workspace
                 </p>
@@ -210,7 +225,7 @@ export function AiChatSheet({ open, onOpenChange }: AiChatSheetProps) {
               {!messagesLoading && allMessages.length === 0 && (
                 <div className="px-4 space-y-4">
                   <div className="flex gap-2 justify-start px-3">
-                    <div className="w-7 h-7 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center shrink-0">
+                    <div className="w-7 h-7 rounded-full bg-gradient-cta flex items-center justify-center shrink-0">
                       <Bot className="h-3.5 w-3.5 text-white" />
                     </div>
                     <div className="rounded-2xl rounded-bl-md px-3.5 py-2.5 max-w-[85%] text-sm bg-muted text-foreground leading-relaxed">
@@ -237,6 +252,8 @@ export function AiChatSheet({ open, onOpenChange }: AiChatSheetProps) {
               {allMessages.map((msg) => (
                 <MessageBubble key={msg.id} message={msg} />
               ))}
+
+              {isSending && <TypingIndicator />}
 
               {error && !isSending && (
                 <div className="px-4">

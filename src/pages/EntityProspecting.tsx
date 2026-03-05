@@ -1,9 +1,9 @@
 import { useState, useCallback, useMemo, useEffect } from 'react';
 import { XCircle, Building2, Leaf } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { PharmacySidebar } from '@/components/prospecting/PharmacySidebar';
+import { EntitySidebar } from '@/components/prospecting/EntitySidebar';
 import { ProspectingMap } from '@/components/prospecting/ProspectingMap';
-import { PharmacyDetailPanel } from '@/components/prospecting/PharmacyDetailPanel';
+import { EntityDetailPanel } from '@/components/prospecting/EntityDetailPanel';
 import { useGeographyOptions } from '@/hooks/useGeographyOptions';
 import { useProspectingSearch } from '@/hooks/useProspectingSearch';
 import { useSavePharmacies } from '@/hooks/useSavePharmacies';
@@ -30,7 +30,7 @@ function pluralizeEntityLabel(label: string): string {
   return `${trimmed}s`;
 }
 
-export default function PharmacyProspecting({ clientType = 'pharmacy' }: Props) {
+export default function EntityProspecting({ clientType = 'pharmacy' }: Props) {
   const { data: entityTypes = [] } = useEntityTypes();
   const singularLabel = resolveEntityTypeLabel(
     clientType,
@@ -209,7 +209,7 @@ export default function PharmacyProspecting({ clientType = 'pharmacy' }: Props) 
       <div className="flex-1 flex flex-col lg:flex-row overflow-hidden">
         {/* Sidebar */}
         <div className="w-full lg:w-80 shrink-0 border-b lg:border-b-0 lg:border-r border-border bg-muted/50 overflow-auto max-h-[40vh] sm:max-h-[46vh] lg:max-h-none">
-          <PharmacySidebar
+          <EntitySidebar
             pharmacies={displayedPharmacies}
             isLoading={false}
             selectedPharmacyId={selectedPharmacy?.id || null}
@@ -249,7 +249,7 @@ export default function PharmacyProspecting({ clientType = 'pharmacy' }: Props) 
         {/* Detail Panel */}
         {selectedPharmacy && (
           <div className="w-full lg:w-96 shrink-0 border-t lg:border-t-0 lg:border-l border-border bg-muted/50 overflow-auto max-h-[36vh] sm:max-h-[44vh] lg:max-h-none">
-            <PharmacyDetailPanel pharmacy={selectedPharmacy} onClose={handleCloseDetail} />
+            <EntityDetailPanel pharmacy={selectedPharmacy} onClose={handleCloseDetail} />
           </div>
         )}
       </div>
