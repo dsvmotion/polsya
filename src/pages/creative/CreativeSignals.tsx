@@ -4,24 +4,40 @@ import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { WorkspaceContainer } from '@/components/creative/layout/WorkspaceContainer';
+import { useCreativeLayout } from '@/components/creative/layout/CreativeLayout';
 import { DataTable } from '@/components/creative/shared/DataTable';
 import { ruleColumns } from '@/components/creative/signals/rule-columns';
 import { SignalCard } from '@/components/creative/signals/SignalCard';
+import { SignalDetail } from '@/components/creative/signals/SignalDetail';
 import { SignalRuleFormSheet } from '@/components/creative/signals/SignalRuleFormSheet';
 import { useSignalRules, useSignals } from '@/hooks/useSignals';
 import { SIGNAL_SEVERITIES, SIGNAL_SEVERITY_LABELS, SIGNAL_STATUSES, SIGNAL_STATUS_LABELS } from '@/types/signal-engine';
-import type { SignalStatus } from '@/types/signal-engine';
+import type { Signal, SignalStatus } from '@/types/signal-engine';
 
 export default function CreativeSignals() {
   const [formOpen, setFormOpen] = useState(false);
   const [severityFilter, setSeverityFilter] = useState<string>('all');
   const [statusFilter, setStatusFilter] = useState<string>('all');
+  const { setContextPanelOpen, setContextPanelContent } = useCreativeLayout();
 
   const { data: rules = [], isLoading: rulesLoading } = useSignalRules();
   const { data: signals = [], isLoading: signalsLoading } = useSignals({
     severity: severityFilter !== 'all' ? severityFilter : undefined,
     status: (statusFilter !== 'all' ? statusFilter : undefined) as SignalStatus | undefined,
   });
+
+  function handleSignalClick(signal: Signal) {
+    setContextPanelContent(
+      <SignalDetail
+        signal={signal}
+        onClose={() => {
+          setContextPanelOpen(false);
+          setContextPanelContent(null);
+        }}
+      />
+    );
+    setContextPanelOpen(true);
+  }
 
   return (
     <WorkspaceContainer
@@ -76,7 +92,9 @@ export default function CreativeSignals() {
               </div>
             ) : (
               signals.map((signal) => (
-                <SignalCard key={signal.id} signal={signal} />
+                <div key={signal.id} className="cursor-pointer" onClick={() => handleSignalClick(signal)}>
+                  <SignalCard signal={signal} />
+                </div>
               ))
             )}
           </div>
