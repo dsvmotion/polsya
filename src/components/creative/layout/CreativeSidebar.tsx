@@ -15,6 +15,9 @@ import {
   X,
   MessageSquare,
   Download,
+  Zap,
+  Layers,
+  GitMerge,
 } from 'lucide-react';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
@@ -42,6 +45,9 @@ const mainNavItems = [
   { label: 'Opportunities', icon: Briefcase, path: '/creative/opportunities' },
   { label: 'Portfolios', icon: Image, path: '/creative/portfolios' },
   { label: 'Style Intelligence', icon: Sparkles, path: '/creative/style' },
+  { label: 'Signals', icon: Zap, path: '/creative/signals' },
+  { label: 'Enrichment', icon: Layers, path: '/creative/enrichment' },
+  { label: 'Resolution', icon: GitMerge, path: '/creative/resolution' },
   { label: 'Ingestion', icon: Download, path: '/creative/ingestion' },
 ];
 
