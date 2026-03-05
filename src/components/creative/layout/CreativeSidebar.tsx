@@ -2,6 +2,7 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import {
   LayoutDashboard,
   Users,
+  UserRound,
   FolderKanban,
   Briefcase,
   Image,
@@ -36,6 +37,7 @@ const mainNavItems = [
   { label: 'Dashboard', icon: LayoutDashboard, path: '/creative' },
   { label: 'Clients', icon: Users, path: '/creative/clients' },
   { label: 'Projects', icon: FolderKanban, path: '/creative/projects' },
+  { label: 'Contacts', icon: UserRound, path: '/creative/contacts' },
   { label: 'Opportunities', icon: Briefcase, path: '/creative/opportunities' },
   { label: 'Portfolios', icon: Image, path: '/creative/portfolios' },
   { label: 'Style Intelligence', icon: Sparkles, path: '/creative/style' },
