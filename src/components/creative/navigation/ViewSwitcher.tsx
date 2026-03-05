@@ -1,4 +1,4 @@
-import { LayoutGrid, Table2, GitBranch, Map } from 'lucide-react';
+import { LayoutGrid, Table2, GitBranch, Map, Columns3 } from 'lucide-react';
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 import {
   Tooltip,
@@ -17,6 +17,7 @@ interface ViewSwitcherProps {
 const viewConfig: Record<ViewMode, { icon: typeof Table2; label: string }> = {
   table: { icon: Table2, label: 'Table' },
   cards: { icon: LayoutGrid, label: 'Cards' },
+  board: { icon: Columns3, label: 'Board' },
   graph: { icon: GitBranch, label: 'Graph' },
   map: { icon: Map, label: 'Map' },
 };
@@ -28,7 +29,7 @@ const viewConfig: Record<ViewMode, { icon: typeof Table2; label: string }> = {
 export function ViewSwitcher({
   value,
   onChange,
-  availableViews = ['table', 'cards', 'graph', 'map'],
+  availableViews = ['table', 'cards', 'board', 'graph', 'map'],
 }: ViewSwitcherProps) {
   return (
     <ToggleGroup

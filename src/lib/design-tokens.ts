@@ -146,5 +146,5 @@ export const breakpoints = {
 } as const;
 
 // ─── Creative View Modes ─────────────────────────────────────
-export const viewModes = ['table', 'cards', 'graph', 'map'] as const;
+export const viewModes = ['table', 'cards', 'board', 'graph', 'map'] as const;
 export type ViewMode = (typeof viewModes)[number];
