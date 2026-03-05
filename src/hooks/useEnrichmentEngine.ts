@@ -5,7 +5,7 @@ import type { EnrichmentRecipeFormValues } from '@/lib/creative-schemas';
 import {
   toEnrichmentCredits, type EnrichmentCreditRow,
   toEnrichmentRecipe, toEnrichmentRecipes, type EnrichmentRecipeRow,
-  toEnrichmentRuns, type EnrichmentRunRow,
+  toEnrichmentRun, toEnrichmentRuns, type EnrichmentRunRow,
 } from '@/services/enrichmentService';
 import { useCurrentOrganization } from '@/hooks/useOrganizationContext';
 
@@ -162,7 +162,7 @@ export function useTriggerEnrichmentRun() {
       const orgId = membership?.organization_id;
       if (!orgId) throw new Error('No organization');
 
-      const { error } = await supabase
+      const { data, error } = await supabase
         .from('enrichment_runs')
         .insert({
           organization_id: orgId,
@@ -170,8 +170,21 @@ export function useTriggerEnrichmentRun() {
           entity_type: entityType,
           entity_ids: entityIds,
           status: 'pending',
-        });
+        })
+        .select('*')
+        .single();
       if (error) throw error;
+
+      const run = toEnrichmentRun(data as unknown as EnrichmentRunRow);
+
+      // Fire-and-forget: invoke Edge Function to process the run
+      supabase.functions.invoke('process-enrichment-run', {
+        body: { runId: run.id },
+      }).catch((err: Error) => {
+        console.error('Edge Function invocation failed:', err.message);
+      });
+
+      return run;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['enrichment-runs'] });
