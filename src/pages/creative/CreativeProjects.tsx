@@ -13,6 +13,11 @@ import { useCreativeClients } from '@/hooks/useCreativeClients';
 import { useCreativeLayout } from '@/components/creative/layout/CreativeLayout';
 import type { CreativeProject } from '@/types/creative';
 import type { ViewMode } from '@/lib/design-tokens';
+import { KanbanBoard } from '@/components/creative/shared/KanbanBoard';
+import type { KanbanColumn } from '@/components/creative/shared/KanbanBoard';
+import { PROJECT_STATUSES, PROJECT_STATUS_LABELS, PROJECT_STATUS_COLORS } from '@/types/creative';
+import type { ProjectStatus } from '@/types/creative';
+import { useUpdateCreativeProject } from '@/hooks/useCreativeProjects';
 
 export default function CreativeProjects() {
   const [viewMode, setViewMode] = useState<ViewMode>('table');
@@ -23,6 +28,14 @@ export default function CreativeProjects() {
 
   const clientMap = useMemo(() => new Map(clients.map((c) => [c.id, c.name])), [clients]);
   const columns = useMemo(() => getProjectColumns(clients), [clients]);
+
+  const updateMutation = useUpdateCreativeProject();
+
+  const projectColumns: KanbanColumn[] = PROJECT_STATUSES.map((status) => ({
+    key: status,
+    label: PROJECT_STATUS_LABELS[status],
+    color: PROJECT_STATUS_COLORS[status],
+  }));
 
   function handleRowClick(project: CreativeProject) {
     setContextPanelContent(
@@ -44,7 +57,7 @@ export default function CreativeProjects() {
       description="Track creative projects and deliverables"
       actions={
         <div className="flex items-center gap-2">
-          <ViewSwitcher value={viewMode} onChange={setViewMode} availableViews={['table', 'cards']} />
+          <ViewSwitcher value={viewMode} onChange={setViewMode} availableViews={['table', 'cards', 'board']} />
           <Button size="sm" className="gap-1.5" onClick={() => setFormOpen(true)}>
             <Plus className="h-4 w-4" />
             <span className="hidden sm:inline">New Project</span>
@@ -61,6 +74,32 @@ export default function CreativeProjects() {
             searchKey="name"
             searchPlaceholder="Search projects..."
             onRowClick={handleRowClick}
+          />
+        ) : viewMode === 'board' ? (
+          <KanbanBoard
+            columns={projectColumns}
+            items={projects}
+            getColumnKey={(p) => p.status}
+            onMove={(id, newStatus) => updateMutation.mutate({ id, values: { status: newStatus as ProjectStatus } })}
+            isLoading={isLoading}
+            renderCard={(project) => (
+              <div className="space-y-1.5" onClick={() => handleRowClick(project)}>
+                <p className="text-sm font-medium truncate">{project.name}</p>
+                {project.clientId && clientMap.get(project.clientId) && (
+                  <p className="text-xs text-muted-foreground truncate">{clientMap.get(project.clientId)}</p>
+                )}
+                <div className="flex items-center justify-between">
+                  {project.projectType && (
+                    <span className="text-xs bg-muted px-1.5 py-0.5 rounded">{project.projectType}</span>
+                  )}
+                  {project.budgetCents != null && (
+                    <span className="text-xs font-medium">
+                      {new Intl.NumberFormat('en-US', { style: 'currency', currency: project.currency ?? 'USD' }).format(project.budgetCents / 100)}
+                    </span>
+                  )}
+                </div>
+              </div>
+            )}
           />
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
