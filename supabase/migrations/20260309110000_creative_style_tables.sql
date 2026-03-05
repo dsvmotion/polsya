@@ -9,7 +9,7 @@ create table if not exists public.creative_style_analyses (
   client_id uuid references public.creative_clients(id) on delete cascade,
   portfolio_id uuid references public.creative_portfolios(id) on delete cascade,
   source_url text,
-  style_embedding vector(512),
+  style_embedding extensions.vector(512),
   color_palette jsonb default '[]',
   typography_profile jsonb default '{}',
   layout_patterns jsonb default '[]',
@@ -28,7 +28,7 @@ create index idx_style_analyses_portfolio on public.creative_style_analyses(port
 -- IVFFlat index for similarity search — requires at least ~100 rows to be effective.
 -- For initial deployment with few rows, consider switching to HNSW index later.
 create index idx_style_analyses_embedding on public.creative_style_analyses
-  using ivfflat (style_embedding vector_cosine_ops) with (lists = 100);
+  using ivfflat (style_embedding extensions.vector_cosine_ops) with (lists = 100);
 
 alter table public.creative_style_analyses enable row level security;
 
