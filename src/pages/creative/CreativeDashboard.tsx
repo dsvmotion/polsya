@@ -8,6 +8,10 @@ import { OPPORTUNITY_STAGE_LABELS, OPPORTUNITY_STAGE_COLORS } from '@/types/crea
 import type { OpportunityStage } from '@/types/creative';
 import { SIGNAL_SEVERITY_COLORS } from '@/types/signal-engine';
 import { Badge } from '@/components/ui/badge';
+import { useRecentActivities } from '@/hooks/useCreativeActivities';
+import { ACTIVITY_TYPE_COLORS } from '@/types/creative-activity';
+import type { ActivityType } from '@/types/creative-activity';
+import { Clock } from 'lucide-react';
 
 const formatCurrency = (cents: number) =>
   new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(cents / 100);
@@ -16,6 +20,7 @@ export default function CreativeDashboard() {
   const { data, isLoading } = useCreativeDashboard();
   const { data: recentSignals = [] } = useRecentSignals(5);
   const { data: pendingCandidates = [] } = useResolutionCandidates('pending');
+  const { data: recentActivities = [] } = useRecentActivities(5);
 
   const totalClients = data?.totalClients ?? 0;
   const activeProjects = data?.activeProjects ?? 0;
@@ -120,17 +125,33 @@ export default function CreativeDashboard() {
         <div className="rounded-lg border bg-card p-6">
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-2">
-              <Activity className="h-5 w-5 text-muted-foreground" />
-              <h2 className="text-lg font-semibold">Recent Signals</h2>
+              <Clock className="h-5 w-5 text-muted-foreground" />
+              <h2 className="text-lg font-semibold">Recent Activity</h2>
             </div>
-            <Link to="/creative/signals" className="text-sm text-primary hover:underline">View all →</Link>
           </div>
-          {recentSignals.length === 0 ? (
+          {recentActivities.length === 0 && recentSignals.length === 0 ? (
             <div className="flex items-center justify-center h-40 text-sm text-muted-foreground">
-              No signals yet. Signals appear when rules are triggered.
+              No recent activity. Log activities on entity detail panels.
             </div>
           ) : (
             <div className="space-y-2">
+              {recentActivities.map((activity) => {
+                const colors = ACTIVITY_TYPE_COLORS[activity.activityType as ActivityType];
+                return (
+                  <div key={activity.id} className="flex items-center gap-3 py-1.5">
+                    <div className={`h-2 w-2 rounded-full ${colors?.bg ?? 'bg-muted'}`} />
+                    <span className="text-sm flex-1 truncate">{activity.title}</span>
+                    <span className="text-xs text-muted-foreground whitespace-nowrap">
+                      {new Date(activity.occurredAt).toLocaleDateString()}
+                    </span>
+                  </div>
+                );
+              })}
+              {recentSignals.length > 0 && recentActivities.length > 0 && (
+                <div className="border-t pt-2 mt-2">
+                  <p className="text-xs text-muted-foreground mb-2">Signals</p>
+                </div>
+              )}
               {recentSignals.map((signal) => {
                 const sevColors = SIGNAL_SEVERITY_COLORS[signal.severity];
                 return (
