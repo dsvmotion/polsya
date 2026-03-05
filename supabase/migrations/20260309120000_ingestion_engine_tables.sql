@@ -36,7 +36,7 @@ create policy "ingestion_providers_delete" on public.ingestion_providers
 
 create trigger set_ingestion_providers_updated_at
   before update on public.ingestion_providers
-  for each row execute function public.set_updated_at();
+  for each row execute function public.update_updated_at_column();
 
 -- ============================================================
 -- ingestion_runs
@@ -73,7 +73,7 @@ create policy "ingestion_runs_update" on public.ingestion_runs
 
 create trigger set_ingestion_runs_updated_at
   before update on public.ingestion_runs
-  for each row execute function public.set_updated_at();
+  for each row execute function public.update_updated_at_column();
 
 -- ============================================================
 -- ingestion_jobs
@@ -110,4 +110,4 @@ create policy "ingestion_jobs_update" on public.ingestion_jobs
 
 create trigger set_ingestion_jobs_updated_at
   before update on public.ingestion_jobs
-  for each row execute function public.set_updated_at();
+  for each row execute function public.update_updated_at_column();

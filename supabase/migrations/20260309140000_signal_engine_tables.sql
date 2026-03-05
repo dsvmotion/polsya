@@ -36,7 +36,7 @@ create policy "signal_rules_delete" on public.signal_rules
 
 create trigger set_signal_rules_updated_at
   before update on public.signal_rules
-  for each row execute function public.set_updated_at();
+  for each row execute function public.update_updated_at_column();
 
 -- ============================================================
 -- signals
@@ -78,4 +78,4 @@ create policy "signals_update" on public.signals
 
 create trigger set_signals_updated_at
   before update on public.signals
-  for each row execute function public.set_updated_at();
+  for each row execute function public.update_updated_at_column();

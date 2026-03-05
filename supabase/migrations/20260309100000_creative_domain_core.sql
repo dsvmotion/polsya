@@ -65,7 +65,7 @@ create policy "creative_clients_delete" on public.creative_clients
 
 create trigger set_creative_clients_updated_at
   before update on public.creative_clients
-  for each row execute function public.set_updated_at();
+  for each row execute function public.update_updated_at_column();
 
 -- ============================================================
 -- creative_contacts
@@ -131,7 +131,7 @@ create policy "creative_contacts_delete" on public.creative_contacts
 
 create trigger set_creative_contacts_updated_at
   before update on public.creative_contacts
-  for each row execute function public.set_updated_at();
+  for each row execute function public.update_updated_at_column();
 
 -- ============================================================
 -- creative_projects
@@ -197,7 +197,7 @@ create policy "creative_projects_delete" on public.creative_projects
 
 create trigger set_creative_projects_updated_at
   before update on public.creative_projects
-  for each row execute function public.set_updated_at();
+  for each row execute function public.update_updated_at_column();
 
 -- ============================================================
 -- creative_portfolios
@@ -259,7 +259,7 @@ create policy "creative_portfolios_delete" on public.creative_portfolios
 
 create trigger set_creative_portfolios_updated_at
   before update on public.creative_portfolios
-  for each row execute function public.set_updated_at();
+  for each row execute function public.update_updated_at_column();
 
 -- ============================================================
 -- creative_opportunities
@@ -325,4 +325,4 @@ create policy "creative_opportunities_delete" on public.creative_opportunities
 
 create trigger set_creative_opportunities_updated_at
   before update on public.creative_opportunities
-  for each row execute function public.set_updated_at();
+  for each row execute function public.update_updated_at_column();

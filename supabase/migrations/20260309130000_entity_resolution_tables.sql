@@ -38,7 +38,7 @@ create policy "resolution_candidates_update" on public.entity_resolution_candida
 
 create trigger set_resolution_candidates_updated_at
   before update on public.entity_resolution_candidates
-  for each row execute function public.set_updated_at();
+  for each row execute function public.update_updated_at_column();
 
 -- ============================================================
 -- entity_source_mappings
@@ -72,4 +72,4 @@ create policy "source_mappings_update" on public.entity_source_mappings
 
 create trigger set_source_mappings_updated_at
   before update on public.entity_source_mappings
-  for each row execute function public.set_updated_at();
+  for each row execute function public.update_updated_at_column();

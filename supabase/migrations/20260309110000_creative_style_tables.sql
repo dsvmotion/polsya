@@ -67,4 +67,4 @@ create policy "style_analyses_delete" on public.creative_style_analyses
 
 create trigger set_style_analyses_updated_at
   before update on public.creative_style_analyses
-  for each row execute function public.set_updated_at();
+  for each row execute function public.update_updated_at_column();

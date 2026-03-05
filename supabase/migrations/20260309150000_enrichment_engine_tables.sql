@@ -30,7 +30,7 @@ create policy "enrichment_credits_update" on public.enrichment_credits
 
 create trigger set_enrichment_credits_updated_at
   before update on public.enrichment_credits
-  for each row execute function public.set_updated_at();
+  for each row execute function public.update_updated_at_column();
 
 -- ============================================================
 -- enrichment_recipes
@@ -65,7 +65,7 @@ create policy "enrichment_recipes_delete" on public.enrichment_recipes
 
 create trigger set_enrichment_recipes_updated_at
   before update on public.enrichment_recipes
-  for each row execute function public.set_updated_at();
+  for each row execute function public.update_updated_at_column();
 
 -- ============================================================
 -- enrichment_runs
@@ -102,4 +102,4 @@ create policy "enrichment_runs_update" on public.enrichment_runs
 
 create trigger set_enrichment_runs_updated_at
   before update on public.enrichment_runs
-  for each row execute function public.set_updated_at();
+  for each row execute function public.update_updated_at_column();
