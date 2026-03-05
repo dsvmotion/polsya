@@ -1,5 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { supabase } from '@/integrations/supabase/client';
+import { fromTable } from '@/integrations/supabase/helpers';
 import type { CreativePortfolio } from '@/types/creative';
 import type { PortfolioFormValues } from '@/lib/creative-schemas';
 import { toCreativePortfolio, toCreativePortfolios, type CreativePortfolioRow } from '@/services/creativePortfolioService';
@@ -18,8 +18,7 @@ export function useCreativePortfolios(filters?: { clientId?: string; projectId?:
     queryKey: [...portfoliosKeys.all(orgId ?? ''), filters?.clientId ?? '', filters?.projectId ?? ''],
     enabled: !!orgId,
     queryFn: async () => {
-      let query = supabase
-        .from('creative_portfolios')
+      let query = fromTable('creative_portfolios')
         .select('*')
         .eq('organization_id', orgId!)
         .order('created_at', { ascending: false });
@@ -38,8 +37,7 @@ export function useCreativePortfolio(id: string | null) {
     enabled: !!id,
     queryFn: async () => {
       if (!id) return null;
-      const { data, error } = await supabase
-        .from('creative_portfolios')
+      const { data, error } = await fromTable('creative_portfolios')
         .select('*')
         .eq('id', id)
         .single();
@@ -60,8 +58,7 @@ export function useCreateCreativePortfolio() {
       const mediaUrls = values.mediaUrls
         ? values.mediaUrls.split(',').map((u) => u.trim()).filter(Boolean)
         : [];
-      const { data, error } = await supabase
-        .from('creative_portfolios')
+      const { data, error } = await fromTable('creative_portfolios')
         .insert({
           organization_id: orgId,
           title: values.title,
@@ -105,8 +102,7 @@ export function useUpdateCreativePortfolio() {
       if (values.clientId !== undefined) patch.client_id = values.clientId || null;
       if (values.tags !== undefined) patch.tags = values.tags;
 
-      const { data, error } = await supabase
-        .from('creative_portfolios')
+      const { data, error } = await fromTable('creative_portfolios')
         .update(patch)
         .eq('id', id)
         .select('*')
@@ -126,7 +122,7 @@ export function useDeleteCreativePortfolio() {
 
   return useMutation({
     mutationFn: async (id: string) => {
-      const { error } = await supabase.from('creative_portfolios').delete().eq('id', id);
+      const { error } = await fromTable('creative_portfolios').delete().eq('id', id);
       if (error) throw error;
     },
     onSuccess: () => {

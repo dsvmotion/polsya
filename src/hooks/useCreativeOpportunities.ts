@@ -1,6 +1,6 @@
 // src/hooks/useCreativeOpportunities.ts
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { supabase } from '@/integrations/supabase/client';
+import { fromTable } from '@/integrations/supabase/helpers';
 import type { CreativeOpportunity } from '@/types/creative';
 import type { OpportunityFormValues } from '@/lib/creative-schemas';
 import { toCreativeOpportunity, toCreativeOpportunities, type CreativeOpportunityRow } from '@/services/creativeOpportunityService';
@@ -20,8 +20,7 @@ export function useCreativeOpportunities(clientId?: string) {
     queryKey: clientId ? oppsKeys.byClient(clientId) : oppsKeys.all(orgId ?? ''),
     enabled: !!orgId,
     queryFn: async () => {
-      let query = supabase
-        .from('creative_opportunities')
+      let query = fromTable('creative_opportunities')
         .select('*')
         .eq('organization_id', orgId!)
         .order('created_at', { ascending: false });
@@ -39,8 +38,7 @@ export function useCreativeOpportunity(id: string | null) {
     enabled: !!id,
     queryFn: async () => {
       if (!id) return null;
-      const { data, error } = await supabase
-        .from('creative_opportunities')
+      const { data, error } = await fromTable('creative_opportunities')
         .select('*')
         .eq('id', id)
         .single();
@@ -58,8 +56,7 @@ export function useCreateCreativeOpportunity() {
     mutationFn: async (values: OpportunityFormValues) => {
       const orgId = membership?.organization_id;
       if (!orgId) throw new Error('No organization');
-      const { data, error } = await supabase
-        .from('creative_opportunities')
+      const { data, error } = await fromTable('creative_opportunities')
         .insert({
           organization_id: orgId,
           title: values.title,
@@ -103,8 +100,7 @@ export function useUpdateCreativeOpportunity() {
       if (values.source !== undefined) patch.source = values.source;
       if (values.tags !== undefined) patch.tags = values.tags;
 
-      const { data, error } = await supabase
-        .from('creative_opportunities')
+      const { data, error } = await fromTable('creative_opportunities')
         .update(patch)
         .eq('id', id)
         .select('*')
@@ -124,7 +120,7 @@ export function useDeleteCreativeOpportunity() {
 
   return useMutation({
     mutationFn: async (id: string) => {
-      const { error } = await supabase.from('creative_opportunities').delete().eq('id', id);
+      const { error } = await fromTable('creative_opportunities').delete().eq('id', id);
       if (error) throw error;
     },
     onSuccess: () => {

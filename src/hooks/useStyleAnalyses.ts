@@ -1,6 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { supabase } from '@/integrations/supabase/client';
-import { rpcCall } from '@/integrations/supabase/helpers';
+import { fromTable, rpcCall } from '@/integrations/supabase/helpers';
 import type { StyleAnalysis } from '@/types/style-intelligence';
 import type { StyleAnalysisFormValues } from '@/lib/creative-schemas';
 import { toStyleAnalysis, toStyleAnalyses, type StyleAnalysisRow } from '@/services/styleAnalysisService';
@@ -19,8 +18,7 @@ export function useStyleAnalyses(clientId?: string) {
     queryKey: [...styleKeys.all(orgId ?? ''), clientId ?? 'all'],
     enabled: !!orgId,
     queryFn: async () => {
-      let query = supabase
-        .from('creative_style_analyses')
+      let query = fromTable('creative_style_analyses')
         .select('*')
         .eq('organization_id', orgId!)
         .order('created_at', { ascending: false });
@@ -38,8 +36,7 @@ export function useStyleAnalysis(id: string | null) {
     enabled: !!id,
     queryFn: async () => {
       if (!id) return null;
-      const { data, error } = await supabase
-        .from('creative_style_analyses')
+      const { data, error } = await fromTable('creative_style_analyses')
         .select('*')
         .eq('id', id)
         .single();
@@ -62,8 +59,7 @@ export function useCreateStyleAnalysis() {
       const typographyProfile = values.typographyProfile ? JSON.parse(values.typographyProfile) : {};
       const brandAttributes = values.brandAttributes ? JSON.parse(values.brandAttributes) : {};
 
-      const { data, error } = await supabase
-        .from('creative_style_analyses')
+      const { data, error } = await fromTable('creative_style_analyses')
         .insert({
           organization_id: orgId,
           client_id: values.clientId || null,
@@ -97,8 +93,7 @@ export function useUpdateStyleAnalysis() {
       if (values.typographyProfile !== undefined) patch.typography_profile = values.typographyProfile ? JSON.parse(values.typographyProfile) : {};
       if (values.brandAttributes !== undefined) patch.brand_attributes = values.brandAttributes ? JSON.parse(values.brandAttributes) : {};
 
-      const { data, error } = await supabase
-        .from('creative_style_analyses')
+      const { data, error } = await fromTable('creative_style_analyses')
         .update(patch)
         .eq('id', id)
         .select('*')
@@ -118,7 +113,7 @@ export function useDeleteStyleAnalysis() {
 
   return useMutation({
     mutationFn: async (id: string) => {
-      const { error } = await supabase.from('creative_style_analyses').delete().eq('id', id);
+      const { error } = await fromTable('creative_style_analyses').delete().eq('id', id);
       if (error) throw error;
     },
     onSuccess: () => {

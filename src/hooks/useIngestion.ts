@@ -1,5 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { supabase } from '@/integrations/supabase/client';
+import { fromTable } from '@/integrations/supabase/helpers';
 import type { IngestionProvider, IngestionRun, IngestionJob } from '@/types/ingestion';
 import {
   toIngestionProvider, toIngestionProviders, type IngestionProviderRow,
@@ -24,8 +24,7 @@ export function useIngestionProviders() {
     queryKey: ingestionKeys.providers(orgId ?? ''),
     enabled: !!orgId,
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from('ingestion_providers')
+      const { data, error } = await fromTable('ingestion_providers')
         .select('*')
         .eq('organization_id', orgId!)
         .order('name');
@@ -43,8 +42,7 @@ export function useCreateIngestionProvider() {
     mutationFn: async (values: { name: string; providerType: string; config?: Record<string, unknown> }) => {
       const orgId = membership?.organization_id;
       if (!orgId) throw new Error('No organization');
-      const { data, error } = await supabase
-        .from('ingestion_providers')
+      const { data, error } = await fromTable('ingestion_providers')
         .insert({
           organization_id: orgId,
           name: values.name,
@@ -73,8 +71,7 @@ export function useUpdateIngestionProvider() {
       if (values.isActive !== undefined) patch.is_active = values.isActive;
       if (values.config !== undefined) patch.config = values.config;
 
-      const { data, error } = await supabase
-        .from('ingestion_providers')
+      const { data, error } = await fromTable('ingestion_providers')
         .update(patch)
         .eq('id', id)
         .select('*')
@@ -93,7 +90,7 @@ export function useDeleteIngestionProvider() {
 
   return useMutation({
     mutationFn: async (id: string) => {
-      const { error } = await supabase.from('ingestion_providers').delete().eq('id', id);
+      const { error } = await fromTable('ingestion_providers').delete().eq('id', id);
       if (error) throw error;
     },
     onSuccess: () => {
@@ -112,8 +109,7 @@ export function useIngestionRuns(providerId?: string) {
     queryKey: [...ingestionKeys.runs(orgId ?? ''), providerId ?? 'all'],
     enabled: !!orgId,
     queryFn: async () => {
-      let query = supabase
-        .from('ingestion_runs')
+      let query = fromTable('ingestion_runs')
         .select('*')
         .eq('organization_id', orgId!)
         .order('created_at', { ascending: false })
@@ -134,8 +130,7 @@ export function useTriggerIngestionRun() {
     mutationFn: async (providerId: string) => {
       const orgId = membership?.organization_id;
       if (!orgId) throw new Error('No organization');
-      const { data, error } = await supabase
-        .from('ingestion_runs')
+      const { data, error } = await fromTable('ingestion_runs')
         .insert({
           organization_id: orgId,
           provider_id: providerId,
@@ -160,8 +155,7 @@ export function useIngestionJobs(runId: string | null) {
     enabled: !!runId,
     queryFn: async () => {
       if (!runId) return [];
-      const { data, error } = await supabase
-        .from('ingestion_jobs')
+      const { data, error } = await fromTable('ingestion_jobs')
         .select('*')
         .eq('run_id', runId)
         .order('created_at');

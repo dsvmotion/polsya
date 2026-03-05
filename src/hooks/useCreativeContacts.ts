@@ -1,5 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { supabase } from '@/integrations/supabase/client';
+import { fromTable } from '@/integrations/supabase/helpers';
 import type { CreativeContact } from '@/types/creative';
 import type { ContactFormValues } from '@/lib/creative-schemas';
 import { toCreativeContact, toCreativeContacts, type CreativeContactRow } from '@/services/creativeContactService';
@@ -18,8 +18,7 @@ export function useCreativeContacts(clientId?: string) {
     queryKey: [...contactsKeys.all(orgId ?? ''), clientId ?? 'all'],
     enabled: !!orgId,
     queryFn: async () => {
-      let query = supabase
-        .from('creative_contacts')
+      let query = fromTable('creative_contacts')
         .select('*')
         .eq('organization_id', orgId!)
         .order('first_name');
@@ -37,8 +36,7 @@ export function useCreativeContact(id: string | null) {
     enabled: !!id,
     queryFn: async () => {
       if (!id) return null;
-      const { data, error } = await supabase
-        .from('creative_contacts')
+      const { data, error } = await fromTable('creative_contacts')
         .select('*')
         .eq('id', id)
         .single();
@@ -56,8 +54,7 @@ export function useCreateCreativeContact() {
     mutationFn: async (values: ContactFormValues) => {
       const orgId = membership?.organization_id;
       if (!orgId) throw new Error('No organization');
-      const { data, error } = await supabase
-        .from('creative_contacts')
+      const { data, error } = await fromTable('creative_contacts')
         .insert({
           organization_id: orgId,
           first_name: values.firstName,
@@ -101,8 +98,7 @@ export function useUpdateCreativeContact() {
       if (values.status !== undefined) patch.status = values.status;
       if (values.tags !== undefined) patch.tags = values.tags;
 
-      const { data, error } = await supabase
-        .from('creative_contacts')
+      const { data, error } = await fromTable('creative_contacts')
         .update(patch)
         .eq('id', id)
         .select('*')
@@ -122,7 +118,7 @@ export function useDeleteCreativeContact() {
 
   return useMutation({
     mutationFn: async (id: string) => {
-      const { error } = await supabase.from('creative_contacts').delete().eq('id', id);
+      const { error } = await fromTable('creative_contacts').delete().eq('id', id);
       if (error) throw error;
     },
     onSuccess: () => {

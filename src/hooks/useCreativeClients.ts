@@ -1,6 +1,6 @@
 // src/hooks/useCreativeClients.ts
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { supabase } from '@/integrations/supabase/client';
+import { fromTable } from '@/integrations/supabase/helpers';
 import type { CreativeClient } from '@/types/creative';
 import type { ClientFormValues } from '@/lib/creative-schemas';
 import { toCreativeClient, toCreativeClients, type CreativeClientRow } from '@/services/creativeClientService';
@@ -19,8 +19,7 @@ export function useCreativeClients() {
     queryKey: clientsKeys.all(orgId ?? ''),
     enabled: !!orgId,
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from('creative_clients')
+      const { data, error } = await fromTable('creative_clients')
         .select('*')
         .eq('organization_id', orgId!)
         .order('name');
@@ -36,8 +35,7 @@ export function useCreativeClient(id: string | null) {
     enabled: !!id,
     queryFn: async () => {
       if (!id) return null;
-      const { data, error } = await supabase
-        .from('creative_clients')
+      const { data, error } = await fromTable('creative_clients')
         .select('*')
         .eq('id', id)
         .single();
@@ -55,8 +53,7 @@ export function useCreateCreativeClient() {
     mutationFn: async (values: ClientFormValues) => {
       const orgId = membership?.organization_id;
       if (!orgId) throw new Error('No organization');
-      const { data, error } = await supabase
-        .from('creative_clients')
+      const { data, error } = await fromTable('creative_clients')
         .insert({ ...values, organization_id: orgId, size_category: values.sizeCategory, sub_industry: values.subIndustry })
         .select('*')
         .single();
@@ -78,8 +75,7 @@ export function useUpdateCreativeClient() {
       if (values.sizeCategory !== undefined) { patch.size_category = values.sizeCategory; delete patch.sizeCategory; }
       if (values.subIndustry !== undefined) { patch.sub_industry = values.subIndustry; delete patch.subIndustry; }
 
-      const { data, error } = await supabase
-        .from('creative_clients')
+      const { data, error } = await fromTable('creative_clients')
         .update(patch)
         .eq('id', id)
         .select('*')
@@ -99,7 +95,7 @@ export function useDeleteCreativeClient() {
 
   return useMutation({
     mutationFn: async (id: string) => {
-      const { error } = await supabase.from('creative_clients').delete().eq('id', id);
+      const { error } = await fromTable('creative_clients').delete().eq('id', id);
       if (error) throw error;
     },
     onSuccess: () => {

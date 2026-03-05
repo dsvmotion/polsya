@@ -1,5 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
+import { fromTable } from '@/integrations/supabase/helpers';
 import type { EnrichmentCredit, EnrichmentRecipe, EnrichmentRun } from '@/types/enrichment-engine';
 import type { EnrichmentRecipeFormValues } from '@/lib/creative-schemas';
 import {
@@ -25,8 +26,7 @@ export function useEnrichmentCredits() {
     queryKey: enrichmentKeys.credits(orgId ?? ''),
     enabled: !!orgId,
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from('enrichment_credits')
+      const { data, error } = await fromTable('enrichment_credits')
         .select('*')
         .eq('organization_id', orgId!)
         .order('provider');
@@ -46,8 +46,7 @@ export function useEnrichmentRecipes() {
     queryKey: enrichmentKeys.recipes(orgId ?? ''),
     enabled: !!orgId,
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from('enrichment_recipes')
+      const { data, error } = await fromTable('enrichment_recipes')
         .select('*')
         .eq('organization_id', orgId!)
         .order('name');
@@ -68,8 +67,7 @@ export function useCreateEnrichmentRecipe() {
 
       const steps = values.steps ? JSON.parse(values.steps) : [];
 
-      const { data, error } = await supabase
-        .from('enrichment_recipes')
+      const { data, error } = await fromTable('enrichment_recipes')
         .insert({
           organization_id: orgId,
           name: values.name,
@@ -101,8 +99,7 @@ export function useUpdateEnrichmentRecipe() {
       if (values.steps !== undefined) patch.steps = values.steps ? JSON.parse(values.steps) : [];
       if (values.isActive !== undefined) patch.is_active = values.isActive;
 
-      const { data, error } = await supabase
-        .from('enrichment_recipes')
+      const { data, error } = await fromTable('enrichment_recipes')
         .update(patch)
         .eq('id', id)
         .select('*')
@@ -121,7 +118,7 @@ export function useDeleteEnrichmentRecipe() {
 
   return useMutation({
     mutationFn: async (id: string) => {
-      const { error } = await supabase.from('enrichment_recipes').delete().eq('id', id);
+      const { error } = await fromTable('enrichment_recipes').delete().eq('id', id);
       if (error) throw error;
     },
     onSuccess: () => {
@@ -140,8 +137,7 @@ export function useEnrichmentRuns(recipeId?: string) {
     queryKey: [...enrichmentKeys.runs(orgId ?? ''), recipeId ?? 'all'],
     enabled: !!orgId,
     queryFn: async () => {
-      let query = supabase
-        .from('enrichment_runs')
+      let query = fromTable('enrichment_runs')
         .select('*')
         .eq('organization_id', orgId!)
         .order('created_at', { ascending: false });
@@ -162,8 +158,7 @@ export function useTriggerEnrichmentRun() {
       const orgId = membership?.organization_id;
       if (!orgId) throw new Error('No organization');
 
-      const { data, error } = await supabase
-        .from('enrichment_runs')
+      const { data, error } = await fromTable('enrichment_runs')
         .insert({
           organization_id: orgId,
           recipe_id: recipeId,

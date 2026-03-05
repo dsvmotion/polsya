@@ -1,5 +1,4 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { supabase } from '@/integrations/supabase/client';
 import { fromTable } from '@/integrations/supabase/helpers';
 import type { ResolutionCandidate, ResolutionStatus, EntitySourceMapping } from '@/types/entity-resolution';
 import {
@@ -23,8 +22,7 @@ export function useResolutionCandidates(statusFilter?: ResolutionStatus) {
     queryKey: [...resolutionKeys.candidates(orgId ?? ''), statusFilter ?? 'all'],
     enabled: !!orgId,
     queryFn: async () => {
-      let query = supabase
-        .from('entity_resolution_candidates')
+      let query = fromTable('entity_resolution_candidates')
         .select('*')
         .eq('organization_id', orgId!)
         .order('confidence_score', { ascending: false });
@@ -41,8 +39,7 @@ export function useResolveCandidate() {
 
   return useMutation({
     mutationFn: async ({ id, status }: { id: string; status: 'confirmed' | 'rejected' }) => {
-      const { error } = await supabase
-        .from('entity_resolution_candidates')
+      const { error } = await fromTable('entity_resolution_candidates')
         .update({
           status,
           resolved_at: new Date().toISOString(),
@@ -85,8 +82,7 @@ export function useEntitySourceMappings(entityType?: string, entityId?: string) 
     queryKey: [...resolutionKeys.mappings(orgId ?? ''), entityType ?? 'all', entityId ?? 'all'],
     enabled: !!orgId,
     queryFn: async () => {
-      let query = supabase
-        .from('entity_source_mappings')
+      let query = fromTable('entity_source_mappings')
         .select('*')
         .eq('organization_id', orgId!)
         .order('created_at', { ascending: false });

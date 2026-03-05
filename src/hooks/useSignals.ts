@@ -1,5 +1,4 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { supabase } from '@/integrations/supabase/client';
 import { fromTable } from '@/integrations/supabase/helpers';
 import type { SignalRule, Signal, SignalStatus } from '@/types/signal-engine';
 import type { SignalRuleFormValues } from '@/lib/creative-schemas';
@@ -22,8 +21,7 @@ export function useSignalRules() {
     queryKey: signalKeys.rules(orgId ?? ''),
     enabled: !!orgId,
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from('signal_rules')
+      const { data, error } = await fromTable('signal_rules')
         .select('*')
         .eq('organization_id', orgId!)
         .order('priority', { ascending: false });
@@ -45,8 +43,7 @@ export function useCreateSignalRule() {
       const conditions = values.conditions ? JSON.parse(values.conditions) : {};
       const actions = values.actions ? JSON.parse(values.actions) : [];
 
-      const { data, error } = await supabase
-        .from('signal_rules')
+      const { data, error } = await fromTable('signal_rules')
         .insert({
           organization_id: orgId,
           name: values.name,
@@ -82,8 +79,7 @@ export function useUpdateSignalRule() {
       if (values.priority !== undefined) patch.priority = values.priority;
       if (values.isActive !== undefined) patch.is_active = values.isActive;
 
-      const { data, error } = await supabase
-        .from('signal_rules')
+      const { data, error } = await fromTable('signal_rules')
         .update(patch)
         .eq('id', id)
         .select('*')
@@ -102,7 +98,7 @@ export function useDeleteSignalRule() {
 
   return useMutation({
     mutationFn: async (id: string) => {
-      const { error } = await supabase.from('signal_rules').delete().eq('id', id);
+      const { error } = await fromTable('signal_rules').delete().eq('id', id);
       if (error) throw error;
     },
     onSuccess: () => {
@@ -121,8 +117,7 @@ export function useSignals(filters?: { status?: SignalStatus; severity?: string;
     queryKey: [...signalKeys.signals(orgId ?? ''), filters ?? {}],
     enabled: !!orgId,
     queryFn: async () => {
-      let query = supabase
-        .from('signals')
+      let query = fromTable('signals')
         .select('*')
         .eq('organization_id', orgId!)
         .order('created_at', { ascending: false });
@@ -146,8 +141,7 @@ export function useUpdateSignalStatus() {
       if (status === 'seen') patch.seen_at = new Date().toISOString();
       if (status === 'actioned') patch.actioned_at = new Date().toISOString();
 
-      const { data, error } = await supabase
-        .from('signals')
+      const { data, error } = await fromTable('signals')
         .update(patch)
         .eq('id', id)
         .select('*')

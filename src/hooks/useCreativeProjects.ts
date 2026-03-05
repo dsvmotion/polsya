@@ -1,6 +1,6 @@
 // src/hooks/useCreativeProjects.ts
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { supabase } from '@/integrations/supabase/client';
+import { fromTable } from '@/integrations/supabase/helpers';
 import type { CreativeProject } from '@/types/creative';
 import type { ProjectFormValues } from '@/lib/creative-schemas';
 import { toCreativeProject, toCreativeProjects, type CreativeProjectRow } from '@/services/creativeProjectService';
@@ -20,8 +20,7 @@ export function useCreativeProjects(clientId?: string) {
     queryKey: clientId ? projectsKeys.byClient(clientId) : projectsKeys.all(orgId ?? ''),
     enabled: !!orgId,
     queryFn: async () => {
-      let query = supabase
-        .from('creative_projects')
+      let query = fromTable('creative_projects')
         .select('*')
         .eq('organization_id', orgId!)
         .order('created_at', { ascending: false });
@@ -39,8 +38,7 @@ export function useCreativeProject(id: string | null) {
     enabled: !!id,
     queryFn: async () => {
       if (!id) return null;
-      const { data, error } = await supabase
-        .from('creative_projects')
+      const { data, error } = await fromTable('creative_projects')
         .select('*')
         .eq('id', id)
         .single();
@@ -58,8 +56,7 @@ export function useCreateCreativeProject() {
     mutationFn: async (values: ProjectFormValues) => {
       const orgId = membership?.organization_id;
       if (!orgId) throw new Error('No organization');
-      const { data, error } = await supabase
-        .from('creative_projects')
+      const { data, error } = await fromTable('creative_projects')
         .insert({
           organization_id: orgId,
           name: values.name,
@@ -101,8 +98,7 @@ export function useUpdateCreativeProject() {
       if (values.description !== undefined) patch.description = values.description;
       if (values.tags !== undefined) patch.tags = values.tags;
 
-      const { data, error } = await supabase
-        .from('creative_projects')
+      const { data, error } = await fromTable('creative_projects')
         .update(patch)
         .eq('id', id)
         .select('*')
@@ -122,7 +118,7 @@ export function useDeleteCreativeProject() {
 
   return useMutation({
     mutationFn: async (id: string) => {
-      const { error } = await supabase.from('creative_projects').delete().eq('id', id);
+      const { error } = await fromTable('creative_projects').delete().eq('id', id);
       if (error) throw error;
     },
     onSuccess: () => {
