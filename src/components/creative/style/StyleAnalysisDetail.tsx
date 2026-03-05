@@ -11,9 +11,10 @@ import { Pencil, Trash2, Link, Type } from 'lucide-react';
 interface StyleAnalysisDetailProps {
   analysis: StyleAnalysis;
   onClose: () => void;
+  onFindSimilar?: (id: string) => void;
 }
 
-export function StyleAnalysisDetail({ analysis, onClose }: StyleAnalysisDetailProps) {
+export function StyleAnalysisDetail({ analysis, onClose, onFindSimilar }: StyleAnalysisDetailProps) {
   const [editOpen, setEditOpen] = useState(false);
   const deleteMutation = useDeleteStyleAnalysis();
   const { toast } = useToast();
@@ -124,6 +125,12 @@ export function StyleAnalysisDetail({ analysis, onClose }: StyleAnalysisDetailPr
             {analysis.sourceUrl}
           </a>
         </div>
+      )}
+
+      {onFindSimilar && (
+        <Button variant="outline" size="sm" className="w-full" onClick={() => onFindSimilar(analysis.id)}>
+          Find Similar Styles
+        </Button>
       )}
 
       <div className="text-xs text-muted-foreground pt-4 border-t">

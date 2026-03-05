@@ -125,3 +125,28 @@ export function useDeleteStyleAnalysis() {
     },
   });
 }
+
+export function useStyleSimilarity(analysisId: string | null) {
+  const { membership } = useCurrentOrganization();
+  const orgId = membership?.organization_id ?? null;
+
+  return useQuery({
+    queryKey: ['style-similarity', orgId ?? '', analysisId ?? ''],
+    enabled: !!orgId && !!analysisId,
+    queryFn: async () => {
+      const { data, error } = await (supabase.rpc as any)('match_style_analyses', {
+        query_analysis_id: analysisId,
+        match_count: 10,
+      });
+      if (error) throw error;
+      return (data ?? []) as Array<{
+        id: string;
+        client_id: string | null;
+        portfolio_id: string | null;
+        similarity: number;
+        color_palette: unknown;
+        confidence_score: number | null;
+      }>;
+    },
+  });
+}
