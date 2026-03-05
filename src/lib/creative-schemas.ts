@@ -79,3 +79,14 @@ export const portfolioSchema = z.object({
 });
 
 export type PortfolioFormValues = z.infer<typeof portfolioSchema>;
+
+export const styleAnalysisSchema = z.object({
+  clientId: z.string().uuid().optional(),
+  portfolioId: z.string().uuid().optional(),
+  sourceUrl: z.string().url('Invalid URL').or(z.literal('')).optional(),
+  colorPalette: z.string().optional(), // JSON string for MVP
+  typographyProfile: z.string().optional(), // JSON string for MVP
+  brandAttributes: z.string().optional(), // JSON string for MVP
+});
+
+export type StyleAnalysisFormValues = z.infer<typeof styleAnalysisSchema>;
