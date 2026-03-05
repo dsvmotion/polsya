@@ -2,21 +2,37 @@ import { useState, useMemo } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { WorkspaceContainer } from '@/components/creative/layout/WorkspaceContainer';
+import { useCreativeLayout } from '@/components/creative/layout/CreativeLayout';
 import { ViewSwitcher } from '@/components/creative/navigation/ViewSwitcher';
 import { DataTable } from '@/components/creative/shared/DataTable';
 import { createCandidateColumns } from '@/components/creative/resolution/candidate-columns';
 import { mappingColumns } from '@/components/creative/resolution/mapping-columns';
 import { CandidateCard } from '@/components/creative/resolution/CandidateCard';
+import { CandidateDetail } from '@/components/creative/resolution/CandidateDetail';
 import { useResolutionCandidates, useResolveCandidate, useEntitySourceMappings } from '@/hooks/useEntityResolution';
 import { RESOLUTION_STATUSES, RESOLUTION_STATUS_LABELS } from '@/types/entity-resolution';
-import type { ResolutionStatus } from '@/types/entity-resolution';
+import type { ResolutionCandidate, ResolutionStatus } from '@/types/entity-resolution';
 import type { ViewMode } from '@/lib/design-tokens';
 
 export default function CreativeResolution() {
   const [statusFilter, setStatusFilter] = useState<string>('pending');
   const [viewMode, setViewMode] = useState<ViewMode>('table');
+  const { setContextPanelOpen, setContextPanelContent } = useCreativeLayout();
 
   const resolveMutation = useResolveCandidate();
+
+  function handleCandidateClick(candidate: ResolutionCandidate) {
+    setContextPanelContent(
+      <CandidateDetail
+        candidate={candidate}
+        onClose={() => {
+          setContextPanelOpen(false);
+          setContextPanelContent(null);
+        }}
+      />
+    );
+    setContextPanelOpen(true);
+  }
 
   const { data: candidates = [], isLoading: candidatesLoading } = useResolutionCandidates(
     statusFilter !== 'all' ? (statusFilter as ResolutionStatus) : undefined
@@ -62,6 +78,7 @@ export default function CreativeResolution() {
               isLoading={candidatesLoading}
               searchKey="entityAType"
               searchPlaceholder="Search candidates..."
+              onRowClick={handleCandidateClick}
             />
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -79,7 +96,9 @@ export default function CreativeResolution() {
                 </div>
               ) : (
                 candidates.map((candidate) => (
-                  <CandidateCard key={candidate.id} candidate={candidate} />
+                  <div key={candidate.id} className="cursor-pointer" onClick={() => handleCandidateClick(candidate)}>
+                    <CandidateCard candidate={candidate} />
+                  </div>
                 ))
               )}
             </div>
