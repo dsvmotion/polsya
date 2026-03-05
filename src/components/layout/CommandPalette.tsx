@@ -13,6 +13,10 @@ import {
   Sun,
   LogOut,
   Building2,
+  Palette,
+  FolderKanban,
+  Briefcase,
+  Sparkles,
 } from 'lucide-react';
 import {
   CommandDialog,
@@ -89,6 +93,27 @@ export function CommandPalette({ open, onOpenChange }: CommandPaletteProps) {
             ))}
           </CommandGroup>
         )}
+
+        <CommandGroup heading="Creative Intelligence">
+          <CommandItem onSelect={() => runCommand(() => navigate('/creative'))}>
+            <Palette className="mr-2 h-4 w-4" />
+            Creative Dashboard
+          </CommandItem>
+          <CommandItem onSelect={() => runCommand(() => navigate('/creative/clients'))}>
+            <Users className="mr-2 h-4 w-4" />
+            Creative Clients
+          </CommandItem>
+          <CommandItem onSelect={() => runCommand(() => navigate('/creative/projects'))}>
+            <FolderKanban className="mr-2 h-4 w-4" />
+            Creative Projects
+          </CommandItem>
+          <CommandItem onSelect={() => runCommand(() => navigate('/creative/opportunities'))}>
+            <Briefcase className="mr-2 h-4 w-4" />
+            Creative Opportunities
+          </CommandItem>
+        </CommandGroup>
+
+        <CommandSeparator />
 
         <CommandGroup heading="Pages">
           <CommandItem onSelect={() => runCommand(() => navigate('/dashboard'))}>

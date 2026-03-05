@@ -95,9 +95,10 @@ export function AppSidebar({ open, onOpenChange, collapsed, onCollapsedChange, o
             {logoUrl ? (
               <img src={logoUrl} alt="" className="h-8 w-8 rounded-lg object-cover" />
             ) : (
-              <div className="h-8 w-8 rounded-lg bg-primary flex items-center justify-center shrink-0">
-                <Sparkles className="h-4.5 w-4.5 text-primary-foreground" />
-              </div>
+              <>
+                <img src="/polsya-logo-black.png" alt="Polsya" className="h-7 w-auto dark:hidden shrink-0" />
+                <img src="/polsya-logo-white.png" alt="Polsya" className="h-7 w-auto hidden dark:block shrink-0" />
+              </>
             )}
             <span className="font-semibold text-sm text-sidebar-foreground truncate">
               {organization?.name || APP_NAME}
@@ -109,9 +110,10 @@ export function AppSidebar({ open, onOpenChange, collapsed, onCollapsedChange, o
             {logoUrl ? (
               <img src={logoUrl} alt="" className="h-8 w-8 rounded-lg object-cover" />
             ) : (
-              <div className="h-8 w-8 rounded-lg bg-primary flex items-center justify-center">
-                <Sparkles className="h-4.5 w-4.5 text-primary-foreground" />
-              </div>
+              <>
+                <img src="/polsya-logo-black.png" alt="Polsya" className="h-7 w-auto dark:hidden" />
+                <img src="/polsya-logo-white.png" alt="Polsya" className="h-7 w-auto hidden dark:block" />
+              </>
             )}
           </Link>
         )}

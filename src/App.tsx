@@ -49,6 +49,21 @@ const PlatformSettings = lazy(() => import("./pages/PlatformSettings"));
 const PlatformContactMessages = lazy(() => import("./pages/PlatformContactMessages"));
 const PlatformLogs = lazy(() => import("./pages/PlatformLogs"));
 
+// Creative Intelligence Platform (Phase 0)
+const CreativeLayout = lazy(() => import("./components/creative/layout/CreativeLayout").then(m => ({ default: m.CreativeLayout })));
+const CreativeDashboard = lazy(() => import("./pages/creative/CreativeDashboard"));
+const CreativeClients = lazy(() => import("./pages/creative/CreativeClients"));
+const CreativeProjects = lazy(() => import("./pages/creative/CreativeProjects"));
+const CreativeOpportunities = lazy(() => import("./pages/creative/CreativeOpportunities"));
+const CreativeContacts = lazy(() => import("./pages/creative/CreativeContacts"));
+const CreativePortfolios = lazy(() => import("./pages/creative/CreativePortfolios"));
+const CreativeIngestion = lazy(() => import("./pages/creative/CreativeIngestion"));
+const CreativeStyle = lazy(() => import("./pages/creative/CreativeStyle"));
+const CreativeSignals = lazy(() => import("./pages/creative/CreativeSignals"));
+const CreativeEnrichment = lazy(() => import("./pages/creative/CreativeEnrichment"));
+const CreativeResolution = lazy(() => import("./pages/creative/CreativeResolution"));
+const CreativeReports = lazy(() => import("./pages/creative/CreativeReports"));
+
 const queryClient = new QueryClient();
 
 function ProspectingByType() {
@@ -139,6 +154,26 @@ const App = () => (
                     <Route path="analytics" element={<PlatformAnalytics />} />
                     <Route path="settings" element={<PlatformSettings />} />
                     <Route path="org/:orgId" element={<PlatformOrganizationDetail />} />
+                  </Route>
+
+                  {/* Creative Intelligence Platform routes */}
+                  <Route path="creative" element={
+                    <ProtectedRoute>
+                      <CreativeLayout />
+                    </ProtectedRoute>
+                  }>
+                    <Route index element={<CreativeDashboard />} />
+                    <Route path="clients" element={<CreativeClients />} />
+                    <Route path="projects" element={<CreativeProjects />} />
+                    <Route path="opportunities" element={<CreativeOpportunities />} />
+                    <Route path="contacts" element={<CreativeContacts />} />
+                    <Route path="portfolios" element={<CreativePortfolios />} />
+                    <Route path="ingestion" element={<CreativeIngestion />} />
+                    <Route path="style" element={<CreativeStyle />} />
+                    <Route path="signals" element={<CreativeSignals />} />
+                    <Route path="enrichment" element={<CreativeEnrichment />} />
+                    <Route path="resolution" element={<CreativeResolution />} />
+                    <Route path="reports" element={<CreativeReports />} />
                   </Route>
 
                   {/* Legacy redirects */}

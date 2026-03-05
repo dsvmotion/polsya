@@ -83,6 +83,11 @@ export default {
         "brand-cinnamon": "hsl(var(--brand-cinnamon))",
         "brand-coral": "hsl(var(--brand-coral))",
       },
+      fontFamily: {
+        sans: ['Plus Jakarta Sans', 'ui-sans-serif', 'system-ui', '-apple-system', 'Segoe UI', 'sans-serif'],
+        display: ['Labil Grotesk', 'Plus Jakarta Sans', 'ui-sans-serif', 'system-ui', 'sans-serif'],
+        pixel: ['Pixelated Display', 'monospace'],
+      },
       borderRadius: {
         lg: "var(--radius)",
         md: "calc(var(--radius) - 2px)",
