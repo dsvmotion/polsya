@@ -48,6 +48,13 @@ const PlatformSettings = lazy(() => import("./pages/PlatformSettings"));
 const PlatformContactMessages = lazy(() => import("./pages/PlatformContactMessages"));
 const PlatformLogs = lazy(() => import("./pages/PlatformLogs"));
 
+// Creative Intelligence Platform (Phase 0)
+const CreativeLayout = lazy(() => import("./components/creative/layout/CreativeLayout").then(m => ({ default: m.CreativeLayout })));
+const CreativeDashboard = lazy(() => import("./pages/creative/CreativeDashboard"));
+const CreativeClients = lazy(() => import("./pages/creative/CreativeClients"));
+const CreativeProjects = lazy(() => import("./pages/creative/CreativeProjects"));
+const CreativeOpportunities = lazy(() => import("./pages/creative/CreativeOpportunities"));
+
 const queryClient = new QueryClient();
 
 function ProspectingByType() {
@@ -138,6 +145,18 @@ const App = () => (
                     <Route path="analytics" element={<PlatformAnalytics />} />
                     <Route path="settings" element={<PlatformSettings />} />
                     <Route path="org/:orgId" element={<PlatformOrganizationDetail />} />
+                  </Route>
+
+                  {/* Creative Intelligence Platform routes */}
+                  <Route path="creative" element={
+                    <ProtectedRoute>
+                      <CreativeLayout />
+                    </ProtectedRoute>
+                  }>
+                    <Route index element={<CreativeDashboard />} />
+                    <Route path="clients" element={<CreativeClients />} />
+                    <Route path="projects" element={<CreativeProjects />} />
+                    <Route path="opportunities" element={<CreativeOpportunities />} />
                   </Route>
 
                   {/* Legacy redirects */}
