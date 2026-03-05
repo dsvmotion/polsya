@@ -13,6 +13,7 @@ import { WorkspaceThemeBridge } from "@/components/layout/WorkspaceThemeBridge";
 import { AppLayout } from "@/components/layout/AppLayout";
 import { PlatformLayout } from "@/components/layout/PlatformLayout";
 import { ErrorBoundary } from "@/components/layout/ErrorBoundary";
+import { SpeedInsights } from "@vercel/speed-insights/react";
 import Index from "./pages/Index";
 import Login from "./pages/Login";
 import Signup from "./pages/Signup";
@@ -189,6 +190,7 @@ const App = () => (
           </TooltipProvider>
         </AuthProvider>
       </QueryClientProvider>
+      <SpeedInsights />
     </ThemeProvider>
   </ErrorBoundary>
 );
