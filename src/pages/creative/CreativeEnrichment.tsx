@@ -1,21 +1,51 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { Plus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { WorkspaceContainer } from '@/components/creative/layout/WorkspaceContainer';
 import { DataTable } from '@/components/creative/shared/DataTable';
-import { recipeColumns } from '@/components/creative/enrichment/recipe-columns';
+import { createRecipeColumns } from '@/components/creative/enrichment/recipe-columns';
 import { runColumns } from '@/components/creative/enrichment/run-columns';
 import { CreditCard } from '@/components/creative/enrichment/CreditCard';
 import { RecipeFormSheet } from '@/components/creative/enrichment/RecipeFormSheet';
+import { RunNowDialog } from '@/components/creative/enrichment/RunNowDialog';
+import { RunDetail } from '@/components/creative/enrichment/RunDetail';
 import { useEnrichmentCredits, useEnrichmentRecipes, useEnrichmentRuns } from '@/hooks/useEnrichmentEngine';
+import { useCreativeLayout } from '@/components/creative/layout/CreativeLayout';
+import type { EnrichmentRecipe } from '@/types/enrichment-engine';
+import type { EnrichmentRun } from '@/types/enrichment-engine';
 
 export default function CreativeEnrichment() {
   const [formOpen, setFormOpen] = useState(false);
+  const [runNowRecipe, setRunNowRecipe] = useState<EnrichmentRecipe | null>(null);
+  const [runNowOpen, setRunNowOpen] = useState(false);
+  const { setContextPanelOpen, setContextPanelContent } = useCreativeLayout();
 
   const { data: credits = [], isLoading: creditsLoading } = useEnrichmentCredits();
   const { data: recipes = [], isLoading: recipesLoading } = useEnrichmentRecipes();
   const { data: runs = [], isLoading: runsLoading } = useEnrichmentRuns();
+
+  const recipeColumns = useMemo(
+    () =>
+      createRecipeColumns((recipe) => {
+        setRunNowRecipe(recipe);
+        setRunNowOpen(true);
+      }),
+    [],
+  );
+
+  function handleRunClick(run: EnrichmentRun) {
+    setContextPanelContent(
+      <RunDetail
+        run={run}
+        onClose={() => {
+          setContextPanelOpen(false);
+          setContextPanelContent(null);
+        }}
+      />,
+    );
+    setContextPanelOpen(true);
+  }
 
   return (
     <WorkspaceContainer
@@ -74,11 +104,20 @@ export default function CreativeEnrichment() {
             isLoading={runsLoading}
             searchKey="entityType"
             searchPlaceholder="Search runs..."
+            onRowClick={handleRunClick}
           />
         </TabsContent>
       </Tabs>
 
       <RecipeFormSheet open={formOpen} onOpenChange={setFormOpen} />
+
+      {runNowRecipe && (
+        <RunNowDialog
+          recipe={runNowRecipe}
+          open={runNowOpen}
+          onOpenChange={setRunNowOpen}
+        />
+      )}
     </WorkspaceContainer>
   );
 }
