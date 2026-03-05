@@ -7,7 +7,11 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { useToast } from '@/components/ui/use-toast';
-import { Pencil, Trash2, Calendar, DollarSign } from 'lucide-react';
+import { Pencil, Trash2, Calendar, DollarSign, Clock } from 'lucide-react';
+import { CollapsibleEngineSection } from '@/components/creative/shared/CollapsibleEngineSection';
+import { ActivityTimeline } from '@/components/creative/shared/ActivityTimeline';
+import { ActivityFormSheet } from '@/components/creative/shared/ActivityFormSheet';
+import { useCreativeActivities } from '@/hooks/useCreativeActivities';
 
 interface ProjectDetailProps {
   project: CreativeProject;
@@ -20,6 +24,8 @@ export function ProjectDetail({ project, clientName, onClose }: ProjectDetailPro
   const deleteMutation = useDeleteCreativeProject();
   const { toast } = useToast();
   const statusColors = PROJECT_STATUS_COLORS[project.status];
+  const [activityFormOpen, setActivityFormOpen] = useState(false);
+  const { data: activities = [], isLoading: activitiesLoading } = useCreativeActivities('project', project.id);
 
   const budget = project.budgetCents != null
     ? new Intl.NumberFormat('en-US', { style: 'currency', currency: project.currency ?? 'USD' }).format(project.budgetCents / 100)
@@ -113,11 +119,19 @@ export function ProjectDetail({ project, clientName, onClose }: ProjectDetailPro
         </div>
       )}
 
+      {/* Engine sections */}
+      <div className="space-y-1">
+        <CollapsibleEngineSection icon={Clock} label="Activities" count={activities.length} isLoading={activitiesLoading} defaultOpen>
+          <ActivityTimeline entityType="project" entityId={project.id} onAddClick={() => setActivityFormOpen(true)} />
+        </CollapsibleEngineSection>
+      </div>
+
       <div className="text-xs text-muted-foreground pt-4 border-t">
         Created {new Date(project.createdAt).toLocaleDateString()}
       </div>
 
       <ProjectFormSheet open={editOpen} onOpenChange={setEditOpen} project={project} />
+      <ActivityFormSheet open={activityFormOpen} onOpenChange={setActivityFormOpen} entityType="project" entityId={project.id} />
     </div>
   );
 }

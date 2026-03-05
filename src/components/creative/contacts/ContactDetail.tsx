@@ -8,12 +8,15 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { useToast } from '@/components/ui/use-toast';
-import { Pencil, Trash2, Mail, Phone, Linkedin, CheckCircle2, Building2, Zap, GitMerge } from 'lucide-react';
+import { Pencil, Trash2, Mail, Phone, Linkedin, CheckCircle2, Building2, Zap, GitMerge, Clock } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { CollapsibleEngineSection } from '@/components/creative/shared/CollapsibleEngineSection';
 import { useSignals } from '@/hooks/useSignals';
 import { useResolutionCandidatesForEntity } from '@/hooks/useEntityResolution';
 import { SIGNAL_SEVERITY_COLORS } from '@/types/signal-engine';
+import { ActivityTimeline } from '@/components/creative/shared/ActivityTimeline';
+import { ActivityFormSheet } from '@/components/creative/shared/ActivityFormSheet';
+import { useCreativeActivities } from '@/hooks/useCreativeActivities';
 
 interface ContactDetailProps {
   contact: CreativeContact;
@@ -29,6 +32,8 @@ export function ContactDetail({ contact, onClose }: ContactDetailProps) {
   const fullName = `${contact.firstName}${contact.lastName ? ` ${contact.lastName}` : ''}`;
   const { data: signals = [], isLoading: signalsLoading } = useSignals({ entityType: 'contact', entityId: contact.id });
   const { data: candidates = [], isLoading: candidatesLoading } = useResolutionCandidatesForEntity('contact', contact.id);
+  const [activityFormOpen, setActivityFormOpen] = useState(false);
+  const { data: activities = [], isLoading: activitiesLoading } = useCreativeActivities('contact', contact.id);
 
   async function handleDelete() {
     try {
@@ -131,6 +136,10 @@ export function ContactDetail({ contact, onClose }: ContactDetailProps) {
 
       {/* Engine sections */}
       <div className="space-y-1">
+        <CollapsibleEngineSection icon={Clock} label="Activities" count={activities.length} isLoading={activitiesLoading} defaultOpen>
+          <ActivityTimeline entityType="contact" entityId={contact.id} onAddClick={() => setActivityFormOpen(true)} />
+        </CollapsibleEngineSection>
+
         <CollapsibleEngineSection icon={Zap} label="Signals" count={signals.length} isLoading={signalsLoading}>
           {signals.length === 0 ? (
             <p className="text-xs text-muted-foreground py-2">No signals for this contact.</p>
@@ -171,6 +180,7 @@ export function ContactDetail({ contact, onClose }: ContactDetailProps) {
       </div>
 
       <ContactFormSheet open={editOpen} onOpenChange={setEditOpen} contact={contact} />
+      <ActivityFormSheet open={activityFormOpen} onOpenChange={setActivityFormOpen} entityType="contact" entityId={contact.id} />
     </div>
   );
 }

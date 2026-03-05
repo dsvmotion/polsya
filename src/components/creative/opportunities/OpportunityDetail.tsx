@@ -7,7 +7,11 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { useToast } from '@/components/ui/use-toast';
-import { Pencil, Trash2, DollarSign, Target, Calendar } from 'lucide-react';
+import { Pencil, Trash2, DollarSign, Target, Calendar, Clock } from 'lucide-react';
+import { CollapsibleEngineSection } from '@/components/creative/shared/CollapsibleEngineSection';
+import { ActivityTimeline } from '@/components/creative/shared/ActivityTimeline';
+import { ActivityFormSheet } from '@/components/creative/shared/ActivityFormSheet';
+import { useCreativeActivities } from '@/hooks/useCreativeActivities';
 
 interface OpportunityDetailProps {
   opportunity: CreativeOpportunity;
@@ -20,6 +24,8 @@ export function OpportunityDetail({ opportunity, clientName, onClose }: Opportun
   const deleteMutation = useDeleteCreativeOpportunity();
   const { toast } = useToast();
   const stageColors = OPPORTUNITY_STAGE_COLORS[opportunity.stage];
+  const [activityFormOpen, setActivityFormOpen] = useState(false);
+  const { data: activities = [], isLoading: activitiesLoading } = useCreativeActivities('opportunity', opportunity.id);
 
   const value = opportunity.valueCents != null
     ? new Intl.NumberFormat('en-US', { style: 'currency', currency: opportunity.currency ?? 'USD' }).format(opportunity.valueCents / 100)
@@ -120,11 +126,19 @@ export function OpportunityDetail({ opportunity, clientName, onClose }: Opportun
         </div>
       )}
 
+      {/* Engine sections */}
+      <div className="space-y-1">
+        <CollapsibleEngineSection icon={Clock} label="Activities" count={activities.length} isLoading={activitiesLoading} defaultOpen>
+          <ActivityTimeline entityType="opportunity" entityId={opportunity.id} onAddClick={() => setActivityFormOpen(true)} />
+        </CollapsibleEngineSection>
+      </div>
+
       <div className="text-xs text-muted-foreground pt-4 border-t">
         Created {new Date(opportunity.createdAt).toLocaleDateString()}
       </div>
 
       <OpportunityFormSheet open={editOpen} onOpenChange={setEditOpen} opportunity={opportunity} />
+      <ActivityFormSheet open={activityFormOpen} onOpenChange={setActivityFormOpen} entityType="opportunity" entityId={opportunity.id} />
     </div>
   );
 }

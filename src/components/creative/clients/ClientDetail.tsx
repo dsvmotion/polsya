@@ -7,13 +7,16 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { useToast } from '@/components/ui/use-toast';
-import { Pencil, Trash2, Globe, Building2, Zap, Palette, GitMerge } from 'lucide-react';
+import { Pencil, Trash2, Globe, Building2, Zap, Palette, GitMerge, Clock } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { CollapsibleEngineSection } from '@/components/creative/shared/CollapsibleEngineSection';
 import { useSignals } from '@/hooks/useSignals';
 import { useStyleAnalyses } from '@/hooks/useStyleAnalyses';
 import { useResolutionCandidatesForEntity } from '@/hooks/useEntityResolution';
 import { SIGNAL_SEVERITY_COLORS } from '@/types/signal-engine';
+import { ActivityTimeline } from '@/components/creative/shared/ActivityTimeline';
+import { ActivityFormSheet } from '@/components/creative/shared/ActivityFormSheet';
+import { useCreativeActivities } from '@/hooks/useCreativeActivities';
 
 interface ClientDetailProps {
   client: CreativeClient;
@@ -28,6 +31,8 @@ export function ClientDetail({ client, onClose }: ClientDetailProps) {
   const { data: signals = [], isLoading: signalsLoading } = useSignals({ entityType: 'client', entityId: client.id });
   const { data: analyses = [], isLoading: analysesLoading } = useStyleAnalyses(client.id);
   const { data: candidates = [], isLoading: candidatesLoading } = useResolutionCandidatesForEntity('client', client.id);
+  const [activityFormOpen, setActivityFormOpen] = useState(false);
+  const { data: activities = [], isLoading: activitiesLoading } = useCreativeActivities('client', client.id);
 
   async function handleDelete() {
     try {
@@ -119,6 +124,14 @@ export function ClientDetail({ client, onClose }: ClientDetailProps) {
 
       {/* Engine sections */}
       <div className="space-y-1">
+        <CollapsibleEngineSection icon={Clock} label="Activities" count={activities.length} isLoading={activitiesLoading} defaultOpen>
+          <ActivityTimeline
+            entityType="client"
+            entityId={client.id}
+            onAddClick={() => setActivityFormOpen(true)}
+          />
+        </CollapsibleEngineSection>
+
         <CollapsibleEngineSection icon={Zap} label="Signals" count={signals.length} isLoading={signalsLoading}>
           {signals.length === 0 ? (
             <p className="text-xs text-muted-foreground py-2">No signals for this client.</p>
@@ -178,6 +191,7 @@ export function ClientDetail({ client, onClose }: ClientDetailProps) {
       </div>
 
       <ClientFormSheet open={editOpen} onOpenChange={setEditOpen} client={client} />
+      <ActivityFormSheet open={activityFormOpen} onOpenChange={setActivityFormOpen} entityType="client" entityId={client.id} />
     </div>
   );
 }
