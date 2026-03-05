@@ -18,6 +18,7 @@ import {
   Zap,
   Layers,
   GitMerge,
+  BarChart3,
 } from 'lucide-react';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
@@ -39,6 +40,7 @@ interface CreativeSidebarProps {
 
 const mainNavItems = [
   { label: 'Dashboard', icon: LayoutDashboard, path: '/creative' },
+  { label: 'Reports', icon: BarChart3, path: '/creative/reports' },
   { label: 'Clients', icon: Users, path: '/creative/clients' },
   { label: 'Projects', icon: FolderKanban, path: '/creative/projects' },
   { label: 'Contacts', icon: UserRound, path: '/creative/contacts' },
