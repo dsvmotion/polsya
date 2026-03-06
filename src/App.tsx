@@ -67,6 +67,7 @@ const CreativeKnowledgeBase = lazy(() => import("./pages/creative/CreativeKnowle
 const CreativeWorkflows = lazy(() => import("./pages/creative/CreativeWorkflows"));
 const CreativeInbox = lazy(() => import("./pages/creative/CreativeInbox"));
 const CreativeCalendar = lazy(() => import("./pages/creative/CreativeCalendar"));
+const CreativeDiscover = lazy(() => import("./pages/creative/CreativeDiscover"));
 
 // Analytics Hub (Phase 5A)
 const AnalyticsOverview = lazy(() => import("./pages/creative/analytics/AnalyticsOverview"));
@@ -174,6 +175,7 @@ const App = () => (
                     </ProtectedRoute>
                   }>
                     <Route index element={<CreativeDashboard />} />
+                    <Route path="discover" element={<CreativeDiscover />} />
                     <Route path="clients" element={<CreativeClients />} />
                     <Route path="projects" element={<CreativeProjects />} />
                     <Route path="opportunities" element={<CreativeOpportunities />} />

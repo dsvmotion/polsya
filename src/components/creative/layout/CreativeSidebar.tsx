@@ -24,6 +24,7 @@ import {
   Mail,
   Calendar,
   TrendingUp,
+  Search,
 } from 'lucide-react';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
@@ -46,6 +47,7 @@ interface CreativeSidebarProps {
 
 const mainNavItems = [
   { label: 'Dashboard', icon: LayoutDashboard, path: '/creative' },
+  { label: 'Discover', icon: Search, path: '/creative/discover' },
   { label: 'Reports', icon: BarChart3, path: '/creative/reports' },
   { label: 'Analytics', icon: TrendingUp, path: '/creative/analytics' },
   { label: 'Knowledge Base', icon: BookOpen, path: '/creative/knowledge-base' },
