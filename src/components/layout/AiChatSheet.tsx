@@ -115,6 +115,7 @@ export function AiChatSheet({ open, onOpenChange }: AiChatSheetProps) {
 
   const [input, setInput] = useState('');
   const [localMessages, setLocalMessages] = useState<ChatMessage[]>([]);
+  const [sourcesMap, setSourcesMap] = useState<Record<string, Array<{ title: string; documentId: string }>>>({});
   const scrollRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
@@ -161,6 +162,9 @@ export function AiChatSheet({ open, onOpenChange }: AiChatSheetProps) {
     const result = await sendMessage(text, { currentPage: location.pathname });
 
     if (result) {
+      if (result.sources?.length) {
+        setSourcesMap((prev) => ({ ...prev, [result.reply]: result.sources! }));
+      }
       setLocalMessages([]);
     } else {
       setLocalMessages([
@@ -185,6 +189,7 @@ export function AiChatSheet({ open, onOpenChange }: AiChatSheetProps) {
 
   const handleClearHistory = async () => {
     setLocalMessages([]);
+    setSourcesMap({});
     await clearHistory();
   };
 
@@ -270,11 +275,23 @@ export function AiChatSheet({ open, onOpenChange }: AiChatSheetProps) {
                 </div>
               )}
 
-              {allMessages.map((msg) => (
-                <MessageBubble key={msg.id} message={msg} />
-              ))}
+              {allMessages.map((msg) => {
+                const mergedMsg = msg.role === 'assistant' && !msg.sources && sourcesMap[msg.content]
+                  ? { ...msg, sources: sourcesMap[msg.content] }
+                  : msg;
+                return <MessageBubble key={msg.id} message={mergedMsg} />;
+              })}
 
-              {isSending && <TypingIndicator />}
+              {isSending && (
+                <>
+                  <TypingIndicator />
+                  {budget?.aiFeatures?.includes('rag') && (
+                    <div className="px-12 text-[10px] text-muted-foreground animate-pulse">
+                      Searching knowledge base...
+                    </div>
+                  )}
+                </>
+              )}
 
               {error && !isSending && (
                 <div className="px-4">
