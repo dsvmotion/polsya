@@ -144,6 +144,27 @@ describe('computeTouchPatterns', () => {
   });
 });
 
+// ─── Activity Heatmap ───────────────────────────────
+
+describe('computeActivityHeatmap', () => {
+  it('generates one entry per day for the trailing window', () => {
+    const activities = [
+      { occurred_at: '2026-03-04T10:00:00Z' },
+      { occurred_at: '2026-03-04T14:00:00Z' },
+      { occurred_at: '2026-03-05T09:00:00Z' },
+    ];
+    const now = new Date('2026-03-06T00:00:00Z');
+    const result = computeActivityHeatmap(activities, 7, now);
+    expect(result.length).toBe(7);
+    const mar4 = result.find((d) => d.date === '2026-03-04');
+    expect(mar4?.count).toBe(2);
+    const mar5 = result.find((d) => d.date === '2026-03-05');
+    expect(mar5?.count).toBe(1);
+    const mar01 = result.find((d) => d.date === '2026-03-01');
+    expect(mar01?.count).toBe(0);
+  });
+});
+
 // ─── Cold Clients ────────────────────────────────
 
 describe('computeColdClients', () => {
@@ -192,6 +213,33 @@ describe('computeAtRiskDeals', () => {
     const now = new Date('2026-03-06');
     const result = computeAtRiskDeals(opps, lastActivity, now);
     expect(result[0].reasons).toContain('past_expected_close');
+  });
+});
+
+// ─── Recommendations ────────────────────────────────
+
+describe('computeRecommendations', () => {
+  it('generates follow_up recs for cold active clients', () => {
+    const coldClients = [
+      { id: 'c1', name: 'Client A', daysSinceActivity: 20, pipelineValueCents: 5000, status: 'active' },
+    ];
+    const atRiskDeals = [
+      {
+        id: 'opp1', name: 'Deal A', clientName: 'Client A',
+        stage: 'proposal', valueCents: 10000,
+        reasons: ['past_expected_close' as const],
+        daysSinceActivity: 20, expectedCloseDate: '2026-02-01',
+      },
+    ];
+    const result = computeRecommendations(atRiskDeals, coldClients, 5);
+    const followUp = result.find((r) => r.type === 'follow_up');
+    expect(followUp).toBeDefined();
+    expect(followUp!.title).toContain('Client A');
+    const updateDeal = result.find((r) => r.type === 'update_deal');
+    expect(updateDeal).toBeDefined();
+    const insight = result.find((r) => r.type === 'pattern_insight');
+    expect(insight).toBeDefined();
+    expect(insight!.title).toContain('5');
   });
 });
 
