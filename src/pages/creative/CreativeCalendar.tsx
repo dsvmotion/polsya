@@ -1,5 +1,5 @@
 import { useState, useMemo } from 'react';
-import { Calendar as CalendarIcon, MapPin, Users, Clock } from 'lucide-react';
+import { Calendar as CalendarIcon, MapPin, Users, Clock, Plus } from 'lucide-react';
 import { WorkspaceContainer } from '@/components/creative/layout/WorkspaceContainer';
 import { Badge } from '@/components/ui/badge';
 import { useCreativeCalendarEvents } from '@/hooks/useCreativeCalendarEvents';
@@ -7,9 +7,11 @@ import { CALENDAR_STATUS_LABELS, CALENDAR_STATUS_COLORS } from '@/types/creative
 import type { CreativeCalendarEvent } from '@/types/creative-calendar';
 import { format, startOfMonth, endOfMonth, addMonths, subMonths } from 'date-fns';
 import { Button } from '@/components/ui/button';
+import { CalendarEventFormSheet } from '@/components/creative/calendar/CalendarEventFormSheet';
 
 export default function CreativeCalendar() {
   const [currentMonth, setCurrentMonth] = useState(new Date());
+  const [eventFormOpen, setEventFormOpen] = useState(false);
 
   const startAfter = startOfMonth(currentMonth).toISOString();
   const endBefore = endOfMonth(currentMonth).toISOString();
@@ -61,6 +63,13 @@ export default function CreativeCalendar() {
           >
             Next &rarr;
           </Button>
+          <Button
+            size="sm"
+            className="gap-1.5 ml-auto"
+            onClick={() => setEventFormOpen(true)}
+          >
+            <Plus className="h-4 w-4" /> New Event
+          </Button>
         </div>
 
         {isLoading ? (
@@ -88,6 +97,8 @@ export default function CreativeCalendar() {
           </div>
         )}
       </div>
+
+      <CalendarEventFormSheet open={eventFormOpen} onOpenChange={setEventFormOpen} />
     </WorkspaceContainer>
   );
 }
