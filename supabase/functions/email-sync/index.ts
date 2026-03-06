@@ -2,6 +2,7 @@ import { serve } from 'https://deno.land/std@0.168.0/http/server.ts';
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 import { logEdgeEvent } from '../_shared/observability.ts';
 import { resolveCredentials } from '../_shared/credential-resolver.ts';
+import { ImapClient } from '../_shared/imap-client.ts';
 
 // ---------------------------------------------------------------------------
 // Constants
@@ -143,8 +144,9 @@ serve(async (_req) => {
         messages = await fetchGmailMessages(metadata, sinceDate);
       } else if (integration.provider === 'outlook') {
         messages = await fetchOutlookMessages(metadata, sinceDate);
+      } else if (integration.provider === 'email_imap') {
+        messages = await fetchImapMessages(metadata, sinceDate);
       }
-      // IMAP sync deferred to future iteration
 
       // C1: Pre-fetch contacts and clients for in-memory matching (avoid N+1 queries)
       const orgId = integration.organization_id;
@@ -439,6 +441,109 @@ function parseOutlookMessage(msg: OutlookMessage, accountEmail: string): RawEmai
     direction,
     sentAt: msg.receivedDateTime,
     hasAttachments: msg.hasAttachments ?? false,
+  };
+}
+
+// ---------------------------------------------------------------------------
+// IMAP fetch
+// ---------------------------------------------------------------------------
+
+async function fetchImapMessages(
+  metadata: Record<string, unknown>,
+  since: Date,
+): Promise<RawEmail[]> {
+  const host = metadata.imap_host as string;
+  const port = (metadata.imap_port as number) ?? 993;
+  const secure = (metadata.imap_secure as boolean) ?? true;
+  const username = metadata.username as string;
+  const password = metadata.password as string;
+  const accountEmail = (metadata.account_email as string) ?? '';
+
+  if (!host || !username || !password) return [];
+
+  const client = new ImapClient();
+
+  try {
+    await client.connect({ host, port, secure, username, password });
+    await client.login(username, password);
+    await client.selectInbox();
+
+    const seqNums = await client.searchSince(since);
+    if (!seqNums.length) return [];
+
+    // Cap at 50 per sync cycle (consistent with Gmail/Outlook)
+    const capped = seqNums.slice(-50);
+    const results: RawEmail[] = [];
+
+    for (const seq of capped) {
+      try {
+        const msg = await client.fetchMessage(seq);
+        if (!msg) continue;
+
+        const parsed = parseImapMessage(msg, accountEmail);
+        if (parsed) results.push(parsed);
+      } catch (err) {
+        logEdgeEvent('warn', {
+          fn: FN,
+          error: `IMAP fetch seq ${seq}: ${err instanceof Error ? err.message : String(err)}`,
+        });
+      }
+    }
+
+    await client.logout();
+    return results;
+  } finally {
+    client.close();
+  }
+}
+
+function parseImapMessage(
+  msg: { seq: string; headers: Record<string, string>; bodyText: string; flags: string[] },
+  accountEmail: string,
+): RawEmail | null {
+  const fromRaw = msg.headers['from'] ?? '';
+  const toRaw = msg.headers['to'] ?? '';
+  const ccRaw = msg.headers['cc'] ?? '';
+  const subject = msg.headers['subject'] ?? null;
+  const dateRaw = msg.headers['date'] ?? '';
+  const messageId = msg.headers['message-id']?.replace(/[<>]/g, '') ?? msg.seq;
+
+  const fromParsed = parseEmailHeader(fromRaw);
+  const toParsed = parseEmailList(toRaw);
+  const ccParsed = parseEmailList(ccRaw);
+
+  const fromEmail = fromParsed.email.toLowerCase();
+  const direction: 'inbound' | 'outbound' =
+    accountEmail && fromEmail === accountEmail.toLowerCase() ? 'outbound' : 'inbound';
+
+  // Determine if body is HTML or plain text
+  const isHtml = msg.bodyText.includes('<html') || msg.bodyText.includes('<div') || msg.bodyText.includes('<p');
+  const bodyHtml = isHtml ? msg.bodyText : undefined;
+  const bodyText = isHtml ? undefined : msg.bodyText;
+
+  // Generate snippet from body (first 200 chars, text only)
+  const snippetSource = bodyText ?? msg.bodyText.replace(/<[^>]+>/g, '');
+  const snippet = snippetSource.substring(0, 200).trim() || undefined;
+
+  const sentAt = dateRaw ? new Date(dateRaw).toISOString() : new Date().toISOString();
+
+  return {
+    messageId,
+    subject,
+    fromAddress: fromParsed.email,
+    fromName: fromParsed.name || undefined,
+    toAddresses: toParsed,
+    ccAddresses: ccParsed.length > 0 ? ccParsed : undefined,
+    bodyText,
+    bodyHtml,
+    snippet,
+    labels: [],
+    isRead: msg.flags.includes('\\Seen'),
+    isStarred: msg.flags.includes('\\Flagged'),
+    isDraft: msg.flags.includes('\\Draft'),
+    direction,
+    sentAt,
+    hasAttachments: false,
   };
 }
 
