@@ -72,6 +72,8 @@ export const PROVIDER_REGISTRY: Record<string, ProviderDefinition> = {
       scopes: [
         'https://www.googleapis.com/auth/gmail.readonly',
         'https://www.googleapis.com/auth/gmail.send',
+        'https://www.googleapis.com/auth/calendar.readonly',
+        'https://www.googleapis.com/auth/calendar.events',
       ],
       envPrefix: 'GMAIL',
       extraAuthParams: { access_type: 'offline', prompt: 'consent' },
@@ -95,6 +97,7 @@ export const PROVIDER_REGISTRY: Record<string, ProviderDefinition> = {
       scopes: [
         'https://graph.microsoft.com/Mail.ReadWrite',
         'https://graph.microsoft.com/Mail.Send',
+        'https://graph.microsoft.com/Calendars.ReadWrite',
         'offline_access',
       ],
       envPrefix: 'OUTLOOK',

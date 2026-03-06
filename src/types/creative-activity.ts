@@ -33,4 +33,9 @@ export interface Activity {
   createdBy: string | null;
   createdAt: string;
   updatedAt: string;
+  dueDate: string | null;
+  isCompleted: boolean;
+  reminderAt: string | null;
+  assignedTo: string | null;
+  reminderSent: boolean;
 }

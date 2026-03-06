@@ -17,6 +17,11 @@ interface ActivityRow {
   created_by: string | null;
   created_at: string;
   updated_at: string;
+  due_date: string | null;
+  is_completed: boolean;
+  reminder_at: string | null;
+  assigned_to: string | null;
+  reminder_sent: boolean;
 }
 
 function toActivity(row: ActivityRow): Activity {
@@ -34,6 +39,11 @@ function toActivity(row: ActivityRow): Activity {
     createdBy: row.created_by,
     createdAt: row.created_at,
     updatedAt: row.updated_at,
+    dueDate: row.due_date,
+    isCompleted: row.is_completed,
+    reminderAt: row.reminder_at,
+    assignedTo: row.assigned_to,
+    reminderSent: row.reminder_sent,
   };
 }
 
@@ -87,6 +97,9 @@ export interface CreateActivityInput {
   occurredAt: string;
   durationMinutes?: number;
   outcome?: string;
+  dueDate?: string;
+  assignedTo?: string;
+  reminderAt?: string;
 }
 
 export function useCreateActivity() {
@@ -108,6 +121,9 @@ export function useCreateActivity() {
           occurred_at: values.occurredAt,
           duration_minutes: values.durationMinutes ?? null,
           outcome: values.outcome ?? null,
+          due_date: values.dueDate ?? null,
+          assigned_to: values.assignedTo ?? null,
+          reminder_at: values.reminderAt ?? null,
         })
         .select('*')
         .single();
@@ -130,6 +146,44 @@ export function useDeleteActivity() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['creative-activities'] });
+    },
+  });
+}
+
+export function useToggleComplete() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({ id, isCompleted }: { id: string; isCompleted: boolean }) => {
+      const { error } = await fromTable('creative_activities')
+        .update({ is_completed: !isCompleted })
+        .eq('id', id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['creative-activities'] });
+    },
+  });
+}
+
+export function useOverdueTasks() {
+  const { membership } = useCurrentOrganization();
+  const orgId = membership?.organization_id ?? null;
+
+  return useQuery<Activity[]>({
+    queryKey: ['creative-activities', 'overdue', orgId ?? ''],
+    enabled: !!orgId,
+    queryFn: async () => {
+      const { data, error } = await fromTable('creative_activities')
+        .select('*')
+        .eq('organization_id', orgId!)
+        .eq('activity_type', 'task')
+        .eq('is_completed', false)
+        .not('due_date', 'is', null)
+        .lt('due_date', new Date().toISOString())
+        .order('due_date', { ascending: true });
+      if (error) throw error;
+      return ((data ?? []) as ActivityRow[]).map(toActivity);
     },
   });
 }

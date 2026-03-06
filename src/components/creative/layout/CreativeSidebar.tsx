@@ -17,9 +17,12 @@ import {
   Download,
   Zap,
   Layers,
+  GitBranch,
   GitMerge,
   BarChart3,
   BookOpen,
+  Mail,
+  Calendar,
 } from 'lucide-react';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
@@ -30,6 +33,7 @@ import {
   TooltipTrigger,
 } from '@/components/ui/tooltip';
 import { cn } from '@/lib/utils';
+import { NotificationBell } from '@/components/creative/notifications/NotificationBell';
 
 interface CreativeSidebarProps {
   open: boolean;
@@ -50,9 +54,12 @@ const mainNavItems = [
   { label: 'Portfolios', icon: Image, path: '/creative/portfolios' },
   { label: 'Style Intelligence', icon: Sparkles, path: '/creative/style' },
   { label: 'Signals', icon: Zap, path: '/creative/signals' },
+  { label: 'Workflows', icon: GitBranch, path: '/creative/workflows' },
   { label: 'Enrichment', icon: Layers, path: '/creative/enrichment' },
   { label: 'Resolution', icon: GitMerge, path: '/creative/resolution' },
   { label: 'Ingestion', icon: Download, path: '/creative/ingestion' },
+  { label: 'Email', icon: Mail, path: '/creative/inbox' },
+  { label: 'Calendar', icon: Calendar, path: '/creative/calendar' },
 ];
 
 const bottomNavItems = [
@@ -128,10 +135,11 @@ export function CreativeSidebar({
       {/* Header */}
       <div className={cn('flex items-center h-14 px-4 border-b border-sidebar-border', collapsed && 'justify-center px-2')}>
         {collapsed ? (
-          <>
+          <div className="flex flex-col items-center gap-2">
             <img src="/polsya-logo-black.png" alt="Polsya" className="h-6 w-auto dark:hidden" />
             <img src="/polsya-logo-white.png" alt="Polsya" className="h-6 w-auto hidden dark:block" />
-          </>
+            <NotificationBell />
+          </div>
         ) : (
           <div className="flex items-center justify-between w-full">
             <div className="flex items-center gap-2">
@@ -139,6 +147,7 @@ export function CreativeSidebar({
               <img src="/polsya-logo-white.png" alt="Polsya" className="h-6 w-auto hidden dark:block" />
               <span className="text-xs px-1.5 py-0.5 rounded bg-primary/10 text-primary font-medium">Creative</span>
             </div>
+            <NotificationBell />
           </div>
         )}
       </div>

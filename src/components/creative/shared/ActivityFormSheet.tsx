@@ -24,6 +24,9 @@ interface FormValues {
   occurredAt: string;
   durationMinutes: string;
   outcome: string;
+  dueDate: string;
+  assignedTo: string;
+  enableReminder: boolean;
 }
 
 export function ActivityFormSheet({ open, onOpenChange, entityType, entityId }: ActivityFormSheetProps) {
@@ -38,6 +41,9 @@ export function ActivityFormSheet({ open, onOpenChange, entityType, entityId }: 
       occurredAt: new Date().toISOString().slice(0, 16),
       durationMinutes: '',
       outcome: '',
+      dueDate: '',
+      assignedTo: '',
+      enableReminder: false,
     },
   });
 
@@ -52,6 +58,11 @@ export function ActivityFormSheet({ open, onOpenChange, entityType, entityId }: 
         occurredAt: new Date(values.occurredAt).toISOString(),
         durationMinutes: values.durationMinutes ? parseInt(values.durationMinutes) : undefined,
         outcome: values.outcome || undefined,
+        dueDate: values.dueDate ? new Date(values.dueDate).toISOString() : undefined,
+        assignedTo: values.assignedTo || undefined,
+        reminderAt: values.enableReminder && values.dueDate
+          ? new Date(new Date(values.dueDate).getTime() - 3600000).toISOString()
+          : undefined,
       });
       toast({ title: 'Activity logged' });
       form.reset();
@@ -120,6 +131,41 @@ export function ActivityFormSheet({ open, onOpenChange, entityType, entityId }: 
                 </FormItem>
               )}
             />
+            {/* Task-specific fields */}
+            {form.watch('activityType') === 'task' && (
+              <>
+                <FormField
+                  control={form.control}
+                  name="dueDate"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Due Date</FormLabel>
+                      <FormControl>
+                        <Input type="datetime-local" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="enableReminder"
+                  render={({ field }) => (
+                    <FormItem className="flex items-center gap-2">
+                      <FormControl>
+                        <input
+                          type="checkbox"
+                          checked={field.value}
+                          onChange={field.onChange}
+                          className="h-4 w-4 rounded border-gray-300"
+                        />
+                      </FormControl>
+                      <FormLabel className="!mt-0">Remind 1 hour before due date</FormLabel>
+                    </FormItem>
+                  )}
+                />
+              </>
+            )}
             <FormField
               control={form.control}
               name="durationMinutes"
