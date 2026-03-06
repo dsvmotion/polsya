@@ -76,6 +76,9 @@ export class ImapClient {
   }
 
   async fetchMessage(seqNum: string): Promise<ImapFetchedMessage | null> {
+    if (!/^\d+$/.test(seqNum)) {
+      throw new Error(`Invalid IMAP sequence number: ${seqNum}`);
+    }
     const resp = await this.command(
       `FETCH ${seqNum} (FLAGS RFC822.HEADER BODY[TEXT])`,
     );
@@ -132,14 +135,17 @@ export class ImapClient {
     await this.conn.write(this.encoder.encode(line));
 
     let response = '';
+    const tagPattern = new RegExp(`(^|\\r\\n)${tag} (OK|NO|BAD)`);
 
     while (true) {
       const chunk = await this.readChunk();
+      if (chunk === '') {
+        throw new Error('IMAP connection closed unexpectedly');
+      }
       response += chunk;
 
       // Check if we've received the tagged completion
       // It must be at the start of a line: \r\nTAG OK/NO/BAD or at the very start
-      const tagPattern = new RegExp(`(^|\\r\\n)${tag} (OK|NO|BAD)`);
       const m = response.match(tagPattern);
       if (m) {
         if (m[2] === 'NO' || m[2] === 'BAD') {
@@ -178,6 +184,9 @@ export class ImapClient {
     let data = '';
     while (true) {
       const chunk = await this.readChunk();
+      if (chunk === '') {
+        throw new Error('IMAP connection closed before expected response');
+      }
       data += chunk;
       const lines = data.split('\r\n');
       for (const line of lines) {
