@@ -8,6 +8,9 @@ import {
   User,
   AlertCircle,
   Shield,
+  Sparkles,
+  AlertTriangle,
+  FileText,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -18,7 +21,8 @@ import {
   SheetHeader,
   SheetTitle,
 } from '@/components/ui/sheet';
-import { useAiChat, useAiChatMessages, type ChatMessage } from '@/hooks/useAiChat';
+import { useAiChat, useAiChatMessages, type ChatMessage, type ChatSource } from '@/hooks/useAiChat';
+import { useAiUsage } from '@/hooks/useAiUsage';
 import { cn } from '@/lib/utils';
 
 function formatTime(dateStr: string): string {
@@ -53,24 +57,32 @@ function MessageBubble({ message }: { message: ChatMessage }) {
           <Bot className="h-3.5 w-3.5 text-white" />
         </div>
       )}
-      <div
-        className={cn(
-          'rounded-2xl px-3.5 py-2.5 max-w-[85%] text-sm leading-relaxed',
-          isUser
-            ? 'bg-foreground text-background rounded-br-md'
-            : 'bg-muted text-foreground rounded-bl-md',
-          message.isStreaming && 'animate-pulse',
-        )}
-      >
-        <div className="whitespace-pre-wrap break-words">{message.content}</div>
+      <div className="max-w-[85%]">
         <div
           className={cn(
-            'text-[10px] mt-1',
-            isUser ? 'text-background/70' : 'text-muted-foreground',
+            'rounded-2xl px-3.5 py-2.5 text-sm leading-relaxed',
+            isUser
+              ? 'bg-foreground text-background rounded-br-md'
+              : 'bg-muted text-foreground rounded-bl-md',
+            message.isStreaming && 'animate-pulse',
           )}
         >
-          {formatTime(message.createdAt)}
+          <div className="whitespace-pre-wrap break-words">{message.content}</div>
+          <div
+            className={cn(
+              'text-[10px] mt-1',
+              isUser ? 'text-background/70' : 'text-muted-foreground',
+            )}
+          >
+            {formatTime(message.createdAt)}
+          </div>
         </div>
+        {!isUser && message.sources && message.sources.length > 0 && (
+          <div className="flex items-center gap-1 mt-1 px-1 text-[10px] text-muted-foreground">
+            <FileText className="h-2.5 w-2.5 shrink-0" />
+            <span>Sources: {message.sources.map((s) => s.title).join(', ')}</span>
+          </div>
+        )}
       </div>
       {isUser && (
         <div className="w-7 h-7 rounded-full bg-muted flex items-center justify-center shrink-0 mt-0.5">
@@ -97,9 +109,14 @@ export function AiChatSheet({ open, onOpenChange }: AiChatSheetProps) {
   const location = useLocation();
   const { data: messages = [], isLoading: messagesLoading } = useAiChatMessages();
   const { sendMessage, clearHistory, isLoading: isSending, error } = useAiChat();
+  const { data: budget } = useAiUsage();
+
+  const creditsExhausted = budget?.remaining !== null && budget?.remaining !== undefined && budget.remaining <= 0;
+  const ragEnabled = budget?.aiFeatures?.includes('rag') ?? false;
 
   const [input, setInput] = useState('');
   const [localMessages, setLocalMessages] = useState<ChatMessage[]>([]);
+  const [latestSources, setLatestSources] = useState<ChatSource[] | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
@@ -143,9 +160,10 @@ export function AiChatSheet({ open, onOpenChange }: AiChatSheetProps) {
     scrollToBottom();
 
     // Pass page context so AI knows where the user is
-    const reply = await sendMessage(text, { currentPage: location.pathname });
+    const result = await sendMessage(text, { currentPage: location.pathname });
 
-    if (reply) {
+    if (result) {
+      setLatestSources(result.sources?.length ? result.sources : null);
       setLocalMessages([]);
     } else {
       setLocalMessages([
@@ -170,6 +188,7 @@ export function AiChatSheet({ open, onOpenChange }: AiChatSheetProps) {
 
   const handleClearHistory = async () => {
     setLocalMessages([]);
+    setLatestSources(null);
     await clearHistory();
   };
 
@@ -196,6 +215,12 @@ export function AiChatSheet({ open, onOpenChange }: AiChatSheetProps) {
                   <Shield className="h-2.5 w-2.5" />
                   Private to your workspace
                 </p>
+                {budget && (
+                  <p className="text-[10px] text-white/70 flex items-center gap-1 font-normal">
+                    <Sparkles className="h-2.5 w-2.5" />
+                    {budget.remaining === null ? '\u221E Unlimited' : `Credits: ${budget.remaining} remaining`}
+                  </p>
+                )}
               </div>
             </div>
             {allMessages.length > 0 && (
@@ -205,6 +230,7 @@ export function AiChatSheet({ open, onOpenChange }: AiChatSheetProps) {
                 className="h-7 w-7 p-0 text-white/70 hover:text-white hover:bg-white/10"
                 onClick={handleClearHistory}
                 title="Clear conversation"
+                aria-label="Clear conversation"
               >
                 <Trash2 className="h-3.5 w-3.5" />
               </Button>
@@ -249,11 +275,29 @@ export function AiChatSheet({ open, onOpenChange }: AiChatSheetProps) {
                 </div>
               )}
 
-              {allMessages.map((msg) => (
-                <MessageBubble key={msg.id} message={msg} />
-              ))}
+              {(() => {
+                const lastAssistantIdx = allMessages.reduceRight(
+                  (found, msg, i) => found === -1 && msg.role === 'assistant' ? i : found,
+                  -1,
+                );
+                return allMessages.map((msg, i) => {
+                  const mergedMsg = i === lastAssistantIdx && latestSources?.length
+                    ? { ...msg, sources: latestSources }
+                    : msg;
+                  return <MessageBubble key={msg.id} message={mergedMsg} />;
+                });
+              })()}
 
-              {isSending && <TypingIndicator />}
+              {isSending && (
+                <>
+                  <TypingIndicator />
+                  {ragEnabled && (
+                    <div className="px-12 text-[10px] text-muted-foreground animate-pulse">
+                      Searching knowledge base...
+                    </div>
+                  )}
+                </>
+              )}
 
               {error && !isSending && (
                 <div className="px-4">
@@ -266,6 +310,15 @@ export function AiChatSheet({ open, onOpenChange }: AiChatSheetProps) {
             </div>
           </ScrollArea>
 
+          {creditsExhausted && (
+            <div className="px-3 py-2 shrink-0">
+              <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800 text-amber-800 dark:text-amber-200 text-xs">
+                <AlertTriangle className="h-3.5 w-3.5 shrink-0" />
+                <span>AI credits exhausted. Upgrade your plan for more.</span>
+              </div>
+            </div>
+          )}
+
           <div className="p-3 border-t bg-muted/50 shrink-0">
             <div className="flex items-end gap-2">
               <Textarea
@@ -276,13 +329,14 @@ export function AiChatSheet({ open, onOpenChange }: AiChatSheetProps) {
                 placeholder="Ask about your sales data..."
                 className="min-h-[40px] max-h-[120px] resize-none text-sm"
                 rows={1}
-                disabled={isSending}
+                disabled={isSending || creditsExhausted}
               />
               <Button
                 onClick={handleSend}
-                disabled={!input.trim() || isSending}
+                disabled={!input.trim() || isSending || creditsExhausted}
                 size="sm"
                 className="h-10 w-10 p-0 shrink-0"
+                aria-label={isSending ? "Sending message" : "Send message"}
               >
                 {isSending ? (
                   <Loader2 className="h-4 w-4 animate-spin" />
