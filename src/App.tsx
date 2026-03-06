@@ -68,6 +68,13 @@ const CreativeWorkflows = lazy(() => import("./pages/creative/CreativeWorkflows"
 const CreativeInbox = lazy(() => import("./pages/creative/CreativeInbox"));
 const CreativeCalendar = lazy(() => import("./pages/creative/CreativeCalendar"));
 
+// Analytics Hub (Phase 5A)
+const AnalyticsOverview = lazy(() => import("./pages/creative/analytics/AnalyticsOverview"));
+const PipelineAnalytics = lazy(() => import("./pages/creative/analytics/PipelineAnalytics"));
+const ActivityAnalytics = lazy(() => import("./pages/creative/analytics/ActivityAnalytics"));
+const CommunicationAnalytics = lazy(() => import("./pages/creative/analytics/CommunicationAnalytics"));
+const AIInsights = lazy(() => import("./pages/creative/analytics/AIInsights"));
+
 const queryClient = new QueryClient();
 
 function ProspectingByType() {
@@ -182,6 +189,13 @@ const App = () => (
                     <Route path="workflows" element={<CreativeWorkflows />} />
                     <Route path="inbox" element={<CreativeInbox />} />
                     <Route path="calendar" element={<CreativeCalendar />} />
+
+                    {/* Analytics Hub (Phase 5A) */}
+                    <Route path="analytics" element={<AnalyticsOverview />} />
+                    <Route path="analytics/pipeline" element={<PipelineAnalytics />} />
+                    <Route path="analytics/activity" element={<ActivityAnalytics />} />
+                    <Route path="analytics/communication" element={<CommunicationAnalytics />} />
+                    <Route path="analytics/insights" element={<AIInsights />} />
                   </Route>
 
                   {/* Legacy redirects */}
