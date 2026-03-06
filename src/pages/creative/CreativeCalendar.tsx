@@ -1,6 +1,6 @@
 import { useState, useMemo } from 'react';
 import { Calendar as CalendarIcon, MapPin, Users, Clock } from 'lucide-react';
-import { WorkspaceContainer } from '@/components/creative/shared/WorkspaceContainer';
+import { WorkspaceContainer } from '@/components/creative/layout/WorkspaceContainer';
 import { Badge } from '@/components/ui/badge';
 import { useCreativeCalendarEvents } from '@/hooks/useCreativeCalendarEvents';
 import { CALENDAR_STATUS_LABELS, CALENDAR_STATUS_COLORS } from '@/types/creative-calendar';

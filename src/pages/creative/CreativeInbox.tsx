@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Mail, Send, RefreshCw, Star, Paperclip } from 'lucide-react';
-import { WorkspaceContainer } from '@/components/creative/shared/WorkspaceContainer';
+import { WorkspaceContainer } from '@/components/creative/layout/WorkspaceContainer';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
