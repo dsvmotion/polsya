@@ -3,132 +3,11 @@ import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 import { logEdgeEvent } from '../_shared/observability.ts';
 import { resolveCredentials } from '../_shared/credential-resolver.ts';
 
-serve(async (_req) => {
-  const supabaseUrl = Deno.env.get('SUPABASE_URL');
-  const serviceRoleKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
+// ---------------------------------------------------------------------------
+// Constants
+// ---------------------------------------------------------------------------
 
-  if (!supabaseUrl || !serviceRoleKey) {
-    logEdgeEvent('error', { fn: 'email-sync', error: 'missing_config' });
-    return new Response(JSON.stringify({ error: 'Missing service config' }), {
-      status: 500,
-      headers: { 'Content-Type': 'application/json' },
-    });
-  }
-
-  const supabase = createClient(supabaseUrl, serviceRoleKey);
-
-  // Fetch all active email integrations
-  const { data: integrations, error: intError } = await supabase
-    .from('integration_connections')
-    .select('id, organization_id, provider, metadata, last_sync_at')
-    .in('provider', ['gmail', 'outlook', 'email_imap'])
-    .eq('status', 'active');
-
-  if (intError) {
-    logEdgeEvent('error', { fn: 'email-sync', error: intError.message });
-    return new Response(JSON.stringify({ error: intError.message }), {
-      status: 500,
-      headers: { 'Content-Type': 'application/json' },
-    });
-  }
-
-  let synced = 0;
-  let errors = 0;
-
-  for (const integration of integrations ?? []) {
-    try {
-      const { metadata } = await resolveCredentials(
-        supabase,
-        integration.provider,
-        integration.id,
-        { ...(integration.metadata ?? {}), _organization_id: integration.organization_id },
-      );
-
-      const sinceDate = integration.last_sync_at
-        ? new Date(integration.last_sync_at)
-        : new Date(Date.now() - 7 * 24 * 60 * 60 * 1000); // default: last 7 days
-
-      let messages: RawEmail[] = [];
-
-      if (integration.provider === 'gmail') {
-        messages = await fetchGmailMessages(metadata, sinceDate);
-      } else if (integration.provider === 'outlook') {
-        messages = await fetchOutlookMessages(metadata, sinceDate);
-      }
-      // IMAP sync deferred to future iteration
-
-      for (const msg of messages) {
-        const entityMatch = await matchEntity(supabase, integration.organization_id, msg);
-
-        await supabase.from('creative_emails').upsert(
-          {
-            organization_id: integration.organization_id,
-            integration_id: integration.id,
-            provider: integration.provider,
-            message_id: msg.messageId,
-            thread_id: msg.threadId ?? null,
-            subject: msg.subject ?? null,
-            from_address: msg.fromAddress,
-            from_name: msg.fromName ?? null,
-            to_addresses: msg.toAddresses,
-            cc_addresses: msg.ccAddresses ?? [],
-            bcc_addresses: msg.bccAddresses ?? [],
-            body_text: msg.bodyText ?? null,
-            body_html: msg.bodyHtml ?? null,
-            snippet: msg.snippet ?? null,
-            labels: msg.labels ?? [],
-            is_read: msg.isRead ?? false,
-            is_starred: msg.isStarred ?? false,
-            is_draft: msg.isDraft ?? false,
-            direction: msg.direction,
-            sent_at: msg.sentAt,
-            has_attachments: msg.hasAttachments ?? false,
-            entity_type: entityMatch?.entityType ?? null,
-            entity_id: entityMatch?.entityId ?? null,
-            matched_by: entityMatch?.matchedBy ?? null,
-          },
-          { onConflict: 'organization_id,provider,message_id' },
-        );
-      }
-
-      // Update last_sync_at
-      await supabase
-        .from('integration_connections')
-        .update({ last_sync_at: new Date().toISOString() })
-        .eq('id', integration.id);
-
-      synced += messages.length;
-      logEdgeEvent('info', {
-        fn: 'email-sync',
-        integration_id: integration.id,
-        provider: integration.provider,
-        messages_synced: messages.length,
-      });
-    } catch (err) {
-      errors++;
-      const errMsg = err instanceof Error ? err.message : String(err);
-      logEdgeEvent('error', {
-        fn: 'email-sync',
-        integration_id: integration.id,
-        provider: integration.provider,
-        error: errMsg,
-      });
-
-      // Mark integration as errored
-      await supabase
-        .from('integration_connections')
-        .update({ status: 'error', last_error: errMsg })
-        .eq('id', integration.id);
-    }
-  }
-
-  logEdgeEvent('info', { fn: 'email-sync', synced, errors, integrations: (integrations ?? []).length });
-
-  return new Response(JSON.stringify({ synced, errors }), {
-    status: 200,
-    headers: { 'Content-Type': 'application/json' },
-  });
-});
+const FN = 'email-sync';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -161,50 +40,6 @@ interface EntityMatch {
   matchedBy: 'auto_email' | 'auto_domain';
 }
 
-// ---------------------------------------------------------------------------
-// Gmail API fetch
-// ---------------------------------------------------------------------------
-
-async function fetchGmailMessages(
-  metadata: Record<string, unknown>,
-  since: Date,
-): Promise<RawEmail[]> {
-  const accessToken = metadata.gmail_access_token as string;
-  if (!accessToken) return [];
-
-  const afterEpoch = Math.floor(since.getTime() / 1000);
-  const query = `after:${afterEpoch}`;
-
-  // List message IDs
-  const listRes = await fetch(
-    `https://gmail.googleapis.com/gmail/v1/users/me/messages?q=${encodeURIComponent(query)}&maxResults=50`,
-    { headers: { Authorization: `Bearer ${accessToken}` } },
-  );
-
-  if (!listRes.ok) {
-    throw new Error(`Gmail list failed: ${listRes.status} ${await listRes.text()}`);
-  }
-
-  const listBody = await listRes.json() as { messages?: Array<{ id: string; threadId: string }> };
-  if (!listBody.messages?.length) return [];
-
-  const results: RawEmail[] = [];
-
-  for (const ref of listBody.messages) {
-    const msgRes = await fetch(
-      `https://gmail.googleapis.com/gmail/v1/users/me/messages/${ref.id}?format=full`,
-      { headers: { Authorization: `Bearer ${accessToken}` } },
-    );
-    if (!msgRes.ok) continue;
-
-    const msg = await msgRes.json() as GmailMessage;
-    const parsed = parseGmailMessage(msg, metadata.gmail_account_email as string);
-    if (parsed) results.push(parsed);
-  }
-
-  return results;
-}
-
 interface GmailMessage {
   id: string;
   threadId: string;
@@ -223,6 +58,253 @@ interface GmailMessage {
   internalDate: string;
 }
 
+interface OutlookMessage {
+  id: string;
+  conversationId?: string;
+  subject?: string;
+  from?: { emailAddress: { address: string; name?: string } };
+  toRecipients?: Array<{ emailAddress: { address: string; name?: string } }>;
+  ccRecipients?: Array<{ emailAddress: { address: string; name?: string } }>;
+  bccRecipients?: Array<{ emailAddress: { address: string; name?: string } }>;
+  body?: { contentType: string; content: string };
+  bodyPreview?: string;
+  isRead?: boolean;
+  isDraft?: boolean;
+  hasAttachments?: boolean;
+  receivedDateTime: string;
+  flag?: { flagStatus?: string };
+  categories?: string[];
+}
+
+interface PrefetchedContact {
+  id: string;
+  email: string;
+}
+
+interface PrefetchedClient {
+  id: string;
+  website: string;
+}
+
+// ---------------------------------------------------------------------------
+// Handler
+// ---------------------------------------------------------------------------
+
+// NOTE: This function is invoked by the Supabase cron scheduler (service-role),
+// not by browser clients. CORS handling is intentionally omitted.
+serve(async (_req) => {
+  const supabaseUrl = Deno.env.get('SUPABASE_URL');
+  const serviceRoleKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
+
+  if (!supabaseUrl || !serviceRoleKey) {
+    logEdgeEvent('error', { fn: FN, error: 'missing_config' });
+    return new Response(JSON.stringify({ error: 'Missing service config' }), {
+      status: 500,
+      headers: { 'Content-Type': 'application/json' },
+    });
+  }
+
+  const supabase = createClient(supabaseUrl, serviceRoleKey);
+
+  // Fetch all active email integrations
+  const { data: integrations, error: intError } = await supabase
+    .from('integration_connections')
+    .select('id, organization_id, provider, metadata, last_sync_at')
+    .in('provider', ['gmail', 'outlook', 'email_imap'])
+    .eq('status', 'active');
+
+  if (intError) {
+    logEdgeEvent('error', { fn: FN, error: intError.message });
+    return new Response(JSON.stringify({ error: intError.message }), {
+      status: 500,
+      headers: { 'Content-Type': 'application/json' },
+    });
+  }
+
+  let synced = 0;
+  let errors = 0;
+
+  for (const integration of integrations ?? []) {
+    try {
+      const { metadata } = await resolveCredentials(
+        supabase,
+        integration.provider,
+        integration.id,
+        { ...(integration.metadata ?? {}), _organization_id: integration.organization_id },
+      );
+
+      const sinceDate = integration.last_sync_at
+        ? new Date(integration.last_sync_at)
+        : new Date(Date.now() - 7 * 24 * 60 * 60 * 1000); // default: last 7 days
+
+      let messages: RawEmail[] = [];
+
+      if (integration.provider === 'gmail') {
+        messages = await fetchGmailMessages(metadata, sinceDate);
+      } else if (integration.provider === 'outlook') {
+        messages = await fetchOutlookMessages(metadata, sinceDate);
+      }
+      // IMAP sync deferred to future iteration
+
+      // C1: Pre-fetch contacts and clients for in-memory matching (avoid N+1 queries)
+      const orgId = integration.organization_id;
+
+      const { data: contacts } = await supabase
+        .from('creative_contacts')
+        .select('id, email')
+        .eq('organization_id', orgId)
+        .not('email', 'is', null);
+
+      const { data: clients } = await supabase
+        .from('creative_clients')
+        .select('id, website')
+        .eq('organization_id', orgId)
+        .not('website', 'is', null);
+
+      // C3: Track per-message success
+      let messagesSynced = 0;
+
+      for (const msg of messages) {
+        const entityMatch = matchEntity(
+          (contacts ?? []) as PrefetchedContact[],
+          (clients ?? []) as PrefetchedClient[],
+          msg,
+        );
+
+        const { error: upsertError } = await supabase.from('creative_emails').upsert(
+          {
+            organization_id: integration.organization_id,
+            integration_id: integration.id,
+            provider: integration.provider,
+            message_id: msg.messageId,
+            thread_id: msg.threadId ?? null,
+            subject: msg.subject ?? null,
+            from_address: msg.fromAddress,
+            from_name: msg.fromName ?? null,
+            to_addresses: msg.toAddresses,
+            cc_addresses: msg.ccAddresses ?? [],
+            bcc_addresses: msg.bccAddresses ?? [],
+            body_text: msg.bodyText ?? null,
+            body_html: msg.bodyHtml ?? null,
+            snippet: msg.snippet ?? null,
+            labels: msg.labels ?? [],
+            is_read: msg.isRead ?? false,
+            is_starred: msg.isStarred ?? false,
+            is_draft: msg.isDraft ?? false,
+            direction: msg.direction,
+            sent_at: msg.sentAt,
+            has_attachments: msg.hasAttachments ?? false,
+            entity_type: entityMatch?.entityType ?? null,
+            entity_id: entityMatch?.entityId ?? null,
+            matched_by: entityMatch?.matchedBy ?? null,
+          },
+          { onConflict: 'organization_id,provider,message_id' },
+        );
+
+        if (upsertError) {
+          logEdgeEvent('warn', { fn: FN, integration_id: integration.id, message_id: msg.messageId, error: upsertError.message });
+          continue;
+        }
+        messagesSynced++;
+      }
+
+      // I10: Only update last_sync_at if at least one message was synced
+      if (messagesSynced > 0) {
+        await supabase
+          .from('integration_connections')
+          .update({ last_sync_at: new Date().toISOString() })
+          .eq('id', integration.id);
+      }
+
+      synced += messagesSynced;
+      logEdgeEvent('info', {
+        fn: FN,
+        integration_id: integration.id,
+        provider: integration.provider,
+        messages_synced: messagesSynced,
+      });
+    } catch (err) {
+      errors++;
+      const errMsg = err instanceof Error ? err.message : String(err);
+      logEdgeEvent('error', {
+        fn: FN,
+        integration_id: integration.id,
+        provider: integration.provider,
+        error: errMsg,
+      });
+
+      // C4: Wrap error-status DB update in try/catch
+      try {
+        await supabase
+          .from('integration_connections')
+          .update({ status: 'error', last_error: errMsg })
+          .eq('id', integration.id);
+      } catch (updateErr) {
+        logEdgeEvent('error', { fn: FN, integration_id: integration.id, error: 'failed_to_update_error_status' });
+      }
+    }
+  }
+
+  logEdgeEvent('info', { fn: FN, synced, errors, integrations: (integrations ?? []).length });
+
+  return new Response(JSON.stringify({ synced, errors }), {
+    status: 200,
+    headers: { 'Content-Type': 'application/json' },
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Gmail API fetch
+// ---------------------------------------------------------------------------
+
+async function fetchGmailMessages(
+  metadata: Record<string, unknown>,
+  since: Date,
+): Promise<RawEmail[]> {
+  const accessToken = metadata.gmail_access_token as string;
+  if (!accessToken) return [];
+
+  const afterEpoch = Math.floor(since.getTime() / 1000);
+  const query = `after:${afterEpoch}`;
+
+  // List message IDs
+  // Capped at 50 per sync cycle; cron frequency ensures no messages are lost
+  const listRes = await fetch(
+    `https://gmail.googleapis.com/gmail/v1/users/me/messages?q=${encodeURIComponent(query)}&maxResults=50`,
+    { headers: { Authorization: `Bearer ${accessToken}` } },
+  );
+
+  if (!listRes.ok) {
+    throw new Error(`Gmail list failed: ${listRes.status} ${await listRes.text()}`);
+  }
+
+  const listBody = await listRes.json() as { messages?: Array<{ id: string; threadId: string }> };
+  if (!listBody.messages?.length) return [];
+
+  // C2: Batch fetch messages in chunks of 10
+  const BATCH_SIZE = 10;
+  const results: RawEmail[] = [];
+  for (let i = 0; i < listBody.messages.length; i += BATCH_SIZE) {
+    const batch = listBody.messages.slice(i, i + BATCH_SIZE);
+    const settled = await Promise.allSettled(
+      batch.map(async (ref) => {
+        const msgRes = await fetch(
+          `https://gmail.googleapis.com/gmail/v1/users/me/messages/${ref.id}?format=full`,
+          { headers: { Authorization: `Bearer ${accessToken}` } },
+        );
+        if (!msgRes.ok) return null;
+        const msg = await msgRes.json() as GmailMessage;
+        return parseGmailMessage(msg, metadata.gmail_account_email as string);
+      }),
+    );
+    for (const r of settled) {
+      if (r.status === 'fulfilled' && r.value) results.push(r.value);
+    }
+  }
+
+  return results;
+}
+
 function parseGmailMessage(msg: GmailMessage, accountEmail: string): RawEmail | null {
   const headers = msg.payload.headers;
   const getHeader = (name: string) => headers.find((h) => h.name.toLowerCase() === name.toLowerCase())?.value ?? '';
@@ -236,10 +318,10 @@ function parseGmailMessage(msg: GmailMessage, accountEmail: string): RawEmail | 
   const toParsed = parseEmailList(to);
   const ccParsed = parseEmailList(cc);
 
-  // Determine direction
+  // M14: Guard against empty accountEmail
   const fromEmail = fromParsed.email.toLowerCase();
   const direction: 'inbound' | 'outbound' =
-    fromEmail === accountEmail?.toLowerCase() ? 'outbound' : 'inbound';
+    accountEmail && fromEmail === accountEmail.toLowerCase() ? 'outbound' : 'inbound';
 
   // Extract body
   let bodyText = '';
@@ -266,7 +348,8 @@ function parseGmailMessage(msg: GmailMessage, accountEmail: string): RawEmail | 
   return {
     messageId: msg.id,
     threadId: msg.threadId,
-    subject: subject || null,
+    // M15: Normalize subject handling
+    subject: subject ?? null,
     fromAddress: fromParsed.email,
     fromName: fromParsed.name || undefined,
     toAddresses: toParsed,
@@ -296,8 +379,16 @@ async function fetchOutlookMessages(
   if (!accessToken) return [];
 
   const sinceISO = since.toISOString();
-  const url =
-    `https://graph.microsoft.com/v1.0/me/messages?$filter=receivedDateTime ge ${sinceISO}&$top=50&$orderby=receivedDateTime desc&$select=id,conversationId,subject,from,toRecipients,ccRecipients,bccRecipients,body,bodyPreview,isRead,isDraft,hasAttachments,receivedDateTime,flag,categories`;
+
+  // I6: Use URLSearchParams for proper URL encoding
+  // Capped at 50 per sync cycle; cron frequency ensures no messages are lost
+  const params = new URLSearchParams({
+    '$filter': `receivedDateTime ge ${sinceISO}`,
+    '$top': '50',
+    '$orderby': 'receivedDateTime desc',
+    '$select': 'id,conversationId,subject,from,toRecipients,ccRecipients,bccRecipients,body,bodyPreview,isRead,isDraft,hasAttachments,receivedDateTime,flag,categories',
+  });
+  const url = `https://graph.microsoft.com/v1.0/me/messages?${params.toString()}`;
 
   const res = await fetch(url, {
     headers: { Authorization: `Bearer ${accessToken}` },
@@ -313,33 +404,17 @@ async function fetchOutlookMessages(
   return (body.value ?? []).map((msg) => parseOutlookMessage(msg, accountEmail));
 }
 
-interface OutlookMessage {
-  id: string;
-  conversationId?: string;
-  subject?: string;
-  from?: { emailAddress: { address: string; name?: string } };
-  toRecipients?: Array<{ emailAddress: { address: string; name?: string } }>;
-  ccRecipients?: Array<{ emailAddress: { address: string; name?: string } }>;
-  bccRecipients?: Array<{ emailAddress: { address: string; name?: string } }>;
-  body?: { contentType: string; content: string };
-  bodyPreview?: string;
-  isRead?: boolean;
-  isDraft?: boolean;
-  hasAttachments?: boolean;
-  receivedDateTime: string;
-  flag?: { flagStatus?: string };
-  categories?: string[];
-}
-
 function parseOutlookMessage(msg: OutlookMessage, accountEmail: string): RawEmail {
   const fromEmail = msg.from?.emailAddress?.address ?? '';
+  // M14: Guard against empty accountEmail
   const direction: 'inbound' | 'outbound' =
-    fromEmail.toLowerCase() === accountEmail.toLowerCase() ? 'outbound' : 'inbound';
+    accountEmail && fromEmail.toLowerCase() === accountEmail.toLowerCase() ? 'outbound' : 'inbound';
 
   return {
     messageId: msg.id,
     threadId: msg.conversationId,
-    subject: msg.subject,
+    // M15: Normalize subject handling
+    subject: msg.subject ?? null,
     fromAddress: fromEmail,
     fromName: msg.from?.emailAddress?.name,
     toAddresses: (msg.toRecipients ?? []).map((r) => ({
@@ -368,14 +443,14 @@ function parseOutlookMessage(msg: OutlookMessage, accountEmail: string): RawEmai
 }
 
 // ---------------------------------------------------------------------------
-// Entity auto-matching
+// Entity auto-matching (in-memory, no DB queries)
 // ---------------------------------------------------------------------------
 
-async function matchEntity(
-  supabase: any,
-  organizationId: string,
+function matchEntity(
+  contacts: PrefetchedContact[],
+  clients: PrefetchedClient[],
   email: RawEmail,
-): Promise<EntityMatch | null> {
+): EntityMatch | null {
   // Collect all email addresses from this message
   const allAddresses = [
     email.fromAddress,
@@ -385,46 +460,30 @@ async function matchEntity(
 
   for (const addr of allAddresses) {
     // 1. Exact contact email match
-    const { data: contact } = await supabase
-      .from('creative_contacts')
-      .select('id')
-      .eq('organization_id', organizationId)
-      .eq('email', addr.toLowerCase())
-      .order('updated_at', { ascending: false })
-      .limit(1)
-      .maybeSingle();
+    const contact = contacts.find(
+      (c) => c.email.toLowerCase() === addr.toLowerCase(),
+    );
 
     if (contact) {
       return { entityType: 'contact', entityId: contact.id, matchedBy: 'auto_email' };
     }
 
     // 2. Domain match against clients
-    // NOTE: creative_clients has `website` not `domain`.
-    // Extract domain from website URL for comparison.
     const domain = addr.split('@')[1]?.toLowerCase();
     if (domain) {
-      const { data: client } = await supabase
-        .from('creative_clients')
-        .select('id, website')
-        .eq('organization_id', organizationId)
-        .not('website', 'is', null)
-        .order('updated_at', { ascending: false });
-
-      if (client) {
-        const matched = client.find((c: { id: string; website: string }) => {
-          try {
-            const clientDomain = new URL(
-              c.website.startsWith('http') ? c.website : `https://${c.website}`,
-            ).hostname.replace(/^www\./, '');
-            return clientDomain === domain;
-          } catch {
-            return c.website.toLowerCase().includes(domain);
-          }
-        });
-
-        if (matched) {
-          return { entityType: 'client', entityId: matched.id, matchedBy: 'auto_domain' };
+      const matched = clients.find((c) => {
+        try {
+          const clientDomain = new URL(
+            c.website.startsWith('http') ? c.website : `https://${c.website}`,
+          ).hostname.replace(/^www\./, '');
+          return clientDomain === domain;
+        } catch {
+          return c.website.toLowerCase().includes(domain);
         }
+      });
+
+      if (matched) {
+        return { entityType: 'client', entityId: matched.id, matchedBy: 'auto_domain' };
       }
     }
   }
@@ -449,10 +508,13 @@ function parseEmailList(raw: string): Array<{ email: string; name?: string }> {
   return raw.split(',').map((s) => parseEmailHeader(s.trim())).filter((e) => e.email);
 }
 
+// I8: Proper UTF-8 decoding for base64url data
 function base64UrlDecode(data: string): string {
   const base64 = data.replace(/-/g, '+').replace(/_/g, '/');
   try {
-    return atob(base64);
+    const binary = atob(base64);
+    const bytes = Uint8Array.from(binary, (c) => c.charCodeAt(0));
+    return new TextDecoder().decode(bytes);
   } catch {
     return '';
   }
