@@ -13,6 +13,7 @@ export interface ChatMessage {
   content: string;
   createdAt: string;
   isStreaming?: boolean;
+  sources?: Array<{ title: string; documentId: string }>;
 }
 
 export function useAiChatMessages() {
@@ -58,7 +59,7 @@ export function useAiChat() {
   const sendMessage = useCallback(async (
     message: string,
     context?: Record<string, unknown>,
-  ): Promise<string | null> => {
+  ): Promise<{ reply: string; sources?: Array<{ title: string; documentId: string }> } | null> => {
     if (!orgId) {
       setError('No organization context');
       return null;
@@ -93,7 +94,8 @@ export function useAiChat() {
       }
 
       qc.invalidateQueries({ queryKey: ['ai-chat-messages', orgId, user?.id] });
-      return reply;
+      qc.invalidateQueries({ queryKey: ['ai-usage'] });
+      return { reply, sources: data.sources };
     } catch (err) {
       if (err instanceof DOMException && err.name === 'AbortError') return null;
       const msg = err instanceof Error ? err.message : 'Unknown error';

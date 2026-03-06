@@ -8,6 +8,9 @@ import {
   User,
   AlertCircle,
   Shield,
+  Sparkles,
+  AlertTriangle,
+  FileText,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -19,6 +22,7 @@ import {
   SheetTitle,
 } from '@/components/ui/sheet';
 import { useAiChat, useAiChatMessages, type ChatMessage } from '@/hooks/useAiChat';
+import { useAiUsage } from '@/hooks/useAiUsage';
 import { cn } from '@/lib/utils';
 
 function formatTime(dateStr: string): string {
@@ -53,24 +57,32 @@ function MessageBubble({ message }: { message: ChatMessage }) {
           <Bot className="h-3.5 w-3.5 text-white" />
         </div>
       )}
-      <div
-        className={cn(
-          'rounded-2xl px-3.5 py-2.5 max-w-[85%] text-sm leading-relaxed',
-          isUser
-            ? 'bg-foreground text-background rounded-br-md'
-            : 'bg-muted text-foreground rounded-bl-md',
-          message.isStreaming && 'animate-pulse',
-        )}
-      >
-        <div className="whitespace-pre-wrap break-words">{message.content}</div>
+      <div className="max-w-[85%]">
         <div
           className={cn(
-            'text-[10px] mt-1',
-            isUser ? 'text-background/70' : 'text-muted-foreground',
+            'rounded-2xl px-3.5 py-2.5 text-sm leading-relaxed',
+            isUser
+              ? 'bg-foreground text-background rounded-br-md'
+              : 'bg-muted text-foreground rounded-bl-md',
+            message.isStreaming && 'animate-pulse',
           )}
         >
-          {formatTime(message.createdAt)}
+          <div className="whitespace-pre-wrap break-words">{message.content}</div>
+          <div
+            className={cn(
+              'text-[10px] mt-1',
+              isUser ? 'text-background/70' : 'text-muted-foreground',
+            )}
+          >
+            {formatTime(message.createdAt)}
+          </div>
         </div>
+        {!isUser && message.sources && message.sources.length > 0 && (
+          <div className="flex items-center gap-1 mt-1 px-1 text-[10px] text-muted-foreground">
+            <FileText className="h-2.5 w-2.5 shrink-0" />
+            <span>Sources: {message.sources.map((s) => s.title).join(', ')}</span>
+          </div>
+        )}
       </div>
       {isUser && (
         <div className="w-7 h-7 rounded-full bg-muted flex items-center justify-center shrink-0 mt-0.5">
@@ -97,6 +109,9 @@ export function AiChatSheet({ open, onOpenChange }: AiChatSheetProps) {
   const location = useLocation();
   const { data: messages = [], isLoading: messagesLoading } = useAiChatMessages();
   const { sendMessage, clearHistory, isLoading: isSending, error } = useAiChat();
+  const { data: budget } = useAiUsage();
+
+  const creditsExhausted = budget?.remaining !== null && budget?.remaining !== undefined && budget.remaining <= 0;
 
   const [input, setInput] = useState('');
   const [localMessages, setLocalMessages] = useState<ChatMessage[]>([]);
@@ -143,9 +158,9 @@ export function AiChatSheet({ open, onOpenChange }: AiChatSheetProps) {
     scrollToBottom();
 
     // Pass page context so AI knows where the user is
-    const reply = await sendMessage(text, { currentPage: location.pathname });
+    const result = await sendMessage(text, { currentPage: location.pathname });
 
-    if (reply) {
+    if (result) {
       setLocalMessages([]);
     } else {
       setLocalMessages([
@@ -196,6 +211,12 @@ export function AiChatSheet({ open, onOpenChange }: AiChatSheetProps) {
                   <Shield className="h-2.5 w-2.5" />
                   Private to your workspace
                 </p>
+                {budget && (
+                  <p className="text-[10px] text-white/70 flex items-center gap-1 font-normal">
+                    <Sparkles className="h-2.5 w-2.5" />
+                    {budget.remaining === null ? '\u221E Unlimited' : `Credits: ${budget.remaining} remaining`}
+                  </p>
+                )}
               </div>
             </div>
             {allMessages.length > 0 && (
@@ -265,6 +286,15 @@ export function AiChatSheet({ open, onOpenChange }: AiChatSheetProps) {
               )}
             </div>
           </ScrollArea>
+
+          {creditsExhausted && (
+            <div className="px-3 py-2 shrink-0">
+              <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800 text-amber-800 dark:text-amber-200 text-xs">
+                <AlertTriangle className="h-3.5 w-3.5 shrink-0" />
+                <span>AI credits exhausted. Upgrade your plan for more.</span>
+              </div>
+            </div>
+          )}
 
           <div className="p-3 border-t bg-muted/50 shrink-0">
             <div className="flex items-end gap-2">
