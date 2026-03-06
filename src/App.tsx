@@ -64,6 +64,7 @@ const CreativeEnrichment = lazy(() => import("./pages/creative/CreativeEnrichmen
 const CreativeResolution = lazy(() => import("./pages/creative/CreativeResolution"));
 const CreativeReports = lazy(() => import("./pages/creative/CreativeReports"));
 const CreativeKnowledgeBase = lazy(() => import("./pages/creative/CreativeKnowledgeBase"));
+const CreativeWorkflows = lazy(() => import("./pages/creative/CreativeWorkflows"));
 
 const queryClient = new QueryClient();
 
@@ -176,6 +177,7 @@ const App = () => (
                     <Route path="resolution" element={<CreativeResolution />} />
                     <Route path="reports" element={<CreativeReports />} />
                     <Route path="knowledge-base" element={<CreativeKnowledgeBase />} />
+                    <Route path="workflows" element={<CreativeWorkflows />} />
                   </Route>
 
                   {/* Legacy redirects */}
