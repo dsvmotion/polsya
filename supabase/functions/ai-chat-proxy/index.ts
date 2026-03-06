@@ -115,6 +115,140 @@ serve(async (req) => {
     .order('created_at', { ascending: false })
     .limit(5);
 
+  // ── Creative domain context ──────────────────────────────────────
+  const { count: creativeClientCount } = await supabaseAdmin
+    .from('creative_clients')
+    .select('id', { count: 'exact', head: true })
+    .eq('organization_id', organizationId);
+
+  const { data: recentClients } = await supabaseAdmin
+    .from('creative_clients')
+    .select('name, industry, status')
+    .eq('organization_id', organizationId)
+    .order('created_at', { ascending: false })
+    .limit(10);
+
+  const { count: creativeProjectCount } = await supabaseAdmin
+    .from('creative_projects')
+    .select('id', { count: 'exact', head: true })
+    .eq('organization_id', organizationId);
+
+  const { data: recentProjects } = await supabaseAdmin
+    .from('creative_projects')
+    .select('name, status, budget')
+    .eq('organization_id', organizationId)
+    .order('created_at', { ascending: false })
+    .limit(5);
+
+  const { count: creativeOpportunityCount } = await supabaseAdmin
+    .from('creative_opportunities')
+    .select('id', { count: 'exact', head: true })
+    .eq('organization_id', organizationId);
+
+  const { data: recentCreativeOpportunities } = await supabaseAdmin
+    .from('creative_opportunities')
+    .select('title, stage, value')
+    .eq('organization_id', organizationId)
+    .order('created_at', { ascending: false })
+    .limit(5);
+
+  const { count: creativeContactCount } = await supabaseAdmin
+    .from('creative_contacts')
+    .select('id', { count: 'exact', head: true })
+    .eq('organization_id', organizationId);
+
+  const { count: creativeActivityCount } = await supabaseAdmin
+    .from('creative_activities')
+    .select('id', { count: 'exact', head: true })
+    .eq('organization_id', organizationId);
+
+  const { data: recentCreativeActivities } = await supabaseAdmin
+    .from('creative_activities')
+    .select('activity_type, title, occurred_at')
+    .eq('organization_id', organizationId)
+    .order('occurred_at', { ascending: false })
+    .limit(5);
+
+  // ── Credit check ────────────────────────────────────────────────
+  const { data: budgetData } = await supabaseAdmin
+    .rpc('get_org_ai_budget', { p_org_id: organizationId });
+
+  const budget = Array.isArray(budgetData) ? budgetData[0] : budgetData;
+  const monthlyCredits = budget?.monthly_credits ?? null;
+  const creditsUsed = budget?.credits_used ?? 0;
+  const creditsPurchased = budget?.credits_purchased ?? 0;
+  const aiFeatures: string[] = budget?.ai_features ?? ['chat', 'rag', 'documents'];
+
+  // Check if credits are exhausted (null = unlimited)
+  if (monthlyCredits !== null && creditsUsed >= monthlyCredits + creditsPurchased) {
+    return jsonResponse({
+      error: 'AI credits exhausted for this month. Upgrade your plan for more credits.',
+      code: 'CREDITS_EXHAUSTED',
+    }, 402, headers);
+  }
+
+  // ── RAG retrieval (if org has 'rag' feature) ────────────────────
+  let ragContext = '';
+  let ragSources: Array<{ title: string; documentId: string }> = [];
+  let usedRag = false;
+
+  if (aiFeatures.includes('rag')) {
+    try {
+      // Embed the user message
+      const embeddingRes = await fetch('https://api.openai.com/v1/embeddings', {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${openaiKey}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          model: Deno.env.get('OPENAI_EMBEDDING_MODEL') ?? 'text-embedding-3-small',
+          input: userMessage,
+        }),
+      });
+
+      if (embeddingRes.ok) {
+        const embData = (await embeddingRes.json()) as { data?: Array<{ embedding: number[] }> };
+        const queryEmbedding = embData.data?.[0]?.embedding;
+
+        if (queryEmbedding) {
+          // Search for matching chunks
+          const { data: chunks } = await supabaseAdmin
+            .rpc('match_document_chunks', {
+              query_embedding: JSON.stringify(queryEmbedding),
+              match_org_id: organizationId,
+              match_threshold: 0.7,
+              match_count: 5,
+            });
+
+          if (chunks && chunks.length > 0) {
+            usedRag = true;
+            const seen = new Set<string>();
+            ragSources = chunks
+              .filter((c: { document_id: string; title: string }) => {
+                if (seen.has(c.document_id)) return false;
+                seen.add(c.document_id);
+                return true;
+              })
+              .map((c: { document_id: string; title: string }) => ({
+                title: c.title,
+                documentId: c.document_id,
+              }));
+
+            ragContext = `\n\nKNOWLEDGE BASE CONTEXT:\nThe following snippets were retrieved from the organization's uploaded documents and may be relevant to the user's question:\n\n${
+              chunks.map((c: { content: string; title: string; similarity: number }, i: number) =>
+                `[Source: ${c.title}] (relevance: ${(c.similarity * 100).toFixed(0)}%)\n${c.content}`
+              ).join('\n\n---\n\n')
+            }\n\nUse these snippets to inform your answer when relevant. Cite the source document title when referencing this information.`;
+          }
+        }
+      }
+    } catch (ragErr) {
+      logEdgeEvent('warn', { fn: 'ai-chat-proxy', op: 'rag-retrieval', error: ragErr instanceof Error ? ragErr.message : String(ragErr) });
+      // RAG failure is non-fatal — continue without knowledge base context
+    }
+  }
+
   // ── Build system prompt ───────────────────────────────────────────
   const entityLabel = org?.entity_label_plural || 'entities';
   const systemPrompt = buildSystemPrompt({
@@ -130,6 +264,16 @@ serve(async (req) => {
     recentEntities: recentEntities ?? [],
     recentOpportunities: recentOpportunities ?? [],
     additionalContext: body.context ?? {},
+    creativeClientCount: creativeClientCount ?? 0,
+    recentClients: recentClients ?? [],
+    creativeProjectCount: creativeProjectCount ?? 0,
+    recentProjects: recentProjects ?? [],
+    creativeOpportunityCount: creativeOpportunityCount ?? 0,
+    recentCreativeOpportunities: recentCreativeOpportunities ?? [],
+    creativeContactCount: creativeContactCount ?? 0,
+    creativeActivityCount: creativeActivityCount ?? 0,
+    recentCreativeActivities: recentCreativeActivities ?? [],
+    ragContext,
   });
 
   // ── Conversation history (scoped to this user only) ───────────────
@@ -237,7 +381,47 @@ serve(async (req) => {
 
   logEdgeEvent('info', { fn: 'ai-chat-proxy', organizationId, userId: user.id, provider, model });
 
-  return jsonResponse({ reply: assistantContent }, 200, headers);
+  // ── Credit deduction ────────────────────────────────────────────
+  const creditCost = usedRag ? 2 : 1;
+  const currentPeriod = new Date().toISOString().slice(0, 7) + '-01';
+  try {
+    const { data: existingUsage } = await supabaseAdmin
+      .from('ai_usage_monthly')
+      .select('credits_used, operation_breakdown')
+      .eq('organization_id', organizationId)
+      .eq('period', currentPeriod)
+      .maybeSingle();
+
+    if (existingUsage) {
+      const breakdown = (existingUsage.operation_breakdown ?? {}) as Record<string, number>;
+      const opKey = usedRag ? 'rag_chat' : 'chat';
+      await supabaseAdmin
+        .from('ai_usage_monthly')
+        .update({
+          credits_used: (existingUsage.credits_used ?? 0) + creditCost,
+          operation_breakdown: { ...breakdown, [opKey]: (breakdown[opKey] ?? 0) + 1 },
+        })
+        .eq('organization_id', organizationId)
+        .eq('period', currentPeriod);
+    } else {
+      const opKey = usedRag ? 'rag_chat' : 'chat';
+      await supabaseAdmin
+        .from('ai_usage_monthly')
+        .insert({
+          organization_id: organizationId,
+          period: currentPeriod,
+          credits_used: creditCost,
+          operation_breakdown: { [opKey]: 1 },
+        });
+    }
+  } catch (creditErr) {
+    logEdgeEvent('warn', { fn: 'ai-chat-proxy', op: 'credit-deduction', error: creditErr instanceof Error ? creditErr.message : String(creditErr) });
+  }
+
+  return jsonResponse({
+    reply: assistantContent,
+    ...(ragSources.length > 0 ? { sources: ragSources } : {}),
+  }, 200, headers);
 });
 
 // ── System prompt builder ─────────────────────────────────────────────
@@ -255,6 +439,16 @@ interface SystemPromptData {
   recentEntities: Array<{ name: string; city: string; province: string; commercial_status: string; client_type: string }>;
   recentOpportunities: Array<{ title: string; stage: string; amount: number; expected_close_date: string }>;
   additionalContext: Record<string, unknown>;
+  creativeClientCount: number;
+  recentClients: Array<{ name: string; industry: string; status: string }>;
+  creativeProjectCount: number;
+  recentProjects: Array<{ name: string; status: string; budget: number }>;
+  creativeOpportunityCount: number;
+  recentCreativeOpportunities: Array<{ title: string; stage: string; value: number }>;
+  creativeContactCount: number;
+  creativeActivityCount: number;
+  recentCreativeActivities: Array<{ activity_type: string; title: string; occurred_at: string }>;
+  ragContext: string;
 }
 
 function buildSystemPrompt(data: SystemPromptData): string {
@@ -267,6 +461,30 @@ function buildSystemPrompt(data: SystemPromptData): string {
   const oppSummary = data.recentOpportunities.length > 0
     ? `\nRecent opportunities:\n${data.recentOpportunities.map(o =>
         `- ${o.title}: ${o.stage} stage, ${data.currency} ${o.amount}${o.expected_close_date ? `, close: ${o.expected_close_date}` : ''}`
+      ).join('\n')}`
+    : '';
+
+  const clientSummary = data.recentClients.length > 0
+    ? `\nRecent creative clients:\n${data.recentClients.map(c =>
+        `- ${c.name} (${c.industry || 'no industry'}, ${c.status})`
+      ).join('\n')}`
+    : '';
+
+  const projectSummary = data.recentProjects.length > 0
+    ? `\nRecent creative projects:\n${data.recentProjects.map(p =>
+        `- ${p.name}: ${p.status}${p.budget ? `, budget: ${data.currency} ${p.budget}` : ''}`
+      ).join('\n')}`
+    : '';
+
+  const creativeOppSummary = data.recentCreativeOpportunities.length > 0
+    ? `\nRecent creative opportunities:\n${data.recentCreativeOpportunities.map(o =>
+        `- ${o.title}: ${o.stage} stage${o.value ? `, value: ${data.currency} ${o.value}` : ''}`
+      ).join('\n')}`
+    : '';
+
+  const creativeActSummary = data.recentCreativeActivities.length > 0
+    ? `\nRecent creative activities:\n${data.recentCreativeActivities.map(a =>
+        `- ${a.title} (${a.activity_type}, ${a.occurred_at})`
       ).join('\n')}`
     : '';
 
@@ -286,8 +504,13 @@ WORKSPACE OVERVIEW:
 - Total contacts: ${data.contactCount}
 - Total opportunities: ${data.opportunityCount}
 - Total activities: ${data.activityCount}
-${entitySummary}${oppSummary}${additionalCtx}
-
+- Total creative clients: ${data.creativeClientCount}
+- Total creative projects: ${data.creativeProjectCount}
+- Total creative opportunities: ${data.creativeOpportunityCount}
+- Total creative contacts: ${data.creativeContactCount}
+- Total creative activities: ${data.creativeActivityCount}
+${entitySummary}${oppSummary}${clientSummary}${projectSummary}${creativeOppSummary}${creativeActSummary}${additionalCtx}
+${data.ragContext}
 GUIDELINES:
 - Be concise but helpful. Use bullet points for lists.
 - Reference specific data when possible (entity names, opportunity stages, etc.).
