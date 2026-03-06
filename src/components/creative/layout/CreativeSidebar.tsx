@@ -21,6 +21,8 @@ import {
   GitMerge,
   BarChart3,
   BookOpen,
+  Mail,
+  Calendar,
 } from 'lucide-react';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
@@ -56,6 +58,8 @@ const mainNavItems = [
   { label: 'Enrichment', icon: Layers, path: '/creative/enrichment' },
   { label: 'Resolution', icon: GitMerge, path: '/creative/resolution' },
   { label: 'Ingestion', icon: Download, path: '/creative/ingestion' },
+  { label: 'Email', icon: Mail, path: '/creative/inbox' },
+  { label: 'Calendar', icon: Calendar, path: '/creative/calendar' },
 ];
 
 const bottomNavItems = [
