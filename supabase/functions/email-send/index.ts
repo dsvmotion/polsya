@@ -3,6 +3,7 @@ import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 import { handleCors, corsHeaders as makeCorsHeaders } from '../_shared/cors.ts';
 import { logEdgeEvent } from '../_shared/observability.ts';
 import { resolveCredentials } from '../_shared/credential-resolver.ts';
+import { SmtpClient } from '../_shared/smtp-client.ts';
 
 const FN = 'email-send';
 
@@ -135,8 +136,10 @@ serve(async (req) => {
       sentMessageId = await sendViaGmail(metadata, { to, cc, bcc, subject, bodyHtml, replyToMessageId });
     } else if (integration.provider === 'outlook') {
       sentMessageId = await sendViaOutlook(metadata, { to, cc, bcc, subject, bodyHtml, replyToMessageId });
+    } else if (integration.provider === 'email_imap') {
+      sentMessageId = await sendViaSmtp(metadata, { to, cc, bcc, subject, bodyHtml, replyToMessageId });
     } else {
-      return jsonResponse({ error: 'SMTP send not yet supported' }, 501, origin);
+      return jsonResponse({ error: `Unsupported provider: ${integration.provider}` }, 501, origin);
     }
 
     // Insert sent message into creative_emails with entity matching
@@ -152,7 +155,9 @@ serve(async (req) => {
       provider: integration.provider,
       message_id: sentMessageId,
       subject,
-      from_address: (metadata[`${integration.provider}_account_email`] as string) ?? '',
+      from_address: integration.provider === 'email_imap'
+        ? (metadata.account_email as string) ?? ''
+        : (metadata[`${integration.provider}_account_email`] as string) ?? '',
       to_addresses: to.map((email: string) => ({ email })),
       cc_addresses: (cc ?? []).map((email: string) => ({ email })),
       bcc_addresses: (bcc ?? []).map((email: string) => ({ email })),
@@ -262,6 +267,53 @@ async function sendViaOutlook(metadata: Record<string, unknown>, params: SendPar
 
   // Outlook sendMail returns 202 with no body; generate a client-side ID
   return `outlook-sent-${Date.now()}`;
+}
+
+// ---------------------------------------------------------------------------
+// SMTP send (for IMAP/SMTP provider)
+// ---------------------------------------------------------------------------
+
+async function sendViaSmtp(metadata: Record<string, unknown>, params: SendParams): Promise<string> {
+  const smtpHost = metadata.smtp_host as string;
+  const smtpPort = (metadata.smtp_port as number) ?? 465;
+  const smtpSecure = (metadata.smtp_secure as boolean) ?? true;
+  const username = metadata.username as string;
+  const password = metadata.password as string;
+  const accountEmail = (metadata.account_email as string) ?? '';
+
+  if (!smtpHost || !username || !password) {
+    throw new Error('SMTP credentials not configured');
+  }
+
+  const fromAddress = accountEmail || username;
+  const mimeMessage = buildMimeMessage(fromAddress, params);
+
+  const client = new SmtpClient();
+
+  try {
+    await client.connect({
+      host: smtpHost,
+      port: smtpPort,
+      secure: smtpSecure,
+      username,
+      password,
+    });
+
+    await client.sendMail(
+      fromAddress,
+      params.to,
+      params.cc ?? [],
+      params.bcc ?? [],
+      mimeMessage,
+    );
+
+    await client.quit();
+  } finally {
+    client.close();
+  }
+
+  // Generate a client-side message ID (SMTP doesn't return one in sendMail)
+  return `smtp-sent-${Date.now()}`;
 }
 
 // ---------------------------------------------------------------------------
