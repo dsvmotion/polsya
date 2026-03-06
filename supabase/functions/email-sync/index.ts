@@ -2,7 +2,7 @@ import { serve } from 'https://deno.land/std@0.168.0/http/server.ts';
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 import { logEdgeEvent } from '../_shared/observability.ts';
 import { resolveCredentials } from '../_shared/credential-resolver.ts';
-import { ImapClient } from '../_shared/imap-client.ts';
+import { ImapClient, type ImapFetchedMessage } from '../_shared/imap-client.ts';
 
 // ---------------------------------------------------------------------------
 // Constants
@@ -459,7 +459,10 @@ async function fetchImapMessages(
   const password = metadata.password as string;
   const accountEmail = (metadata.account_email as string) ?? '';
 
-  if (!host || !username || !password) return [];
+  if (!host || !username || !password) {
+    logEdgeEvent('warn', { fn: FN, error: 'IMAP credentials incomplete: missing host, username, or password' });
+    return [];
+  }
 
   const client = new ImapClient();
 
@@ -498,7 +501,7 @@ async function fetchImapMessages(
 }
 
 function parseImapMessage(
-  msg: { seq: string; headers: Record<string, string>; bodyText: string; flags: string[] },
+  msg: ImapFetchedMessage,
   accountEmail: string,
 ): RawEmail | null {
   const fromRaw = msg.headers['from'] ?? '';
@@ -517,7 +520,7 @@ function parseImapMessage(
     accountEmail && fromEmail === accountEmail.toLowerCase() ? 'outbound' : 'inbound';
 
   // Determine if body is HTML or plain text
-  const isHtml = msg.bodyText.includes('<html') || msg.bodyText.includes('<div') || msg.bodyText.includes('<p');
+  const isHtml = /<(?:html|body|div|p|br|table|span)\b/i.test(msg.bodyText);
   const bodyHtml = isHtml ? msg.bodyText : undefined;
   const bodyText = isHtml ? undefined : msg.bodyText;
 
@@ -525,7 +528,13 @@ function parseImapMessage(
   const snippetSource = bodyText ?? msg.bodyText.replace(/<[^>]+>/g, '');
   const snippet = snippetSource.substring(0, 200).trim() || undefined;
 
-  const sentAt = dateRaw ? new Date(dateRaw).toISOString() : new Date().toISOString();
+  let sentAt: string;
+  if (dateRaw) {
+    const parsed = new Date(dateRaw);
+    sentAt = isNaN(parsed.getTime()) ? new Date().toISOString() : parsed.toISOString();
+  } else {
+    sentAt = new Date().toISOString();
+  }
 
   return {
     messageId,
