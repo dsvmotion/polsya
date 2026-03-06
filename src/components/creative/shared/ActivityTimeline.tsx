@@ -1,9 +1,10 @@
-import { Phone, Mail, Users, FileText, CheckSquare, Trash2 } from 'lucide-react';
+import { Phone, Mail, Users, FileText, CheckSquare, Trash2, CheckCircle2, Circle } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { useCreativeActivities, useDeleteActivity } from '@/hooks/useCreativeActivities';
+import { useCreativeActivities, useDeleteActivity, useToggleComplete } from '@/hooks/useCreativeActivities';
 import { ACTIVITY_TYPE_LABELS, ACTIVITY_TYPE_COLORS } from '@/types/creative-activity';
 import type { ActivityType } from '@/types/creative-activity';
+import { cn } from '@/lib/utils';
 
 const ACTIVITY_ICONS: Record<ActivityType, typeof Phone> = {
   call: Phone,
@@ -33,6 +34,7 @@ interface ActivityTimelineProps {
 export function ActivityTimeline({ entityType, entityId, onAddClick }: ActivityTimelineProps) {
   const { data: activities = [], isLoading } = useCreativeActivities(entityType, entityId);
   const deleteMutation = useDeleteActivity();
+  const toggleMutation = useToggleComplete();
 
   if (isLoading) {
     return (
@@ -70,12 +72,32 @@ export function ActivityTimeline({ entityType, entityId, onAddClick }: ActivityT
         const colors = ACTIVITY_TYPE_COLORS[activity.activityType];
         return (
           <div key={activity.id} className="flex items-start gap-3 py-2 group">
+            {activity.activityType === 'task' && (
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  toggleMutation.mutate({ id: activity.id, isCompleted: activity.isCompleted });
+                }}
+                className="shrink-0 mt-0.5"
+              >
+                {activity.isCompleted ? (
+                  <CheckCircle2 className="h-5 w-5 text-green-500" />
+                ) : (
+                  <Circle className="h-5 w-5 text-muted-foreground hover:text-green-500 transition-colors" />
+                )}
+              </button>
+            )}
             <div className={`flex items-center justify-center h-8 w-8 rounded-full shrink-0 ${colors.bg}`}>
               <Icon className={`h-4 w-4 ${colors.text}`} />
             </div>
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-2">
-                <span className="text-sm font-medium truncate">{activity.title}</span>
+                <span className={cn(
+                  'text-sm font-medium truncate',
+                  activity.isCompleted && 'line-through text-muted-foreground'
+                )}>
+                  {activity.title}
+                </span>
                 <Badge variant="secondary" className="text-[10px] px-1.5 py-0 shrink-0">
                   {ACTIVITY_TYPE_LABELS[activity.activityType]}
                 </Badge>
@@ -90,6 +112,16 @@ export function ActivityTimeline({ entityType, entityId, onAddClick }: ActivityT
                 )}
                 {activity.outcome && (
                   <span className="text-xs text-muted-foreground">· {activity.outcome}</span>
+                )}
+                {activity.dueDate && (
+                  <span className={cn(
+                    'text-xs',
+                    !activity.isCompleted && new Date(activity.dueDate) < new Date()
+                      ? 'text-red-600 font-medium'
+                      : 'text-muted-foreground'
+                  )}>
+                    · Due {new Date(activity.dueDate).toLocaleDateString()}
+                  </span>
                 )}
               </div>
             </div>
