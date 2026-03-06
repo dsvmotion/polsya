@@ -7,13 +7,18 @@ import { useAuth } from '@/contexts/AuthContext';
 
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
 
+export interface ChatSource {
+  title: string;
+  documentId: string;
+}
+
 export interface ChatMessage {
   id: string;
   role: 'user' | 'assistant' | 'system';
   content: string;
   createdAt: string;
   isStreaming?: boolean;
-  sources?: Array<{ title: string; documentId: string }>;
+  sources?: ChatSource[];
 }
 
 export function useAiChatMessages() {
@@ -59,7 +64,7 @@ export function useAiChat() {
   const sendMessage = useCallback(async (
     message: string,
     context?: Record<string, unknown>,
-  ): Promise<{ reply: string; sources?: Array<{ title: string; documentId: string }> } | null> => {
+  ): Promise<{ reply: string; sources?: ChatSource[] } | null> => {
     if (!orgId) {
       setError('No organization context');
       return null;
@@ -94,7 +99,7 @@ export function useAiChat() {
       }
 
       qc.invalidateQueries({ queryKey: ['ai-chat-messages', orgId, user?.id] });
-      qc.invalidateQueries({ queryKey: ['ai-usage'] });
+      qc.invalidateQueries({ queryKey: ['ai-usage', orgId] });
       return { reply, sources: data.sources };
     } catch (err) {
       if (err instanceof DOMException && err.name === 'AbortError') return null;

@@ -21,7 +21,7 @@ import {
   SheetHeader,
   SheetTitle,
 } from '@/components/ui/sheet';
-import { useAiChat, useAiChatMessages, type ChatMessage } from '@/hooks/useAiChat';
+import { useAiChat, useAiChatMessages, type ChatMessage, type ChatSource } from '@/hooks/useAiChat';
 import { useAiUsage } from '@/hooks/useAiUsage';
 import { cn } from '@/lib/utils';
 
@@ -112,10 +112,11 @@ export function AiChatSheet({ open, onOpenChange }: AiChatSheetProps) {
   const { data: budget } = useAiUsage();
 
   const creditsExhausted = budget?.remaining !== null && budget?.remaining !== undefined && budget.remaining <= 0;
+  const ragEnabled = budget?.aiFeatures?.includes('rag') ?? false;
 
   const [input, setInput] = useState('');
   const [localMessages, setLocalMessages] = useState<ChatMessage[]>([]);
-  const [sourcesMap, setSourcesMap] = useState<Record<string, Array<{ title: string; documentId: string }>>>({});
+  const [latestSources, setLatestSources] = useState<ChatSource[] | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
@@ -162,9 +163,7 @@ export function AiChatSheet({ open, onOpenChange }: AiChatSheetProps) {
     const result = await sendMessage(text, { currentPage: location.pathname });
 
     if (result) {
-      if (result.sources?.length) {
-        setSourcesMap((prev) => ({ ...prev, [result.reply]: result.sources! }));
-      }
+      setLatestSources(result.sources?.length ? result.sources : null);
       setLocalMessages([]);
     } else {
       setLocalMessages([
@@ -189,7 +188,7 @@ export function AiChatSheet({ open, onOpenChange }: AiChatSheetProps) {
 
   const handleClearHistory = async () => {
     setLocalMessages([]);
-    setSourcesMap({});
+    setLatestSources(null);
     await clearHistory();
   };
 
@@ -231,6 +230,7 @@ export function AiChatSheet({ open, onOpenChange }: AiChatSheetProps) {
                 className="h-7 w-7 p-0 text-white/70 hover:text-white hover:bg-white/10"
                 onClick={handleClearHistory}
                 title="Clear conversation"
+                aria-label="Clear conversation"
               >
                 <Trash2 className="h-3.5 w-3.5" />
               </Button>
@@ -275,17 +275,23 @@ export function AiChatSheet({ open, onOpenChange }: AiChatSheetProps) {
                 </div>
               )}
 
-              {allMessages.map((msg) => {
-                const mergedMsg = msg.role === 'assistant' && !msg.sources && sourcesMap[msg.content]
-                  ? { ...msg, sources: sourcesMap[msg.content] }
-                  : msg;
-                return <MessageBubble key={msg.id} message={mergedMsg} />;
-              })}
+              {(() => {
+                const lastAssistantIdx = allMessages.reduceRight(
+                  (found, msg, i) => found === -1 && msg.role === 'assistant' ? i : found,
+                  -1,
+                );
+                return allMessages.map((msg, i) => {
+                  const mergedMsg = i === lastAssistantIdx && latestSources?.length
+                    ? { ...msg, sources: latestSources }
+                    : msg;
+                  return <MessageBubble key={msg.id} message={mergedMsg} />;
+                });
+              })()}
 
               {isSending && (
                 <>
                   <TypingIndicator />
-                  {budget?.aiFeatures?.includes('rag') && (
+                  {ragEnabled && (
                     <div className="px-12 text-[10px] text-muted-foreground animate-pulse">
                       Searching knowledge base...
                     </div>
@@ -323,13 +329,14 @@ export function AiChatSheet({ open, onOpenChange }: AiChatSheetProps) {
                 placeholder="Ask about your sales data..."
                 className="min-h-[40px] max-h-[120px] resize-none text-sm"
                 rows={1}
-                disabled={isSending}
+                disabled={isSending || creditsExhausted}
               />
               <Button
                 onClick={handleSend}
-                disabled={!input.trim() || isSending}
+                disabled={!input.trim() || isSending || creditsExhausted}
                 size="sm"
                 className="h-10 w-10 p-0 shrink-0"
+                aria-label={isSending ? "Sending message" : "Send message"}
               >
                 {isSending ? (
                   <Loader2 className="h-4 w-4 animate-spin" />
