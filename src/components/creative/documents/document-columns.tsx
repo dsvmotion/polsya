@@ -1,7 +1,8 @@
 import type { ColumnDef } from '@tanstack/react-table';
-import type { AiDocument } from '@/types/ai-documents';
-import { DOCUMENT_SOURCE_LABELS, DOCUMENT_SOURCE_COLORS, DOCUMENT_STATUS_COLORS } from '@/types/ai-documents';
+import type { AiDocument, DocumentSourceType, DocumentStatus } from '@/types/ai-documents';
+import { DOCUMENT_SOURCE_LABELS, DOCUMENT_SOURCE_COLORS } from '@/types/ai-documents';
 import { DataTableColumnHeader } from '@/components/creative/shared/DataTableColumnHeader';
+import { DocumentStatusBadge } from '@/components/creative/documents/DocumentStatusBadge';
 import { Badge } from '@/components/ui/badge';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 
@@ -13,9 +14,9 @@ export const documentColumns: ColumnDef<AiDocument, unknown>[] = [
   },
   {
     accessorKey: 'sourceType',
-    header: ({ column }) => <DataTableColumnHeader column={column} title="Source" />,
+    header: ({ column }) => <DataTableColumnHeader column={column} title="Type" />,
     cell: ({ row }) => {
-      const sourceType = row.getValue('sourceType') as keyof typeof DOCUMENT_SOURCE_LABELS;
+      const sourceType = row.getValue('sourceType') as DocumentSourceType;
       const colors = DOCUMENT_SOURCE_COLORS[sourceType];
       return (
         <Badge variant="secondary" className={`${colors.bg} ${colors.text} border-0`}>
@@ -28,30 +29,20 @@ export const documentColumns: ColumnDef<AiDocument, unknown>[] = [
     accessorKey: 'status',
     header: ({ column }) => <DataTableColumnHeader column={column} title="Status" />,
     cell: ({ row }) => {
-      const status = row.getValue('status') as keyof typeof DOCUMENT_STATUS_COLORS;
-      const colors = DOCUMENT_STATUS_COLORS[status];
-      const label = status.charAt(0).toUpperCase() + status.slice(1);
-      const errorMessage = row.original.errorMessage;
+      const doc = row.original;
 
-      const badge = (
-        <Badge
-          variant="secondary"
-          className={`${colors.bg} ${colors.text} border-0 ${status === 'processing' ? 'animate-pulse' : ''}`}
-        >
-          {label}
-        </Badge>
-      );
-
-      if (status === 'error' && errorMessage) {
+      if (doc.status === 'error' && doc.errorMessage) {
         return (
           <Tooltip>
-            <TooltipTrigger asChild>{badge}</TooltipTrigger>
-            <TooltipContent>{errorMessage}</TooltipContent>
+            <TooltipTrigger asChild>
+              <DocumentStatusBadge status={doc.status} errorMessage={doc.errorMessage} />
+            </TooltipTrigger>
+            <TooltipContent>{doc.errorMessage}</TooltipContent>
           </Tooltip>
         );
       }
 
-      return badge;
+      return <DocumentStatusBadge status={doc.status} />;
     },
   },
   {

@@ -9,19 +9,20 @@ import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useToast } from '@/components/ui/use-toast';
-import { useUploadDocument } from '@/hooks/useAiDocuments';
+import { useUploadDocument, type UploadDocumentInput } from '@/hooks/useAiDocuments';
 import type { DocumentSourceType } from '@/types/ai-documents';
 
 interface DocumentUploadSheetProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  onSuccess?: () => void;
 }
 
 const fileSchema = z.object({ title: z.string().min(1, 'Title is required') });
 const textSchema = z.object({ title: z.string().min(1, 'Title is required'), content: z.string().min(1, 'Content is required') });
 const urlSchema = z.object({ title: z.string().min(1, 'Title is required'), url: z.string().url('Must be a valid URL') });
 
-export function DocumentUploadSheet({ open, onOpenChange }: DocumentUploadSheetProps) {
+export function DocumentUploadSheet({ open, onOpenChange, onSuccess }: DocumentUploadSheetProps) {
   const { toast } = useToast();
   const uploadMutation = useUploadDocument();
   const [activeTab, setActiveTab] = useState<DocumentSourceType>('pdf');
@@ -38,38 +39,29 @@ export function DocumentUploadSheet({ open, onOpenChange }: DocumentUploadSheetP
     setSelectedFile(null);
   }
 
-  async function handleFileSubmit(values: z.infer<typeof fileSchema>) {
-    if (!selectedFile) { toast({ title: 'Please select a file', variant: 'destructive' }); return; }
+  async function handleUpload(input: UploadDocumentInput, successTitle: string) {
     try {
-      await uploadMutation.mutateAsync({ title: values.title, sourceType: 'pdf', file: selectedFile });
-      toast({ title: 'Document uploaded', description: 'Processing will begin shortly.' });
+      await uploadMutation.mutateAsync(input);
+      toast({ title: successTitle, description: 'Processing will begin shortly.' });
       onOpenChange(false);
       resetAll();
+      onSuccess?.();
     } catch (err) {
       toast({ title: 'Upload failed', description: (err as Error).message, variant: 'destructive' });
     }
+  }
+
+  async function handleFileSubmit(values: z.infer<typeof fileSchema>) {
+    if (!selectedFile) { toast({ title: 'Please select a file', variant: 'destructive' }); return; }
+    await handleUpload({ title: values.title, sourceType: 'pdf', file: selectedFile }, 'Document uploaded');
   }
 
   async function handleTextSubmit(values: z.infer<typeof textSchema>) {
-    try {
-      await uploadMutation.mutateAsync({ title: values.title, sourceType: 'text', textContent: values.content });
-      toast({ title: 'Document created', description: 'Processing will begin shortly.' });
-      onOpenChange(false);
-      resetAll();
-    } catch (err) {
-      toast({ title: 'Upload failed', description: (err as Error).message, variant: 'destructive' });
-    }
+    await handleUpload({ title: values.title, sourceType: 'text', textContent: values.content }, 'Document created');
   }
 
   async function handleUrlSubmit(values: z.infer<typeof urlSchema>) {
-    try {
-      await uploadMutation.mutateAsync({ title: values.title, sourceType: 'url', url: values.url });
-      toast({ title: 'URL added', description: 'Processing will begin shortly.' });
-      onOpenChange(false);
-      resetAll();
-    } catch (err) {
-      toast({ title: 'Upload failed', description: (err as Error).message, variant: 'destructive' });
-    }
+    await handleUpload({ title: values.title, sourceType: 'url', url: values.url }, 'URL added');
   }
 
   return (
@@ -97,11 +89,12 @@ export function DocumentUploadSheet({ open, onOpenChange }: DocumentUploadSheetP
                     <FormMessage />
                   </FormItem>
                 )} />
-                <div className="space-y-2">
-                  <label className="text-sm font-medium">File *</label>
+                <FormItem>
+                  <FormLabel htmlFor="doc-file-input">File *</FormLabel>
                   <Input
+                    id="doc-file-input"
                     type="file"
-                    accept=".pdf,.txt"
+                    accept=".pdf"
                     onChange={(e) => {
                       const file = e.target.files?.[0] ?? null;
                       setSelectedFile(file);
@@ -110,7 +103,7 @@ export function DocumentUploadSheet({ open, onOpenChange }: DocumentUploadSheetP
                       }
                     }}
                   />
-                </div>
+                </FormItem>
                 <div className="flex justify-end gap-2 pt-4">
                   <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>Cancel</Button>
                   <Button type="submit" disabled={uploadMutation.isPending}>

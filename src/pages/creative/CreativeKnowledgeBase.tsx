@@ -38,7 +38,7 @@ export default function CreativeKnowledgeBase() {
         <div className="mt-4 flex items-center gap-2 text-sm text-muted-foreground">
           <span>AI Credits:</span>
           <span className="font-medium text-foreground">
-            {budget.remaining === null ? '\u221E' : `${budget.remaining} remaining`}
+            {budget.remaining === null ? '∞' : `${Math.max(0, budget.remaining)} remaining`}
           </span>
           <span>({budget.creditsUsed} used{budget.monthlyCredits !== null ? ` of ${budget.monthlyCredits + budget.creditsPurchased}` : ''})</span>
         </div>
