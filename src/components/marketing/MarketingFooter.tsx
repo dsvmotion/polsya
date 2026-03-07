@@ -71,7 +71,10 @@ export function MarketingFooter() {
           ))}
         </div>
         <div className="mt-12 pt-8 border-t border-gray-200/60 flex flex-col sm:flex-row justify-between items-center gap-4">
-          <span className="font-display text-lg font-semibold text-gray-900">{APP_NAME}</span>
+          <div className="flex items-center gap-2">
+            <img src="/polsya-logo-black.png" alt={APP_NAME} className="h-6 w-auto" onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
+            <span className="font-display text-lg font-semibold text-gray-900">{APP_NAME}</span>
+          </div>
           <p className="text-sm text-gray-400">
             &copy; {new Date().getFullYear()} {APP_NAME}. All rights reserved.
           </p>
