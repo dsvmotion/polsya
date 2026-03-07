@@ -35,7 +35,7 @@ export function MarketingNav() {
     >
       <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
         <Link to="/" className="flex items-center hover:opacity-80 transition-opacity">
-          <img src="/polsya-logo-black.png" alt={APP_NAME} className="h-9 w-auto" onError={(e) => {
+          <img src="/polsya-logo-black.png" alt={APP_NAME} className="h-12 w-auto" onError={(e) => {
             (e.target as HTMLImageElement).style.display = 'none';
           }} />
         </Link>

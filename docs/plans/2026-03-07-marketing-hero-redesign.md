@@ -1,3 +1,148 @@
+# Marketing Hero Redesign — Implementation Plan
+
+> **For Claude:** REQUIRED SUB-SKILL: Use superpowers:executing-plans to implement this plan task-by-task.
+
+**Goal:** Redesign the marketing homepage hero and top sections to match Clay.com / Attio.com quality — premium creative brand, not a generic SaaS template.
+
+**Architecture:** Visual-only changes to 4 files. No new components, no new dependencies, no routing/logic changes. HeroSection.tsx gets a full rewrite; MarketingNav.tsx, CustomerLogos.tsx, and index.css get targeted edits.
+
+**Tech Stack:** React, TypeScript, Tailwind CSS, Framer Motion (already installed), Lucide icons.
+
+---
+
+## Important Context
+
+- Tests exist at `src/test/marketing-home.test.tsx` — they check for text content like "discover creative talent", "start free trial", "Discover", "Enrich", "Connect", "Act", "intelligence sources"
+- The words "Discover", "Enrich", "Connect", "Act" appear in the **How It Works** section and **Pillar sections** of `Home.tsx` (which we do NOT modify), so removing the icon strip from HeroSection won't break tests
+- The hero H1 text and CTA labels must remain unchanged to pass tests
+- Existing CSS keyframes in `src/index.css`: `fadeIn`, `float`, `slideUpFade`, `gradientShift`
+- Logo assets: `/polsya-logo-black.png` (4000×4000), `/polsya-logo-white.png` (4000×4000)
+- Fonts: `font-display` = Labil Grotesk (headings), default = Plus Jakarta Sans (body)
+
+---
+
+### Task 1: Add CSS keyframes for marquee and gentle-float animations
+
+**Files:**
+- Modify: `src/index.css` (add keyframes inside the existing `@layer utilities` block, after line 373)
+
+**Step 1: Add the new keyframes and utility classes**
+
+In `src/index.css`, add these inside `@layer utilities { }` (before the closing `}`), right after the existing `@keyframes gradientShift` block:
+
+```css
+  @keyframes marquee {
+    0% {
+      transform: translateX(0);
+    }
+    100% {
+      transform: translateX(-50%);
+    }
+  }
+
+  @keyframes float-gentle {
+    0%, 100% {
+      transform: translateY(0) rotate(0deg);
+    }
+    50% {
+      transform: translateY(-12px) rotate(1deg);
+    }
+  }
+
+  @keyframes float-gentle-reverse {
+    0%, 100% {
+      transform: translateY(0) rotate(0deg);
+    }
+    50% {
+      transform: translateY(12px) rotate(-1deg);
+    }
+  }
+
+  .animate-marquee {
+    animation: marquee 30s linear infinite;
+  }
+
+  .animate-float-gentle {
+    animation: float-gentle 4s ease-in-out infinite;
+  }
+
+  .animate-float-gentle-reverse {
+    animation: float-gentle-reverse 5s ease-in-out infinite;
+  }
+```
+
+**Step 2: Verify build**
+
+Run: `cd /Users/diegosanjuanvillanueva/Desktop/polsya && npx vite build 2>&1 | tail -5`
+Expected: Build succeeds.
+
+**Step 3: Commit**
+
+```bash
+git add src/index.css
+git commit -m "feat(marketing): add marquee and float-gentle CSS animations"
+```
+
+---
+
+### Task 2: Fix MarketingNav logo size
+
+**Files:**
+- Modify: `src/components/marketing/MarketingNav.tsx`
+
+**Step 1: Increase logo from h-9 to h-12**
+
+In `MarketingNav.tsx`, find line 38:
+```tsx
+          <img src="/polsya-logo-black.png" alt={APP_NAME} className="h-9 w-auto" onError={(e) => {
+```
+
+Change `h-9` to `h-12`:
+```tsx
+          <img src="/polsya-logo-black.png" alt={APP_NAME} className="h-12 w-auto" onError={(e) => {
+```
+
+**Step 2: Run tests**
+
+Run: `cd /Users/diegosanjuanvillanueva/Desktop/polsya && npx vitest run src/test/marketing 2>&1 | tail -10`
+Expected: All marketing tests pass.
+
+**Step 3: Commit**
+
+```bash
+git add src/components/marketing/MarketingNav.tsx
+git commit -m "feat(marketing): increase nav logo size from h-9 to h-12"
+```
+
+---
+
+### Task 3: Rewrite HeroSection — Background, Copy, CTAs
+
+This is the first part of the HeroSection rewrite. We replace the background layers and keep the text/CTA structure intact.
+
+**Files:**
+- Modify: `src/components/marketing/HeroSection.tsx` (full rewrite — replace entire file)
+
+**Step 1: Replace HeroSection.tsx with the new version**
+
+Write the complete new `HeroSection.tsx`. The file structure:
+
+1. **Imports** — same icons as before + a few new ones
+2. **Mock data** — keep `mockCreatives` exactly as-is (the product screenshot uses it)
+3. **Floating illustration components** — new: small decorative UI card fragments for left/right side
+4. **Main HeroSection component** with:
+   - Rich gradient mesh background (multi-stop radials in indigo/violet/purple/warm)
+   - Subtle noise texture overlay (CSS only, no image)
+   - Geometric accent blobs (large blurred circles at low opacity)
+   - Badge + H1 + subtitle (same text content as current)
+   - CTAs (same as current)
+   - Enhanced social proof bar (wrapped in glass container, add mini-quote)
+   - Feature cards row (replaces icon strip) — 4 cards: AI Enrichment, Relationship Mapping, Smart Pipeline, Creative Intelligence
+   - Enhanced product screenshot (same content + callout annotations + stronger glow)
+
+Here is the complete replacement file content:
+
+```tsx
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { motion } from 'framer-motion';
@@ -5,7 +150,7 @@ import {
   Search, Sparkles, GitBranch, Target, BarChart3,
   Star, MapPin, ExternalLink, TrendingUp, Award,
   Filter, ChevronDown, MoreHorizontal, ArrowRight,
-  Network, Database, Layers,
+  Users, Zap, Network, Database, Layers,
 } from 'lucide-react';
 
 /* ---------- fake data for the product mock ---------- */
@@ -491,3 +636,200 @@ export function HeroSection() {
     </section>
   );
 }
+```
+
+**Step 2: Run type check**
+
+Run: `cd /Users/diegosanjuanvillanueva/Desktop/polsya && npx tsc --noEmit 2>&1 | tail -5`
+Expected: No errors.
+
+**Step 3: Run marketing tests**
+
+Run: `cd /Users/diegosanjuanvillanueva/Desktop/polsya && npx vitest run src/test/marketing-home 2>&1 | tail -15`
+Expected: All 6 tests pass. Key checks:
+- "discover creative talent" ✅ (H1 unchanged)
+- "start free trial" ✅ (CTA unchanged)
+- "Discover", "Enrich", "Connect", "Act" ✅ (appear in Home.tsx pillar sections, not in HeroSection)
+
+**Step 4: Run full test suite**
+
+Run: `cd /Users/diegosanjuanvillanueva/Desktop/polsya && npx vitest run 2>&1 | tail -5`
+Expected: 546 tests pass.
+
+**Step 5: Build**
+
+Run: `cd /Users/diegosanjuanvillanueva/Desktop/polsya && npx vite build 2>&1 | tail -5`
+Expected: Build succeeds.
+
+**Step 6: Commit**
+
+```bash
+git add src/components/marketing/HeroSection.tsx
+git commit -m "feat(marketing): redesign hero section — rich background, floating illustrations, feature cards, enhanced social proof"
+```
+
+---
+
+### Task 4: Enhance CustomerLogos with marquee animation and more companies
+
+**Files:**
+- Modify: `src/components/marketing/CustomerLogos.tsx`
+
+**Step 1: Update CustomerLogos with more companies and marquee**
+
+Replace the entire file with:
+
+```tsx
+import { ScrollAnimation } from './ScrollAnimation';
+import { Star } from 'lucide-react';
+
+const companies = [
+  { name: 'Northlight Studios', initial: 'N', gradient: 'from-indigo-400 to-indigo-600' },
+  { name: 'Collective Creative', initial: 'C', gradient: 'from-violet-400 to-violet-600' },
+  { name: 'Frame & Form', initial: 'F', gradient: 'from-purple-400 to-purple-600' },
+  { name: 'Aperture Labs', initial: 'A', gradient: 'from-blue-400 to-blue-600' },
+  { name: 'Prisma Network', initial: 'P', gradient: 'from-fuchsia-400 to-fuchsia-600' },
+  { name: 'Cascade Studio', initial: 'S', gradient: 'from-emerald-400 to-emerald-600' },
+  { name: 'Pixel Collective', initial: 'X', gradient: 'from-rose-400 to-rose-600' },
+  { name: 'Vertex Media', initial: 'V', gradient: 'from-cyan-400 to-cyan-600' },
+  { name: 'Lumen Agency', initial: 'L', gradient: 'from-amber-400 to-amber-600' },
+  { name: 'Helix Creative', initial: 'H', gradient: 'from-teal-400 to-teal-600' },
+  { name: 'Mosaic Group', initial: 'M', gradient: 'from-orange-400 to-orange-600' },
+  { name: 'Opal Design', initial: 'O', gradient: 'from-pink-400 to-pink-600' },
+  { name: 'Zinc Works', initial: 'Z', gradient: 'from-slate-400 to-slate-600' },
+  { name: 'Arc Studio', initial: 'A', gradient: 'from-sky-400 to-sky-600' },
+];
+
+const reviewPlatforms = [
+  { name: 'G2', rating: '4.9', reviews: '320+', color: 'text-orange-600 bg-orange-50 border-orange-100' },
+  { name: 'Capterra', rating: '4.8', reviews: '180+', color: 'text-blue-600 bg-blue-50 border-blue-100' },
+  { name: 'Product Hunt', rating: '#1', reviews: 'Product of the Day', color: 'text-red-600 bg-red-50 border-red-100' },
+];
+
+function LogoItem({ company }: { company: typeof companies[number] }) {
+  return (
+    <div className="flex items-center gap-2 opacity-40 hover:opacity-70 transition-opacity duration-200 group shrink-0 px-4">
+      <div className={`w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-gradient-to-br ${company.gradient} flex items-center justify-center shadow-sm group-hover:shadow-md transition-shadow`}>
+        <span className="text-[10px] sm:text-xs font-bold text-white">{company.initial}</span>
+      </div>
+      <span className="text-xs sm:text-sm font-semibold text-gray-900 tracking-tight whitespace-nowrap">{company.name}</span>
+    </div>
+  );
+}
+
+export function CustomerLogos() {
+  return (
+    <section className="py-14 px-4 sm:px-6 lg:px-8 border-y border-gray-100/80 bg-[linear-gradient(to_bottom,hsl(245_30%_98%),white)]">
+      <ScrollAnimation>
+        <div className="mx-auto max-w-6xl">
+          <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-8 text-center">
+            Trusted by leading creative teams worldwide
+          </p>
+
+          {/* Marquee logo row */}
+          <div className="relative overflow-hidden">
+            {/* Fade edges */}
+            <div className="absolute left-0 top-0 bottom-0 w-16 bg-gradient-to-r from-white to-transparent z-10 pointer-events-none" />
+            <div className="absolute right-0 top-0 bottom-0 w-16 bg-gradient-to-l from-white to-transparent z-10 pointer-events-none" />
+
+            <div className="flex animate-marquee hover:[animation-play-state:paused]">
+              {/* Duplicate companies for seamless loop */}
+              {[...companies, ...companies].map((company, i) => (
+                <LogoItem key={`${company.name}-${i}`} company={company} />
+              ))}
+            </div>
+          </div>
+
+          {/* Review platforms bar */}
+          <div className="mt-8 flex flex-wrap items-center justify-center gap-3 sm:gap-4">
+            {reviewPlatforms.map((platform) => (
+              <div key={platform.name} className={`flex items-center gap-2 px-3 py-1.5 rounded-full border ${platform.color} text-xs font-medium`}>
+                <span className="font-bold">{platform.name}</span>
+                <div className="flex gap-0.5">
+                  {platform.rating !== '#1' ? (
+                    <>
+                      <Star className="h-3 w-3 fill-current" />
+                      <span>{platform.rating}</span>
+                    </>
+                  ) : (
+                    <span>{platform.rating}</span>
+                  )}
+                </div>
+                <span className="text-[10px] opacity-70">({platform.reviews})</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      </ScrollAnimation>
+    </section>
+  );
+}
+```
+
+**Step 2: Run marketing tests**
+
+Run: `cd /Users/diegosanjuanvillanueva/Desktop/polsya && npx vitest run src/test/marketing 2>&1 | tail -10`
+Expected: All tests pass.
+
+**Step 3: Build**
+
+Run: `cd /Users/diegosanjuanvillanueva/Desktop/polsya && npx vite build 2>&1 | tail -5`
+Expected: Build succeeds.
+
+**Step 4: Commit**
+
+```bash
+git add src/components/marketing/CustomerLogos.tsx
+git commit -m "feat(marketing): enhance customer logos — 14 companies, marquee animation, updated label"
+```
+
+---
+
+### Task 5: Final verification — full test suite + build
+
+**Step 1: Type check**
+
+Run: `cd /Users/diegosanjuanvillanueva/Desktop/polsya && npx tsc --noEmit 2>&1 | tail -5`
+Expected: No errors.
+
+**Step 2: Full test suite**
+
+Run: `cd /Users/diegosanjuanvillanueva/Desktop/polsya && npx vitest run 2>&1 | tail -10`
+Expected: 546 tests pass (no regressions).
+
+**Step 3: Production build**
+
+Run: `cd /Users/diegosanjuanvillanueva/Desktop/polsya && npx vite build 2>&1 | tail -5`
+Expected: Build succeeds.
+
+**Step 4: ESLint check**
+
+Run: `cd /Users/diegosanjuanvillanueva/Desktop/polsya && npx eslint src/components/marketing/HeroSection.tsx src/components/marketing/MarketingNav.tsx src/components/marketing/CustomerLogos.tsx --max-warnings=0 2>&1 | tail -10`
+Expected: 0 errors, 0 warnings.
+
+**Step 5 (if all pass): Create summary commit**
+
+If any earlier task was not committed individually, ensure all changes are committed:
+```bash
+git status
+# Verify only the 4 expected files are changed
+```
+
+---
+
+## Summary of Changes
+
+| # | File | What Changed |
+|---|------|-------------|
+| 1 | `src/index.css` | Added `marquee`, `float-gentle`, `float-gentle-reverse` keyframes + utility classes |
+| 2 | `src/components/marketing/MarketingNav.tsx` | Logo `h-9` → `h-12` |
+| 3 | `src/components/marketing/HeroSection.tsx` | Full rewrite: rich gradient mesh bg, floating UI card illustrations (left/right), enhanced social proof with glass container + mini-testimonial, feature cards replacing icon strip, stronger product screenshot glow + 3 callout annotations |
+| 4 | `src/components/marketing/CustomerLogos.tsx` | 8→14 companies, auto-scrolling marquee with fade edges, updated section label |
+
+## What Was NOT Changed
+
+- `src/pages/marketing/Home.tsx` — still renders the same sections in the same order
+- All other marketing components (IntelligenceSources, UseCaseGrid, SecurityBadges, TestimonialCarousel, CTASection, etc.)
+- No new npm dependencies
+- No routing changes
+- No business logic changes
