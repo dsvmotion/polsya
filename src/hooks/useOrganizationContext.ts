@@ -1,7 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import type { Organization, OrganizationMember } from '@/types/organization';
-import { useImpersonation } from '@/contexts/ImpersonationContext';
+import { useImpersonation } from '@/contexts/useImpersonation';
 import { usePlatformOwnerStatus } from '@/hooks/usePlatformOwnerStatus';
 
 export function useCurrentOrganizationMembership() {

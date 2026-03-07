@@ -1,8 +1,8 @@
 import { describe, it, expect } from 'vitest';
 import {
   toCreateEventInput,
-} from '@/components/creative/calendar/CalendarEventFormSheet';
-import type { EventFormValues } from '@/components/creative/calendar/CalendarEventFormSheet';
+} from '@/components/creative/calendar/CalendarEventFormSheet.helpers';
+import type { EventFormValues } from '@/components/creative/calendar/CalendarEventFormSheet.helpers';
 
 // ---------------------------------------------------------------------------
 // Helper: build base form values

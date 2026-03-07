@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { isValidEmail, parseEmailInput } from '@/components/creative/shared/MultiEmailInput';
+import { isValidEmail, parseEmailInput } from '@/components/creative/shared/MultiEmailInput.helpers';
 
 // ---------------------------------------------------------------------------
 // 1. isValidEmail

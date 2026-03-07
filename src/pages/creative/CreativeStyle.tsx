@@ -11,7 +11,7 @@ import { StyleAnalysisFormSheet } from '@/components/creative/style/StyleAnalysi
 import { StyleAnalysisDetail } from '@/components/creative/style/StyleAnalysisDetail';
 import { StyleSimilarityResults } from '@/components/creative/style/StyleSimilarityResults';
 import { useStyleAnalyses } from '@/hooks/useStyleAnalyses';
-import { useCreativeLayout } from '@/components/creative/layout/CreativeLayout';
+import { useCreativeLayout } from '@/components/creative/layout/useCreativeLayout';
 import type { StyleAnalysis } from '@/types/style-intelligence';
 import type { ViewMode } from '@/lib/design-tokens';
 

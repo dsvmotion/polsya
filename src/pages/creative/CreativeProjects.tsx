@@ -10,7 +10,7 @@ import { ProjectFormSheet } from '@/components/creative/projects/ProjectFormShee
 import { ProjectDetail } from '@/components/creative/projects/ProjectDetail';
 import { useCreativeProjects } from '@/hooks/useCreativeProjects';
 import { useCreativeClients } from '@/hooks/useCreativeClients';
-import { useCreativeLayout } from '@/components/creative/layout/CreativeLayout';
+import { useCreativeLayout } from '@/components/creative/layout/useCreativeLayout';
 import type { CreativeProject } from '@/types/creative';
 import type { ViewMode } from '@/lib/design-tokens';
 import { KanbanBoard } from '@/components/creative/shared/KanbanBoard';

@@ -1,4 +1,4 @@
-import { useState, useEffect, createContext, useContext } from 'react';
+import { useState, useEffect } from 'react';
 import { Outlet, useLocation } from 'react-router-dom';
 import { CreativeSidebar } from './CreativeSidebar';
 import { CreativeTopBar } from './CreativeTopBar';
@@ -8,25 +8,7 @@ import { AiChatSheet } from '@/components/layout/AiChatSheet';
 import { SubscriptionBanner } from '@/components/auth/SubscriptionBanner';
 import { ImpersonationBanner } from '@/components/auth/ImpersonationBanner';
 import { cn } from '@/lib/utils';
-
-interface CreativeLayoutContextType {
-  sidebarOpen: boolean;
-  setSidebarOpen: (open: boolean) => void;
-  sidebarCollapsed: boolean;
-  setSidebarCollapsed: (collapsed: boolean) => void;
-  contextPanelOpen: boolean;
-  setContextPanelOpen: (open: boolean) => void;
-  contextPanelContent: React.ReactNode | null;
-  setContextPanelContent: (content: React.ReactNode | null) => void;
-}
-
-const CreativeLayoutContext = createContext<CreativeLayoutContextType | undefined>(undefined);
-
-export function useCreativeLayout() {
-  const ctx = useContext(CreativeLayoutContext);
-  if (!ctx) throw new Error('useCreativeLayout must be used within CreativeLayout');
-  return ctx;
-}
+import { CreativeLayoutContext } from './useCreativeLayout';
 
 export function CreativeLayout() {
   const [sidebarOpen, setSidebarOpen] = useState(false);

@@ -9,87 +9,19 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/components/ui/use-toast';
 import { useSendEmail } from '@/hooks/useCreativeEmails';
-import type { SendEmailInput } from '@/hooks/useCreativeEmails';
 import { useIntegrations } from '@/hooks/useIntegrations';
 import { MultiEmailInput } from '@/components/creative/shared/MultiEmailInput';
 import { PROVIDER_LABELS } from '@/types/integrations';
 import type { IntegrationProvider } from '@/types/integrations';
 import type { CreativeEmail } from '@/types/creative-emails';
-
-// ---------------------------------------------------------------------------
-// Types
-// ---------------------------------------------------------------------------
-
-export interface ComposeFormValues {
-  integrationId: string;
-  to: string[];
-  cc: string[];
-  bcc: string[];
-  subject: string;
-  body: string;
-}
-
-interface EmailComposeSheetProps {
-  open: boolean;
-  onOpenChange: (open: boolean) => void;
-  replyTo?: CreativeEmail;
-}
+import { toSendEmailInput, buildReplyDefaults } from './EmailComposeSheet.helpers';
+import type { ComposeFormValues } from './EmailComposeSheet.helpers';
 
 // ---------------------------------------------------------------------------
 // Email provider filter
 // ---------------------------------------------------------------------------
 
 const EMAIL_INTEGRATION_PROVIDERS: IntegrationProvider[] = ['gmail', 'outlook', 'email_imap'];
-
-// ---------------------------------------------------------------------------
-// Pure helpers (exported for testing)
-// ---------------------------------------------------------------------------
-
-export function toSendEmailInput(
-  values: ComposeFormValues,
-  replyToMessageId?: string,
-): SendEmailInput {
-  const input: SendEmailInput = {
-    integrationId: values.integrationId,
-    to: values.to,
-    subject: values.subject,
-  };
-
-  if (values.cc.length > 0) {
-    input.cc = values.cc;
-  }
-
-  if (values.bcc.length > 0) {
-    input.bcc = values.bcc;
-  }
-
-  if (values.body) {
-    const paragraphs = values.body.split('\n').map((line) => `<p>${line}</p>`);
-    input.bodyHtml = paragraphs.join('');
-  }
-
-  if (replyToMessageId) {
-    input.replyToMessageId = replyToMessageId;
-  }
-
-  return input;
-}
-
-export function buildReplyDefaults(email: CreativeEmail): ComposeFormValues {
-  const originalSubject = email.subject ?? '';
-  const subject = /^re:\s/i.test(originalSubject)
-    ? originalSubject
-    : `Re: ${originalSubject}`;
-
-  return {
-    integrationId: email.integrationId,
-    to: [email.fromAddress],
-    cc: [],
-    bcc: [],
-    subject,
-    body: '',
-  };
-}
 
 // ---------------------------------------------------------------------------
 // Component

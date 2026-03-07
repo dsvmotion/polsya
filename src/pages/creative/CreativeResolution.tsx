@@ -2,7 +2,7 @@ import { useState, useMemo } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { WorkspaceContainer } from '@/components/creative/layout/WorkspaceContainer';
-import { useCreativeLayout } from '@/components/creative/layout/CreativeLayout';
+import { useCreativeLayout } from '@/components/creative/layout/useCreativeLayout';
 import { ViewSwitcher } from '@/components/creative/navigation/ViewSwitcher';
 import { DataTable } from '@/components/creative/shared/DataTable';
 import { createCandidateColumns } from '@/components/creative/resolution/candidate-columns';

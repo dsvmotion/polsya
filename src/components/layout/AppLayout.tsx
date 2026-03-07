@@ -1,5 +1,5 @@
-import { useState, useEffect, createContext, useContext } from 'react';
-import { Outlet, useLocation } from 'react-router-dom';
+import { useState, useEffect } from 'react';
+import { useLocation } from 'react-router-dom';
 import { AppSidebar } from './AppSidebar';
 import { AppTopBar } from './AppTopBar';
 import { CommandPalette } from './CommandPalette';
@@ -8,21 +8,7 @@ import { SubscriptionBanner } from '@/components/auth/SubscriptionBanner';
 import { ActivateSubscriptionGate } from '@/components/auth/ActivateSubscriptionGate';
 import { ImpersonationBanner } from '@/components/auth/ImpersonationBanner';
 import { cn } from '@/lib/utils';
-
-interface LayoutContextType {
-  sidebarOpen: boolean;
-  setSidebarOpen: (open: boolean) => void;
-  sidebarCollapsed: boolean;
-  setSidebarCollapsed: (collapsed: boolean) => void;
-}
-
-const LayoutContext = createContext<LayoutContextType | undefined>(undefined);
-
-export function useLayout() {
-  const ctx = useContext(LayoutContext);
-  if (!ctx) throw new Error('useLayout must be used within AppLayout');
-  return ctx;
-}
+import { LayoutContext } from './useLayout';
 
 export function AppLayout() {
   const [sidebarOpen, setSidebarOpen] = useState(false);

@@ -9,7 +9,7 @@ import { ClientCard } from '@/components/creative/clients/ClientCard';
 import { ClientFormSheet } from '@/components/creative/clients/ClientFormSheet';
 import { ClientDetail } from '@/components/creative/clients/ClientDetail';
 import { useCreativeClients } from '@/hooks/useCreativeClients';
-import { useCreativeLayout } from '@/components/creative/layout/CreativeLayout';
+import { useCreativeLayout } from '@/components/creative/layout/useCreativeLayout';
 import type { CreativeClient } from '@/types/creative';
 import type { ViewMode } from '@/lib/design-tokens';
 
