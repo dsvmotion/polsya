@@ -11,7 +11,7 @@ import { useCurrentOrganization } from '@/hooks/useOrganizationContext';
 import { canManageBilling as canManageBillingRole } from '@/lib/rbac';
 import { cn } from '@/lib/utils';
 import type { BillingPlan } from '@/types/billing';
-import { ScrollFadeIn } from '@/components/landing/ScrollFadeIn';
+import { ScrollAnimation } from '@/components/marketing/ScrollAnimation';
 
 function formatMoney(cents: number, currency: string): string {
   return new Intl.NumberFormat('en-EU', {
@@ -174,7 +174,7 @@ export default function Pricing() {
               : config.priceFallback;
 
             return (
-              <ScrollFadeIn key={config.code} delay={idx * 100}>
+              <ScrollAnimation key={config.code} delay={idx * 0.1}>
                 <div
                   className={cn(
                     'relative rounded-2xl p-8 h-full',
@@ -204,7 +204,7 @@ export default function Pricing() {
                   </ul>
                   <div className="mt-8">{ctaElement}</div>
                 </div>
-              </ScrollFadeIn>
+              </ScrollAnimation>
             );
           })}
         </div>

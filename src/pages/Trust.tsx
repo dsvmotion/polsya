@@ -1,7 +1,7 @@
 import { Link } from 'react-router-dom';
 import { Shield, Lock, Database, FileCheck } from 'lucide-react';
 import { APP_NAME } from '@/lib/brand';
-import { ScrollFadeIn } from '@/components/landing/ScrollFadeIn';
+import { ScrollAnimation } from '@/components/marketing/ScrollAnimation';
 
 const sections = [
   {
@@ -37,7 +37,7 @@ export default function Trust() {
 
         <div className="mt-12 space-y-8">
           {sections.map((section, i) => (
-            <ScrollFadeIn key={section.title} delay={i * 100}>
+            <ScrollAnimation key={section.title} delay={i * 0.1}>
               <section className="flex gap-4 glass-panel p-6">
                 <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-lg bg-gradient-cta">
                   <section.icon className="h-6 w-6 text-white" />
@@ -49,11 +49,11 @@ export default function Trust() {
                   </p>
                 </div>
               </section>
-            </ScrollFadeIn>
+            </ScrollAnimation>
           ))}
         </div>
 
-        <ScrollFadeIn>
+        <ScrollAnimation>
           <div className="mt-12 glass-panel p-6">
             <h3 className="font-semibold text-white">Related</h3>
             <ul className="mt-4 space-y-2">
@@ -62,7 +62,7 @@ export default function Trust() {
               <li><Link to="/contact" className="text-white/60 hover:text-white transition-colors">Contact us</Link> <span className="text-white/40">for security or compliance questions</span></li>
             </ul>
           </div>
-        </ScrollFadeIn>
+        </ScrollAnimation>
       </div>
     </div>
   );
