@@ -57,7 +57,7 @@ export default function AdminUsers() {
         `)
         .limit(200);
       if (error) throw error;
-      return (data ?? []).map((m: any) => ({
+      return (data ?? []).map((m) => ({
         id: m.user_id,
         email: m.user_id,
         full_name: null,

@@ -111,7 +111,7 @@ export default function AdminDashboard() {
               <p className="text-sm text-muted-foreground py-4 text-center">No recent activity</p>
             ) : (
               <div className="space-y-3">
-                {recentLogs.map((log: any) => (
+                {recentLogs.map((log) => (
                   <div key={log.id} className="flex items-start gap-3 text-sm">
                     <Clock className="h-4 w-4 text-muted-foreground mt-0.5 shrink-0" />
                     <div className="flex-1 min-w-0">

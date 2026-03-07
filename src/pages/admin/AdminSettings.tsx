@@ -74,7 +74,7 @@ export default function AdminSettings() {
             <p className="text-sm text-muted-foreground">Loading…</p>
           ) : (
             <div className="space-y-2">
-              {owners.map((owner: any) => (
+              {owners.map((owner) => (
                 <div key={owner.id ?? owner.email} className="flex items-center justify-between py-2 px-3 rounded-lg border">
                   <div className="flex items-center gap-2">
                     <span className="text-sm">{owner.email}</span>

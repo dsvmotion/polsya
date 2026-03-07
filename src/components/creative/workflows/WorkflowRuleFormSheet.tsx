@@ -116,17 +116,20 @@ export function WorkflowRuleFormSheet({ open, onOpenChange, editRule }: Workflow
         conditionField: editRule.triggerCondition.field,
         conditionFrom: editRule.triggerCondition.from ?? '',
         conditionTo: editRule.triggerCondition.to,
-        actions: editRule.actions.map((a) => ({
-          type: a.type,
-          title: 'title' in a ? (a as any).title ?? '' : '',
-          body: 'body' in a ? (a as any).body ?? '' : '',
-          activityType: 'activityType' in a ? (a as any).activityType ?? 'task' : 'task',
-          field: 'field' in a ? (a as any).field ?? '' : '',
-          value: 'value' in a ? String((a as any).value ?? '') : '',
-          titleTemplate: 'titleTemplate' in a ? (a as any).titleTemplate ?? '' : '',
-          status: 'status' in a ? (a as any).status ?? '' : '',
-          notifyRole: 'notifyRole' in a ? (a as any).notifyRole ?? 'all' : 'all',
-        })),
+        actions: editRule.actions.map((a) => {
+          const rec = a as Record<string, unknown>;
+          return {
+            type: a.type,
+            title: 'title' in a ? (rec.title as string) ?? '' : '',
+            body: 'body' in a ? (rec.body as string) ?? '' : '',
+            activityType: 'activityType' in a ? (rec.activityType as string) ?? 'task' : 'task',
+            field: 'field' in a ? (rec.field as string) ?? '' : '',
+            value: 'value' in a ? String(rec.value ?? '') : '',
+            titleTemplate: 'titleTemplate' in a ? (rec.titleTemplate as string) ?? '' : '',
+            status: 'status' in a ? (rec.status as string) ?? '' : '',
+            notifyRole: 'notifyRole' in a ? (rec.notifyRole as string) ?? 'all' : 'all',
+          };
+        }),
       });
     } else {
       form.reset({
