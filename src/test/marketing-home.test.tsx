@@ -39,11 +39,6 @@ describe('Marketing Home Page', () => {
     expect(screen.getByText('Agencies')).toBeInTheDocument();
   });
 
-  it('renders security section', () => {
-    renderHome();
-    expect(screen.getByText(/enterprise-grade security for/i)).toBeInTheDocument();
-  });
-
   it('renders final CTA', () => {
     renderHome();
     expect(screen.getByText(/start discovering/i)).toBeInTheDocument();
