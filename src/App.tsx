@@ -11,7 +11,6 @@ import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
 import { PageLoader } from "@/components/ui/page-loader";
 import { WorkspaceThemeBridge } from "@/components/layout/WorkspaceThemeBridge";
 import { AppLayout } from "@/components/layout/AppLayout";
-import { PlatformLayout } from "@/components/layout/PlatformLayout";
 import { ErrorBoundary } from "@/components/layout/ErrorBoundary";
 import { AdminRoute } from "@/components/admin/AdminRoute";
 import { SpeedInsights } from "@vercel/speed-insights/react";
@@ -37,17 +36,8 @@ const EntityOperations = lazy(() => import("./pages/EntityOperations"));
 const Reports = lazy(() => import("./pages/Reports"));
 const Team = lazy(() => import("./pages/Team"));
 const IntegrationsPage = lazy(() => import("./pages/Integrations"));
-const PlatformDashboard = lazy(() => import("./pages/PlatformDashboard"));
-const PlatformBilling = lazy(() => import("./pages/PlatformBilling"));
-const PlatformOrganizationDetail = lazy(() => import("./pages/PlatformOrganizationDetail"));
-const PlatformAnalytics = lazy(() => import("./pages/PlatformAnalytics"));
-const PlatformSettings = lazy(() => import("./pages/PlatformSettings"));
-const PlatformContactMessages = lazy(() => import("./pages/PlatformContactMessages"));
-const PlatformLogs = lazy(() => import("./pages/PlatformLogs"));
-
-// Admin Console (new)
+// Admin Console
 const AdminLayout = lazy(() => import('./components/admin/layout/AdminLayout').then(m => ({ default: m.AdminLayout })));
-const AdminRoute_Lazy = lazy(() => import('./components/admin/AdminRoute').then(m => ({ default: m.AdminRoute })));
 const AdminDashboard = lazy(() => import('./pages/admin/AdminDashboard'));
 const AdminUsers = lazy(() => import('./pages/admin/AdminUsers'));
 const AdminOrganizations = lazy(() => import('./pages/admin/AdminOrganizations'));

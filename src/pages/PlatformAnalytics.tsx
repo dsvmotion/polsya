@@ -1,3 +1,7 @@
+/**
+ * @deprecated Replaced by src/pages/admin/AdminAnalytics.tsx
+ * Routes now redirect /platform/* -> /admin/*. Safe to delete after migration verified.
+ */
 import { TrendingUp, Building2, CreditCard, Users, ArrowUpRight, ArrowDownRight } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { usePlatformAnalytics } from '@/hooks/usePlatformAnalytics';

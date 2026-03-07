@@ -1,3 +1,7 @@
+/**
+ * @deprecated Replaced by src/pages/admin/AdminSettings.tsx
+ * Routes now redirect /platform/* -> /admin/*. Safe to delete after migration verified.
+ */
 import { useState } from 'react';
 import { Settings, Shield, Plus, Trash2, Flag } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';

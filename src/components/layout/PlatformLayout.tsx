@@ -1,3 +1,7 @@
+/**
+ * @deprecated Replaced by src/components/admin/layout/AdminLayout.tsx
+ * Routes now redirect /platform/* -> /admin/*. Safe to delete after migration verified.
+ */
 import { Outlet, Link, Navigate } from 'react-router-dom';
 import { LayoutDashboard, CreditCard, Mail, ScrollText, Sparkles, BarChart3, Settings } from 'lucide-react';
 import { APP_NAME } from '@/lib/brand';

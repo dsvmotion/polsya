@@ -1,3 +1,7 @@
+/**
+ * @deprecated Replaced by src/pages/admin/AdminOrganizationDetail.tsx
+ * Routes now redirect /platform/* -> /admin/*. Safe to delete after migration verified.
+ */
 import { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { ArrowLeft, Building2, Users, CreditCard, Package, Plug, Bot } from 'lucide-react';

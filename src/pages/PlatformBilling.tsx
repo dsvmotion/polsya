@@ -1,3 +1,7 @@
+/**
+ * @deprecated Replaced by src/pages/admin/AdminBilling.tsx
+ * Routes now redirect /platform/* -> /admin/*. Safe to delete after migration verified.
+ */
 import { useState, useMemo } from 'react';
 import { CreditCard, Building2, Search, ChevronRight } from 'lucide-react';
 import { Link } from 'react-router-dom';

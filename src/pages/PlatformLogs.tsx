@@ -1,3 +1,7 @@
+/**
+ * @deprecated Replaced by src/pages/admin/AdminLogs.tsx
+ * Routes now redirect /platform/* -> /admin/*. Safe to delete after migration verified.
+ */
 import { useQuery } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
 import { ScrollText, ArrowLeft, Loader2 } from 'lucide-react';

@@ -1,3 +1,7 @@
+/**
+ * @deprecated Replaced by admin contact messages section.
+ * Routes now redirect /platform/* -> /admin/*. Safe to delete after migration verified.
+ */
 import { useQuery } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
 import { Mail, ArrowLeft, Loader2 } from 'lucide-react';
