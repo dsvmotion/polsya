@@ -37,6 +37,16 @@ try {
   fail(`Cannot read ${CONFIG_PATH}: ${err.message}`);
 }
 
+// Cron-invoked functions are called by the Supabase cron scheduler (service-role)
+// and never receive browser requests, so CORS handling is intentionally omitted.
+// Keep in sync with supabase/migrations/20260312200000_cron_schedules.sql
+const CRON_FUNCTIONS = new Set([
+  'activity-reminders',
+  'ai-weekly-digest',
+  'calendar-sync',
+  'email-sync',
+]);
+
 // 2. Scan edge function index.ts files
 const WILDCARD_PATTERNS = [
   /Access-Control-Allow-Origin['":\s]*['"]\*/,
@@ -70,7 +80,7 @@ for (const dir of functionDirs) {
     }
   }
 
-  if (!source.includes('handleCors(')) {
+  if (!source.includes('handleCors(') && !CRON_FUNCTIONS.has(dir)) {
     fail(`${dir}/index.ts does not call handleCors()`);
   }
 }
@@ -161,7 +171,7 @@ for (const dir of REQUIRE_BILLING_GUARD) {
 }
 
 if (exitCode === 0) {
-  console.log(`✅  Security invariants OK — ${functionDirs.length} edge functions checked, ${REQUIRE_ORG_AUTHZ.length} org-authz-gated, ${REQUIRE_BILLING_GUARD.length} billing-gated`);
+  console.log(`✅  Security invariants OK — ${functionDirs.length} edge functions checked, ${CRON_FUNCTIONS.size} cron-only (CORS exempt), ${REQUIRE_ORG_AUTHZ.length} org-authz-gated, ${REQUIRE_BILLING_GUARD.length} billing-gated`);
 }
 
 process.exit(exitCode);
