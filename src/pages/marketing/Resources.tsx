@@ -7,7 +7,7 @@ export default function Resources() {
   return (
     <>
       <PageMeta title="Resources" description="Documentation, blog posts, and changelog — everything you need to get started with Polsya." path="/resources" />
-      <section className="py-32 px-4 sm:px-6 lg:px-8 relative overflow-hidden">
+      <section className="py-24 px-4 sm:px-6 lg:px-8 relative overflow-hidden">
         <div className="absolute inset-0 -z-10 bg-[linear-gradient(to_bottom,hsl(245_30%_97%),white)]" />
         <div className="mx-auto max-w-2xl text-center">
           <ScrollAnimation>

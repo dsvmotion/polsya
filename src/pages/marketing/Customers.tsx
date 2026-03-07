@@ -67,7 +67,7 @@ export default function Customers() {
         <div className="mx-auto max-w-6xl">
           <ScrollAnimation>
             <p className="text-sm font-semibold text-indigo-600 uppercase tracking-wider mb-4 text-center">Testimonials</p>
-            <h2 className="font-display text-2xl sm:text-3xl font-bold text-gray-900 text-center mb-12">
+            <h2 className="font-display text-3xl sm:text-4xl font-bold text-gray-900 text-center mb-12">
               What our customers say
             </h2>
           </ScrollAnimation>

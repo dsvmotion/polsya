@@ -169,7 +169,7 @@ export default function Pricing() {
       <section className="pb-24 px-4 sm:px-6 lg:px-8">
         <div className="mx-auto max-w-2xl">
           <ScrollAnimation>
-            <h2 className="font-display text-2xl font-bold text-gray-900 text-center mb-8">
+            <h2 className="font-display text-2xl sm:text-3xl font-bold text-gray-900 text-center mb-8">
               Frequently asked questions
             </h2>
           </ScrollAnimation>
