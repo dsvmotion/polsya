@@ -11,7 +11,7 @@ interface PortfolioCardProps {
 export function PortfolioCard({ portfolio, onClick }: PortfolioCardProps) {
   return (
     <div
-      className="rounded-lg border bg-card overflow-hidden hover:shadow-md transition-shadow cursor-pointer group"
+      className="rounded-xl border border-border border-t-2 border-t-primary/40 bg-card overflow-hidden shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-150 cursor-pointer group"
       onClick={onClick}
     >
       {/* Thumbnail */}
@@ -20,16 +20,16 @@ export function PortfolioCard({ portfolio, onClick }: PortfolioCardProps) {
           <img
             src={portfolio.thumbnailUrl}
             alt={portfolio.title}
-            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-150"
           />
         ) : (
           <ImageOff className="h-8 w-8 text-muted-foreground/40" />
         )}
       </div>
       {/* Content */}
-      <div className="p-3 space-y-2">
+      <div className="p-4 space-y-2">
         <div className="flex items-start justify-between gap-2">
-          <h3 className="font-semibold text-sm truncate">{portfolio.title}</h3>
+          <h3 className="font-medium text-sm truncate">{portfolio.title}</h3>
           {portfolio.isPublic ? (
             <Globe className="h-3.5 w-3.5 text-green-600 shrink-0" />
           ) : (
@@ -39,7 +39,7 @@ export function PortfolioCard({ portfolio, onClick }: PortfolioCardProps) {
         {portfolio.category && (
           <Badge
             variant="secondary"
-            className={`text-xs ${PORTFOLIO_CATEGORY_COLORS[portfolio.category].bg} ${PORTFOLIO_CATEGORY_COLORS[portfolio.category].text} border-0`}
+            className={`text-xs rounded-full px-2 py-0.5 ${PORTFOLIO_CATEGORY_COLORS[portfolio.category].bg} ${PORTFOLIO_CATEGORY_COLORS[portfolio.category].text} border-0`}
           >
             {PORTFOLIO_CATEGORY_LABELS[portfolio.category]}
           </Badge>

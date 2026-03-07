@@ -86,20 +86,23 @@ export function KanbanBoard<T extends { id: string }>({
           <div
             key={col.key}
             className={cn(
-              'flex-shrink-0 w-72 rounded-lg border bg-muted/30 transition-colors',
+              'flex-shrink-0 w-72 rounded-xl bg-muted/30 p-3 transition-colors',
               dragOverColumn === col.key && 'ring-2 ring-primary/50 bg-primary/5',
             )}
             onDragOver={(e) => handleDragOver(e, col.key)}
             onDragLeave={handleDragLeave}
             onDrop={(e) => handleDrop(e, col.key)}
           >
-            <div className="flex items-center justify-between px-3 py-2 border-b">
-              <span className={`text-sm font-medium ${col.color.text}`}>{col.label}</span>
+            <div className="flex items-center justify-between pb-2 mb-2 border-b border-border/40">
+              <span className={`font-display text-sm font-medium flex items-center gap-2 ${col.color.text}`}>
+                <span className={`inline-block h-2 w-2 rounded-full ${col.color.bg}`} />
+                {col.label}
+              </span>
               <Badge variant="secondary" className="text-xs px-1.5 py-0">
                 {columnItems.length}
               </Badge>
             </div>
-            <ScrollArea className="p-2" style={{ maxHeight: 'calc(100vh - 280px)' }}>
+            <ScrollArea className="pt-1" style={{ maxHeight: 'calc(100vh - 280px)' }}>
               <div className="space-y-2">
                 {columnItems.length === 0 ? (
                   <div className="text-center py-8 text-xs text-muted-foreground">
@@ -113,7 +116,7 @@ export function KanbanBoard<T extends { id: string }>({
                       onDragStart={(e) => handleDragStart(e, item.id)}
                       onDragEnd={handleDragEnd}
                       className={cn(
-                        'cursor-grab active:cursor-grabbing rounded-lg border bg-card p-3 shadow-sm hover:shadow-md transition-shadow',
+                        'cursor-grab active:cursor-grabbing rounded-lg bg-card border border-border shadow-sm hover:shadow-md transition-shadow duration-150 p-3',
                         draggedItemId === item.id && 'opacity-50',
                       )}
                     >

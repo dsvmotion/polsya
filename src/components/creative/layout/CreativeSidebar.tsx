@@ -137,11 +137,11 @@ function SidebarNavButton({
             className={cn(
               'flex items-center justify-center w-10 h-10 rounded-lg transition-colors',
               isActive
-                ? 'bg-sidebar-accent text-sidebar-primary'
-                : 'text-sidebar-foreground/70 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground',
+                ? 'bg-sidebar-primary/15 text-sidebar-primary'
+                : 'text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-foreground',
             )}
           >
-            <Icon className="h-5 w-5" />
+            <Icon className={cn('h-5 w-5', isActive ? 'text-sidebar-primary' : 'text-sidebar-foreground/70')} />
           </button>
         </TooltipTrigger>
         <TooltipContent side="right" sideOffset={8}>
@@ -151,18 +151,18 @@ function SidebarNavButton({
     );
   }
 
-  // Expanded — button with icon + label
+  // Expanded — button with icon + label + indigo left border when active
   return (
     <button
       onClick={() => onNavigate(item.path)}
       className={cn(
         'flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors w-full text-left',
         isActive
-          ? 'bg-sidebar-accent text-sidebar-primary'
-          : 'text-sidebar-foreground/70 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground',
+          ? 'bg-sidebar-primary/15 text-sidebar-primary border-l-2 border-sidebar-primary'
+          : 'text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-foreground',
       )}
     >
-      <Icon className="h-4 w-4 shrink-0" />
+      <Icon className={cn('h-4 w-4 shrink-0', isActive ? 'text-sidebar-primary' : 'text-sidebar-foreground/70')} />
       <span className="truncate">{item.label}</span>
     </button>
   );
@@ -202,11 +202,11 @@ function SidebarNavGroup({
             className={cn(
               'flex items-center justify-center w-10 h-10 rounded-lg transition-colors',
               groupHasActive
-                ? 'bg-sidebar-accent text-sidebar-primary'
-                : 'text-sidebar-foreground/70 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground',
+                ? 'bg-sidebar-primary/15 text-sidebar-primary'
+                : 'text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-foreground',
             )}
           >
-            <GroupIcon className="h-5 w-5" />
+            <GroupIcon className={cn('h-5 w-5', groupHasActive ? 'text-sidebar-primary' : 'text-sidebar-foreground/70')} />
           </button>
         </TooltipTrigger>
         <TooltipContent side="right" sideOffset={8}>
@@ -240,7 +240,7 @@ function SidebarNavGroup({
           <button className="h-5 w-5 flex items-center justify-center rounded text-sidebar-foreground/50 hover:text-sidebar-foreground transition-colors">
             <ChevronRightIcon
               className={cn(
-                'h-3.5 w-3.5 transition-transform duration-200',
+                'h-3.5 w-3.5 transition-transform duration-150',
                 isOpen && 'rotate-90',
               )}
             />
@@ -317,16 +317,14 @@ export function CreativeSidebar({
       <div className={cn('flex items-center h-14 px-4 border-b border-sidebar-border', collapsed && 'justify-center px-2')}>
         {collapsed ? (
           <div className="flex flex-col items-center gap-2">
-            <img src="/polsya-logo-black.png" alt="Polsya" className="h-6 w-auto dark:hidden" />
-            <img src="/polsya-logo-white.png" alt="Polsya" className="h-6 w-auto hidden dark:block" />
+            <img src="/polsya-logo-white.png" alt="Polsya" className="h-6 w-auto" />
             <NotificationBell />
           </div>
         ) : (
           <div className="flex items-center justify-between w-full">
             <div className="flex items-center gap-2">
-              <img src="/polsya-logo-black.png" alt="Polsya" className="h-6 w-auto dark:hidden" />
-              <img src="/polsya-logo-white.png" alt="Polsya" className="h-6 w-auto hidden dark:block" />
-              <span className="text-xs px-1.5 py-0.5 rounded bg-primary/10 text-primary font-medium">Creative</span>
+              <img src="/polsya-logo-white.png" alt="Polsya" className="h-6 w-auto" />
+              <span className="text-xs px-1.5 py-0.5 rounded bg-sidebar-primary/15 text-sidebar-primary font-medium">Creative</span>
             </div>
             <NotificationBell />
           </div>
@@ -382,7 +380,7 @@ export function CreativeSidebar({
                   onClick={onOpenAiChat}
                   className={cn(
                     'flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors w-full text-left',
-                    'text-sidebar-foreground/70 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground',
+                    'text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-foreground',
                     collapsed && 'justify-center w-10 h-10 px-0',
                   )}
                 >
@@ -411,7 +409,7 @@ export function CreativeSidebar({
           <Button
             variant="ghost"
             size="icon"
-            className="h-8 w-8 text-sidebar-foreground/50 hover:text-sidebar-foreground"
+            className="h-8 w-8 text-sidebar-foreground/50 hover:text-sidebar-foreground hover:bg-sidebar-accent"
             onClick={() => onCollapsedChange(!collapsed)}
           >
             {collapsed ? <ChevronRight className="h-4 w-4" /> : <ChevronLeft className="h-4 w-4" />}
@@ -426,7 +424,7 @@ export function CreativeSidebar({
       {/* Desktop sidebar */}
       <aside
         className={cn(
-          'fixed inset-y-0 left-0 z-30 hidden lg:flex flex-col bg-sidebar border-r border-sidebar-border transition-all duration-300',
+          'fixed inset-y-0 left-0 z-30 hidden lg:flex flex-col bg-sidebar border-r border-sidebar-border transition-all duration-[180ms]',
           collapsed ? 'w-[68px]' : 'w-64',
         )}
       >
@@ -440,12 +438,12 @@ export function CreativeSidebar({
             className="absolute inset-0 bg-black/50"
             onClick={() => onOpenChange(false)}
           />
-          <aside className="absolute inset-y-0 left-0 w-72 bg-sidebar border-r border-sidebar-border shadow-xl animate-in slide-in-from-left duration-300">
+          <aside className="absolute inset-y-0 left-0 w-72 bg-sidebar border-r border-sidebar-border shadow-xl animate-in slide-in-from-left duration-[180ms]">
             <div className="absolute top-3 right-3">
               <Button
                 variant="ghost"
                 size="icon"
-                className="h-8 w-8 text-sidebar-foreground/50"
+                className="h-8 w-8 text-sidebar-foreground/50 hover:text-sidebar-foreground hover:bg-sidebar-accent"
                 onClick={() => onOpenChange(false)}
               >
                 <X className="h-4 w-4" />

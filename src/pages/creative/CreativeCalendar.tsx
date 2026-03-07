@@ -40,11 +40,12 @@ export default function CreativeCalendar() {
       subtitle={format(currentMonth, 'MMMM yyyy')}
       icon={CalendarIcon}
     >
-      <div className="space-y-4">
+      <div className="space-y-6">
         <div className="flex items-center gap-2">
           <Button
             variant="outline"
             size="sm"
+            className="transition-all duration-150"
             onClick={() => setCurrentMonth(subMonths(currentMonth, 1))}
           >
             &larr; Prev
@@ -52,6 +53,7 @@ export default function CreativeCalendar() {
           <Button
             variant="outline"
             size="sm"
+            className="transition-all duration-150"
             onClick={() => setCurrentMonth(new Date())}
           >
             Today
@@ -59,13 +61,14 @@ export default function CreativeCalendar() {
           <Button
             variant="outline"
             size="sm"
+            className="transition-all duration-150"
             onClick={() => setCurrentMonth(addMonths(currentMonth, 1))}
           >
             Next &rarr;
           </Button>
           <Button
             size="sm"
-            className="gap-1.5 ml-auto"
+            className="gap-1.5 ml-auto transition-all duration-150"
             onClick={() => setEventFormOpen(true)}
           >
             <Plus className="h-4 w-4" /> New Event
@@ -75,7 +78,7 @@ export default function CreativeCalendar() {
         {isLoading ? (
           <div className="text-center py-8 text-muted-foreground">Loading events...</div>
         ) : sortedDates.length === 0 ? (
-          <div className="text-center py-8 text-muted-foreground">
+          <div className="rounded-xl bg-muted/30 border border-dashed border-border p-8 text-center text-muted-foreground">
             <CalendarIcon className="mx-auto h-12 w-12 mb-3 opacity-30" />
             <p>No events this month.</p>
             <p className="text-sm">Connect a Gmail or Outlook account to sync calendar events.</p>
@@ -84,7 +87,7 @@ export default function CreativeCalendar() {
           <div className="space-y-6">
             {sortedDates.map((dateKey) => (
               <div key={dateKey}>
-                <h3 className="text-sm font-medium text-muted-foreground mb-2">
+                <h3 className="text-sm font-medium font-display text-muted-foreground mb-2">
                   {format(new Date(dateKey), 'EEEE, MMMM d')}
                 </h3>
                 <div className="space-y-2">
@@ -107,7 +110,7 @@ function CalendarEventCard({ event }: { event: CreativeCalendarEvent }) {
   const statusColors = CALENDAR_STATUS_COLORS[event.status];
 
   return (
-    <div className="border rounded-lg p-3 hover:bg-muted/50">
+    <div className="border rounded-xl p-3 shadow-sm hover:bg-accent transition-colors duration-150">
       <div className="flex items-start justify-between gap-2">
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2">

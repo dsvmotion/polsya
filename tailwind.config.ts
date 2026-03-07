@@ -73,6 +73,28 @@ export default {
           border: "hsl(var(--sidebar-border))",
           ring: "hsl(var(--sidebar-ring))",
         },
+        /* Semantic color roles */
+        "semantic-primary": {
+          DEFAULT: "hsl(var(--semantic-primary))",
+          light: "hsl(var(--semantic-primary-light))",
+        },
+        "semantic-accent": {
+          DEFAULT: "hsl(var(--semantic-accent))",
+          light: "hsl(var(--semantic-accent-light))",
+        },
+        "semantic-success": {
+          DEFAULT: "hsl(var(--semantic-success))",
+          light: "hsl(var(--semantic-success-light))",
+        },
+        "semantic-warning": {
+          DEFAULT: "hsl(var(--semantic-warning))",
+          light: "hsl(var(--semantic-warning-light))",
+        },
+        "semantic-danger": {
+          DEFAULT: "hsl(var(--semantic-danger))",
+          light: "hsl(var(--semantic-danger-light))",
+        },
+        /* Legacy — backward compat for marketing site */
         "rock-blue": "hsl(var(--color-rock-blue))",
         linen: "hsl(var(--color-linen))",
         /* Brand palette — for gradients & decorative accents only */
@@ -92,6 +114,20 @@ export default {
         lg: "var(--radius)",
         md: "calc(var(--radius) - 2px)",
         sm: "calc(var(--radius) - 4px)",
+      },
+      boxShadow: {
+        "elevation-card": "var(--elevation-card)",
+        "elevation-card-hover": "var(--elevation-card-hover)",
+        "elevation-popover": "var(--elevation-popover)",
+        "elevation-modal": "var(--elevation-modal)",
+      },
+      spacing: {
+        "space-1": "var(--space-1)",
+        "space-2": "var(--space-2)",
+        "space-3": "var(--space-3)",
+        "space-4": "var(--space-4)",
+        "space-5": "var(--space-5)",
+        "space-6": "var(--space-6)",
       },
       keyframes: {
         "accordion-down": {
@@ -119,6 +155,27 @@ export default {
           "50%": { backgroundPosition: "100% 50%" },
           "100%": { backgroundPosition: "0% 50%" },
         },
+        /* Clay/Attio motion design keyframes */
+        "glow-pulse": {
+          "0%, 100%": { boxShadow: "0 0 16px hsl(var(--primary) / 0.25)" },
+          "50%": { boxShadow: "0 0 32px hsl(var(--primary) / 0.4)" },
+        },
+        "card-lift": {
+          from: { transform: "translateY(0)", boxShadow: "var(--elevation-card)" },
+          to: { transform: "translateY(-2px)", boxShadow: "var(--elevation-card-hover)" },
+        },
+        "sidebar-slide": {
+          from: { transform: "translateX(-100%)", opacity: "0" },
+          to: { transform: "translateX(0)", opacity: "1" },
+        },
+        "page-enter": {
+          from: { opacity: "0", transform: "translateY(8px)" },
+          to: { opacity: "1", transform: "translateY(0)" },
+        },
+        "fade-in-scale": {
+          from: { opacity: "0", transform: "scale(0.97)" },
+          to: { opacity: "1", transform: "scale(1)" },
+        },
       },
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
@@ -127,16 +184,28 @@ export default {
         float: "float 6s ease-in-out infinite",
         "slide-up-fade": "slide-up-fade 0.6s ease-out forwards",
         "gradient-shift": "gradient-shift 8s ease infinite",
+        /* Clay/Attio motion animations */
+        "glow-pulse": "glow-pulse 2.5s ease-in-out infinite",
+        "card-lift": "card-lift 0.15s ease-out forwards",
+        "sidebar-slide": "sidebar-slide 0.18s ease-out forwards",
+        "page-enter": "page-enter 0.25s ease-out forwards",
+        "fade-in-scale": "fade-in-scale 0.18s ease-out forwards",
       },
       backgroundImage: {
         "gradient-radial": "radial-gradient(var(--tw-gradient-stops))",
-        /* Legacy gradients (keep for backward compat) */
+        /* Clay/Attio inspired gradients */
+        "gradient-indigo": "linear-gradient(135deg, hsl(var(--primary)), hsl(var(--semantic-accent)))",
+        "gradient-indigo-soft": "linear-gradient(135deg, hsl(var(--semantic-primary-light)), hsl(var(--semantic-accent-light)))",
+        "gradient-success": "linear-gradient(135deg, hsl(var(--success)), hsl(172 60% 40%))",
+        "gradient-warm": "linear-gradient(135deg, hsl(var(--warning)), hsl(20 85% 55%))",
+        "gradient-danger": "linear-gradient(135deg, hsl(var(--destructive)), hsl(340 80% 55%))",
+        /* Legacy gradients (keep for marketing site backward compat) */
         "gradient-primary": "linear-gradient(135deg, hsl(var(--primary)), hsl(var(--color-rock-blue)))",
         "gradient-accent": "linear-gradient(135deg, hsl(var(--color-linen)), hsl(var(--color-rock-blue) / 0.5))",
         /* Brand gradients — decorative/CTA only */
         "gradient-hero": "linear-gradient(135deg, hsl(var(--brand-red-wine)), hsl(var(--brand-clementine)))",
         "gradient-cta": "linear-gradient(135deg, hsl(var(--brand-deep-green)), hsl(var(--brand-sage)))",
-        "gradient-warm": "linear-gradient(135deg, hsl(var(--brand-cinnamon)), hsl(var(--brand-clementine)))",
+        "gradient-warm-brand": "linear-gradient(135deg, hsl(var(--brand-cinnamon)), hsl(var(--brand-clementine)))",
         "gradient-soft": "linear-gradient(135deg, hsl(var(--brand-coral) / 0.3), hsl(var(--brand-rock-blue) / 0.3))",
         "gradient-mesh": "radial-gradient(ellipse at 20% 80%, hsl(var(--brand-red-wine) / 0.15) 0%, transparent 50%), radial-gradient(ellipse at 80% 20%, hsl(var(--brand-clementine) / 0.12) 0%, transparent 50%)",
       },

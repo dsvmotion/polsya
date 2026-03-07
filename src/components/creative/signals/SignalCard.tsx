@@ -17,7 +17,7 @@ export function SignalCard({ signal }: SignalCardProps) {
   const timeAgo = getTimeAgo(signal.createdAt);
 
   return (
-    <div className="flex gap-3 rounded-lg border bg-card p-4">
+    <div className="flex gap-3 rounded-xl border border-border border-t-2 border-t-warning bg-card p-4 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-150">
       {/* Severity stripe */}
       <div className={`w-1 shrink-0 rounded-full ${severityColors.bg.replace('-100', '-400')}`} />
 
@@ -29,14 +29,14 @@ export function SignalCard({ signal }: SignalCardProps) {
               <p className="text-xs text-muted-foreground line-clamp-2 mt-0.5">{signal.description}</p>
             )}
           </div>
-          <Badge variant="secondary" className={`${severityColors.bg} ${severityColors.text} border-0 shrink-0`}>
+          <Badge variant="secondary" className={`${severityColors.bg} ${severityColors.text} border-0 shrink-0 rounded-full px-2 py-0.5 text-xs`}>
             {SIGNAL_SEVERITY_LABELS[signal.severity]}
           </Badge>
         </div>
 
         <div className="flex items-center gap-2 flex-wrap">
-          <Badge variant="outline" className="text-xs capitalize">{signal.entityType}</Badge>
-          <Badge variant="secondary" className={`${statusColors.bg} ${statusColors.text} border-0 text-xs`}>
+          <Badge variant="outline" className="text-xs capitalize rounded-full px-2 py-0.5">{signal.entityType}</Badge>
+          <Badge variant="secondary" className={`${statusColors.bg} ${statusColors.text} border-0 text-xs rounded-full px-2 py-0.5`}>
             {SIGNAL_STATUS_LABELS[signal.status]}
           </Badge>
           <span className="text-xs text-muted-foreground ml-auto">{timeAgo}</span>

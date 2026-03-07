@@ -1,5 +1,5 @@
 import { useCurrentOrganization } from '@/hooks/useOrganizationContext';
-import { useImpersonation } from '@/contexts/ImpersonationContext';
+import { useImpersonation } from '@/contexts/impersonation-context';
 import { Button } from '@/components/ui/button';
 import { EyeOff } from 'lucide-react';
 

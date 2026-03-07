@@ -109,11 +109,11 @@ function ProviderCard({ provider }: { provider: IngestionProvider }) {
   }
 
   return (
-    <div className="rounded-lg border bg-card p-4 space-y-3">
+    <div className="rounded-xl border bg-card p-4 shadow-sm space-y-3 transition-all duration-150">
       <div className="flex items-start justify-between">
         <div>
-          <h3 className="font-semibold">{provider.name}</h3>
-          <Badge variant="outline" className="text-xs mt-1">
+          <h3 className="font-display font-semibold">{provider.name}</h3>
+          <Badge variant="outline" className="text-xs mt-1 rounded-full">
             {PROVIDER_TYPE_LABELS[provider.providerType] ?? provider.providerType}
           </Badge>
         </div>
@@ -125,7 +125,7 @@ function ProviderCard({ provider }: { provider: IngestionProvider }) {
         </p>
       )}
       <div className="flex gap-2">
-        <Button size="sm" variant="outline" className="gap-1" onClick={handleSync} disabled={!provider.isActive || triggerMutation.isPending}>
+        <Button size="sm" variant="outline" className="gap-1 transition-all duration-150" onClick={handleSync} disabled={!provider.isActive || triggerMutation.isPending}>
           <Play className="h-3.5 w-3.5" />
           Sync Now
         </Button>
@@ -162,12 +162,12 @@ function RunRow({ run, providerName }: { run: IngestionRun; providerName: string
     : '—';
 
   return (
-    <div className="border rounded-lg">
+    <div className="border rounded-xl shadow-sm">
       <button
-        className="w-full flex items-center gap-4 p-3 text-sm hover:bg-muted/50 transition-colors text-left"
+        className="w-full flex items-center gap-4 p-3 text-sm hover:bg-accent transition-colors duration-150 text-left rounded-xl"
         onClick={() => setExpanded(!expanded)}
       >
-        <Badge variant="secondary" className={`${statusColors.bg} ${statusColors.text} border-0 shrink-0`}>
+        <Badge variant="secondary" className={`${statusColors.bg} ${statusColors.text} border-0 shrink-0 rounded-full`}>
           {RUN_STATUS_LABELS[run.status]}
         </Badge>
         <span className="font-medium truncate">{providerName}</span>
@@ -180,15 +180,15 @@ function RunRow({ run, providerName }: { run: IngestionRun; providerName: string
         </span>
       </button>
       {expanded && (
-        <div className="border-t p-3 space-y-2 bg-muted/20">
+        <div className="border-t p-3 space-y-2 bg-muted/20 rounded-b-xl">
           {jobs.length === 0 ? (
             <p className="text-xs text-muted-foreground">No jobs for this run.</p>
           ) : (
             jobs.map((job) => {
               const jColors = JOB_STATUS_COLORS[job.status];
               return (
-                <div key={job.id} className="flex items-center gap-3 text-xs p-2 rounded bg-background border">
-                  <Badge variant="secondary" className={`${jColors.bg} ${jColors.text} border-0 text-xs`}>
+                <div key={job.id} className="flex items-center gap-3 text-xs p-2 rounded-lg bg-background border hover:bg-accent transition-colors duration-150">
+                  <Badge variant="secondary" className={`${jColors.bg} ${jColors.text} border-0 text-xs rounded-full`}>
                     {JOB_STATUS_LABELS[job.status]}
                   </Badge>
                   <span className="font-medium">{job.jobType}</span>
@@ -227,23 +227,23 @@ export default function CreativeIngestion() {
       }
     >
       <Tabs defaultValue="providers" className="mt-2">
-        <TabsList>
-          <TabsTrigger value="providers">Providers ({providers.length})</TabsTrigger>
-          <TabsTrigger value="runs">Run History ({runs.length})</TabsTrigger>
+        <TabsList className="rounded-full bg-muted/60 p-1">
+          <TabsTrigger value="providers" className="rounded-full px-4 py-1.5 text-sm data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-sm transition-all duration-150">Providers ({providers.length})</TabsTrigger>
+          <TabsTrigger value="runs" className="rounded-full px-4 py-1.5 text-sm data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-sm transition-all duration-150">Run History ({runs.length})</TabsTrigger>
         </TabsList>
 
-        <TabsContent value="providers" className="mt-4">
+        <TabsContent value="providers" className="mt-6">
           {loadingProviders ? (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
               {Array.from({ length: 3 }).map((_, i) => (
-                <div key={i} className="rounded-lg border bg-card p-4 space-y-3 animate-pulse">
+                <div key={i} className="rounded-xl border bg-card p-4 shadow-sm space-y-3 animate-pulse">
                   <div className="h-5 w-3/4 bg-muted rounded" />
                   <div className="h-4 w-1/2 bg-muted/60 rounded" />
                 </div>
               ))}
             </div>
           ) : providers.length === 0 ? (
-            <div className="text-center py-12 text-sm text-muted-foreground">
+            <div className="rounded-xl bg-muted/30 border border-dashed border-border p-8 text-center text-sm text-muted-foreground">
               No providers configured. Click "Add Provider" to connect a data source.
             </div>
           ) : (
@@ -255,15 +255,15 @@ export default function CreativeIngestion() {
           )}
         </TabsContent>
 
-        <TabsContent value="runs" className="mt-4">
+        <TabsContent value="runs" className="mt-6">
           {loadingRuns ? (
             <div className="space-y-2">
               {Array.from({ length: 5 }).map((_, i) => (
-                <div key={i} className="h-12 bg-muted rounded animate-pulse" />
+                <div key={i} className="h-12 bg-muted rounded-xl animate-pulse" />
               ))}
             </div>
           ) : runs.length === 0 ? (
-            <div className="text-center py-12 text-sm text-muted-foreground">
+            <div className="rounded-xl bg-muted/30 border border-dashed border-border p-8 text-center text-sm text-muted-foreground">
               No runs yet. Trigger a sync from the Providers tab.
             </div>
           ) : (

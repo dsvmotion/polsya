@@ -58,8 +58,8 @@ export default function CreativeDiscover() {
   return (
     <div className="flex flex-col h-full">
       {/* Search Form */}
-      <div className="border-b bg-background px-6 py-4">
-        <h1 className="text-lg font-semibold mb-4">Discover</h1>
+      <div className="border-b bg-background px-6 py-6">
+        <h1 className="text-lg font-semibold font-display mb-4">Discover</h1>
         <DiscoverSearchForm
           onSearch={handleSearch}
           isLoading={searchMutation.isPending}
@@ -93,9 +93,9 @@ export default function CreativeDiscover() {
 
       {/* Empty state */}
       {results.length === 0 && !searchMutation.isPending && (
-        <div className="flex-1 flex items-center justify-center text-muted-foreground">
-          <div className="text-center">
-            <p className="text-lg font-medium">Search for businesses</p>
+        <div className="flex-1 flex items-center justify-center">
+          <div className="rounded-xl bg-muted/30 border border-dashed border-border p-8 text-center text-muted-foreground">
+            <p className="text-lg font-medium font-display">Search for businesses</p>
             <p className="text-sm mt-1">Enter a search query and location above to discover leads</p>
           </div>
         </div>

@@ -13,12 +13,12 @@ export function ClientCard({ client, onClick }: ClientCardProps) {
 
   return (
     <div
-      className="rounded-lg border bg-card p-4 space-y-3 hover:shadow-md transition-shadow cursor-pointer"
+      className="rounded-xl border border-border border-t-2 border-t-primary bg-card p-4 space-y-3 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-150 cursor-pointer"
       onClick={onClick}
     >
       <div className="flex items-start justify-between">
-        <h3 className="font-semibold truncate">{client.name}</h3>
-        <Badge variant="secondary" className={`${statusColors.bg} ${statusColors.text} border-0 shrink-0 ml-2`}>
+        <h3 className="font-medium text-sm truncate">{client.name}</h3>
+        <Badge variant="secondary" className={`${statusColors.bg} ${statusColors.text} border-0 shrink-0 ml-2 rounded-full px-2 py-0.5 text-xs`}>
           {CLIENT_STATUS_LABELS[client.status]}
         </Badge>
       </div>
@@ -36,7 +36,7 @@ export function ClientCard({ client, onClick }: ClientCardProps) {
       )}
       <div className="flex gap-2 pt-1">
         {client.sizeCategory && (
-          <Badge variant="outline" className="text-xs">
+          <Badge variant="outline" className="text-xs rounded-full px-2 py-0.5">
             {CLIENT_SIZE_LABELS[client.sizeCategory]}
           </Badge>
         )}

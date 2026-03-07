@@ -9,7 +9,7 @@ import { PortfolioCard } from '@/components/creative/portfolios/PortfolioCard';
 import { PortfolioFormSheet } from '@/components/creative/portfolios/PortfolioFormSheet';
 import { PortfolioDetail } from '@/components/creative/portfolios/PortfolioDetail';
 import { useCreativePortfolios } from '@/hooks/useCreativePortfolios';
-import { useCreativeLayout } from '@/components/creative/layout/CreativeLayout';
+import { useCreativeLayout } from '@/components/creative/layout/creative-layout-context';
 import type { CreativePortfolio } from '@/types/creative';
 import type { ViewMode } from '@/lib/design-tokens';
 
@@ -39,7 +39,7 @@ export default function CreativePortfolios() {
       actions={
         <div className="flex items-center gap-2">
           <ViewSwitcher value={viewMode} onChange={setViewMode} availableViews={['cards', 'table']} />
-          <Button size="sm" className="gap-1.5" onClick={() => setFormOpen(true)}>
+          <Button size="sm" className="gap-1.5 transition-all duration-150" onClick={() => setFormOpen(true)}>
             <Plus className="h-4 w-4" />
             <span className="hidden sm:inline">Add Portfolio</span>
           </Button>
@@ -60,7 +60,7 @@ export default function CreativePortfolios() {
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
             {isLoading ? (
               Array.from({ length: 8 }).map((_, i) => (
-                <div key={i} className="rounded-lg border bg-card overflow-hidden animate-pulse">
+                <div key={i} className="rounded-xl border bg-card shadow-elevation-card overflow-hidden animate-pulse">
                   <div className="aspect-video bg-muted" />
                   <div className="p-3 space-y-2">
                     <div className="h-4 w-3/4 bg-muted rounded" />
@@ -69,7 +69,7 @@ export default function CreativePortfolios() {
                 </div>
               ))
             ) : portfolios.length === 0 ? (
-              <div className="col-span-full text-center py-12 text-sm text-muted-foreground">
+              <div className="col-span-full rounded-xl bg-muted/30 border border-dashed border-border p-8 text-center text-sm text-muted-foreground">
                 No portfolios yet. Click "Add Portfolio" to get started.
               </div>
             ) : (

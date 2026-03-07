@@ -38,7 +38,7 @@ export function ViewSwitcher({
       onValueChange={(val) => {
         if (val) onChange(val as ViewMode);
       }}
-      className="bg-muted/50 rounded-lg p-0.5"
+      className="rounded-full bg-muted/60 p-1 inline-flex items-center gap-1"
     >
       {availableViews.map((mode) => {
         const { icon: Icon, label } = viewConfig[mode];
@@ -48,7 +48,7 @@ export function ViewSwitcher({
               <ToggleGroupItem
                 value={mode}
                 aria-label={label}
-                className="h-8 w-8 data-[state=on]:bg-background data-[state=on]:shadow-sm rounded-md"
+                className="rounded-full px-3 py-1.5 text-sm transition-all duration-150 text-muted-foreground hover:text-foreground data-[state=on]:bg-background data-[state=on]:text-foreground data-[state=on]:shadow-sm"
               >
                 <Icon className="h-4 w-4" />
               </ToggleGroupItem>

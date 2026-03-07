@@ -32,7 +32,7 @@ export default function CreativeWorkflows() {
       title="Workflow Automation"
       description="Configure rules to automate actions when entities change"
     >
-      <div className="flex justify-end mb-4 mt-2">
+      <div className="flex justify-end mb-6 mt-2">
         <Button size="sm" className="gap-1.5" onClick={handleCreate}>
           <Plus className="h-4 w-4" />
           <span>Create Rule</span>
@@ -42,14 +42,14 @@ export default function CreativeWorkflows() {
       {isLoading ? (
         <div className="space-y-3">
           {Array.from({ length: 3 }).map((_, i) => (
-            <div key={i} className="rounded-lg border bg-card p-4 animate-pulse">
+            <div key={i} className="rounded-xl border bg-card p-4 shadow-sm animate-pulse">
               <div className="h-4 w-3/4 bg-muted rounded mb-2" />
               <div className="h-3 w-1/2 bg-muted/60 rounded" />
             </div>
           ))}
         </div>
       ) : rules.length === 0 ? (
-        <div className="text-center py-12 text-sm text-muted-foreground">
+        <div className="rounded-xl bg-muted/30 border border-dashed border-border p-8 text-center text-sm text-muted-foreground">
           No workflow rules configured yet. Create your first rule to automate actions.
         </div>
       ) : (

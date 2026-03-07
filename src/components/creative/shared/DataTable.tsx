@@ -54,10 +54,10 @@ export function DataTable<TData, TValue>({
   if (isLoading) {
     return (
       <div className="space-y-3">
-        <Skeleton className="h-10 w-64" />
-        <div className="rounded-md border">
+        <Skeleton className="h-10 w-64 rounded-full" />
+        <div className="rounded-xl border border-border bg-card shadow-elevation-card">
           {Array.from({ length: 5 }).map((_, i) => (
-            <div key={i} className="flex gap-4 px-4 py-3 border-b last:border-b-0">
+            <div key={i} className="flex gap-4 px-4 py-3">
               {Array.from({ length: columns.length }).map((_, j) => (
                 <Skeleton key={j} className="h-4 flex-1" />
               ))}
@@ -72,22 +72,22 @@ export function DataTable<TData, TValue>({
     <div className="space-y-4">
       {searchKey && (
         <div className="relative max-w-sm">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input
             placeholder={searchPlaceholder}
             value={(table.getColumn(searchKey)?.getFilterValue() as string) ?? ''}
             onChange={(e) => table.getColumn(searchKey)?.setFilterValue(e.target.value)}
-            className="pl-9"
+            className="rounded-full bg-muted/50 border border-border px-4 pl-10"
           />
         </div>
       )}
-      <div className="rounded-md border">
+      <div className="rounded-xl border border-border bg-card shadow-elevation-card overflow-hidden">
         <Table>
           <TableHeader>
             {table.getHeaderGroups().map((headerGroup) => (
-              <TableRow key={headerGroup.id}>
+              <TableRow key={headerGroup.id} className="bg-muted/50 border-b border-border hover:bg-muted/50">
                 {headerGroup.headers.map((header) => (
-                  <TableHead key={header.id}>
+                  <TableHead key={header.id} className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
                     {header.isPlaceholder ? null : flexRender(header.column.columnDef.header, header.getContext())}
                   </TableHead>
                 ))}
@@ -99,7 +99,7 @@ export function DataTable<TData, TValue>({
               table.getRowModel().rows.map((row) => (
                 <TableRow
                   key={row.id}
-                  className={onRowClick ? 'cursor-pointer' : ''}
+                  className={`border-b border-border/50 hover:bg-accent transition-colors duration-150 ${onRowClick ? 'cursor-pointer' : ''}`}
                   onClick={() => onRowClick?.(row.original)}
                 >
                   {row.getVisibleCells().map((cell) => (

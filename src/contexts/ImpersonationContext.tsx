@@ -1,10 +1,6 @@
-import { createContext, useContext, useMemo } from 'react';
+import { useMemo } from 'react';
 import { useSearchParams } from 'react-router-dom';
-
-const ImpersonationContext = createContext<{
-  impersonateOrgId: string | null;
-  setImpersonateOrgId: (id: string | null) => void;
-} | null>(null);
+import { ImpersonationContext } from './impersonation-context';
 
 export function ImpersonationProvider({ children }: { children: React.ReactNode }) {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -31,9 +27,4 @@ export function ImpersonationProvider({ children }: { children: React.ReactNode 
       {children}
     </ImpersonationContext.Provider>
   );
-}
-
-export function useImpersonation() {
-  const ctx = useContext(ImpersonationContext);
-  return ctx ?? { impersonateOrgId: null, setImpersonateOrgId: () => {} };
 }

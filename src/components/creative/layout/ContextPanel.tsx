@@ -21,7 +21,7 @@ export function ContextPanel({ children, onClose, className }: ContextPanelProps
   return (
     <aside
       className={cn(
-        'hidden md:flex flex-col border-l bg-background animate-in slide-in-from-right duration-300',
+        'hidden md:flex flex-col border-l border-border bg-card shadow-elevation-popover animate-in slide-in-from-right duration-[180ms]',
         className,
       )}
       style={{
@@ -32,7 +32,7 @@ export function ContextPanel({ children, onClose, className }: ContextPanelProps
     >
       {/* Panel header */}
       <div className="flex items-center justify-between h-12 px-4 border-b">
-        <span className="text-sm font-medium text-muted-foreground">Details</span>
+        <span className="font-display text-sm font-medium text-muted-foreground">Details</span>
         <Button
           variant="ghost"
           size="icon"

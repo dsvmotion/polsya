@@ -63,7 +63,7 @@ export default function PipelineAnalytics() {
           {hasFunnel || isLoading ? (
             <ConversionFunnel stages={data?.funnel ?? []} loading={isLoading} />
           ) : (
-            <Card>
+            <Card className="rounded-xl border border-border bg-card shadow-elevation-card">
               <CardContent className="py-12">
                 <EmptyState
                   icon={GitBranch}
@@ -80,9 +80,9 @@ export default function PipelineAnalytics() {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Revenue Forecast */}
         <ErrorBoundary section="revenue-forecast">
-          <Card>
+          <Card className="rounded-xl border border-border bg-card shadow-elevation-card">
             <CardHeader>
-              <CardTitle className="text-base">Revenue Forecast</CardTitle>
+              <CardTitle className="text-base font-display">Revenue Forecast</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="h-[300px]">
@@ -141,9 +141,9 @@ export default function PipelineAnalytics() {
 
         {/* Deal Aging */}
         <ErrorBoundary section="deal-aging">
-          <Card>
+          <Card className="rounded-xl border border-border bg-card shadow-elevation-card">
             <CardHeader>
-              <CardTitle className="text-base">Deal Aging</CardTitle>
+              <CardTitle className="text-base font-display">Deal Aging</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="h-[300px] overflow-auto">
@@ -162,7 +162,7 @@ export default function PipelineAnalytics() {
                       {data!.dealAging
                         .sort((a, b) => b.ageDays - a.ageDays)
                         .map((deal) => (
-                          <tr key={deal.id} className="border-b last:border-0">
+                          <tr key={deal.id} className="border-b last:border-0 hover:bg-accent transition-colors duration-150 rounded-lg">
                             <td className="py-2 font-medium truncate max-w-[140px]">{deal.name}</td>
                             <td className="py-2">
                               <Badge

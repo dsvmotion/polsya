@@ -24,7 +24,7 @@ export default function CreativeKnowledgeBase() {
         </Button>
       }
     >
-      <div className="mt-2">
+      <div className="mt-4">
         <DataTable
           columns={documentColumns}
           data={documents}
@@ -35,7 +35,7 @@ export default function CreativeKnowledgeBase() {
       </div>
 
       {budget && (
-        <div className="mt-4 flex items-center gap-2 text-sm text-muted-foreground">
+        <div className="mt-6 flex items-center gap-2 text-sm text-muted-foreground rounded-xl bg-muted/30 border border-border px-4 py-3">
           <span>AI Credits:</span>
           <span className="font-medium text-foreground">
             {budget.remaining === null ? '∞' : `${Math.max(0, budget.remaining)} remaining`}

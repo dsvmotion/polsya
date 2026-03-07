@@ -10,7 +10,7 @@ import { OpportunityFormSheet } from '@/components/creative/opportunities/Opport
 import { OpportunityDetail } from '@/components/creative/opportunities/OpportunityDetail';
 import { useCreativeOpportunities } from '@/hooks/useCreativeOpportunities';
 import { useCreativeClients } from '@/hooks/useCreativeClients';
-import { useCreativeLayout } from '@/components/creative/layout/CreativeLayout';
+import { useCreativeLayout } from '@/components/creative/layout/creative-layout-context';
 import type { CreativeOpportunity } from '@/types/creative';
 import type { ViewMode } from '@/lib/design-tokens';
 import { KanbanBoard } from '@/components/creative/shared/KanbanBoard';
@@ -58,14 +58,14 @@ export default function CreativeOpportunities() {
       actions={
         <div className="flex items-center gap-2">
           <ViewSwitcher value={viewMode} onChange={setViewMode} availableViews={['table', 'cards', 'board']} />
-          <Button size="sm" className="gap-1.5" onClick={() => setFormOpen(true)}>
+          <Button size="sm" className="gap-1.5 transition-all duration-150" onClick={() => setFormOpen(true)}>
             <Plus className="h-4 w-4" />
             <span className="hidden sm:inline">New Opportunity</span>
           </Button>
         </div>
       }
     >
-      <div className="mt-2">
+      <div className="mt-4">
         {viewMode === 'table' ? (
           <DataTable
             columns={columns}
@@ -100,17 +100,17 @@ export default function CreativeOpportunities() {
             )}
           />
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
             {isLoading ? (
               Array.from({ length: 8 }).map((_, i) => (
-                <div key={i} className="rounded-lg border bg-card p-4 space-y-3 animate-pulse">
+                <div key={i} className="rounded-xl border bg-card p-4 space-y-3 animate-pulse shadow-elevation-card">
                   <div className="h-5 w-3/4 bg-muted rounded" />
                   <div className="h-4 w-1/2 bg-muted/60 rounded" />
                   <div className="h-4 w-full bg-muted/40 rounded" />
                 </div>
               ))
             ) : opportunities.length === 0 ? (
-              <div className="col-span-full text-center py-12 text-sm text-muted-foreground">
+              <div className="col-span-full rounded-xl bg-muted/30 border border-dashed border-border p-8 text-center text-sm text-muted-foreground">
                 No opportunities yet. Click "New Opportunity" to get started.
               </div>
             ) : (
