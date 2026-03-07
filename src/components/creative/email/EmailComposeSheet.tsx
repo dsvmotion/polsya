@@ -27,6 +27,12 @@ const EMAIL_INTEGRATION_PROVIDERS: IntegrationProvider[] = ['gmail', 'outlook', 
 // Component
 // ---------------------------------------------------------------------------
 
+interface EmailComposeSheetProps {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  replyTo?: CreativeEmail;
+}
+
 const EMPTY_DEFAULTS: ComposeFormValues = {
   integrationId: '',
   to: [],
