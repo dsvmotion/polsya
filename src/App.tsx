@@ -179,39 +179,11 @@ const App = () => (
                   <Route path="platform" element={<Navigate to="/admin" replace />} />
                   <Route path="platform/*" element={<Navigate to="/admin" replace />} />
 
-                  {/* Creative Intelligence Platform routes */}
-                  <Route path="creative" element={
-                    <ProtectedRoute>
-                      <CreativeLayout />
-                    </ProtectedRoute>
-                  }>
-                    <Route index element={<CreativeDashboard />} />
-                    <Route path="discover" element={<CreativeDiscover />} />
-                    <Route path="clients" element={<CreativeClients />} />
-                    <Route path="projects" element={<CreativeProjects />} />
-                    <Route path="opportunities" element={<CreativeOpportunities />} />
-                    <Route path="contacts" element={<CreativeContacts />} />
-                    <Route path="portfolios" element={<CreativePortfolios />} />
-                    <Route path="ingestion" element={<CreativeIngestion />} />
-                    <Route path="style" element={<CreativeStyle />} />
-                    <Route path="signals" element={<CreativeSignals />} />
-                    <Route path="enrichment" element={<CreativeEnrichment />} />
-                    <Route path="resolution" element={<CreativeResolution />} />
-                    <Route path="reports" element={<CreativeReports />} />
-                    <Route path="knowledge-base" element={<CreativeKnowledgeBase />} />
-                    <Route path="workflows" element={<CreativeWorkflows />} />
-                    <Route path="inbox" element={<CreativeInbox />} />
-                    <Route path="calendar" element={<CreativeCalendar />} />
+                  {/* Legacy redirect: /creative/* -> /app */}
+                  <Route path="creative" element={<Navigate to="/app" replace />} />
+                  <Route path="creative/*" element={<Navigate to="/app" replace />} />
 
-                    {/* Analytics Hub (Phase 5A) */}
-                    <Route path="analytics" element={<AnalyticsOverview />} />
-                    <Route path="analytics/pipeline" element={<PipelineAnalytics />} />
-                    <Route path="analytics/activity" element={<ActivityAnalytics />} />
-                    <Route path="analytics/communication" element={<CommunicationAnalytics />} />
-                    <Route path="analytics/insights" element={<AIInsights />} />
-                  </Route>
-
-                  {/* Product app at /app — alias for /creative */}
+                  {/* Product app at /app */}
                   <Route path="app" element={
                     <ProtectedRoute>
                       <CreativeLayout />

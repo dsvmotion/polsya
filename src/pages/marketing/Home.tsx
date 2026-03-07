@@ -1,15 +1,13 @@
 import {
-  Search, Sparkles, GitBranch, Zap, Users, Layers, ArrowRight,
-  Star, MapPin, Award, TrendingUp, BarChart3, Clock, Globe,
-  Mail, Phone, Building2, Eye, CheckCircle2, Network,
-  Database, Shield, Target, Filter,
+  Search, Sparkles, GitBranch, Zap, ArrowRight,
+  Star, MapPin, Award, Clock, Globe,
+  Mail, Phone, Eye, CheckCircle2, Network,
+  Database, Filter,
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { HeroSection } from '@/components/marketing/HeroSection';
-import { IntelligenceSources } from '@/components/marketing/IntelligenceSources';
 import { UseCaseGrid } from '@/components/marketing/UseCaseGrid';
 import { CustomerLogos } from '@/components/marketing/CustomerLogos';
-import { SecurityBadges } from '@/components/marketing/SecurityBadges';
 import { TestimonialCarousel } from '@/components/marketing/TestimonialCarousel';
 import { CTASection } from '@/components/marketing/CTASection';
 import { ScrollAnimation } from '@/components/marketing/ScrollAnimation';
@@ -40,15 +38,6 @@ const profileMockData = {
   ],
 };
 
-/* ─── Pillar 4: Act — pipeline stages ─── */
-const pipelineStages = [
-  { stage: 'Discovered', count: 48, color: 'bg-gray-200' },
-  { stage: 'Contacted', count: 22, color: 'bg-indigo-200' },
-  { stage: 'Responded', count: 15, color: 'bg-violet-300' },
-  { stage: 'Evaluating', count: 8, color: 'bg-purple-400' },
-  { stage: 'Engaged', count: 5, color: 'bg-indigo-500 text-white' },
-];
-
 export default function Home() {
   return (
     <>
@@ -59,9 +48,6 @@ export default function Home() {
 
       {/* ═══ TRUSTED BY ═══ */}
       <CustomerLogos />
-
-      {/* ═══ DATA ECOSYSTEM ═══ */}
-      <IntelligenceSources />
 
       {/* ═══ SECTION: How It Works (Workflow) ═══ */}
       <section className="py-20 px-4 sm:px-6 lg:px-8 relative overflow-hidden">
@@ -200,7 +186,7 @@ export default function Home() {
                   Enrich
                 </div>
                 <h2 className="font-display text-3xl sm:text-4xl font-bold text-gray-900 leading-tight">Understand every creative at a glance</h2>
-                <p className="mt-4 text-lg text-gray-500 leading-relaxed">AI-powered enrichment turns scattered portfolio data into structured profiles with style classification, rate benchmarks, and availability signals.</p>
+                <p className="mt-4 text-lg text-gray-500 leading-relaxed">AI-powered enrichment pulls from 50+ intelligence sources to turn scattered portfolio data into structured profiles with style classification, rate benchmarks, and availability signals.</p>
                 <div className="mt-6 grid grid-cols-3 gap-4">
                   {[
                     { icon: Database, label: 'Auto-Enrichment', value: '50+ sources' },
@@ -409,116 +395,8 @@ export default function Home() {
         </div>
       </section>
 
-      {/* ═══ PILLAR 4: Act — Pipeline Management ═══ */}
-      <section className="py-24 px-4 sm:px-6 lg:px-8 relative overflow-hidden">
-        <div className="mx-auto max-w-6xl">
-          <ScrollAnimation>
-            <div className="flex flex-col lg:flex-row-reverse items-center gap-12">
-              {/* Text */}
-              <div className="flex-1">
-                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-semibold text-white bg-gradient-to-r from-fuchsia-600 to-indigo-600 mb-5">
-                  <Layers className="h-3.5 w-3.5" />
-                  Act
-                </div>
-                <h2 className="font-display text-3xl sm:text-4xl font-bold text-gray-900 leading-tight">From discovery to partnership</h2>
-                <p className="mt-4 text-lg text-gray-500 leading-relaxed">Build and manage your creative pipeline with customizable stages, automated follow-ups, and team collaboration tools.</p>
-                <div className="mt-6 grid grid-cols-3 gap-4">
-                  {[
-                    { icon: TrendingUp, value: '67%', label: 'Win Rate' },
-                    { icon: BarChart3, value: '$1.2M', label: 'Pipeline Value' },
-                    { icon: Building2, value: '142', label: 'Active Contacts' },
-                  ].map((stat) => (
-                    <div key={stat.label} className="text-center">
-                      <stat.icon className="h-5 w-5 mx-auto text-fuchsia-500 mb-1" />
-                      <div className="text-sm font-bold text-gray-900">{stat.value}</div>
-                      <div className="text-[10px] text-gray-400 uppercase tracking-wider">{stat.label}</div>
-                    </div>
-                  ))}
-                </div>
-                <Link to="/product" className="mt-6 inline-flex items-center gap-2 text-sm font-semibold text-fuchsia-600 hover:text-fuchsia-700 transition-colors group">
-                  Learn more <ArrowRight className="h-4 w-4 group-hover:translate-x-0.5 transition-transform" />
-                </Link>
-              </div>
-
-              {/* Product UI fragment: Pipeline */}
-              <div className="flex-1 w-full">
-                <div className="rounded-2xl border border-gray-200/60 bg-white shadow-xl overflow-hidden">
-                  <div className="px-5 py-3 border-b border-gray-100 flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      <div className="w-2 h-2 rounded-full bg-gradient-to-r from-fuchsia-500 to-indigo-500" />
-                      <span className="text-xs font-semibold text-gray-700">Pipeline</span>
-                    </div>
-                    <span className="text-[10px] bg-emerald-50 text-emerald-600 px-2 py-0.5 rounded-full font-medium">+8% this month</span>
-                  </div>
-                  <div className="p-4">
-                    <div className="space-y-2 mb-5">
-                      {pipelineStages.map((s) => (
-                        <div key={s.stage} className="flex items-center gap-3">
-                          <span className="text-[10px] font-medium text-gray-500 w-20 text-right">{s.stage}</span>
-                          <div className="flex-1 h-7 bg-gray-50 rounded-lg overflow-hidden relative">
-                            <div
-                              className={`h-full ${s.color} rounded-lg flex items-center px-2 transition-all duration-500`}
-                              style={{ width: `${(s.count / 48) * 100}%` }}
-                            >
-                              <span className={`text-[10px] font-bold ${s.color.includes('text-white') ? 'text-white' : 'text-gray-600'}`}>{s.count}</span>
-                            </div>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                    <div className="grid grid-cols-3 gap-2">
-                      {[
-                        { name: 'Elena V.', avatar: 'EV', color: 'bg-emerald-500', stage: 'Evaluating', value: '$18K' },
-                        { name: 'Kai T.', avatar: 'KT', color: 'bg-amber-500', stage: 'Contacted', value: '$12K' },
-                        { name: 'Ava O.', avatar: 'AO', color: 'bg-pink-500', stage: 'Responded', value: '$24K' },
-                      ].map((card) => (
-                        <div key={card.name} className="rounded-xl border border-gray-100 p-2.5 hover:shadow-md transition-shadow">
-                          <div className="flex items-center gap-1.5 mb-2">
-                            <div className={`w-5 h-5 rounded-full ${card.color} flex items-center justify-center text-[7px] font-bold text-white`}>{card.avatar}</div>
-                            <span className="text-[10px] font-semibold text-gray-900 truncate">{card.name}</span>
-                          </div>
-                          <div className="text-[9px] text-gray-400">{card.stage}</div>
-                          <div className="text-xs font-bold text-gray-900 mt-1">{card.value}</div>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </ScrollAnimation>
-        </div>
-      </section>
-
-      {/* ═══ Capabilities summary — compact strip ═══ */}
-      <section className="py-16 px-4 sm:px-6 lg:px-8 bg-[linear-gradient(to_right,hsl(245_30%_97%),white,hsl(245_30%_97%))]">
-        <ScrollAnimation>
-          <div className="mx-auto max-w-6xl">
-            <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">
-              {[
-                { icon: Users, value: '2.8M+', label: 'Creative profiles indexed', accent: 'from-indigo-500 to-indigo-600' },
-                { icon: Database, value: '50+', label: 'Data sources enriched', accent: 'from-violet-500 to-violet-600' },
-                { icon: Network, value: '1.2M+', label: 'Connections mapped', accent: 'from-purple-500 to-purple-600' },
-                { icon: Shield, value: '99.9%', label: 'Platform uptime', accent: 'from-fuchsia-500 to-fuchsia-600' },
-              ].map((stat) => (
-                <div key={stat.label} className="text-center group">
-                  <div className={`w-12 h-12 mx-auto rounded-2xl bg-gradient-to-br ${stat.accent} flex items-center justify-center shadow-lg mb-3 group-hover:scale-110 transition-transform duration-200`}>
-                    <stat.icon className="h-6 w-6 text-white" />
-                  </div>
-                  <div className="text-2xl font-bold text-gray-900">{stat.value}</div>
-                  <div className="text-xs text-gray-500 mt-1">{stat.label}</div>
-                </div>
-              ))}
-            </div>
-          </div>
-        </ScrollAnimation>
-      </section>
-
       {/* ═══ USE CASES ═══ */}
       <UseCaseGrid />
-
-      {/* ═══ SECURITY ═══ */}
-      <SecurityBadges />
 
       {/* ═══ TESTIMONIALS ═══ */}
       <TestimonialCarousel />
@@ -527,8 +405,8 @@ export default function Home() {
       <CTASection
         headline="Start discovering creative talent today"
         subtitle="Free 7-day trial. No credit card required."
-        primaryCta={{ label: 'Start free trial →', href: '/signup' }}
-        secondaryCta={{ label: 'Request a demo →', href: '/contact' }}
+        primaryCta={{ label: 'Start free trial', href: '/signup' }}
+        secondaryCta={{ label: 'Request a demo', href: '/contact' }}
       />
     </>
   );

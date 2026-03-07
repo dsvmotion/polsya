@@ -9,8 +9,7 @@ import { PageMeta } from '@/components/marketing/PageMeta';
 const PLANS = [
   {
     name: 'Starter',
-    price: '\u20ac29',
-    period: '/mo',
+    monthlyPrice: 29,
     featured: false,
     features: [
       '500 profiles',
@@ -25,8 +24,7 @@ const PLANS = [
   },
   {
     name: 'Pro',
-    price: '\u20ac79',
-    period: '/mo',
+    monthlyPrice: 79,
     featured: true,
     badge: 'Most popular',
     features: [
@@ -43,8 +41,7 @@ const PLANS = [
   },
   {
     name: 'Enterprise',
-    price: 'Custom',
-    period: '',
+    monthlyPrice: null,
     featured: false,
     features: [
       'Unlimited profiles',
@@ -60,6 +57,12 @@ const PLANS = [
     ctaVariant: 'outline' as const,
   },
 ] as const;
+
+function getPrice(monthlyPrice: number | null, annual: boolean) {
+  if (monthlyPrice === null) return 'Custom';
+  if (annual) return `€${Math.round(monthlyPrice * 0.8)}`;
+  return `€${monthlyPrice}`;
+}
 
 const FAQS = [
   {
@@ -97,6 +100,8 @@ function FAQItem({ q, a }: { q: string; a: string }) {
 }
 
 export default function Pricing() {
+  const [annual, setAnnual] = useState(false);
+
   return (
     <>
       <PageMeta title="Pricing" description="Simple, transparent pricing for creative intelligence. Start free, scale as you grow." path="/pricing" />
@@ -115,6 +120,22 @@ export default function Pricing() {
               Start free for 7 days. No credit card required. Upgrade when you are ready.
             </p>
           </ScrollAnimation>
+
+          {/* Billing toggle */}
+          <div className="mt-10 inline-flex items-center gap-3 rounded-full bg-gray-100/80 p-1 text-sm font-medium">
+            <button
+              onClick={() => setAnnual(false)}
+              className={`rounded-full px-5 py-2 transition-all duration-200 ${!annual ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}
+            >
+              Monthly
+            </button>
+            <button
+              onClick={() => setAnnual(true)}
+              className={`rounded-full px-5 py-2 transition-all duration-200 ${annual ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}
+            >
+              Annual <span className="ml-1 text-xs font-bold text-indigo-600">-20%</span>
+            </button>
+          </div>
         </div>
       </section>
 
@@ -137,8 +158,8 @@ export default function Pricing() {
                 )}
                 <h2 className="text-xl font-bold text-gray-900">{plan.name}</h2>
                 <div className="mt-4 flex items-baseline gap-1">
-                  <span className="text-4xl font-extrabold text-gray-900">{plan.price}</span>
-                  {plan.period && <span className="text-gray-400">{plan.period}</span>}
+                  <span className="text-4xl font-extrabold text-gray-900">{getPrice(plan.monthlyPrice, annual)}</span>
+                  {plan.monthlyPrice !== null && <span className="text-gray-400">{annual ? '/mo, billed yearly' : '/mo'}</span>}
                 </div>
                 <ul className="mt-8 flex-1 space-y-3">
                   {plan.features.map((f) => (
@@ -169,7 +190,7 @@ export default function Pricing() {
       <section className="pb-24 px-4 sm:px-6 lg:px-8">
         <div className="mx-auto max-w-2xl">
           <ScrollAnimation>
-            <h2 className="font-display text-2xl font-bold text-gray-900 text-center mb-8">
+            <h2 className="font-display text-2xl sm:text-3xl font-bold text-gray-900 text-center mb-8">
               Frequently asked questions
             </h2>
           </ScrollAnimation>
@@ -184,7 +205,7 @@ export default function Pricing() {
       <CTASection
         headline="Start your free trial"
         subtitle="No credit card required. Cancel anytime."
-        primaryCta={{ label: 'Get started', href: '/signup' }}
+        primaryCta={{ label: 'Start free trial', href: '/signup' }}
         secondaryCta={{ label: 'Contact sales', href: '/contact' }}
       />
     </>

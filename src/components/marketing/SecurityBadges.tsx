@@ -5,7 +5,7 @@ const badges = [
   { icon: Shield, title: 'GDPR Compliant', description: 'Full European data protection compliance' },
   { icon: Lock, title: 'Encrypted', description: 'AES-256 encryption at rest and in transit' },
   { icon: Server, title: 'Row-Level Security', description: 'Supabase RLS on every table' },
-  { icon: Globe, title: 'SOC 2 Ready', description: 'Enterprise-grade security practices' },
+  { icon: Globe, title: 'SOC 2 Aligned', description: 'Following enterprise security frameworks' },
 ];
 
 export function SecurityBadges() {

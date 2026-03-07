@@ -67,7 +67,7 @@ export default function Customers() {
         <div className="mx-auto max-w-6xl">
           <ScrollAnimation>
             <p className="text-sm font-semibold text-indigo-600 uppercase tracking-wider mb-4 text-center">Testimonials</p>
-            <h2 className="font-display text-2xl sm:text-3xl font-bold text-gray-900 text-center mb-12">
+            <h2 className="font-display text-3xl sm:text-4xl font-bold text-gray-900 text-center mb-12">
               What our customers say
             </h2>
           </ScrollAnimation>
@@ -97,23 +97,6 @@ export default function Customers() {
               </ScrollAnimation>
             ))}
           </div>
-        </div>
-      </section>
-
-      {/* Case studies placeholder */}
-      <section className="py-24 px-4 sm:px-6 lg:px-8 relative overflow-hidden">
-        <div className="absolute inset-0 -z-10 bg-[linear-gradient(to_bottom,white,hsl(245_30%_97%),white)]" />
-        <div className="mx-auto max-w-4xl text-center">
-          <ScrollAnimation>
-            <p className="text-sm font-semibold text-indigo-600 uppercase tracking-wider mb-4">Coming Soon</p>
-            <h2 className="font-display text-2xl sm:text-3xl font-bold text-gray-900">Case studies</h2>
-            <p className="mt-4 text-gray-500">
-              Detailed case studies with metrics and outcomes are coming soon. Want to be featured?
-            </p>
-            <p className="mt-2 text-sm text-gray-400">
-              Reach out to us at hello@polsya.com
-            </p>
-          </ScrollAnimation>
         </div>
       </section>
 

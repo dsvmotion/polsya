@@ -50,10 +50,10 @@ describe('Marketing Pages', () => {
     expect(screen.getAllByText(/customers/i).length).toBeGreaterThanOrEqual(1);
   });
 
-  it('Resources page renders resource links', () => {
+  it('Resources page renders coming-soon state', () => {
     wrap(<Resources />);
     expect(screen.getAllByText(/resources/i).length).toBeGreaterThanOrEqual(1);
-    expect(screen.getByText('Documentation')).toBeInTheDocument();
+    expect(screen.getByText(/check back soon/i)).toBeInTheDocument();
   });
 
   it('Security page renders compliance info', () => {

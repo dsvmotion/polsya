@@ -88,7 +88,7 @@ export default function Product() {
         const Icon = cap.icon;
         const isEven = idx % 2 === 1;
         return (
-          <section key={cap.title} className={`py-24 px-4 sm:px-6 lg:px-8 ${isEven ? '' : 'relative overflow-hidden'}`}>
+          <section key={cap.title} id={cap.title.toLowerCase()} className={`py-24 px-4 sm:px-6 lg:px-8 ${isEven ? '' : 'relative overflow-hidden'}`}>
             {!isEven && <div className="absolute inset-0 -z-10 bg-[linear-gradient(to_bottom,white,hsl(245_30%_97%),white)]" />}
             <div className="mx-auto max-w-6xl">
               <ScrollAnimation>
@@ -98,7 +98,7 @@ export default function Product() {
                     <div className={`inline-flex h-12 w-12 items-center justify-center rounded-xl ${cap.accentBg} mb-4`}>
                       <Icon className={`h-6 w-6 bg-gradient-to-r ${cap.gradient} bg-clip-text`} style={{ color: idx === 0 ? '#4f46e5' : idx === 1 ? '#7c3aed' : idx === 2 ? '#9333ea' : idx === 3 ? '#059669' : '#0891b2' }} />
                     </div>
-                    <h2 className="text-3xl font-bold text-gray-900">{cap.title}</h2>
+                    <h2 className="font-display text-3xl sm:text-4xl font-bold tracking-tight text-gray-900">{cap.title}</h2>
                     <p className="mt-4 text-gray-500 leading-relaxed">{cap.description}</p>
                     <ul className="mt-6 space-y-2.5">
                       {cap.bullets.map((b) => (
