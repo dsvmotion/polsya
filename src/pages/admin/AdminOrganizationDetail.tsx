@@ -128,15 +128,16 @@ export default function AdminOrganizationDetail() {
     },
   });
 
+  const aiCfg = org?.aiChatConfig ?? null;
   useEffect(() => {
-    if (!org?.aiChatConfig) {
+    if (!aiCfg) {
       setProvider('openai');
       setModel('gpt-4o-mini');
       return;
     }
-    setProvider(org.aiChatConfig.provider);
-    setModel(org.aiChatConfig.model);
-  }, [org?.id, org?.aiChatConfig?.provider, org?.aiChatConfig?.model]);
+    setProvider(aiCfg.provider);
+    setModel(aiCfg.model);
+  }, [aiCfg]);
 
   const handleSave = () => {
     if (!orgId) return;

@@ -78,7 +78,7 @@ export default function Profile() {
       setAiProvider('openai');
       setAiModel('gpt-4o-mini');
     }
-  }, [aiChatConfig?.provider, aiChatConfig?.model, aiChatConfigLoading]);
+  }, [aiChatConfig, aiChatConfigLoading]);
 
   useEffect(() => {
     if (!organization) return;
