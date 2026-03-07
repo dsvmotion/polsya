@@ -28,7 +28,7 @@ interface AdminDataTableProps<T> {
   isLoading?: boolean;
 }
 
-export function AdminDataTable<T extends Record<string, any>>({
+export function AdminDataTable<T extends object>({
   data,
   columns,
   searchPlaceholder = 'Search...',
@@ -43,11 +43,12 @@ export function AdminDataTable<T extends Record<string, any>>({
   const filtered = useMemo(() => {
     if (!search.trim() || searchKeys.length === 0) return data;
     const q = search.trim().toLowerCase();
-    return data.filter((row) =>
-      searchKeys.some((key) =>
-        String(row[key] ?? '').toLowerCase().includes(q),
-      ),
-    );
+    return data.filter((row) => {
+      const rec = row as Record<string, unknown>;
+      return searchKeys.some((key) =>
+        String(rec[key] ?? '').toLowerCase().includes(q),
+      );
+    });
   }, [data, search, searchKeys]);
 
   const totalPages = Math.max(1, Math.ceil(filtered.length / pageSize));
@@ -93,13 +94,13 @@ export function AdminDataTable<T extends Record<string, any>>({
             ) : (
               paged.map((row, idx) => (
                 <TableRow
-                  key={row.id ?? idx}
+                  key={String((row as Record<string, unknown>)['id'] ?? idx)}
                   className={onRowClick ? 'cursor-pointer hover:bg-muted/50' : ''}
                   onClick={() => onRowClick?.(row)}
                 >
                   {columns.map((col) => (
                     <TableCell key={col.key}>
-                      {col.render ? col.render(row) : String(row[col.key] ?? '')}
+                      {col.render ? col.render(row) : String((row as Record<string, unknown>)[col.key] ?? '')}
                     </TableCell>
                   ))}
                 </TableRow>

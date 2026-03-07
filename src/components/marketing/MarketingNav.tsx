@@ -29,24 +29,24 @@ export function MarketingNav() {
       className={cn(
         'sticky top-0 z-50 w-full transition-all duration-300',
         scrolled
-          ? 'bg-white/90 backdrop-blur-xl border-b border-gray-200/60 shadow-sm'
+          ? 'bg-white/80 backdrop-blur-xl border-b border-gray-200/60 shadow-sm'
           : 'bg-transparent'
       )}
     >
       <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
-        <Link to="/" className="flex items-center gap-2 font-semibold text-gray-900 hover:opacity-80">
+        <Link to="/" className="flex items-center gap-2 font-semibold text-gray-900 hover:opacity-80 transition-opacity">
           <img src="/polsya-logo.png" alt={APP_NAME} className="h-7 w-auto" onError={(e) => {
             (e.target as HTMLImageElement).style.display = 'none';
           }} />
           <span className="font-display text-xl">{APP_NAME}</span>
         </Link>
 
-        <nav className="hidden lg:flex items-center gap-6">
+        <nav className="hidden lg:flex items-center gap-1">
           {navLinks.map((link) => (
             <Link
               key={link.href}
               to={link.href}
-              className="text-sm font-medium text-gray-600 hover:text-gray-900 transition-colors"
+              className="px-3 py-2 rounded-lg text-sm font-medium text-gray-600 hover:text-gray-900 hover:bg-gray-100/60 transition-all duration-150"
             >
               {link.label}
             </Link>
@@ -57,7 +57,7 @@ export function MarketingNav() {
           <Button variant="ghost" asChild className="text-gray-600 hover:text-gray-900">
             <Link to="/login">Log in</Link>
           </Button>
-          <Button asChild className="bg-gradient-to-r from-orange-500 to-red-500 text-white hover:opacity-90 border-0 shadow-md">
+          <Button asChild className="bg-gradient-to-r from-indigo-600 to-violet-600 text-white hover:opacity-90 border-0 shadow-md shadow-indigo-200/40 hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200">
             <Link to="/signup">Get started</Link>
           </Button>
         </div>
@@ -78,7 +78,7 @@ export function MarketingNav() {
             <Link
               key={link.href}
               to={link.href}
-              className="block py-2.5 text-sm font-medium text-gray-600 hover:text-gray-900"
+              className="block py-2.5 px-3 rounded-lg text-sm font-medium text-gray-600 hover:text-gray-900 hover:bg-gray-50"
               onClick={() => setMobileMenuOpen(false)}
             >
               {link.label}
@@ -88,7 +88,7 @@ export function MarketingNav() {
             <Button variant="outline" asChild className="w-full">
               <Link to="/login" onClick={() => setMobileMenuOpen(false)}>Log in</Link>
             </Button>
-            <Button asChild className="w-full bg-gradient-to-r from-orange-500 to-red-500 text-white border-0">
+            <Button asChild className="w-full bg-gradient-to-r from-indigo-600 to-violet-600 text-white border-0">
               <Link to="/signup" onClick={() => setMobileMenuOpen(false)}>Get started</Link>
             </Button>
           </div>

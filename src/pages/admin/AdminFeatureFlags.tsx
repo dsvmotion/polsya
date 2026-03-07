@@ -1,33 +1,46 @@
-import { Flag, ToggleRight, ToggleLeft } from 'lucide-react';
+import { ToggleRight, ToggleLeft } from 'lucide-react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Switch } from '@/components/ui/switch';
 import { Badge } from '@/components/ui/badge';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 
+interface FeatureFlagRow {
+  key: string;
+  value: string;
+  description: string | null;
+  updated_at: string;
+}
+
 export default function AdminFeatureFlags() {
   const queryClient = useQueryClient();
 
-  const { data: flags = [], isLoading } = useQuery({
+  const { data: flags = [], isLoading } = useQuery<FeatureFlagRow[]>({
     queryKey: ['admin', 'feature-flags'],
-    queryFn: async () => {
+    queryFn: async (): Promise<FeatureFlagRow[]> => {
+      // 'category' column exists in DB but not in generated Supabase types
       const { data, error } = await supabase
         .from('platform_settings')
-        .select('*')
-        .eq('category', 'feature_flag')
+        .select('key, value, description, updated_at')
+        .eq('category' as 'key', 'feature_flag')
         .order('key');
       if (error) throw error;
-      return data ?? [];
+      return (data ?? []).map((d) => ({
+        key: d.key,
+        value: String(d.value ?? ''),
+        description: d.description,
+        updated_at: d.updated_at,
+      }));
     },
   });
 
   const toggleFlag = useMutation({
-    mutationFn: async ({ id, value }: { id: string; value: boolean }) => {
+    mutationFn: async ({ key, value }: { key: string; value: boolean }) => {
       const { error } = await supabase
         .from('platform_settings')
         .update({ value: String(value), updated_at: new Date().toISOString() })
-        .eq('id', id);
+        .eq('key', key);
       if (error) throw error;
     },
     onSuccess: () => {
@@ -39,7 +52,7 @@ export default function AdminFeatureFlags() {
     },
   });
 
-  const enabledCount = flags.filter((f: any) => f.value === 'true').length;
+  const enabledCount = flags.filter((f) => f.value === 'true').length;
 
   return (
     <div className="space-y-6 max-w-4xl">
@@ -56,13 +69,13 @@ export default function AdminFeatureFlags() {
         <Card>
           <CardContent className="py-8 text-center text-muted-foreground">
             No feature flags configured. Add flags in the platform_settings table
-            with category = 'feature_flag'.
+            with category = &apos;feature_flag&apos;.
           </CardContent>
         </Card>
       ) : (
         <div className="space-y-2">
-          {flags.map((flag: any) => (
-            <Card key={flag.id}>
+          {flags.map((flag) => (
+            <Card key={flag.key}>
               <CardContent className="py-4 flex items-center justify-between">
                 <div className="space-y-1">
                   <div className="flex items-center gap-2">
@@ -78,7 +91,7 @@ export default function AdminFeatureFlags() {
                 <Switch
                   checked={flag.value === 'true'}
                   onCheckedChange={(checked) =>
-                    toggleFlag.mutate({ id: flag.id, value: checked })
+                    toggleFlag.mutate({ key: flag.key, value: checked })
                   }
                 />
               </CardContent>

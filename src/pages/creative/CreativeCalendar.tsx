@@ -37,8 +37,7 @@ export default function CreativeCalendar() {
   return (
     <WorkspaceContainer
       title="Calendar"
-      subtitle={format(currentMonth, 'MMMM yyyy')}
-      icon={CalendarIcon}
+      description={format(currentMonth, 'MMMM yyyy')}
     >
       <div className="space-y-4">
         <div className="flex items-center gap-2">

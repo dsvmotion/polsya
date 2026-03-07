@@ -52,21 +52,24 @@ export default function AdminUsers() {
         .select(`
           user_id,
           role,
-          joined_at,
+          created_at,
           organizations (name)
         `)
         .limit(200);
       if (error) throw error;
-      return (data ?? []).map((m: any) => ({
-        id: m.user_id,
-        email: m.user_id,
-        full_name: null,
-        organization_name: m.organizations?.name ?? null,
-        role: m.role,
-        status: 'active',
-        created_at: m.joined_at,
-        last_sign_in_at: null,
-      }));
+      return (data ?? []).map((m) => {
+        const org = m.organizations as { name: string } | null;
+        return {
+          id: m.user_id,
+          email: m.user_id,
+          full_name: null,
+          organization_name: org?.name ?? null,
+          role: m.role,
+          status: 'active',
+          created_at: m.created_at,
+          last_sign_in_at: null,
+        };
+      });
     },
   });
 

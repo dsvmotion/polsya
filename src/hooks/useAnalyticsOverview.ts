@@ -88,12 +88,13 @@ export function useAnalyticsOverview(timeRange: TimeRange) {
         .map(([month, data]) => ({ month, current: Math.round(data.current), previous: Math.round(data.previous) }));
 
       // Activity by day (for bar chart)
-      const activityByDayMap = new Map<string, Record<string, number>>();
+      interface ActivityDayBucket { calls: number; emails: number; meetings: number; notes: number; tasks: number }
+      const activityByDayMap = new Map<string, ActivityDayBucket>();
       for (const a of allActivities) {
         const day = a.occurred_at.slice(0, 10);
         const existing = activityByDayMap.get(day) ?? { calls: 0, emails: 0, meetings: 0, notes: 0, tasks: 0 };
-        const type = a.activity_type as keyof typeof existing;
-        if (type in existing) (existing[type] as number)++;
+        const type = a.activity_type as keyof ActivityDayBucket;
+        if (type in existing) existing[type]++;
         activityByDayMap.set(day, existing);
       }
       const activityByDay = Array.from(activityByDayMap.entries())

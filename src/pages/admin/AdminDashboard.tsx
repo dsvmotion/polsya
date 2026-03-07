@@ -22,15 +22,20 @@ export default function AdminDashboard() {
   );
 
   // MRR calculation — sum active subscription amounts
+  // amount_cents may exist at DB level but is not in generated Supabase types;
+  // select all fields and access dynamically for forward-compatibility
   const { data: mrrCents = 0 } = useQuery({
     queryKey: ['admin', 'mrr'],
     queryFn: async () => {
       const { data, error } = await supabase
         .from('billing_subscriptions')
-        .select('amount_cents')
+        .select('*')
         .eq('status', 'active');
       if (error) throw error;
-      return (data ?? []).reduce((sum, s) => sum + (s.amount_cents ?? 0), 0);
+      return (data ?? []).reduce((sum, s) => {
+        const row = s as Record<string, unknown>;
+        return sum + (Number(row.amount_cents) || 0);
+      }, 0);
     },
   });
 
@@ -111,7 +116,7 @@ export default function AdminDashboard() {
               <p className="text-sm text-muted-foreground py-4 text-center">No recent activity</p>
             ) : (
               <div className="space-y-3">
-                {recentLogs.map((log: any) => (
+                {recentLogs.map((log) => (
                   <div key={log.id} className="flex items-start gap-3 text-sm">
                     <Clock className="h-4 w-4 text-muted-foreground mt-0.5 shrink-0" />
                     <div className="flex-1 min-w-0">

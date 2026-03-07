@@ -38,8 +38,7 @@ export default function CreativeInbox() {
   return (
     <WorkspaceContainer
       title="Email"
-      subtitle={`${emails.length} messages`}
-      icon={Mail}
+      description={`${emails.length} messages`}
     >
       {selectedEmail ? (
         <EmailThreadView
