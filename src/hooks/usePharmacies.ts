@@ -208,7 +208,6 @@ export function useSearchGooglePlaces() {
       pageToken?: string;
       signal?: AbortSignal;
     }) => {
-      console.log('Searching Google Places for pharmacies at:', location);
       const headers = await buildEdgeFunctionHeaders({ 'Content-Type': 'application/json' });
       
       const response = await fetch(`${SUPABASE_URL}/functions/v1/google-places-pharmacies`, {
@@ -230,7 +229,6 @@ export function useSearchGooglePlaces() {
       }
       
       const data = await response.json();
-      console.log('Found pharmacies:', data?.pharmacies?.length);
       return data;
     },
   });
@@ -239,7 +237,6 @@ export function useSearchGooglePlaces() {
 export function useGetPharmacyDetails() {
   return useMutation({
     mutationFn: async (placeId: string) => {
-      console.log('Fetching pharmacy details for:', placeId);
       const headers = await buildEdgeFunctionHeaders({ 'Content-Type': 'application/json' });
       
       const response = await fetch(`${SUPABASE_URL}/functions/v1/google-places-pharmacies`, {

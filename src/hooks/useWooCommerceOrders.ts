@@ -63,7 +63,6 @@ export function useWooCommerceOrders() {
     queryKey: ['woocommerce-orders'],
     queryFn: async (): Promise<Sale[]> => {
       try {
-        console.log('Fetching WooCommerce orders...');
         const headers = await buildEdgeFunctionHeaders({ 'Content-Type': 'application/json' });
         
         const response = await fetch(`${SUPABASE_URL}/functions/v1/woocommerce-orders`, {
@@ -89,7 +88,6 @@ export function useWooCommerceOrders() {
         const data = await response.json();
         
         if (data.orders && Array.isArray(data.orders) && data.orders.length > 0) {
-          console.log(`Fetched ${data.orders.length} orders from WooCommerce`);
           const sales: Sale[] = [];
           let skipped = 0;
           for (const o of data.orders as WooCommerceOrderResponse[]) {
@@ -105,7 +103,6 @@ export function useWooCommerceOrders() {
           return sales;
         }
         
-        console.log('No orders returned from WooCommerce');
         // Return empty array - NO mock data fallback
         return [];
       } catch (error) {
