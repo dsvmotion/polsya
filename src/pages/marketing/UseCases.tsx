@@ -1,6 +1,7 @@
 import { Building2, Palette, Film, Users, TrendingUp, Search } from 'lucide-react';
 import { ScrollAnimation } from '@/components/marketing/ScrollAnimation';
 import { CTASection } from '@/components/marketing/CTASection';
+import { PageMeta } from '@/components/marketing/PageMeta';
 
 const PERSONAS = [
   {
@@ -65,6 +66,7 @@ const PERSONAS = [
 export default function UseCases() {
   return (
     <>
+      <PageMeta title="Use Cases" description="See how agencies, brands, producers, recruiters, investors, and consultants use Polsya for creative intelligence." path="/use-cases" />
       {/* Hero */}
       <section className="py-24 px-4 sm:px-6 lg:px-8">
         <div className="mx-auto max-w-3xl text-center">

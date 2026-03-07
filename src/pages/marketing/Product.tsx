@@ -3,6 +3,7 @@ import { Search, Sparkles, GitBranch, Zap, MessagesSquare } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { ScrollAnimation } from '@/components/marketing/ScrollAnimation';
 import { CTASection } from '@/components/marketing/CTASection';
+import { PageMeta } from '@/components/marketing/PageMeta';
 
 const CAPABILITIES = [
   {
@@ -45,6 +46,7 @@ const CAPABILITIES = [
 export default function Product() {
   return (
     <>
+      <PageMeta title="Product" description="Explore Polsya's creative intelligence capabilities — discover, enrich, pipeline, analytics, and communication tools." path="/product" />
       {/* Hero */}
       <section className="py-24 px-4 sm:px-6 lg:px-8">
         <div className="mx-auto max-w-4xl text-center">

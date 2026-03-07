@@ -2,6 +2,7 @@ import { BookOpen, FileText, GitCommit, ArrowRight } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { ScrollAnimation } from '@/components/marketing/ScrollAnimation';
 import { CTASection } from '@/components/marketing/CTASection';
+import { PageMeta } from '@/components/marketing/PageMeta';
 
 const RESOURCES = [
   {
@@ -30,6 +31,7 @@ const RESOURCES = [
 export default function Resources() {
   return (
     <>
+      <PageMeta title="Resources" description="Documentation, blog posts, and changelog — everything you need to get started with Polsya." path="/resources" />
       {/* Hero */}
       <section className="py-24 px-4 sm:px-6 lg:px-8">
         <div className="mx-auto max-w-3xl text-center">

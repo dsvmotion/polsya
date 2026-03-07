@@ -8,6 +8,7 @@ import { SecurityBadges } from '@/components/marketing/SecurityBadges';
 import { TestimonialCarousel } from '@/components/marketing/TestimonialCarousel';
 import { CTASection } from '@/components/marketing/CTASection';
 import { ScrollAnimation } from '@/components/marketing/ScrollAnimation';
+import { PageMeta } from '@/components/marketing/PageMeta';
 
 const capabilities = [
   { icon: Search, title: 'Discover', description: 'Find designers, studios, and agencies with intelligent search, filters, and geographic mapping.' },
@@ -19,6 +20,7 @@ const capabilities = [
 export default function Home() {
   return (
     <>
+      <PageMeta title="Creative Intelligence Platform" description="Discover creative talent, analyze portfolios, map relationships, and surface opportunities — all in one intelligent platform." path="/" />
       <HeroSection />
       <IntelligenceSources />
       <section className="py-20 px-4 sm:px-6 lg:px-8">

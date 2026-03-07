@@ -2,6 +2,7 @@ import { Shield, Lock, Server, KeyRound } from 'lucide-react';
 import { ScrollAnimation } from '@/components/marketing/ScrollAnimation';
 import { SecurityBadges } from '@/components/marketing/SecurityBadges';
 import { CTASection } from '@/components/marketing/CTASection';
+import { PageMeta } from '@/components/marketing/PageMeta';
 
 const DETAILS = [
   {
@@ -33,6 +34,7 @@ const DETAILS = [
 export default function Security() {
   return (
     <>
+      <PageMeta title="Security" description="Enterprise-grade security with GDPR compliance, AES-256 encryption, and row-level security." path="/security" />
       {/* Hero */}
       <section className="py-24 px-4 sm:px-6 lg:px-8">
         <div className="mx-auto max-w-3xl text-center">

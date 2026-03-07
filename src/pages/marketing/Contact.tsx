@@ -3,6 +3,7 @@ import { Mail, MapPin, Clock } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { ScrollAnimation } from '@/components/marketing/ScrollAnimation';
 import { CTASection } from '@/components/marketing/CTASection';
+import { PageMeta } from '@/components/marketing/PageMeta';
 
 const SUBJECTS = [
   'General inquiry',
@@ -18,6 +19,7 @@ export default function Contact() {
 
   return (
     <>
+      <PageMeta title="Contact" description="Get in touch with the Polsya team. We'd love to hear from you." path="/contact" />
       {/* Hero */}
       <section className="py-24 px-4 sm:px-6 lg:px-8">
         <div className="mx-auto max-w-3xl text-center">

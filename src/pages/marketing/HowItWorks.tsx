@@ -1,6 +1,7 @@
 import { Link as LinkIcon, Search, Sparkles, GitBranch, BarChart3 } from 'lucide-react';
 import { ScrollAnimation } from '@/components/marketing/ScrollAnimation';
 import { CTASection } from '@/components/marketing/CTASection';
+import { PageMeta } from '@/components/marketing/PageMeta';
 
 const STEPS = [
   {
@@ -43,6 +44,7 @@ const STEPS = [
 export default function HowItWorks() {
   return (
     <>
+      <PageMeta title="How It Works" description="Learn how Polsya connects data sources, discovers creatives, enriches profiles, and surfaces opportunities in 5 simple steps." path="/how-it-works" />
       {/* Hero */}
       <section className="py-24 px-4 sm:px-6 lg:px-8">
         <div className="mx-auto max-w-3xl text-center">

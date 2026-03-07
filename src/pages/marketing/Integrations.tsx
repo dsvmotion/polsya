@@ -1,5 +1,6 @@
 import { ScrollAnimation } from '@/components/marketing/ScrollAnimation';
 import { CTASection } from '@/components/marketing/CTASection';
+import { PageMeta } from '@/components/marketing/PageMeta';
 
 interface SourceCategory {
   title: string;
@@ -32,6 +33,7 @@ const CATEGORIES: SourceCategory[] = [
 export default function Integrations() {
   return (
     <>
+      <PageMeta title="Integrations" description="Connect 50+ data sources including Behance, Dribbble, LinkedIn, and award databases to power your creative intelligence." path="/integrations" />
       {/* Hero */}
       <section className="py-24 px-4 sm:px-6 lg:px-8">
         <div className="mx-auto max-w-3xl text-center">

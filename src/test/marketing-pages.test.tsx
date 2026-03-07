@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
+import { HelmetProvider } from 'react-helmet-async';
 
 import Product from '@/pages/marketing/Product';
 import HowItWorks from '@/pages/marketing/HowItWorks';
@@ -13,7 +14,7 @@ import SecurityPage from '@/pages/marketing/Security';
 import ContactPage from '@/pages/marketing/Contact';
 
 function wrap(el: React.ReactElement) {
-  return render(<MemoryRouter>{el}</MemoryRouter>);
+  return render(<HelmetProvider><MemoryRouter>{el}</MemoryRouter></HelmetProvider>);
 }
 
 describe('Marketing Pages', () => {

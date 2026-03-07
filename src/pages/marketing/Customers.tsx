@@ -2,6 +2,7 @@ import { Star } from 'lucide-react';
 import { ScrollAnimation } from '@/components/marketing/ScrollAnimation';
 import { CustomerLogos } from '@/components/marketing/CustomerLogos';
 import { CTASection } from '@/components/marketing/CTASection';
+import { PageMeta } from '@/components/marketing/PageMeta';
 
 const TESTIMONIALS = [
   {
@@ -30,6 +31,7 @@ const TESTIMONIALS = [
 export default function Customers() {
   return (
     <>
+      <PageMeta title="Customers" description="See how creative teams worldwide use Polsya to discover talent and build relationships." path="/customers" />
       {/* Hero */}
       <section className="py-24 px-4 sm:px-6 lg:px-8">
         <div className="mx-auto max-w-3xl text-center">

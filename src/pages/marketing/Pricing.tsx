@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { ScrollAnimation } from '@/components/marketing/ScrollAnimation';
 import { CTASection } from '@/components/marketing/CTASection';
+import { PageMeta } from '@/components/marketing/PageMeta';
 
 const PLANS = [
   {
@@ -98,6 +99,7 @@ function FAQItem({ q, a }: { q: string; a: string }) {
 export default function Pricing() {
   return (
     <>
+      <PageMeta title="Pricing" description="Simple, transparent pricing for creative intelligence. Start free, scale as you grow." path="/pricing" />
       {/* Hero */}
       <section className="py-24 px-4 sm:px-6 lg:px-8">
         <div className="mx-auto max-w-3xl text-center">
