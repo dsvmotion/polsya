@@ -49,7 +49,7 @@ const footerColumns = [
 
 export function MarketingFooter() {
   return (
-    <footer className="border-t border-gray-200 bg-gray-50">
+    <footer className="border-t border-gray-200/60 bg-[hsl(245_30%_98%)]">
       <div className="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8">
         <div className="grid grid-cols-2 gap-8 md:grid-cols-5">
           {footerColumns.map((col) => (
@@ -60,7 +60,7 @@ export function MarketingFooter() {
                   <li key={link.label}>
                     <Link
                       to={link.href}
-                      className="text-sm text-gray-500 hover:text-gray-900 transition-colors"
+                      className="text-sm text-gray-500 hover:text-indigo-600 transition-colors duration-150"
                     >
                       {link.label}
                     </Link>
@@ -70,7 +70,7 @@ export function MarketingFooter() {
             </div>
           ))}
         </div>
-        <div className="mt-12 pt-8 border-t border-gray-200 flex flex-col sm:flex-row justify-between items-center gap-4">
+        <div className="mt-12 pt-8 border-t border-gray-200/60 flex flex-col sm:flex-row justify-between items-center gap-4">
           <span className="font-display text-lg font-semibold text-gray-900">{APP_NAME}</span>
           <p className="text-sm text-gray-400">
             &copy; {new Date().getFullYear()} {APP_NAME}. All rights reserved.

@@ -11,12 +11,12 @@ interface FeatureCardProps {
 export function FeatureCard({ icon: Icon, title, description, delay = 0 }: FeatureCardProps) {
   return (
     <ScrollAnimation delay={delay}>
-      <div className="rounded-2xl border border-gray-200 bg-white p-8 shadow-sm hover:shadow-md transition-shadow">
-        <div className="inline-flex items-center justify-center w-12 h-12 rounded-xl bg-orange-50 text-orange-500">
+      <div className="rounded-2xl border border-gray-200/60 bg-white p-8 shadow-sm hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200 group">
+        <div className="inline-flex items-center justify-center w-12 h-12 rounded-xl bg-indigo-50 text-indigo-600 group-hover:bg-indigo-100 transition-colors duration-200">
           <Icon className="h-6 w-6" />
         </div>
         <h3 className="mt-4 text-xl font-semibold text-gray-900">{title}</h3>
-        <p className="mt-2 text-gray-600 leading-relaxed">{description}</p>
+        <p className="mt-2 text-gray-500 leading-relaxed">{description}</p>
       </div>
     </ScrollAnimation>
   );
