@@ -14,17 +14,17 @@ export function ContactCard({ contact, onClick }: ContactCardProps) {
 
   return (
     <div
-      className="rounded-lg border bg-card p-4 space-y-3 hover:shadow-md transition-shadow cursor-pointer"
+      className="rounded-xl border border-border border-t-2 border-t-primary/40 bg-card p-4 space-y-3 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-150 cursor-pointer"
       onClick={onClick}
     >
       <div className="flex items-start justify-between">
         <div>
-          <h3 className="font-semibold truncate">{fullName}</h3>
+          <h3 className="font-medium text-sm truncate">{fullName}</h3>
           {contact.title && (
             <p className="text-sm text-muted-foreground truncate">{contact.title}</p>
           )}
         </div>
-        <Badge variant="secondary" className={`${statusColors.bg} ${statusColors.text} border-0 shrink-0 ml-2`}>
+        <Badge variant="secondary" className={`${statusColors.bg} ${statusColors.text} border-0 shrink-0 ml-2 rounded-full px-2 py-0.5 text-xs`}>
           {CONTACT_STATUS_LABELS[contact.status]}
         </Badge>
       </div>

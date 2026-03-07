@@ -17,15 +17,15 @@ export function OpportunityCard({ opportunity, clientName, onClick }: Opportunit
 
   return (
     <div
-      className="rounded-lg border bg-card p-4 space-y-3 hover:shadow-md transition-shadow cursor-pointer"
+      className="rounded-xl border border-border border-t-2 border-t-success bg-card p-4 space-y-3 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-150 cursor-pointer"
       onClick={onClick}
     >
       <div className="flex items-start justify-between">
         <div className="min-w-0">
-          <h3 className="font-semibold truncate">{opportunity.title}</h3>
+          <h3 className="font-medium text-sm truncate">{opportunity.title}</h3>
           {clientName && <p className="text-xs text-muted-foreground truncate">{clientName}</p>}
         </div>
-        <Badge variant="secondary" className={`${stageColors.bg} ${stageColors.text} border-0 shrink-0 ml-2`}>
+        <Badge variant="secondary" className={`${stageColors.bg} ${stageColors.text} border-0 shrink-0 ml-2 rounded-full px-2 py-0.5 text-xs`}>
           {OPPORTUNITY_STAGE_LABELS[opportunity.stage]}
         </Badge>
       </div>

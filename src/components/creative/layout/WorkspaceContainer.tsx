@@ -26,13 +26,13 @@ export function WorkspaceContainer({
   fullBleed = false,
 }: WorkspaceContainerProps) {
   return (
-    <div className={cn('flex flex-col min-h-full', className)}>
+    <div className={cn('flex flex-col min-h-full animate-page-enter', className)}>
       {/* Page header */}
       {(title || actions) && (
-        <div className={cn('flex items-start justify-between gap-4', !fullBleed && 'px-6 pt-6 pb-4')}>
+        <div className={cn('flex items-start justify-between gap-4', !fullBleed && 'px-6 pt-6 pb-6')}>
           <div className="min-w-0">
             {title && (
-              <h1 className="text-2xl font-semibold tracking-tight truncate">
+              <h1 className="font-display text-2xl font-semibold tracking-tight truncate">
                 {title}
               </h1>
             )}

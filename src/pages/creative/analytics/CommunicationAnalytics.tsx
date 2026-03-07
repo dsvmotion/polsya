@@ -58,9 +58,9 @@ export default function CommunicationAnalytics() {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Email Metrics */}
         <ErrorBoundary section="email-metrics">
-          <Card>
+          <Card className="rounded-xl border border-border bg-card shadow-elevation-card">
             <CardHeader>
-              <CardTitle className="text-base">Email Volume by Client</CardTitle>
+              <CardTitle className="text-base font-display">Email Volume by Client</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="h-[300px]">
@@ -107,9 +107,9 @@ export default function CommunicationAnalytics() {
 
         {/* Calendar Metrics */}
         <ErrorBoundary section="calendar-metrics">
-          <Card>
+          <Card className="rounded-xl border border-border bg-card shadow-elevation-card">
             <CardHeader>
-              <CardTitle className="text-base">Meetings per Week</CardTitle>
+              <CardTitle className="text-base font-display">Meetings per Week</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="h-[300px]">
@@ -159,9 +159,9 @@ export default function CommunicationAnalytics() {
       {/* Communication Scores Table */}
       <div className="mt-6">
         <ErrorBoundary section="communication-scores">
-          <Card>
+          <Card className="rounded-xl border border-border bg-card shadow-elevation-card">
             <CardHeader>
-              <CardTitle className="text-base">Communication Scores</CardTitle>
+              <CardTitle className="text-base font-display">Communication Scores</CardTitle>
             </CardHeader>
             <CardContent>
               {hasScores ? (
@@ -180,7 +180,7 @@ export default function CommunicationAnalytics() {
                       {data!.communicationScores
                         .sort((a, b) => b.compositeScore - a.compositeScore)
                         .map((entry) => (
-                          <tr key={entry.clientId} className="border-b last:border-0">
+                          <tr key={entry.clientId} className="border-b last:border-0 hover:bg-accent transition-colors duration-150 rounded-lg">
                             <td className="py-2 font-medium">{entry.clientName}</td>
                             <td className="py-2 text-center">{entry.emailScore}</td>
                             <td className="py-2 text-center">{entry.calendarScore}</td>

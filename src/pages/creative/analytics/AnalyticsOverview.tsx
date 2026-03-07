@@ -53,7 +53,7 @@ export default function AnalyticsOverview() {
       }
     >
       {/* KPI Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mt-2 mb-8">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mt-2 mb-6">
         <KpiCardWithTrend
           title="Pipeline Value"
           value={data ? formatCurrency(data.pipelineValue.current) : '$0'}
@@ -88,9 +88,9 @@ export default function AnalyticsOverview() {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Revenue Trend */}
         <ErrorBoundary section="revenue-trend">
-          <Card>
+          <Card className="rounded-xl border border-border bg-card shadow-elevation-card">
             <CardHeader>
-              <CardTitle className="text-base">Revenue Trend</CardTitle>
+              <CardTitle className="text-base font-display">Revenue Trend</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="h-[300px]">
@@ -145,9 +145,9 @@ export default function AnalyticsOverview() {
 
         {/* Pipeline Health */}
         <ErrorBoundary section="pipeline-health">
-          <Card>
+          <Card className="rounded-xl border border-border bg-card shadow-elevation-card">
             <CardHeader>
-              <CardTitle className="text-base">Pipeline Health</CardTitle>
+              <CardTitle className="text-base font-display">Pipeline Health</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="h-[300px]">
@@ -178,9 +178,9 @@ export default function AnalyticsOverview() {
 
         {/* Activity Volume */}
         <ErrorBoundary section="activity-volume">
-          <Card className="lg:col-span-2">
+          <Card className="lg:col-span-2 rounded-xl border border-border bg-card shadow-elevation-card">
             <CardHeader>
-              <CardTitle className="text-base">Activity Volume</CardTitle>
+              <CardTitle className="text-base font-display">Activity Volume</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="h-[300px]">

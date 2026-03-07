@@ -23,7 +23,7 @@ export default function KpiCardWithTrend({
 
   if (loading) {
     return (
-      <Card>
+      <Card className="rounded-xl border-t-2 border-t-primary/40 shadow-sm">
         <CardContent className="p-4">
           <div className="flex items-center gap-2 mb-2">
             <div className="h-4 w-4 rounded bg-muted animate-pulse" />
@@ -37,7 +37,7 @@ export default function KpiCardWithTrend({
   }
 
   return (
-    <Card>
+    <Card className="rounded-xl border-t-2 border-t-primary/40 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-150">
       <CardContent className="p-4">
         <div className="flex items-center gap-2 text-muted-foreground mb-2">
           <Icon className="h-4 w-4" />

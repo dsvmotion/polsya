@@ -53,14 +53,14 @@ export default function CreativeEnrichment() {
       description="Enrich entity data with external providers"
     >
       <Tabs defaultValue="recipes" className="mt-2">
-        <TabsList>
-          <TabsTrigger value="recipes">Recipes</TabsTrigger>
-          <TabsTrigger value="credits">Credits</TabsTrigger>
-          <TabsTrigger value="history">Run History</TabsTrigger>
+        <TabsList className="rounded-full bg-muted/60 p-1">
+          <TabsTrigger value="recipes" className="rounded-full px-4 py-1.5 text-sm data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-sm transition-all duration-150">Recipes</TabsTrigger>
+          <TabsTrigger value="credits" className="rounded-full px-4 py-1.5 text-sm data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-sm transition-all duration-150">Credits</TabsTrigger>
+          <TabsTrigger value="history" className="rounded-full px-4 py-1.5 text-sm data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-sm transition-all duration-150">Run History</TabsTrigger>
         </TabsList>
 
-        <TabsContent value="recipes" className="mt-4">
-          <div className="flex justify-end mb-4">
+        <TabsContent value="recipes" className="mt-6">
+          <div className="flex justify-end mb-6">
             <Button size="sm" className="gap-1.5" onClick={() => setFormOpen(true)}>
               <Plus className="h-4 w-4" />
               <span>Add Recipe</span>
@@ -75,18 +75,18 @@ export default function CreativeEnrichment() {
           />
         </TabsContent>
 
-        <TabsContent value="credits" className="mt-4">
+        <TabsContent value="credits" className="mt-6">
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {creditsLoading ? (
               Array.from({ length: 3 }).map((_, i) => (
-                <div key={i} className="rounded-lg border bg-card p-4 space-y-3 animate-pulse">
+                <div key={i} className="rounded-xl border bg-card p-4 shadow-sm space-y-3 animate-pulse">
                   <div className="h-5 w-1/2 bg-muted rounded" />
                   <div className="h-2 w-full bg-muted/60 rounded" />
                   <div className="h-3 w-3/4 bg-muted/40 rounded" />
                 </div>
               ))
             ) : credits.length === 0 ? (
-              <div className="col-span-full text-center py-12 text-sm text-muted-foreground">
+              <div className="col-span-full rounded-xl bg-muted/30 border border-dashed border-border p-8 text-center text-sm text-muted-foreground">
                 No credit accounts configured. Credits are managed externally.
               </div>
             ) : (
@@ -97,7 +97,7 @@ export default function CreativeEnrichment() {
           </div>
         </TabsContent>
 
-        <TabsContent value="history" className="mt-4">
+        <TabsContent value="history" className="mt-6">
           <DataTable
             columns={runColumns}
             data={runs}

@@ -10,9 +10,9 @@ export function CreditCard({ credit }: CreditCardProps) {
   const percentage = credit.totalCredits > 0 ? (credit.usedCredits / credit.totalCredits) * 100 : 0;
 
   return (
-    <div className="rounded-lg border bg-card p-4 space-y-3">
+    <div className="rounded-xl border border-border border-t-2 border-t-primary/40 bg-card p-4 space-y-3 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-150">
       <div className="flex items-center justify-between">
-        <h3 className="font-semibold capitalize">{credit.provider}</h3>
+        <h3 className="font-medium text-sm capitalize">{credit.provider}</h3>
         <span className="text-sm text-muted-foreground">
           {remaining.toLocaleString()} remaining
         </span>

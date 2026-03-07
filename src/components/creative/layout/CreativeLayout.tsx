@@ -78,7 +78,7 @@ export function CreativeLayout() {
 
         <div
           className={cn(
-            'flex flex-col min-h-screen transition-all duration-300',
+            'flex flex-col min-h-screen transition-[padding] duration-[180ms]',
             sidebarCollapsed ? 'lg:pl-[68px]' : 'lg:pl-64',
           )}
         >

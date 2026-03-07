@@ -29,7 +29,7 @@ export default function AIInsights() {
           {Array.from({ length: 3 }).map((_, i) => (
             <div
               key={i}
-              className="h-28 rounded-lg border bg-card animate-pulse"
+              className="h-28 rounded-xl border bg-card animate-pulse"
             />
           ))}
         </div>
@@ -49,7 +49,7 @@ export default function AIInsights() {
       <div className="mb-8">
         <div className="flex items-center gap-2 mb-4">
           <AlertTriangle className="h-5 w-5 text-red-500" />
-          <h2 className="text-lg font-semibold">At-Risk Deals</h2>
+          <h2 className="text-lg font-semibold font-display">At-Risk Deals</h2>
           <Badge variant="secondary" className="ml-1">
             {atRiskDeals.length}
           </Badge>
@@ -74,7 +74,7 @@ export default function AIInsights() {
       <div>
         <div className="flex items-center gap-2 mb-4">
           <Lightbulb className="h-5 w-5 text-yellow-500" />
-          <h2 className="text-lg font-semibold">Recommendations</h2>
+          <h2 className="text-lg font-semibold font-display">Recommendations</h2>
           <Badge variant="secondary" className="ml-1">
             {recommendations.length}
           </Badge>

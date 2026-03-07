@@ -38,7 +38,7 @@ export default function CreativeDashboard() {
       description="Your creative relationship overview"
     >
       {/* Metrics row */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
         <MetricCard
           icon={Users}
           label="Clients"
@@ -70,7 +70,7 @@ export default function CreativeDashboard() {
       </div>
 
       {/* Engine metrics row */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
         <MetricCard icon={Zap} label="New Signals" value={String(newSignals)} trend="Unread" loading={isLoading} />
         <MetricCard icon={Shield} label="Active Rules" value={String(activeRules)} trend="Monitoring" loading={isLoading} />
         <MetricCard icon={GitMerge} label="Pending Merges" value={String(pendingResolutions)} trend="Awaiting review" loading={isLoading} />
@@ -78,10 +78,10 @@ export default function CreativeDashboard() {
       </div>
 
       {/* Stage Breakdown */}
-      <div className="rounded-lg border bg-card p-6 mb-8">
+      <div className="rounded-xl border border-border bg-card p-6 mb-6 shadow-elevation-card">
         <div className="flex items-center gap-2 mb-4">
           <BarChart3 className="h-5 w-5 text-muted-foreground" />
-          <h2 className="text-lg font-semibold">Stage Breakdown</h2>
+          <h2 className="font-display text-lg font-semibold">Stage Breakdown</h2>
         </div>
         {isLoading ? (
           <div className="flex gap-2">
@@ -122,11 +122,11 @@ export default function CreativeDashboard() {
 
       {/* Recent Signals and Pending Resolutions */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <div className="rounded-lg border bg-card p-6">
+        <div className="rounded-xl border border-border bg-card p-6 shadow-elevation-card">
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-2">
               <Clock className="h-5 w-5 text-muted-foreground" />
-              <h2 className="text-lg font-semibold">Recent Activity</h2>
+              <h2 className="font-display text-lg font-semibold">Recent Activity</h2>
             </div>
           </div>
           {recentActivities.length === 0 && recentSignals.length === 0 ? (
@@ -138,7 +138,7 @@ export default function CreativeDashboard() {
               {recentActivities.map((activity) => {
                 const colors = ACTIVITY_TYPE_COLORS[activity.activityType as ActivityType];
                 return (
-                  <div key={activity.id} className="flex items-center gap-3 py-1.5">
+                  <div key={activity.id} className="flex items-center gap-3 rounded-lg px-2 py-1.5 hover:bg-accent transition-colors duration-150">
                     <div className={`h-2 w-2 rounded-full ${colors?.bg ?? 'bg-muted'}`} />
                     <span className="text-sm flex-1 truncate">{activity.title}</span>
                     <span className="text-xs text-muted-foreground whitespace-nowrap">
@@ -155,7 +155,7 @@ export default function CreativeDashboard() {
               {recentSignals.map((signal) => {
                 const sevColors = SIGNAL_SEVERITY_COLORS[signal.severity];
                 return (
-                  <div key={signal.id} className="flex items-center gap-3 py-1.5">
+                  <div key={signal.id} className="flex items-center gap-3 rounded-lg px-2 py-1.5 hover:bg-accent transition-colors duration-150">
                     <div className={`h-2 w-2 rounded-full ${sevColors.bg}`} />
                     <span className="text-sm flex-1 truncate">{signal.title}</span>
                     <span className="text-xs text-muted-foreground whitespace-nowrap">
@@ -168,11 +168,11 @@ export default function CreativeDashboard() {
           )}
         </div>
 
-        <div className="rounded-lg border bg-card p-6">
+        <div className="rounded-xl border border-border bg-card p-6 shadow-elevation-card">
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-2">
               <GitMerge className="h-5 w-5 text-muted-foreground" />
-              <h2 className="text-lg font-semibold">Pending Resolutions</h2>
+              <h2 className="font-display text-lg font-semibold">Pending Resolutions</h2>
             </div>
             <Link to="/creative/resolution" className="text-sm text-primary hover:underline">View all →</Link>
           </div>
@@ -183,7 +183,7 @@ export default function CreativeDashboard() {
           ) : (
             <div className="space-y-3">
               {pendingCandidates.slice(0, 3).map((c) => (
-                <div key={c.id} className="flex items-center justify-between rounded-lg border px-3 py-2">
+                <div key={c.id} className="flex items-center justify-between rounded-xl border px-3 py-2 hover:bg-accent transition-colors duration-150">
                   <div className="text-sm">
                     <span className="capitalize">{c.entityAType}</span>
                     <span className="text-muted-foreground mx-1.5">vs</span>
@@ -216,17 +216,25 @@ function MetricCard({
   loading?: boolean;
 }) {
   return (
-    <div className="rounded-lg border bg-card p-4">
-      <div className="flex items-center gap-2 text-muted-foreground mb-2">
-        <Icon className="h-4 w-4" />
-        <span className="text-sm font-medium">{label}</span>
+    <div className="metric-card">
+      <div className="flex items-center gap-3 mb-3">
+        <div className="gradient-icon-container h-10 w-10">
+          <Icon className="h-5 w-5 text-white" />
+        </div>
+        <span className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
+          {label}
+        </span>
       </div>
       {loading ? (
-        <div className="h-8 w-24 rounded bg-muted animate-pulse mb-1" />
+        <div className="h-8 w-24 rounded-lg bg-muted animate-pulse mb-1" />
       ) : (
-        <div className="text-2xl font-bold">{value}</div>
+        <div className="font-display text-2xl font-bold tracking-tight">{value}</div>
       )}
-      <div className="text-xs text-muted-foreground mt-1">{trend}</div>
+      <div className="mt-1">
+        <span className="rounded-full px-2 py-0.5 text-xs font-medium bg-semantic-success-light text-semantic-success">
+          {trend}
+        </span>
+      </div>
     </div>
   );
 }

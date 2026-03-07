@@ -50,12 +50,12 @@ export default function CreativeResolution() {
       description="Resolve duplicate entities and manage source mappings"
     >
       <Tabs defaultValue="candidates" className="mt-2">
-        <TabsList>
-          <TabsTrigger value="candidates">Candidates</TabsTrigger>
-          <TabsTrigger value="mappings">Source Mappings</TabsTrigger>
+        <TabsList className="rounded-full bg-muted/60 p-1">
+          <TabsTrigger value="candidates" className="rounded-full px-4 py-1.5 text-sm data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-sm transition-all duration-150">Candidates</TabsTrigger>
+          <TabsTrigger value="mappings" className="rounded-full px-4 py-1.5 text-sm data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-sm transition-all duration-150">Source Mappings</TabsTrigger>
         </TabsList>
 
-        <TabsContent value="candidates" className="mt-4">
+        <TabsContent value="candidates" className="mt-6">
           <div className="flex items-center gap-2 mb-4">
             <Select value={statusFilter} onValueChange={setStatusFilter}>
               <SelectTrigger className="w-[160px] h-9">
@@ -84,14 +84,14 @@ export default function CreativeResolution() {
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
               {candidatesLoading ? (
                 Array.from({ length: 6 }).map((_, i) => (
-                  <div key={i} className="rounded-lg border bg-card p-4 space-y-3 animate-pulse">
+                  <div key={i} className="rounded-xl border bg-card p-4 shadow-sm space-y-3 animate-pulse">
                     <div className="h-5 w-1/2 bg-muted rounded" />
                     <div className="h-12 w-full bg-muted/60 rounded" />
                     <div className="h-4 w-3/4 bg-muted/40 rounded" />
                   </div>
                 ))
               ) : candidates.length === 0 ? (
-                <div className="col-span-full text-center py-12 text-sm text-muted-foreground">
+                <div className="col-span-full rounded-xl bg-muted/30 border border-dashed border-border p-8 text-center text-sm text-muted-foreground">
                   No resolution candidates found.
                 </div>
               ) : (
@@ -105,7 +105,7 @@ export default function CreativeResolution() {
           )}
         </TabsContent>
 
-        <TabsContent value="mappings" className="mt-4">
+        <TabsContent value="mappings" className="mt-6">
           <DataTable
             columns={mappingColumns}
             data={mappings}

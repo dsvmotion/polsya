@@ -54,9 +54,9 @@ export default function ActivityAnalytics() {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Activity-to-Outcome Correlation */}
         <ErrorBoundary section="activity-correlation">
-          <Card>
+          <Card className="rounded-xl border border-border bg-card shadow-elevation-card">
             <CardHeader>
-              <CardTitle className="text-base">Activity-to-Outcome Correlation</CardTitle>
+              <CardTitle className="text-base font-display">Activity-to-Outcome Correlation</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="h-[300px]">
@@ -96,9 +96,9 @@ export default function ActivityAnalytics() {
 
         {/* Touch Pattern Distribution */}
         <ErrorBoundary section="touch-patterns">
-          <Card>
+          <Card className="rounded-xl border border-border bg-card shadow-elevation-card">
             <CardHeader>
-              <CardTitle className="text-base">Touch Pattern Distribution</CardTitle>
+              <CardTitle className="text-base font-display">Touch Pattern Distribution</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="h-[300px]">
@@ -143,7 +143,7 @@ export default function ActivityAnalytics() {
           {hasHeatmap || isLoading ? (
             <ActivityHeatmap data={data?.heatmap ?? []} loading={isLoading} />
           ) : (
-            <Card>
+            <Card className="rounded-xl border border-border bg-card shadow-elevation-card">
               <CardContent className="py-12">
                 <EmptyState
                   icon={Activity}
@@ -159,9 +159,9 @@ export default function ActivityAnalytics() {
       {/* Cold Clients Table */}
       <div className="mt-6">
         <ErrorBoundary section="cold-clients">
-          <Card>
+          <Card className="rounded-xl border border-border bg-card shadow-elevation-card">
             <CardHeader>
-              <CardTitle className="text-base">Cold Clients</CardTitle>
+              <CardTitle className="text-base font-display">Cold Clients</CardTitle>
             </CardHeader>
             <CardContent>
               {hasCold ? (
@@ -179,7 +179,7 @@ export default function ActivityAnalytics() {
                       {data!.coldClients
                         .sort((a, b) => b.daysSinceActivity - a.daysSinceActivity)
                         .map((client) => (
-                          <tr key={client.id} className="border-b last:border-0">
+                          <tr key={client.id} className="border-b last:border-0 hover:bg-accent transition-colors duration-150 rounded-lg">
                             <td className="py-2 font-medium">{client.name}</td>
                             <td className="py-2 text-right">{client.daysSinceActivity}d</td>
                             <td className="py-2 text-right">{formatCurrency(client.pipelineValueCents)}</td>

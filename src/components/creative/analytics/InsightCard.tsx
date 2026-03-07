@@ -61,20 +61,20 @@ function RecommendationCard({
   const TypeIcon = RECOMMENDATION_TYPE_ICONS[recommendation.type];
 
   return (
-    <Card>
+    <Card className="rounded-xl border-t-2 border-t-primary/40 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-150">
       <CardHeader className="pb-2">
         <div className="flex items-center gap-2 flex-wrap">
           <Badge
-            className={`${PRIORITY_STYLES[recommendation.priority]} border-0`}
+            className={`${PRIORITY_STYLES[recommendation.priority]} border-0 rounded-full px-2 py-0.5 text-xs`}
           >
             {recommendation.priority}
           </Badge>
-          <Badge variant="outline" className="gap-1">
+          <Badge variant="outline" className="gap-1 rounded-full px-2 py-0.5 text-xs">
             <TypeIcon className="h-3 w-3" />
             {RECOMMENDATION_TYPE_LABELS[recommendation.type]}
           </Badge>
         </div>
-        <CardTitle className="text-sm mt-2">{recommendation.title}</CardTitle>
+        <CardTitle className="text-sm font-medium mt-2">{recommendation.title}</CardTitle>
       </CardHeader>
       <CardContent>
         <p className="text-sm text-muted-foreground">
@@ -95,16 +95,16 @@ function RiskCard({ deal }: { deal: AtRiskDeal }) {
         : 'low';
 
   return (
-    <Card>
+    <Card className="rounded-xl border-t-2 border-t-warning shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-150">
       <CardHeader className="pb-2">
         <div className="flex items-center gap-2 flex-wrap">
-          <Badge className={`${PRIORITY_STYLES[priority]} border-0`}>
+          <Badge className={`${PRIORITY_STYLES[priority]} border-0 rounded-full px-2 py-0.5 text-xs`}>
             <AlertTriangle className="h-3 w-3 mr-1" />
             At Risk
           </Badge>
-          <Badge variant="outline">{deal.stage}</Badge>
+          <Badge variant="outline" className="rounded-full px-2 py-0.5 text-xs">{deal.stage}</Badge>
         </div>
-        <CardTitle className="text-sm mt-2">{deal.name}</CardTitle>
+        <CardTitle className="text-sm font-medium mt-2">{deal.name}</CardTitle>
       </CardHeader>
       <CardContent>
         <div className="space-y-2">
@@ -130,7 +130,7 @@ function RiskCard({ deal }: { deal: AtRiskDeal }) {
               <Badge
                 key={reason}
                 variant="secondary"
-                className="text-[10px] px-1.5 py-0"
+                className="text-[10px] rounded-full px-2 py-0.5"
               >
                 {RISK_REASON_LABELS[reason]}
               </Badge>

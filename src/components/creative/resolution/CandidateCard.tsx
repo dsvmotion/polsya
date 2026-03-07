@@ -15,24 +15,24 @@ export function CandidateCard({ candidate }: CandidateCardProps) {
   const statusColors = RESOLUTION_STATUS_COLORS[candidate.status];
 
   return (
-    <div className="rounded-lg border bg-card p-4 space-y-3">
+    <div className="rounded-xl border border-border border-t-2 border-t-primary/40 bg-card p-4 space-y-3 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-150">
       <div className="flex items-center justify-between">
-        <Badge variant="secondary" className={`${statusColors.bg} ${statusColors.text} border-0`}>
+        <Badge variant="secondary" className={`${statusColors.bg} ${statusColors.text} border-0 rounded-full px-2 py-0.5 text-xs`}>
           {RESOLUTION_STATUS_LABELS[candidate.status]}
         </Badge>
-        <Badge variant="secondary" className={`border-0 ${pct >= 80 ? 'bg-green-100 text-green-800' : pct >= 50 ? 'bg-amber-100 text-amber-800' : 'bg-gray-100 text-gray-800'}`}>
+        <Badge variant="secondary" className={`border-0 rounded-full px-2 py-0.5 text-xs ${pct >= 80 ? 'bg-green-100 text-green-800' : pct >= 50 ? 'bg-amber-100 text-amber-800' : 'bg-gray-100 text-gray-800'}`}>
           {pct}% match
         </Badge>
       </div>
 
       {/* Entities comparison */}
       <div className="flex items-center gap-2 text-sm">
-        <div className="flex-1 rounded border p-2 text-center">
+        <div className="flex-1 rounded-lg border p-2 text-center">
           <div className="text-xs text-muted-foreground capitalize">{candidate.entityAType}</div>
           <div className="font-mono text-xs mt-0.5">{candidate.entityAId.slice(0, 12)}…</div>
         </div>
         <span className="text-muted-foreground font-bold text-xs">vs</span>
-        <div className="flex-1 rounded border p-2 text-center">
+        <div className="flex-1 rounded-lg border p-2 text-center">
           <div className="text-xs text-muted-foreground capitalize">{candidate.entityBType}</div>
           <div className="font-mono text-xs mt-0.5">{candidate.entityBId.slice(0, 12)}…</div>
         </div>
@@ -42,7 +42,7 @@ export function CandidateCard({ candidate }: CandidateCardProps) {
       {candidate.matchReasons.length > 0 && (
         <div className="flex flex-wrap gap-1">
           {candidate.matchReasons.map((reason, i) => (
-            <Badge key={i} variant="outline" className="text-xs">{reason}</Badge>
+            <Badge key={i} variant="outline" className="text-xs rounded-full px-2 py-0.5">{reason}</Badge>
           ))}
         </div>
       )}

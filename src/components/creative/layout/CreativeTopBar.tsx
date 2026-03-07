@@ -11,19 +11,19 @@ interface CreativeTopBarProps {
 
 export function CreativeTopBar({ onMenuClick, onSearchClick }: CreativeTopBarProps) {
   return (
-    <header className="sticky top-0 z-20 flex items-center gap-2 h-14 px-4 border-b bg-background/90 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+    <header className="sticky top-0 z-20 flex items-center gap-2 h-12 px-4 border-b bg-background/90 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       {/* Mobile menu button */}
       <Button
         variant="ghost"
         size="icon"
-        className="lg:hidden h-9 w-9"
+        className="lg:hidden h-9 w-9 transition-all duration-150"
         onClick={onMenuClick}
       >
         <Menu className="h-5 w-5" />
       </Button>
 
       {/* Breadcrumbs */}
-      <div className="flex-1 min-w-0">
+      <div className="flex-1 min-w-0 text-xs text-muted-foreground font-light">
         <Breadcrumbs />
       </div>
 
@@ -33,7 +33,7 @@ export function CreativeTopBar({ onMenuClick, onSearchClick }: CreativeTopBarPro
         <Button
           variant="outline"
           size="sm"
-          className="hidden md:inline-flex items-center gap-2 text-muted-foreground h-9 px-3"
+          className="hidden md:inline-flex items-center gap-2 text-muted-foreground h-9 px-3 rounded-full bg-muted/50 border border-border transition-all duration-150"
           onClick={onSearchClick}
         >
           <Search className="h-4 w-4" />
@@ -45,7 +45,7 @@ export function CreativeTopBar({ onMenuClick, onSearchClick }: CreativeTopBarPro
         <Button
           variant="ghost"
           size="icon"
-          className="md:hidden h-9 w-9"
+          className="md:hidden h-9 w-9 transition-all duration-150"
           onClick={onSearchClick}
         >
           <Search className="h-5 w-5" />

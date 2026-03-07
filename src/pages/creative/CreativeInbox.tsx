@@ -48,16 +48,16 @@ export default function CreativeInbox() {
           onReply={handleReply}
         />
       ) : (
-        <div className="space-y-4">
+        <div className="space-y-6">
           <div className="flex items-center justify-between">
             <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as typeof activeTab)}>
-              <TabsList>
-                <TabsTrigger value="all">All</TabsTrigger>
-                <TabsTrigger value="inbound">Received</TabsTrigger>
-                <TabsTrigger value="outbound">Sent</TabsTrigger>
+              <TabsList className="rounded-full bg-muted/60 p-1">
+                <TabsTrigger value="all" className="rounded-full px-4 py-1.5 text-sm data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-sm transition-all duration-150">All</TabsTrigger>
+                <TabsTrigger value="inbound" className="rounded-full px-4 py-1.5 text-sm data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-sm transition-all duration-150">Received</TabsTrigger>
+                <TabsTrigger value="outbound" className="rounded-full px-4 py-1.5 text-sm data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-sm transition-all duration-150">Sent</TabsTrigger>
               </TabsList>
             </Tabs>
-            <Button size="sm" className="gap-1.5" onClick={handleCompose}>
+            <Button size="sm" className="gap-1.5 transition-all duration-150" onClick={handleCompose}>
               <Plus className="h-4 w-4" /> Compose
             </Button>
           </div>
@@ -65,13 +65,13 @@ export default function CreativeInbox() {
           {isLoading ? (
             <div className="text-center py-8 text-muted-foreground">Loading emails...</div>
           ) : emails.length === 0 ? (
-            <div className="text-center py-8 text-muted-foreground">
+            <div className="rounded-xl bg-muted/30 border border-dashed border-border p-8 text-center text-muted-foreground">
               <Mail className="mx-auto h-12 w-12 mb-3 opacity-30" />
               <p>No emails synced yet.</p>
               <p className="text-sm">Connect a Gmail or Outlook account in Integrations to start syncing.</p>
             </div>
           ) : (
-            <div className="divide-y">
+            <div className="space-y-1">
               {emails.map((email) => (
                 <EmailRow key={email.id} email={email} onClick={() => setSelectedEmail(email)} />
               ))}
@@ -98,7 +98,7 @@ function EmailRow({ email, onClick }: { email: CreativeEmail; onClick: () => voi
       tabIndex={0}
       onClick={onClick}
       onKeyDown={(e) => { if (e.key === 'Enter') onClick(); }}
-      className={`flex items-start gap-3 py-3 px-2 hover:bg-muted/50 rounded cursor-pointer ${
+      className={`flex items-start gap-3 py-3 px-3 hover:bg-accent transition-colors duration-150 rounded-lg cursor-pointer ${
         !email.isRead ? 'font-semibold' : ''
       }`}
     >

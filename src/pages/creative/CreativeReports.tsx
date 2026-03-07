@@ -72,7 +72,7 @@ export default function CreativeReports() {
       }
     >
       {/* KPI cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mt-2 mb-8">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mt-2 mb-6">
         <KpiCard icon={Briefcase} label="Pipeline Total" value={formatCurrency(kpis.pipelineTotal)} loading={isLoading} />
         <KpiCard icon={TrendingUp} label="Win Rate" value={`${kpis.winRate}%`} loading={isLoading} />
         <KpiCard icon={BarChart3} label="Avg Deal Size" value={formatCurrency(kpis.avgDealSize)} loading={isLoading} />
@@ -82,9 +82,9 @@ export default function CreativeReports() {
       {/* Charts */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <ErrorBoundary section="pipeline-by-stage">
-          <Card>
+          <Card className="rounded-xl border border-border bg-card shadow-elevation-card">
             <CardHeader>
-              <CardTitle className="text-base">Pipeline by Stage</CardTitle>
+              <CardTitle className="text-base font-display">Pipeline by Stage</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="h-[300px]">
@@ -116,9 +116,9 @@ export default function CreativeReports() {
         </ErrorBoundary>
 
         <ErrorBoundary section="revenue-over-time">
-          <Card>
+          <Card className="rounded-xl border border-border bg-card shadow-elevation-card">
             <CardHeader>
-              <CardTitle className="text-base">Revenue Over Time</CardTitle>
+              <CardTitle className="text-base font-display">Revenue Over Time</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="h-[300px]">
@@ -150,9 +150,9 @@ export default function CreativeReports() {
         </ErrorBoundary>
 
         <ErrorBoundary section="conversion-funnel">
-          <Card>
+          <Card className="rounded-xl border border-border bg-card shadow-elevation-card">
             <CardHeader>
-              <CardTitle className="text-base">Conversion Funnel</CardTitle>
+              <CardTitle className="text-base font-display">Conversion Funnel</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="h-[300px]">
@@ -185,9 +185,9 @@ export default function CreativeReports() {
         </ErrorBoundary>
 
         <ErrorBoundary section="project-status">
-          <Card>
+          <Card className="rounded-xl border border-border bg-card shadow-elevation-card">
             <CardHeader>
-              <CardTitle className="text-base">Project Status Breakdown</CardTitle>
+              <CardTitle className="text-base font-display">Project Status Breakdown</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="h-[300px]">
@@ -227,9 +227,11 @@ export default function CreativeReports() {
 
 function KpiCard({ icon: Icon, label, value, loading }: { icon: typeof BarChart3; label: string; value: string; loading?: boolean }) {
   return (
-    <div className="rounded-lg border bg-card p-4">
+    <div className="rounded-xl border bg-card p-4">
       <div className="flex items-center gap-2 text-muted-foreground mb-2">
-        <Icon className="h-4 w-4" />
+        <div className="flex h-6 w-6 items-center justify-center rounded-lg bg-gradient-to-br from-primary/20 to-primary/5">
+          <Icon className="h-3.5 w-3.5 text-primary" />
+        </div>
         <span className="text-sm font-medium">{label}</span>
       </div>
       {loading ? (
@@ -243,8 +245,10 @@ function KpiCard({ icon: Icon, label, value, loading }: { icon: typeof BarChart3
 
 function EmptyChart({ message }: { message: string }) {
   return (
-    <div className="h-full flex items-center justify-center text-muted-foreground text-sm">
-      {message}
+    <div className="h-full flex items-center justify-center">
+      <div className="rounded-xl bg-muted/30 border border-dashed border-border p-8 text-center text-muted-foreground text-sm">
+        {message}
+      </div>
     </div>
   );
 }

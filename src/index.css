@@ -59,73 +59,113 @@
 
 @layer base {
   :root {
-    /* Corporate B&W base — brand colors used ONLY for gradients & decorative accents */
-    /* Primary: Rock Blue - interactive elements (links, focus rings, selected) */
-    --primary: 198 33% 55%;
+    /* ===== Vibrant Indigo palette — Clay/Attio inspired ===== */
+
+    /* Primary: Vibrant Indigo — interactive elements (links, focus, selected) */
+    --primary: 252 85% 60%;
     --primary-foreground: 0 0% 100%;
 
-    /* Background: Pure white */
-    --background: 0 0% 100%;
-    --foreground: 0 0% 5%;
+    /* Background: Warm near-white (subtle blue-gray tint) */
+    --background: 240 20% 99%;
+    --foreground: 240 15% 10%;
 
+    /* Cards: Pure white to pop against warm bg */
     --card: 0 0% 100%;
-    --card-foreground: 0 0% 5%;
+    --card-foreground: 240 15% 10%;
 
+    /* Popover: Pure white, elevated surface */
     --popover: 0 0% 100%;
-    --popover-foreground: 0 0% 5%;
+    --popover-foreground: 240 15% 10%;
 
-    /* Neutral gray - no blue/warm tint */
-    --secondary: 0 0% 96%;
-    --secondary-foreground: 0 0% 5%;
+    /* Secondary: Indigo-tinted muted surface */
+    --secondary: 240 18% 96%;
+    --secondary-foreground: 240 15% 10%;
 
-    --muted: 0 0% 96%;
-    --muted-foreground: 0 0% 45%;
+    /* Muted: Subtle warm gray */
+    --muted: 240 14% 95%;
+    --muted-foreground: 240 10% 46%;
 
-    --accent: 0 0% 97%;
-    --accent-foreground: 0 0% 5%;
+    /* Accent: Soft indigo wash */
+    --accent: 252 30% 96%;
+    --accent-foreground: 252 85% 45%;
 
+    /* Status colors */
     --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 100%;
 
-    --success: 158 100% 15%;
+    --success: 152 70% 36%;
     --success-foreground: 0 0% 100%;
 
     --warning: 38 92% 50%;
     --warning-foreground: 0 0% 5%;
 
+    /* Domain-specific (business logic — keep functional) */
     --pharmacy: 0 0% 9%;
     --pharmacy-foreground: 0 0% 100%;
 
-    --client: 198 20% 55%;
-    --client-foreground: 0 0% 5%;
+    --client: 252 40% 55%;
+    --client-foreground: 0 0% 100%;
 
-    /* Neutral gray borders */
-    --border: 0 0% 90%;
-    --input: 0 0% 90%;
-    --ring: 198 33% 55%;
+    /* Borders: warm gray with slight indigo tint */
+    --border: 240 12% 90%;
+    --input: 240 12% 90%;
+    --ring: 252 85% 60%;
 
-    --radius: 0.75rem;
+    /* Radius: softer, Clay-style */
+    --radius: 1rem;
 
-    --shadow-card: 0 1px 2px rgb(0 0 0 / 0.04), 0 10px 28px rgb(0 0 0 / 0.05);
-    --shadow-lg: 0 14px 42px rgb(0 0 0 / 0.08);
+    /* ===== Elevation tokens ===== */
+    --shadow-card: 0 1px 3px rgb(0 0 0 / 0.04), 0 8px 24px rgb(0 0 0 / 0.06);
+    --shadow-lg: 0 12px 40px rgb(0 0 0 / 0.10);
+    --elevation-card: 0 1px 3px rgb(0 0 0 / 0.04), 0 8px 24px rgb(0 0 0 / 0.06);
+    --elevation-card-hover: 0 4px 12px rgb(0 0 0 / 0.06), 0 16px 32px rgb(0 0 0 / 0.10);
+    --elevation-popover: 0 4px 16px rgb(0 0 0 / 0.08), 0 16px 48px rgb(0 0 0 / 0.12);
+    --elevation-modal: 0 8px 24px rgb(0 0 0 / 0.12), 0 24px 64px rgb(0 0 0 / 0.16);
 
-    --sidebar-background: 0 0% 100%;
-    --sidebar-foreground: 0 0% 5%;
-    --sidebar-primary: 198 33% 55%;
+    /* ===== Dark sidebar — Attio-style ===== */
+    --sidebar-background: 240 25% 10%;
+    --sidebar-foreground: 240 10% 90%;
+    --sidebar-primary: 252 85% 68%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 0 0% 97%;
-    --sidebar-accent-foreground: 0 0% 5%;
-    --sidebar-border: 0 0% 92%;
-    --sidebar-ring: 198 33% 67%;
+    --sidebar-accent: 240 20% 16%;
+    --sidebar-accent-foreground: 240 10% 90%;
+    --sidebar-border: 240 20% 18%;
+    --sidebar-ring: 252 85% 60%;
 
-    --workspace-primary-hex: #000000;
+    --workspace-primary-hex: #6C5CE7;
 
-    /* Legacy brand tokens (keep for backward compat) */
+    /* ===== Spacing scale ===== */
+    --space-1: 0.25rem;  /* 4px */
+    --space-2: 0.5rem;   /* 8px */
+    --space-3: 0.75rem;  /* 12px */
+    --space-4: 1rem;     /* 16px */
+    --space-5: 1.5rem;   /* 24px */
+    --space-6: 2.5rem;   /* 40px */
+
+    /* ===== Semantic color roles ===== */
+    --semantic-primary: 252 85% 60%;
+    --semantic-primary-light: 252 85% 96%;
+    --semantic-accent: 280 75% 55%;
+    --semantic-accent-light: 280 75% 96%;
+    --semantic-success: 152 70% 36%;
+    --semantic-success-light: 152 60% 95%;
+    --semantic-warning: 38 92% 50%;
+    --semantic-warning-light: 38 80% 95%;
+    --semantic-danger: 0 84% 60%;
+    --semantic-danger-light: 0 80% 96%;
+
+    /* ===== Gradient tokens ===== */
+    --gradient-primary: linear-gradient(135deg, hsl(252 85% 60%), hsl(280 75% 55%));
+    --gradient-accent: linear-gradient(135deg, hsl(280 75% 55%), hsl(320 75% 55%));
+    --gradient-success: linear-gradient(135deg, hsl(152 70% 36%), hsl(172 60% 40%));
+    --gradient-warm: linear-gradient(135deg, hsl(38 92% 50%), hsl(20 85% 55%));
+
+    /* Legacy brand tokens (keep for marketing site backward compat) */
     --color-rock-blue: 198 33% 71%;
     --color-rock-blue-strong: 198 33% 55%;
     --color-linen: 43 42% 94%;
 
-    /* ===== Brand palette — gradients, glows, decorative ONLY ===== */
+    /* Brand palette — gradients, glows, decorative ONLY */
     --brand-red-wine: 338 100% 32%;
     --brand-clementine: 23 100% 50%;
     --brand-deep-green: 165 100% 15%;
@@ -136,57 +176,78 @@
   }
 
   .dark {
-    --background: 0 0% 3%;
-    --foreground: 0 0% 96%;
+    --background: 240 18% 6%;
+    --foreground: 240 10% 94%;
 
-    --card: 0 0% 6%;
-    --card-foreground: 0 0% 96%;
+    --card: 240 16% 9%;
+    --card-foreground: 240 10% 94%;
 
-    --popover: 0 0% 6%;
-    --popover-foreground: 0 0% 96%;
+    --popover: 240 16% 9%;
+    --popover-foreground: 240 10% 94%;
 
-    --primary: 198 33% 75%;
-    --primary-foreground: 0 0% 3%;
+    --primary: 252 80% 72%;
+    --primary-foreground: 240 18% 6%;
 
-    --secondary: 0 0% 12%;
-    --secondary-foreground: 0 0% 96%;
+    --secondary: 240 14% 14%;
+    --secondary-foreground: 240 10% 94%;
 
-    --muted: 0 0% 10%;
-    --muted-foreground: 0 0% 60%;
+    --muted: 240 14% 12%;
+    --muted-foreground: 240 10% 55%;
 
-    --accent: 0 0% 12%;
-    --accent-foreground: 0 0% 96%;
+    --accent: 252 25% 16%;
+    --accent-foreground: 252 80% 80%;
 
-    --destructive: 0 72% 51%;
+    --destructive: 0 72% 55%;
     --destructive-foreground: 0 0% 98%;
 
-    --success: 158 70% 35%;
+    --success: 152 60% 40%;
     --success-foreground: 0 0% 100%;
 
-    --warning: 38 92% 50%;
+    --warning: 38 85% 50%;
     --warning-foreground: 0 0% 9%;
 
-    --border: 0 0% 15%;
-    --input: 0 0% 15%;
-    --ring: 198 33% 50%;
+    --border: 240 12% 18%;
+    --input: 240 12% 18%;
+    --ring: 252 80% 60%;
 
-    --shadow-card: 0 1px 2px rgb(0 0 0 / 0.3), 0 10px 28px rgb(0 0 0 / 0.2);
-    --shadow-lg: 0 14px 42px rgb(0 0 0 / 0.35);
+    --shadow-card: 0 1px 3px rgb(0 0 0 / 0.30), 0 8px 24px rgb(0 0 0 / 0.25);
+    --shadow-lg: 0 12px 40px rgb(0 0 0 / 0.35);
+    --elevation-card: 0 1px 3px rgb(0 0 0 / 0.30), 0 8px 24px rgb(0 0 0 / 0.25);
+    --elevation-card-hover: 0 4px 12px rgb(0 0 0 / 0.35), 0 16px 32px rgb(0 0 0 / 0.30);
+    --elevation-popover: 0 4px 16px rgb(0 0 0 / 0.35), 0 16px 48px rgb(0 0 0 / 0.30);
+    --elevation-modal: 0 8px 24px rgb(0 0 0 / 0.40), 0 24px 64px rgb(0 0 0 / 0.35);
 
-    --sidebar-background: 0 0% 5%;
-    --sidebar-foreground: 0 0% 96%;
-    --sidebar-primary: 198 33% 75%;
-    --sidebar-primary-foreground: 0 0% 3%;
-    --sidebar-accent: 0 0% 10%;
-    --sidebar-accent-foreground: 0 0% 96%;
-    --sidebar-border: 0 0% 14%;
-    --sidebar-ring: 198 33% 50%;
+    --sidebar-background: 240 25% 7%;
+    --sidebar-foreground: 240 10% 90%;
+    --sidebar-primary: 252 80% 72%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 240 18% 12%;
+    --sidebar-accent-foreground: 240 10% 90%;
+    --sidebar-border: 240 18% 14%;
+    --sidebar-ring: 252 80% 60%;
 
-    --surface-0: 0 0% 6%;
-    --surface-1: 0 0% 10%;
-    --surface-border: 0 0% 15%;
-    --state-neutral-bg: 0 0% 10%;
-    --state-success-bg: 158 40% 12%;
+    --workspace-primary-hex: #A29BFE;
+
+    /* Semantic colors in dark mode */
+    --semantic-primary: 252 80% 72%;
+    --semantic-primary-light: 252 40% 16%;
+    --semantic-accent: 280 70% 65%;
+    --semantic-accent-light: 280 40% 16%;
+    --semantic-success: 152 60% 40%;
+    --semantic-success-light: 152 40% 14%;
+    --semantic-warning: 38 85% 50%;
+    --semantic-warning-light: 38 40% 14%;
+    --semantic-danger: 0 72% 55%;
+    --semantic-danger-light: 0 40% 14%;
+
+    --client: 252 50% 65%;
+    --client-foreground: 0 0% 100%;
+
+    --surface-0: 240 16% 8%;
+    --surface-1: 240 14% 12%;
+    --surface-border: 240 12% 18%;
+    --state-neutral-bg: 240 14% 12%;
+    --state-success-bg: 152 40% 12%;
     --state-warning-bg: 38 40% 12%;
     --state-danger-bg: 0 40% 12%;
   }
@@ -214,12 +275,16 @@
 
   .app-panel {
     @apply rounded-xl border border-border bg-card;
-    box-shadow: var(--shadow-card);
+    box-shadow: var(--elevation-card);
   }
 
   .surface-card {
-    @apply rounded-xl border border-border bg-card;
-    box-shadow: var(--shadow-card);
+    @apply rounded-xl border border-border bg-card transition-shadow duration-150;
+    box-shadow: var(--elevation-card);
+  }
+
+  .surface-card:hover {
+    box-shadow: var(--elevation-card-hover);
   }
 
   .surface-card-header {
@@ -231,11 +296,17 @@
   }
 
   .metric-card {
-    @apply rounded-lg border border-border bg-card px-4 py-3;
+    @apply rounded-xl border border-border bg-card px-4 py-3 transition-all duration-150;
+    box-shadow: var(--elevation-card);
+  }
+
+  .metric-card:hover {
+    box-shadow: var(--elevation-card-hover);
+    transform: translateY(-1px);
   }
 
   .state-panel {
-    @apply rounded-lg border border-border bg-muted px-4 py-6 text-center;
+    @apply rounded-xl border border-border bg-muted px-4 py-6 text-center;
   }
 
   .state-panel-neutral {
@@ -255,8 +326,12 @@
   }
 
   .glass-card {
-    @apply bg-card border border-border rounded-xl;
-    box-shadow: var(--shadow-card);
+    @apply bg-card border border-border rounded-xl transition-shadow duration-150;
+    box-shadow: var(--elevation-card);
+  }
+
+  .glass-card:hover {
+    box-shadow: var(--elevation-card-hover);
   }
 
   /* Glass panel — for dark-mode decorative sections (landing, public pages) */
@@ -269,11 +344,15 @@
   }
 
   .stat-card {
-    @apply glass-card p-6 relative overflow-hidden transition-all duration-300 hover:border-muted-foreground/30;
+    @apply glass-card p-6 relative overflow-hidden transition-all duration-150 hover:border-muted-foreground/30;
+  }
+
+  .stat-card:hover {
+    transform: translateY(-1px);
   }
 
   .filter-chip {
-    @apply px-4 py-2 rounded-full text-sm font-medium transition-all duration-200 cursor-pointer;
+    @apply px-4 py-2 rounded-full text-sm font-medium transition-all duration-150 cursor-pointer;
   }
 
   .filter-chip-pharmacy,
@@ -283,7 +362,7 @@
 
   .filter-chip-pharmacy.active,
   .filter-chip-entity.active {
-    @apply bg-foreground text-background;
+    @apply bg-primary text-primary-foreground;
   }
 
   .filter-chip-client {
@@ -291,12 +370,50 @@
   }
 
   .filter-chip-client.active {
-    @apply bg-muted-foreground text-background;
+    @apply bg-primary text-primary-foreground;
   }
 
   .map-container {
     @apply rounded-xl overflow-hidden border border-border;
-    box-shadow: var(--shadow-card);
+    box-shadow: var(--elevation-card);
+  }
+
+  /* ===== New Clay/Attio component utilities ===== */
+
+  .surface-elevated {
+    @apply rounded-xl border border-border bg-card transition-all duration-150;
+    box-shadow: var(--elevation-card);
+  }
+
+  .surface-elevated:hover {
+    box-shadow: var(--elevation-card-hover);
+    transform: translateY(-1px);
+  }
+
+  .pill-input {
+    @apply rounded-full border border-border bg-muted/50 px-4 py-2 text-sm
+           transition-all duration-150
+           focus:outline-none focus:ring-2 focus:ring-ring/30 focus:border-primary/40;
+  }
+
+  .tab-pill {
+    @apply inline-flex items-center justify-center rounded-full px-4 py-1.5
+           text-sm font-medium transition-all duration-150
+           text-muted-foreground hover:text-foreground hover:bg-muted;
+  }
+
+  .tab-pill[data-state="active"],
+  .tab-pill.active {
+    @apply bg-background text-foreground shadow-sm;
+  }
+
+  .tab-pill-container {
+    @apply inline-flex items-center gap-1 rounded-full bg-muted/60 p-1;
+  }
+
+  .gradient-icon-container {
+    @apply inline-flex items-center justify-center rounded-xl;
+    background: var(--gradient-primary);
   }
 }
 
@@ -320,6 +437,14 @@
   .animate-gradient-shift {
     background-size: 200% 200%;
     animation: gradientShift 8s ease infinite;
+  }
+
+  .animate-page-enter {
+    animation: pageEnter 0.25s ease-out forwards;
+  }
+
+  .animate-card-lift {
+    animation: cardLift 0.15s ease-out forwards;
   }
 
   /* Gradient text utility */
@@ -369,6 +494,49 @@
     }
     100% {
       background-position: 0% 50%;
+    }
+  }
+
+  /* Motion design keyframes — 120–180ms range, Linear/Clay inspired */
+  @keyframes pageEnter {
+    from {
+      opacity: 0;
+      transform: translateY(8px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  @keyframes cardLift {
+    from {
+      transform: translateY(0);
+      box-shadow: var(--elevation-card);
+    }
+    to {
+      transform: translateY(-2px);
+      box-shadow: var(--elevation-card-hover);
+    }
+  }
+
+  @keyframes glowPulse {
+    0%, 100% {
+      box-shadow: 0 0 16px hsl(var(--primary) / 0.25);
+    }
+    50% {
+      box-shadow: 0 0 32px hsl(var(--primary) / 0.4);
+    }
+  }
+
+  @keyframes sidebarSlide {
+    from {
+      transform: translateX(-100%);
+      opacity: 0;
+    }
+    to {
+      transform: translateX(0);
+      opacity: 1;
     }
   }
 }

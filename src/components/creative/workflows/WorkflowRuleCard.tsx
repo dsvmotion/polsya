@@ -21,7 +21,7 @@ export function WorkflowRuleCard({ rule, onEdit }: WorkflowRuleCardProps) {
   }`;
 
   return (
-    <Card className="group">
+    <Card className="group rounded-xl border-t-2 border-t-primary/40 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-150">
       <CardContent className="p-4">
         <div className="flex items-start justify-between gap-3">
           <div className="flex items-start gap-3 min-w-0">
@@ -29,11 +29,11 @@ export function WorkflowRuleCard({ rule, onEdit }: WorkflowRuleCardProps) {
               <GitBranch className="h-4 w-4 text-purple-700" />
             </div>
             <div className="min-w-0">
-              <h3 className="text-sm font-semibold truncate">{rule.name}</h3>
+              <h3 className="text-sm font-medium truncate">{rule.name}</h3>
               <p className="text-xs text-muted-foreground mt-0.5">{triggerSummary}</p>
               <div className="flex flex-wrap gap-1 mt-2">
                 {rule.actions.map((action, i) => (
-                  <Badge key={i} variant="secondary" className="text-[10px]">
+                  <Badge key={i} variant="secondary" className="text-[10px] rounded-full px-2 py-0.5">
                     {ACTION_TYPE_LABELS[action.type]}
                   </Badge>
                 ))}
