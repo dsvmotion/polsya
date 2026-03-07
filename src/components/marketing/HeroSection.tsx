@@ -2,50 +2,11 @@ import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { motion } from 'framer-motion';
 import {
-  Search, Sparkles, GitBranch, Target, BarChart3,
-  Star, MapPin, ExternalLink, TrendingUp, Award,
-  Filter, ChevronDown, MoreHorizontal, ArrowRight,
-  Network, Database, Layers,
+  Star, Sparkles, TrendingUp, Award, ArrowRight,
+  MapPin, Network,
 } from 'lucide-react';
 
-/* ---------- fake data for the product mock ---------- */
-const mockCreatives = [
-  { name: 'Sarah Chen', role: 'Art Director', location: 'New York', rating: 4.9, tags: ['Brand Identity', 'Motion'], avatar: 'SC', color: 'bg-indigo-500', status: 'Available', enriched: true },
-  { name: 'Marcus Webb', role: 'Creative Director', location: 'London', rating: 4.8, tags: ['Campaign', 'Strategy'], avatar: 'MW', color: 'bg-violet-500', status: 'In Project', enriched: true },
-  { name: 'Elena Vasquez', role: '3D Artist', location: 'Barcelona', rating: 4.7, tags: ['CGI', 'Product Viz'], avatar: 'EV', color: 'bg-emerald-500', status: 'Available', enriched: false },
-  { name: 'Kai Tanaka', role: 'Motion Designer', location: 'Tokyo', rating: 4.9, tags: ['Animation', 'UI/UX'], avatar: 'KT', color: 'bg-amber-500', status: 'Available', enriched: true },
-  { name: 'Ava O\'Brien', role: 'Photographer', location: 'Dublin', rating: 4.6, tags: ['Editorial', 'Fashion'], avatar: 'AO', color: 'bg-pink-500', status: 'In Project', enriched: true },
-];
-
-/* ---------- feature cards data ---------- */
-const featureCards = [
-  {
-    icon: Sparkles,
-    title: 'AI Enrichment',
-    description: 'Auto-enrich profiles from 50+ data sources',
-    gradient: 'from-indigo-500 to-indigo-600',
-  },
-  {
-    icon: Network,
-    title: 'Relationship Mapping',
-    description: 'Discover connections between creatives & brands',
-    gradient: 'from-violet-500 to-violet-600',
-  },
-  {
-    icon: Layers,
-    title: 'Smart Pipeline',
-    description: 'From discovery to partnership, end-to-end',
-    gradient: 'from-purple-500 to-purple-600',
-  },
-  {
-    icon: Database,
-    title: 'Creative Intelligence',
-    description: 'Portfolio analysis & style classification',
-    gradient: 'from-fuchsia-500 to-fuchsia-600',
-  },
-];
-
-/* ---------- floating illustration: mini profile card ---------- */
+/* ─── Floating illustration: mini profile card ─── */
 function FloatingProfileCard() {
   return (
     <div className="w-48 rounded-xl bg-white/90 backdrop-blur-sm border border-gray-200/60 shadow-lg p-3 animate-float-gentle">
@@ -73,7 +34,7 @@ function FloatingProfileCard() {
   );
 }
 
-/* ---------- floating illustration: enrichment badge ---------- */
+/* ─── Floating illustration: enrichment badge ─── */
 function FloatingEnrichmentBadge() {
   return (
     <div className="w-40 rounded-xl bg-white/90 backdrop-blur-sm border border-gray-200/60 shadow-lg p-2.5 animate-float-gentle-reverse">
@@ -89,7 +50,7 @@ function FloatingEnrichmentBadge() {
   );
 }
 
-/* ---------- floating illustration: graph cluster ---------- */
+/* ─── Floating illustration: graph cluster ─── */
 function FloatingGraphCluster() {
   return (
     <div className="w-36 h-28 animate-float-gentle" style={{ animationDelay: '1s' }}>
@@ -114,7 +75,7 @@ function FloatingGraphCluster() {
   );
 }
 
-/* ---------- floating illustration: award notification ---------- */
+/* ─── Floating illustration: award notification ─── */
 function FloatingAwardBadge() {
   return (
     <div className="w-44 rounded-xl bg-white/90 backdrop-blur-sm border border-gray-200/60 shadow-lg p-2.5 animate-float-gentle" style={{ animationDelay: '2s' }}>
@@ -131,362 +92,152 @@ function FloatingAwardBadge() {
   );
 }
 
+/* ─── Floating illustration: connection notification ─── */
+function FloatingConnectionCard() {
+  return (
+    <div className="w-44 rounded-xl bg-white/90 backdrop-blur-sm border border-gray-200/60 shadow-lg p-2.5 animate-float-gentle-reverse" style={{ animationDelay: '0.5s' }}>
+      <div className="flex items-center gap-2">
+        <div className="w-6 h-6 rounded-lg bg-gradient-to-br from-purple-400 to-indigo-500 flex items-center justify-center">
+          <Network className="h-3 w-3 text-white" />
+        </div>
+        <div>
+          <div className="text-[9px] font-semibold text-gray-900">New Connection</div>
+          <div className="text-[7px] text-gray-400">Sarah Chen → W+K Portland</div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ─── Floating illustration: location signal ─── */
+function FloatingLocationSignal() {
+  return (
+    <div className="w-40 rounded-xl bg-white/90 backdrop-blur-sm border border-gray-200/60 shadow-lg p-2.5 animate-float-gentle" style={{ animationDelay: '1.5s' }}>
+      <div className="flex items-center gap-2 mb-1">
+        <div className="w-6 h-6 rounded-lg bg-gradient-to-br from-sky-400 to-blue-500 flex items-center justify-center">
+          <MapPin className="h-3 w-3 text-white" />
+        </div>
+        <span className="text-[9px] font-semibold text-gray-900">Talent Cluster</span>
+      </div>
+      <div className="text-[8px] text-gray-500">142 creatives in Brooklyn, NY</div>
+    </div>
+  );
+}
+
+/* ═══════════════════════════════════════════════════════ */
 export function HeroSection() {
   return (
-    <section className="relative overflow-hidden pt-16 pb-8 sm:pt-20 sm:pb-12 px-4 sm:px-6 lg:px-8">
-      {/* ─── Rich gradient mesh background ─── */}
-      <div className="absolute inset-0 -z-10">
-        {/* Base gradient */}
-        <div className="absolute inset-0 bg-[linear-gradient(135deg,hsl(245_40%_97%)_0%,hsl(250_30%_98%)_25%,white_50%,hsl(245_25%_97%)_75%,hsl(260_30%_96%)_100%)]" />
-        {/* Indigo radial glow — top center */}
-        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[1000px] h-[700px] rounded-full bg-indigo-200/30 blur-[100px]" />
-        {/* Violet radial glow — top right */}
-        <div className="absolute -top-20 right-0 w-[500px] h-[500px] rounded-full bg-violet-200/25 blur-[80px]" />
-        {/* Purple glow — bottom left */}
-        <div className="absolute bottom-0 left-0 w-[600px] h-[400px] rounded-full bg-purple-100/20 blur-[80px]" />
-        {/* Warm peach accent — bottom right */}
-        <div className="absolute bottom-20 right-10 w-[300px] h-[300px] rounded-full bg-orange-100/15 blur-[60px]" />
-      </div>
-
-      {/* ─── Subtle dot grid overlay ─── */}
-      <div className="absolute inset-0 -z-10 opacity-[0.03]" style={{ backgroundImage: 'radial-gradient(circle, #6366f1 1px, transparent 1px)', backgroundSize: '24px 24px' }} />
-
-      {/* ─── Noise texture overlay (CSS grain) ─── */}
-      <div className="absolute inset-0 -z-10 opacity-[0.02]" style={{ backgroundImage: 'url("data:image/svg+xml,%3Csvg viewBox=\'0 0 256 256\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cfilter id=\'noise\'%3E%3CfeTurbulence type=\'fractalNoise\' baseFrequency=\'0.9\' numOctaves=\'4\' stitchTiles=\'stitch\'/%3E%3C/filter%3E%3Crect width=\'100%25\' height=\'100%25\' filter=\'url(%23noise)\'/%3E%3C/svg%3E")', backgroundRepeat: 'repeat', backgroundSize: '256px 256px' }} />
-
-      {/* ─── Geometric accent shapes ─── */}
-      <div className="absolute top-32 left-[8%] w-20 h-20 rounded-2xl bg-indigo-300/10 blur-xl -rotate-12 -z-10" />
-      <div className="absolute top-64 right-[10%] w-16 h-16 rounded-full bg-violet-300/10 blur-lg -z-10" />
-      <div className="absolute bottom-40 left-[15%] w-24 h-12 rounded-full bg-purple-200/10 blur-xl -z-10" />
-
+    <section className="relative pt-8 pb-4 sm:pt-12 sm:pb-8 px-4 sm:px-6 lg:px-8">
       <div className="mx-auto max-w-7xl relative">
-        {/* ─── Floating illustrations (LEFT) — xl only ─── */}
-        <div className="hidden xl:flex flex-col gap-4 absolute -left-4 top-12 w-52">
-          <motion.div initial={{ opacity: 0, x: -30 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.8, duration: 0.6 }}>
-            <FloatingProfileCard />
-          </motion.div>
-          <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 1.1, duration: 0.6 }}>
-            <FloatingGraphCluster />
-          </motion.div>
-        </div>
+        {/* ─── Clay-style rounded hero container ─── */}
+        <div className="relative rounded-3xl overflow-hidden">
+          {/* Warm gradient background */}
+          <div className="absolute inset-0 -z-10 bg-gradient-to-br from-amber-50/80 via-orange-50/40 to-rose-50/30" />
+          {/* Secondary glow */}
+          <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[500px] rounded-full bg-indigo-100/20 blur-[100px] -z-10" />
+          <div className="absolute bottom-0 right-0 w-[400px] h-[300px] rounded-full bg-violet-100/15 blur-[80px] -z-10" />
+          {/* Dot grid overlay */}
+          <div className="absolute inset-0 -z-10 opacity-[0.03]" style={{ backgroundImage: 'radial-gradient(circle, #6366f1 1px, transparent 1px)', backgroundSize: '24px 24px' }} />
+          {/* Noise texture */}
+          <div className="absolute inset-0 -z-10 opacity-[0.015]" style={{ backgroundImage: 'url("data:image/svg+xml,%3Csvg viewBox=\'0 0 256 256\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cfilter id=\'noise\'%3E%3CfeTurbulence type=\'fractalNoise\' baseFrequency=\'0.9\' numOctaves=\'4\' stitchTiles=\'stitch\'/%3E%3C/filter%3E%3Crect width=\'100%25\' height=\'100%25\' filter=\'url(%23noise)\'/%3E%3C/svg%3E")', backgroundRepeat: 'repeat', backgroundSize: '256px 256px' }} />
 
-        {/* ─── Floating illustrations (RIGHT) — xl only ─── */}
-        <div className="hidden xl:flex flex-col gap-4 absolute -right-4 top-16 w-48 items-end">
-          <motion.div initial={{ opacity: 0, x: 30 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 1.0, duration: 0.6 }}>
-            <FloatingEnrichmentBadge />
-          </motion.div>
-          <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 1.3, duration: 0.6 }}>
-            <FloatingAwardBadge />
-          </motion.div>
-        </div>
-
-        {/* ═══ Text content ═══ */}
-        <div className="text-center max-w-4xl mx-auto">
-          <motion.div initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, ease: 'easeOut' }}>
-            <div className="inline-flex items-center gap-2 rounded-full border border-indigo-200 bg-indigo-50/80 px-4 py-1.5 text-sm font-medium text-indigo-700 mb-8 backdrop-blur-sm">
-              <span className="h-1.5 w-1.5 rounded-full bg-indigo-500 animate-pulse" />
-              Creative Intelligence Platform
-            </div>
-
-            <h1 className="font-display text-5xl sm:text-6xl lg:text-7xl font-bold tracking-tight text-gray-900 leading-[1.08]">
-              Discover creative talent{' '}
-              <span className="bg-gradient-to-r from-indigo-600 via-violet-600 to-purple-600 bg-clip-text text-transparent">
-                with intelligent data
-              </span>
-            </h1>
-            <p className="mt-7 text-lg sm:text-xl text-gray-500 max-w-3xl mx-auto leading-relaxed">
-              Polsya maps portfolios, relationships, and opportunities across the creative
-              industry — so you find the right collaborators before anyone else.
-            </p>
-          </motion.div>
-
-          {/* CTA row */}
-          <motion.div initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.2 }} className="mt-10 flex flex-col sm:flex-row items-center justify-center gap-4">
-            <Button asChild size="lg" className="bg-gradient-to-r from-indigo-600 to-violet-600 text-white border-0 shadow-lg shadow-indigo-200/50 px-8 text-base hover:shadow-xl hover:shadow-indigo-300/50 transition-all duration-200 hover:-translate-y-0.5">
-              <Link to="/signup">Start free trial <ArrowRight className="ml-1.5 h-4 w-4" /></Link>
-            </Button>
-            <Button asChild size="lg" variant="outline" className="px-8 text-base border-gray-300 hover:border-indigo-300 hover:bg-indigo-50/50 transition-all duration-200">
-              <Link to="/how-it-works">See how it works</Link>
-            </Button>
-          </motion.div>
-
-          {/* ─── Enhanced social proof bar ─── */}
-          <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.35 }}
-            className="mt-10 inline-flex flex-col sm:flex-row items-center gap-5 sm:gap-6 rounded-2xl border border-gray-200/60 bg-white/60 backdrop-blur-sm px-6 py-3.5 shadow-sm"
-          >
-            {/* Avatar stack */}
-            <div className="flex items-center">
-              <div className="flex -space-x-2">
-                {['bg-indigo-500', 'bg-violet-500', 'bg-emerald-500', 'bg-amber-500', 'bg-pink-500'].map((color, i) => (
-                  <div key={i} className={`w-7 h-7 rounded-full ${color} border-2 border-white flex items-center justify-center text-[8px] font-bold text-white`}>
-                    {['SC', 'MW', 'EV', 'KT', 'AO'][i]}
-                  </div>
-                ))}
-              </div>
-              <span className="ml-2.5 text-sm text-gray-500 font-medium">500+ teams</span>
-            </div>
-
-            <div className="hidden sm:block w-px h-5 bg-gray-200" />
-
-            {/* Star rating */}
-            <div className="flex items-center gap-1.5">
-              <div className="flex gap-0.5">
-                {Array.from({ length: 5 }).map((_, i) => (
-                  <Star key={i} className="h-3.5 w-3.5 fill-amber-400 text-amber-400" />
-                ))}
-              </div>
-              <span className="text-sm font-semibold text-gray-700">4.9/5</span>
-              <span className="text-sm text-gray-400">rating</span>
-            </div>
-
-            <div className="hidden sm:block w-px h-5 bg-gray-200" />
-
-            {/* Mini testimonial */}
-            <p className="text-xs text-gray-500 italic max-w-[200px]">
-              &ldquo;Transformed how we source creative talent&rdquo;
-            </p>
-          </motion.div>
-        </div>
-
-        {/* ═══ Feature cards — replaces icon strip ═══ */}
-        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.45 }} className="mt-14">
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 max-w-4xl mx-auto">
-            {featureCards.map((card, i) => (
-              <motion.div
-                key={card.title}
-                initial={{ opacity: 0, y: 16 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.5 + i * 0.08, duration: 0.4 }}
-                className="group rounded-xl border border-gray-200/60 bg-white/70 backdrop-blur-sm p-4 hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200"
-              >
-                <div className={`w-9 h-9 rounded-lg bg-gradient-to-br ${card.gradient} flex items-center justify-center shadow-md mb-3 group-hover:scale-110 transition-transform duration-200`}>
-                  <card.icon className="h-4.5 w-4.5 text-white" />
-                </div>
-                <h3 className="text-sm font-semibold text-gray-900">{card.title}</h3>
-                <p className="text-xs text-gray-500 mt-1 leading-relaxed">{card.description}</p>
+          {/* Container content */}
+          <div className="relative px-8 py-20 sm:px-16 sm:py-28">
+            {/* ── Floating illustrations (LEFT) — xl only ── */}
+            <div className="hidden xl:flex flex-col gap-4 absolute left-6 top-12 w-52 z-10">
+              <motion.div initial={{ opacity: 0, x: -30 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.8, duration: 0.6 }}>
+                <FloatingProfileCard />
               </motion.div>
-            ))}
-          </div>
-        </motion.div>
-
-        {/* ═══ Rich Product Preview ═══ */}
-        <motion.div initial={{ opacity: 0, y: 48 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8, delay: 0.55 }} className="mt-12 relative">
-          {/* Stronger gradient glow behind screenshot */}
-          <div className="absolute -inset-6 bg-gradient-to-r from-indigo-200/50 via-violet-200/50 to-purple-200/50 rounded-[2rem] blur-3xl" />
-          <div className="absolute -inset-3 bg-gradient-to-b from-indigo-100/30 to-transparent rounded-3xl blur-2xl" />
-
-          <div className="relative rounded-2xl border border-gray-200/80 shadow-2xl overflow-hidden bg-white ring-1 ring-black/5">
-            {/* Browser chrome */}
-            <div className="flex items-center gap-2 px-4 py-2.5 bg-gray-50/80 border-b border-gray-100">
-              <div className="flex gap-1.5">
-                <div className="w-3 h-3 rounded-full bg-red-400/60" />
-                <div className="w-3 h-3 rounded-full bg-amber-400/60" />
-                <div className="w-3 h-3 rounded-full bg-green-400/60" />
-              </div>
-              <div className="flex-1 mx-4">
-                <div className="h-6 rounded-lg bg-gray-100/80 max-w-xs mx-auto flex items-center justify-center gap-1.5">
-                  <div className="w-3 h-3 rounded-full bg-green-500/60" />
-                  <span className="text-[10px] text-gray-400 font-mono">app.polsya.com/creatives</span>
-                </div>
-              </div>
+              <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 1.1, duration: 0.6 }}>
+                <FloatingGraphCluster />
+              </motion.div>
+              <motion.div initial={{ opacity: 0, x: -25 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 1.4, duration: 0.6 }}>
+                <FloatingConnectionCard />
+              </motion.div>
             </div>
 
-            {/* Product UI */}
-            <div className="bg-gradient-to-br from-gray-50 to-white">
-              <div className="flex min-h-[400px] sm:min-h-[460px]">
-                {/* Sidebar */}
-                <div className="hidden sm:flex w-48 bg-gray-900 flex-col p-3 shrink-0">
-                  <div className="flex items-center px-2 mb-5">
-                    <img src="/polsya-logo-white.png" alt="" className="h-5 w-auto opacity-90" />
-                  </div>
-                  <div className="space-y-0.5">
-                    {[
-                      { label: 'Dashboard', active: false },
-                      { label: 'Creatives', active: true },
-                      { label: 'Portfolios', active: false },
-                      { label: 'Opportunities', active: false },
-                      { label: 'Pipeline', active: false },
-                      { label: 'Enrichment', active: false },
-                      { label: 'Reports', active: false },
-                    ].map((item) => (
-                      <div key={item.label} className={`px-2.5 py-1.5 rounded-lg text-xs font-medium ${item.active ? 'bg-indigo-500/20 text-indigo-300' : 'text-white/40 hover:text-white/60'}`}>
-                        {item.label}
-                      </div>
-                    ))}
-                  </div>
-                  <div className="mt-auto pt-4 border-t border-white/10">
-                    <div className="flex items-center gap-2 px-2">
-                      <div className="w-6 h-6 rounded-full bg-gradient-to-br from-indigo-400 to-violet-400 flex items-center justify-center text-[8px] font-bold text-white">D</div>
-                      <span className="text-white/50 text-[10px]">Diego&apos;s Team</span>
-                    </div>
-                  </div>
+            {/* ── Floating illustrations (RIGHT) — xl only ── */}
+            <div className="hidden xl:flex flex-col gap-4 absolute right-6 top-16 w-48 items-end z-10">
+              <motion.div initial={{ opacity: 0, x: 30 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 1.0, duration: 0.6 }}>
+                <FloatingEnrichmentBadge />
+              </motion.div>
+              <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 1.3, duration: 0.6 }}>
+                <FloatingAwardBadge />
+              </motion.div>
+              <motion.div initial={{ opacity: 0, x: 25 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 1.6, duration: 0.6 }}>
+                <FloatingLocationSignal />
+              </motion.div>
+            </div>
+
+            {/* ── Centered text content ── */}
+            <div className="text-center max-w-3xl mx-auto relative z-20">
+              <motion.div initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, ease: 'easeOut' }}>
+                <div className="inline-flex items-center gap-2 rounded-full border border-indigo-200 bg-white/80 px-4 py-1.5 text-sm font-medium text-indigo-700 mb-8 backdrop-blur-sm shadow-sm">
+                  <span className="h-1.5 w-1.5 rounded-full bg-indigo-500 animate-pulse" />
+                  Creative Intelligence Platform
                 </div>
 
-                {/* Main content area */}
-                <div className="flex-1 p-4 sm:p-5 space-y-4 overflow-hidden">
-                  {/* Top bar with search and filters */}
-                  <div className="flex items-center gap-3">
-                    <div className="flex-1 flex items-center gap-2 h-9 rounded-xl bg-white border border-gray-200 shadow-sm px-3">
-                      <Search className="h-3.5 w-3.5 text-gray-400" />
-                      <span className="text-xs text-gray-400">Search creatives, portfolios, signals...</span>
-                    </div>
-                    <div className="flex items-center gap-1.5 h-9 rounded-xl bg-white border border-gray-200 shadow-sm px-3">
-                      <Filter className="h-3 w-3 text-gray-400" />
-                      <span className="text-xs text-gray-500">Filters</span>
-                      <ChevronDown className="h-3 w-3 text-gray-400" />
-                    </div>
-                    <div className="hidden sm:flex items-center gap-1 h-9 rounded-xl bg-white border border-gray-200 shadow-sm px-2">
-                      <div className="w-6 h-6 rounded bg-indigo-50 flex items-center justify-center">
-                        <BarChart3 className="h-3 w-3 text-indigo-500" />
-                      </div>
-                      <div className="w-6 h-6 rounded bg-gray-50 flex items-center justify-center">
-                        <MoreHorizontal className="h-3 w-3 text-gray-400" />
-                      </div>
-                    </div>
-                  </div>
+                <h1 className="font-display text-5xl sm:text-6xl lg:text-7xl font-bold tracking-tight text-gray-900 leading-[1.08]">
+                  Discover creative talent{' '}
+                  <span className="bg-gradient-to-r from-indigo-600 via-violet-600 to-purple-600 bg-clip-text text-transparent">
+                    with intelligent data
+                  </span>
+                </h1>
+                <p className="mt-7 text-lg sm:text-xl text-gray-500 max-w-2xl mx-auto leading-relaxed">
+                  Polsya maps portfolios, relationships, and opportunities across the creative
+                  industry — so you find the right collaborators before anyone else.
+                </p>
+              </motion.div>
 
-                  {/* Metric cards row */}
-                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
-                    {[
-                      { label: 'Total Creatives', value: '2,847', trend: '+12%', icon: TrendingUp, accent: 'text-indigo-600 bg-indigo-50' },
-                      { label: 'Enriched', value: '1,924', trend: '68%', icon: Sparkles, accent: 'text-violet-600 bg-violet-50' },
-                      { label: 'Pipeline Value', value: '$1.2M', trend: '+8%', icon: Target, accent: 'text-emerald-600 bg-emerald-50' },
-                      { label: 'Win Rate', value: '67%', trend: '+3pp', icon: Award, accent: 'text-amber-600 bg-amber-50' },
-                    ].map((m) => (
-                      <div key={m.label} className="rounded-xl bg-white border border-gray-100 shadow-sm p-3">
-                        <div className="flex items-center justify-between mb-1.5">
-                          <div className={`w-6 h-6 rounded-lg ${m.accent} flex items-center justify-center`}>
-                            <m.icon className="h-3 w-3" />
-                          </div>
-                          <span className="text-[10px] font-semibold text-emerald-600 bg-emerald-50 px-1.5 py-0.5 rounded-full">{m.trend}</span>
-                        </div>
-                        <div className="text-lg font-bold text-gray-900 leading-none">{m.value}</div>
-                        <div className="text-[10px] text-gray-400 mt-1">{m.label}</div>
+              {/* CTA row */}
+              <motion.div initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.2 }} className="mt-10 flex flex-col sm:flex-row items-center justify-center gap-4">
+                <Button asChild size="lg" className="bg-gradient-to-r from-indigo-600 to-violet-600 text-white border-0 shadow-lg shadow-indigo-200/50 px-8 text-base hover:shadow-xl hover:shadow-indigo-300/50 transition-all duration-200 hover:-translate-y-0.5">
+                  <Link to="/signup">Start free trial <ArrowRight className="ml-1.5 h-4 w-4" /></Link>
+                </Button>
+                <Button asChild size="lg" variant="outline" className="px-8 text-base border-gray-300 bg-white/60 backdrop-blur-sm hover:border-indigo-300 hover:bg-white/80 transition-all duration-200">
+                  <Link to="/how-it-works">See how it works</Link>
+                </Button>
+              </motion.div>
+
+              {/* Social proof bar */}
+              <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.35 }}
+                className="mt-10 inline-flex flex-col sm:flex-row items-center gap-5 sm:gap-6 rounded-2xl border border-gray-200/60 bg-white/60 backdrop-blur-sm px-6 py-3.5 shadow-sm"
+              >
+                {/* Avatar stack */}
+                <div className="flex items-center">
+                  <div className="flex -space-x-2">
+                    {['bg-indigo-500', 'bg-violet-500', 'bg-emerald-500', 'bg-amber-500', 'bg-pink-500'].map((color, i) => (
+                      <div key={i} className={`w-7 h-7 rounded-full ${color} border-2 border-white flex items-center justify-center text-[8px] font-bold text-white`}>
+                        {['SC', 'MW', 'EV', 'KT', 'AO'][i]}
                       </div>
                     ))}
                   </div>
-
-                  {/* Data table */}
-                  <div className="rounded-xl bg-white border border-gray-100 shadow-sm overflow-hidden">
-                    <div className="flex items-center justify-between px-4 py-2.5 border-b border-gray-50">
-                      <div className="flex items-center gap-2">
-                        <span className="text-xs font-semibold text-gray-900">All Creatives</span>
-                        <span className="text-[10px] bg-gray-100 text-gray-500 px-1.5 py-0.5 rounded-full font-medium">2,847</span>
-                      </div>
-                      <div className="flex items-center gap-1.5">
-                        <span className="text-[10px] text-gray-400">Sort by</span>
-                        <span className="text-[10px] font-medium text-gray-600">Rating</span>
-                        <ChevronDown className="h-2.5 w-2.5 text-gray-400" />
-                      </div>
-                    </div>
-
-                    {/* Table header */}
-                    <div className="grid grid-cols-12 gap-2 px-4 py-2 bg-gray-50/50 border-b border-gray-100">
-                      <div className="col-span-3 text-[9px] font-semibold text-gray-400 uppercase tracking-wider">Creative</div>
-                      <div className="col-span-2 text-[9px] font-semibold text-gray-400 uppercase tracking-wider hidden sm:block">Location</div>
-                      <div className="col-span-3 text-[9px] font-semibold text-gray-400 uppercase tracking-wider">Tags</div>
-                      <div className="col-span-1 text-[9px] font-semibold text-gray-400 uppercase tracking-wider hidden sm:block">Rating</div>
-                      <div className="col-span-2 text-[9px] font-semibold text-gray-400 uppercase tracking-wider">Status</div>
-                      <div className="col-span-1 text-[9px] font-semibold text-gray-400 uppercase tracking-wider" />
-                    </div>
-
-                    {/* Table rows */}
-                    {mockCreatives.map((creative) => (
-                      <div key={creative.name} className="grid grid-cols-12 gap-2 px-4 py-2.5 border-b border-gray-50 last:border-0 hover:bg-indigo-50/30 transition-colors group">
-                        <div className="col-span-3 flex items-center gap-2">
-                          <div className={`w-7 h-7 rounded-full ${creative.color} flex items-center justify-center text-[9px] font-bold text-white shrink-0`}>
-                            {creative.avatar}
-                          </div>
-                          <div className="min-w-0">
-                            <div className="text-xs font-semibold text-gray-900 truncate flex items-center gap-1">
-                              {creative.name}
-                              {creative.enriched && <Sparkles className="h-2.5 w-2.5 text-indigo-400 shrink-0" />}
-                            </div>
-                            <div className="text-[10px] text-gray-400 truncate">{creative.role}</div>
-                          </div>
-                        </div>
-                        <div className="col-span-2 items-center gap-1 hidden sm:flex">
-                          <MapPin className="h-2.5 w-2.5 text-gray-300" />
-                          <span className="text-[10px] text-gray-500">{creative.location}</span>
-                        </div>
-                        <div className="col-span-3 flex items-center gap-1 flex-wrap">
-                          {creative.tags.map((tag) => (
-                            <span key={tag} className="text-[9px] bg-gray-100 text-gray-600 px-1.5 py-0.5 rounded-md font-medium">{tag}</span>
-                          ))}
-                        </div>
-                        <div className="col-span-1 items-center gap-0.5 hidden sm:flex">
-                          <Star className="h-2.5 w-2.5 text-amber-400 fill-amber-400" />
-                          <span className="text-[10px] font-semibold text-gray-700">{creative.rating}</span>
-                        </div>
-                        <div className="col-span-2 flex items-center">
-                          <span className={`text-[9px] font-medium px-2 py-0.5 rounded-full ${creative.status === 'Available' ? 'bg-emerald-50 text-emerald-600' : 'bg-amber-50 text-amber-600'}`}>
-                            {creative.status}
-                          </span>
-                        </div>
-                        <div className="col-span-1 flex items-center justify-end">
-                          <ExternalLink className="h-3 w-3 text-gray-300 group-hover:text-indigo-400 transition-colors" />
-                        </div>
-                      </div>
-                    ))}
-                  </div>
+                  <span className="ml-2.5 text-sm text-gray-500 font-medium">500+ teams</span>
                 </div>
-              </div>
+
+                <div className="hidden sm:block w-px h-5 bg-gray-200" />
+
+                {/* Star rating */}
+                <div className="flex items-center gap-1.5">
+                  <div className="flex gap-0.5">
+                    {Array.from({ length: 5 }).map((_, i) => (
+                      <Star key={i} className="h-3.5 w-3.5 fill-amber-400 text-amber-400" />
+                    ))}
+                  </div>
+                  <span className="text-sm font-semibold text-gray-700">4.9/5</span>
+                  <span className="text-sm text-gray-400">rating</span>
+                </div>
+
+                <div className="hidden sm:block w-px h-5 bg-gray-200" />
+
+                {/* Mini testimonial */}
+                <p className="text-xs text-gray-500 italic max-w-[200px]">
+                  &ldquo;Transformed how we source creative talent&rdquo;
+                </p>
+              </motion.div>
             </div>
           </div>
-
-          {/* ─── Floating callout annotations ─── */}
-          <div className="hidden lg:block">
-            <motion.div
-              initial={{ opacity: 0, x: 20, scale: 0.95 }}
-              animate={{ opacity: 1, x: 0, scale: 1 }}
-              transition={{ delay: 1.2, duration: 0.5 }}
-              className="absolute -right-6 top-36 bg-white rounded-xl border border-indigo-200/60 shadow-xl px-3.5 py-2.5 max-w-[190px] ring-1 ring-indigo-100/50"
-            >
-              <div className="flex items-center gap-1.5 mb-1">
-                <div className="w-5 h-5 rounded-md bg-gradient-to-br from-indigo-500 to-violet-500 flex items-center justify-center">
-                  <Sparkles className="h-2.5 w-2.5 text-white" />
-                </div>
-                <span className="text-[10px] font-bold text-gray-900">AI Enrichment</span>
-              </div>
-              <p className="text-[9px] text-gray-500 leading-relaxed">Auto-enriches profiles from 50+ data sources in real-time</p>
-              {/* Connector line */}
-              <div className="absolute left-0 top-1/2 -translate-x-full w-4 h-px bg-indigo-200" />
-            </motion.div>
-
-            <motion.div
-              initial={{ opacity: 0, x: -20, scale: 0.95 }}
-              animate={{ opacity: 1, x: 0, scale: 1 }}
-              transition={{ delay: 1.4, duration: 0.5 }}
-              className="absolute -left-6 bottom-44 bg-white rounded-xl border border-violet-200/60 shadow-xl px-3.5 py-2.5 max-w-[190px] ring-1 ring-violet-100/50"
-            >
-              <div className="flex items-center gap-1.5 mb-1">
-                <div className="w-5 h-5 rounded-md bg-gradient-to-br from-violet-500 to-purple-500 flex items-center justify-center">
-                  <GitBranch className="h-2.5 w-2.5 text-white" />
-                </div>
-                <span className="text-[10px] font-bold text-gray-900">Relationship Graph</span>
-              </div>
-              <p className="text-[9px] text-gray-500 leading-relaxed">Map connections between creatives, agencies &amp; brands</p>
-              <div className="absolute right-0 top-1/2 translate-x-full w-4 h-px bg-violet-200" />
-            </motion.div>
-
-            {/* New: Highlight callout for match score */}
-            <motion.div
-              initial={{ opacity: 0, y: 10, scale: 0.95 }}
-              animate={{ opacity: 1, y: 0, scale: 1 }}
-              transition={{ delay: 1.6, duration: 0.5 }}
-              className="absolute -right-6 bottom-24 bg-white rounded-xl border border-emerald-200/60 shadow-xl px-3.5 py-2.5 max-w-[190px] ring-1 ring-emerald-100/50"
-            >
-              <div className="flex items-center gap-1.5 mb-1">
-                <div className="w-5 h-5 rounded-md bg-gradient-to-br from-emerald-500 to-teal-500 flex items-center justify-center">
-                  <Target className="h-2.5 w-2.5 text-white" />
-                </div>
-                <span className="text-[10px] font-bold text-gray-900">Smart Pipeline</span>
-              </div>
-              <p className="text-[9px] text-gray-500 leading-relaxed">67% win rate with AI-scored creative matching</p>
-              <div className="absolute left-0 top-1/2 -translate-x-full w-4 h-px bg-emerald-200" />
-            </motion.div>
-          </div>
-        </motion.div>
+        </div>
       </div>
     </section>
   );

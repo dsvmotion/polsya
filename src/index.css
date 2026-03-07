@@ -410,4 +410,19 @@
   .animate-float-gentle-reverse {
     animation: float-gentle-reverse 5s ease-in-out infinite;
   }
+
+  @keyframes mega-menu-slide {
+    from {
+      opacity: 0;
+      transform: translateY(-8px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  .animate-mega-menu-slide {
+    animation: mega-menu-slide 150ms ease-out forwards;
+  }
 }
