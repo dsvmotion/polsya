@@ -1,0 +1,92 @@
+import { ScrollText, Download } from 'lucide-react';
+import { useQuery } from '@tanstack/react-query';
+import { AdminDataTable, type AdminColumn } from '@/components/admin/AdminDataTable';
+import { Button } from '@/components/ui/button';
+import { supabase } from '@/integrations/supabase/client';
+
+const columns: AdminColumn<any>[] = [
+  {
+    key: 'created_at',
+    label: 'Timestamp',
+    render: (row) => (
+      <span className="text-xs font-mono">
+        {new Date(row.created_at).toLocaleString()}
+      </span>
+    ),
+  },
+  { key: 'action', label: 'Action' },
+  { key: 'resource_type', label: 'Resource' },
+  {
+    key: 'actor_email',
+    label: 'Actor',
+    render: (row) => row.actor_email || row.actor_id?.slice(0, 8) || '—',
+  },
+  {
+    key: 'org_name',
+    label: 'Organization',
+    render: (row) => row.org_name || '—',
+  },
+];
+
+export default function AdminLogs() {
+  const { data: logs = [], isLoading } = useQuery({
+    queryKey: ['admin', 'logs'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('platform_audit_logs')
+        .select('*')
+        .order('created_at', { ascending: false })
+        .limit(500);
+      if (error) throw error;
+      return data ?? [];
+    },
+  });
+
+  const handleExport = () => {
+    const csv = [
+      ['Timestamp', 'Action', 'Resource', 'Actor', 'Details'].join(','),
+      ...logs.map((log: any) =>
+        [
+          new Date(log.created_at).toISOString(),
+          log.action,
+          log.resource_type,
+          log.actor_id,
+          JSON.stringify(log.details ?? {}),
+        ].join(','),
+      ),
+    ].join('\n');
+
+    const blob = new Blob([csv], { type: 'text/csv' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `platform-logs-${new Date().toISOString().slice(0, 10)}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
+  return (
+    <div className="space-y-6 max-w-6xl">
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-2xl font-bold">System Logs</h1>
+          <p className="text-sm text-muted-foreground">
+            Audit trail of platform actions ({logs.length} entries).
+          </p>
+        </div>
+        <Button variant="outline" size="sm" onClick={handleExport} className="gap-2">
+          <Download className="h-4 w-4" /> Export CSV
+        </Button>
+      </div>
+
+      <AdminDataTable
+        data={logs}
+        columns={columns}
+        searchPlaceholder="Search logs..."
+        searchKeys={['action', 'resource_type', 'actor_email']}
+        isLoading={isLoading}
+        pageSize={25}
+      />
+    </div>
+  );
+}
