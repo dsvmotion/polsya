@@ -1,12 +1,12 @@
 import { Navigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { usePlatformOwnerStatus } from '@/hooks/usePlatformOwnerStatus';
-import Landing from '@/pages/Landing';
+import Home from '@/pages/marketing/Home';
 import { PageLoader } from '@/components/ui/page-loader';
 
 /**
- * Renders Landing for guests. Redirects logged-in users to dashboard or platform.
- * Platform owners (app_metadata, env, or platform_owner_emails table) go to /platform.
+ * Renders marketing Home for guests. Redirects logged-in users to /app or /admin.
+ * Platform owners (app_metadata, env, or platform_owner_emails table) go to /admin.
  */
 export function LandingOrRedirect() {
   const { user, isLoading } = useAuth();
@@ -14,7 +14,7 @@ export function LandingOrRedirect() {
 
   if (isLoading) return <PageLoader />;
   if (user && ownerLoading) return <PageLoader />;
-  if (user) return <Navigate to={isOwner ? '/platform' : '/dashboard'} replace />;
+  if (user) return <Navigate to={isOwner ? '/admin' : '/app'} replace />;
 
-  return <Landing />;
+  return <Home />;
 }
