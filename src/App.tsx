@@ -13,6 +13,7 @@ import { WorkspaceThemeBridge } from "@/components/layout/WorkspaceThemeBridge";
 import { AppLayout } from "@/components/layout/AppLayout";
 import { PlatformLayout } from "@/components/layout/PlatformLayout";
 import { ErrorBoundary } from "@/components/layout/ErrorBoundary";
+import { AdminRoute } from "@/components/admin/AdminRoute";
 import { SpeedInsights } from "@vercel/speed-insights/react";
 import Index from "./pages/Index";
 import Login from "./pages/Login";
@@ -43,6 +44,24 @@ const PlatformAnalytics = lazy(() => import("./pages/PlatformAnalytics"));
 const PlatformSettings = lazy(() => import("./pages/PlatformSettings"));
 const PlatformContactMessages = lazy(() => import("./pages/PlatformContactMessages"));
 const PlatformLogs = lazy(() => import("./pages/PlatformLogs"));
+
+// Admin Console (new)
+const AdminLayout = lazy(() => import('./components/admin/layout/AdminLayout').then(m => ({ default: m.AdminLayout })));
+const AdminRoute_Lazy = lazy(() => import('./components/admin/AdminRoute').then(m => ({ default: m.AdminRoute })));
+const AdminDashboard = lazy(() => import('./pages/admin/AdminDashboard'));
+const AdminUsers = lazy(() => import('./pages/admin/AdminUsers'));
+const AdminOrganizations = lazy(() => import('./pages/admin/AdminOrganizations'));
+const AdminOrganizationDetail_New = lazy(() => import('./pages/admin/AdminOrganizationDetail'));
+const AdminSubscriptions = lazy(() => import('./pages/admin/AdminSubscriptions'));
+const AdminBillingPage = lazy(() => import('./pages/admin/AdminBilling'));
+const AdminSignals = lazy(() => import('./pages/admin/AdminSignals'));
+const AdminIngestion = lazy(() => import('./pages/admin/AdminIngestion'));
+const AdminAiJobs = lazy(() => import('./pages/admin/AdminAiJobs'));
+const AdminModeration = lazy(() => import('./pages/admin/AdminModeration'));
+const AdminLogs = lazy(() => import('./pages/admin/AdminLogs'));
+const AdminFeatureFlags = lazy(() => import('./pages/admin/AdminFeatureFlags'));
+const AdminAnalytics_New = lazy(() => import('./pages/admin/AdminAnalytics'));
+const AdminSettings_New = lazy(() => import('./pages/admin/AdminSettings'));
 
 // Creative Intelligence Platform (Phase 0)
 const CreativeLayout = lazy(() => import("./components/creative/layout/CreativeLayout").then(m => ({ default: m.CreativeLayout })));
@@ -166,20 +185,9 @@ const App = () => (
                     <Route path="integrations/google-drive/callback" element={<GoogleDriveOAuthCallback />} />
                   </Route>
 
-                  {/* Platform admin routes (solo propietarios de la plataforma) */}
-                  <Route path="platform" element={
-                    <ProtectedRoute>
-                      <PlatformLayout />
-                    </ProtectedRoute>
-                  }>
-                    <Route index element={<PlatformDashboard />} />
-                    <Route path="billing" element={<PlatformBilling />} />
-                    <Route path="contact-messages" element={<PlatformContactMessages />} />
-                    <Route path="logs" element={<PlatformLogs />} />
-                    <Route path="analytics" element={<PlatformAnalytics />} />
-                    <Route path="settings" element={<PlatformSettings />} />
-                    <Route path="org/:orgId" element={<PlatformOrganizationDetail />} />
-                  </Route>
+                  {/* Legacy redirect: /platform/* -> /admin */}
+                  <Route path="platform" element={<Navigate to="/admin" replace />} />
+                  <Route path="platform/*" element={<Navigate to="/admin" replace />} />
 
                   {/* Creative Intelligence Platform routes */}
                   <Route path="creative" element={
@@ -243,19 +251,26 @@ const App = () => (
                     <Route path="analytics/insights" element={<AIInsights />} />
                   </Route>
 
-                  {/* Admin console at /admin — alias for /platform */}
+                  {/* Admin Console routes (new) */}
                   <Route path="admin" element={
-                    <ProtectedRoute>
-                      <PlatformLayout />
-                    </ProtectedRoute>
+                    <AdminRoute>
+                      <AdminLayout />
+                    </AdminRoute>
                   }>
-                    <Route index element={<PlatformDashboard />} />
-                    <Route path="billing" element={<PlatformBilling />} />
-                    <Route path="contact-messages" element={<PlatformContactMessages />} />
-                    <Route path="logs" element={<PlatformLogs />} />
-                    <Route path="analytics" element={<PlatformAnalytics />} />
-                    <Route path="settings" element={<PlatformSettings />} />
-                    <Route path="org/:orgId" element={<PlatformOrganizationDetail />} />
+                    <Route index element={<AdminDashboard />} />
+                    <Route path="users" element={<AdminUsers />} />
+                    <Route path="organizations" element={<AdminOrganizations />} />
+                    <Route path="org/:orgId" element={<AdminOrganizationDetail_New />} />
+                    <Route path="subscriptions" element={<AdminSubscriptions />} />
+                    <Route path="billing" element={<AdminBillingPage />} />
+                    <Route path="signals" element={<AdminSignals />} />
+                    <Route path="ingestion" element={<AdminIngestion />} />
+                    <Route path="ai-jobs" element={<AdminAiJobs />} />
+                    <Route path="moderation" element={<AdminModeration />} />
+                    <Route path="logs" element={<AdminLogs />} />
+                    <Route path="flags" element={<AdminFeatureFlags />} />
+                    <Route path="analytics" element={<AdminAnalytics_New />} />
+                    <Route path="settings" element={<AdminSettings_New />} />
                   </Route>
 
                   {/* Legacy redirects */}
