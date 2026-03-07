@@ -22,15 +22,20 @@ export default function AdminDashboard() {
   );
 
   // MRR calculation — sum active subscription amounts
+  // amount_cents may exist at DB level but is not in generated Supabase types;
+  // select all fields and access dynamically for forward-compatibility
   const { data: mrrCents = 0 } = useQuery({
     queryKey: ['admin', 'mrr'],
     queryFn: async () => {
       const { data, error } = await supabase
         .from('billing_subscriptions')
-        .select('amount_cents')
+        .select('*')
         .eq('status', 'active');
       if (error) throw error;
-      return (data ?? []).reduce((sum, s) => sum + (s.amount_cents ?? 0), 0);
+      return (data ?? []).reduce((sum, s) => {
+        const row = s as Record<string, unknown>;
+        return sum + (Number(row.amount_cents) || 0);
+      }, 0);
     },
   });
 

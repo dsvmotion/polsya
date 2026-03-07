@@ -101,7 +101,7 @@ describe('places-search request validation', () => {
   it('rejects missing lat/lng', () => {
     const result = validateRequest({ query: 'cafes' });
     expect(result.ok).toBe(false);
-    if (!result.ok) expect(result.error).toBe('lat and lng are required');
+    if ('error' in result) expect(result.error).toBe('lat and lng are required');
   });
 
   it('rejects missing lat only', () => {
@@ -117,7 +117,7 @@ describe('places-search request validation', () => {
   it('rejects when neither query nor type is provided', () => {
     const result = validateRequest({ lat: 1, lng: 2 });
     expect(result.ok).toBe(false);
-    if (!result.ok) expect(result.error).toBe('Either query or type is required');
+    if ('error' in result) expect(result.error).toBe('Either query or type is required');
   });
 
   it('accepts valid query search', () => {

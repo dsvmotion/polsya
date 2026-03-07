@@ -4,14 +4,18 @@ import { AdminDataTable, type AdminColumn } from '@/components/admin/AdminDataTa
 import { Button } from '@/components/ui/button';
 import { supabase } from '@/integrations/supabase/client';
 
-interface AuditLogRow extends Record<string, unknown> {
+interface AuditLogRow {
+  id: string;
   created_at: string;
   action: string;
   resource_type: string;
-  actor_email: string | null;
-  actor_id: string | null;
+  resource_id: string;
+  organization_id: string;
+  actor_type: string;
+  actor_id: string;
+  actor_email: string;
+  metadata: Record<string, unknown> | null;
   org_name?: string;
-  details?: Record<string, unknown>;
 }
 
 const columns: AdminColumn<AuditLogRow>[] = [
@@ -39,16 +43,19 @@ const columns: AdminColumn<AuditLogRow>[] = [
 ];
 
 export default function AdminLogs() {
-  const { data: logs = [], isLoading } = useQuery({
+  const { data: logs = [], isLoading } = useQuery<AuditLogRow[]>({
     queryKey: ['admin', 'logs'],
-    queryFn: async () => {
+    queryFn: async (): Promise<AuditLogRow[]> => {
       const { data, error } = await supabase
         .from('platform_audit_logs')
         .select('*')
         .order('created_at', { ascending: false })
         .limit(500);
       if (error) throw error;
-      return data ?? [];
+      return (data ?? []).map((d) => ({
+        ...d,
+        metadata: (d.metadata ?? null) as Record<string, unknown> | null,
+      }));
     },
   });
 
@@ -61,7 +68,7 @@ export default function AdminLogs() {
           log.action,
           log.resource_type,
           log.actor_id,
-          JSON.stringify(log.details ?? {}),
+          JSON.stringify(log.metadata ?? {}),
         ].join(','),
       ),
     ].join('\n');

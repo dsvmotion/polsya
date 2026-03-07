@@ -127,7 +127,7 @@ export function WorkflowRuleFormSheet({ open, onOpenChange, editRule }: Workflow
             value: 'value' in a ? String(rec.value ?? '') : '',
             titleTemplate: 'titleTemplate' in a ? (rec.titleTemplate as string) ?? '' : '',
             status: 'status' in a ? (rec.status as string) ?? '' : '',
-            notifyRole: 'notifyRole' in a ? (rec.notifyRole as string) ?? 'all' : 'all',
+            notifyRole: 'notifyRole' in a ? (rec.notifyRole as 'all' | 'admins') ?? 'all' : 'all',
           };
         }),
       });
