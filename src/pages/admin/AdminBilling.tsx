@@ -5,7 +5,17 @@ import { AdminDataTable, type AdminColumn } from '@/components/admin/AdminDataTa
 import { Badge } from '@/components/ui/badge';
 import { supabase } from '@/integrations/supabase/client';
 
-const columns: AdminColumn<any>[] = [
+interface InvoiceRow {
+  id: string;
+  org_name: string;
+  amount_cents: number;
+  status: string;
+  created_at: string;
+  stripe_invoice_id: string | null;
+  organizations?: { name: string } | null;
+}
+
+const columns: AdminColumn<InvoiceRow>[] = [
   { key: 'org_name', label: 'Organization' },
   {
     key: 'amount_cents',
@@ -45,6 +55,7 @@ export default function AdminBilling() {
     queryKey: ['admin', 'invoices'],
     queryFn: async () => {
       const { data, error } = await supabase
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any -- table not in generated types
         .from('billing_invoices' as any)
         .select('*, organizations (name)')
         .order('created_at', { ascending: false })
@@ -53,7 +64,7 @@ export default function AdminBilling() {
         console.warn('billing_invoices table not found, showing empty state');
         return [];
       }
-      return (data ?? []).map((i: any) => ({
+      return (data ?? []).map((i: Record<string, unknown>) => ({
         ...i,
         org_name: i.organizations?.name ?? '—',
       }));
@@ -71,12 +82,12 @@ export default function AdminBilling() {
         <AdminStatsCard title="Total Invoices" value={invoices.length} icon={Wallet} />
         <AdminStatsCard
           title="Paid"
-          value={invoices.filter((i: any) => i.status === 'paid').length}
+          value={invoices.filter((i: InvoiceRow) => i.status === 'paid').length}
           icon={CheckCircle}
         />
         <AdminStatsCard
           title="Failed"
-          value={invoices.filter((i: any) => i.status === 'failed').length}
+          value={invoices.filter((i: InvoiceRow) => i.status === 'failed').length}
           icon={AlertTriangle}
         />
       </div>

@@ -39,7 +39,7 @@ export default function AdminFeatureFlags() {
     },
   });
 
-  const enabledCount = flags.filter((f: any) => f.value === 'true').length;
+  const enabledCount = flags.filter((f: { value: string }) => f.value === 'true').length;
 
   return (
     <div className="space-y-6 max-w-4xl">
@@ -61,7 +61,7 @@ export default function AdminFeatureFlags() {
         </Card>
       ) : (
         <div className="space-y-2">
-          {flags.map((flag: any) => (
+          {flags.map((flag: { id: string; key: string; value: string; description?: string }) => (
             <Card key={flag.id}>
               <CardContent className="py-4 flex items-center justify-between">
                 <div className="space-y-1">

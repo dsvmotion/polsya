@@ -4,7 +4,18 @@ import { AdminDataTable, type AdminColumn } from '@/components/admin/AdminDataTa
 import { Button } from '@/components/ui/button';
 import { supabase } from '@/integrations/supabase/client';
 
-const columns: AdminColumn<any>[] = [
+interface LogRow {
+  id: string;
+  created_at: string;
+  action: string;
+  resource_type: string;
+  actor_id: string | null;
+  actor_email: string | null;
+  org_name: string | null;
+  details?: Record<string, unknown>;
+}
+
+const columns: AdminColumn<LogRow>[] = [
   {
     key: 'created_at',
     label: 'Timestamp',
@@ -45,7 +56,7 @@ export default function AdminLogs() {
   const handleExport = () => {
     const csv = [
       ['Timestamp', 'Action', 'Resource', 'Actor', 'Details'].join(','),
-      ...logs.map((log: any) =>
+      ...logs.map((log: LogRow) =>
         [
           new Date(log.created_at).toISOString(),
           log.action,

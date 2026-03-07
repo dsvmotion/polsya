@@ -57,7 +57,7 @@ export default function AdminUsers() {
         `)
         .limit(200);
       if (error) throw error;
-      return (data ?? []).map((m: any) => ({
+      return (data ?? []).map((m: Record<string, unknown> & { user_id: string; role: string; joined_at: string; organizations?: { name: string } | null }) => ({
         id: m.user_id,
         email: m.user_id,
         full_name: null,

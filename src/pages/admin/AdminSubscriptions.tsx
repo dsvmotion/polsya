@@ -5,7 +5,19 @@ import { AdminDataTable, type AdminColumn } from '@/components/admin/AdminDataTa
 import { Badge } from '@/components/ui/badge';
 import { supabase } from '@/integrations/supabase/client';
 
-const columns: AdminColumn<any>[] = [
+interface SubRow {
+  id: string;
+  org_name: string;
+  plan_name: string;
+  status: string;
+  amount_cents: number;
+  current_period_end: string | null;
+  created_at: string;
+  organizations?: { name: string } | null;
+  billing_plans?: { name: string } | null;
+}
+
+const columns: AdminColumn<SubRow>[] = [
   { key: 'org_name', label: 'Organization' },
   {
     key: 'plan_name',
@@ -50,7 +62,7 @@ export default function AdminSubscriptions() {
         `)
         .order('created_at', { ascending: false });
       if (error) throw error;
-      return (data ?? []).map((s: any) => ({
+      return (data ?? []).map((s: Record<string, unknown>) => ({
         ...s,
         org_name: s.organizations?.name ?? '—',
         plan_name: s.billing_plans?.name ?? '—',
@@ -58,10 +70,10 @@ export default function AdminSubscriptions() {
     },
   });
 
-  const active = subs.filter((s: any) => s.status === 'active');
-  const trialing = subs.filter((s: any) => s.status === 'trialing');
-  const pastDue = subs.filter((s: any) => s.status === 'past_due');
-  const mrr = active.reduce((sum: number, s: any) => sum + (s.amount_cents ?? 0), 0);
+  const active = subs.filter((s: SubRow) => s.status === 'active');
+  const trialing = subs.filter((s: SubRow) => s.status === 'trialing');
+  const pastDue = subs.filter((s: SubRow) => s.status === 'past_due');
+  const mrr = active.reduce((sum: number, s: SubRow) => sum + (s.amount_cents ?? 0), 0);
 
   return (
     <div className="space-y-6 max-w-6xl">
