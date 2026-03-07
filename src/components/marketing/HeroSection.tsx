@@ -4,16 +4,9 @@ import { motion } from 'framer-motion';
 import {
   Search, Sparkles, GitBranch, Target, BarChart3,
   Star, MapPin, ExternalLink, TrendingUp, Award,
-  Filter, ChevronDown, MoreHorizontal,
+  Filter, ChevronDown, MoreHorizontal, ArrowRight,
+  Users, Zap, Network,
 } from 'lucide-react';
-
-const workflowSteps = [
-  { icon: Search, label: 'Discover', color: 'from-indigo-500 to-indigo-600' },
-  { icon: Sparkles, label: 'Analyze', color: 'from-violet-500 to-violet-600' },
-  { icon: GitBranch, label: 'Map', color: 'from-purple-500 to-purple-600' },
-  { icon: Target, label: 'Identify', color: 'from-fuchsia-500 to-fuchsia-600' },
-  { icon: BarChart3, label: 'Track', color: 'from-pink-500 to-pink-600' },
-];
 
 /* ---------- fake data for the product mock ---------- */
 const mockCreatives = [
@@ -24,17 +17,67 @@ const mockCreatives = [
   { name: 'Ava O\'Brien', role: 'Photographer', location: 'Dublin', rating: 4.6, tags: ['Editorial', 'Fashion'], avatar: 'AO', color: 'bg-pink-500', status: 'In Project', enriched: true },
 ];
 
+/* ---------- decorative node positions for hero illustrations ---------- */
+const leftNodes = [
+  { x: 20, y: 60, r: 6, color: '#818cf8' },
+  { x: 45, y: 30, r: 4, color: '#a78bfa' },
+  { x: 10, y: 120, r: 5, color: '#c4b5fd' },
+  { x: 55, y: 95, r: 3, color: '#6366f1' },
+  { x: 30, y: 160, r: 4, color: '#8b5cf6' },
+];
+
+const rightNodes = [
+  { x: 40, y: 50, r: 5, color: '#818cf8' },
+  { x: 15, y: 100, r: 6, color: '#a78bfa' },
+  { x: 50, y: 140, r: 4, color: '#c4b5fd' },
+  { x: 25, y: 20, r: 3, color: '#6366f1' },
+  { x: 55, y: 80, r: 5, color: '#8b5cf6' },
+];
+
 export function HeroSection() {
   return (
-    <section className="relative overflow-hidden pt-20 pb-20 sm:pt-28 sm:pb-28 px-4 sm:px-6 lg:px-8">
+    <section className="relative overflow-hidden pt-16 pb-8 sm:pt-20 sm:pb-12 px-4 sm:px-6 lg:px-8">
       {/* Background layers */}
-      <div className="absolute inset-0 -z-10 bg-[linear-gradient(to_bottom,hsl(245_30%_97%),white)]" />
+      <div className="absolute inset-0 -z-10 bg-[linear-gradient(to_bottom,hsl(245_30%_97%),white_70%)]" />
       <div className="absolute top-0 left-1/2 -translate-x-1/2 -z-10 w-[900px] h-[600px] rounded-full bg-indigo-100/40 blur-3xl" />
       <div className="absolute top-20 right-0 -z-10 w-[400px] h-[400px] rounded-full bg-violet-100/30 blur-3xl" />
       <div className="absolute bottom-0 left-0 -z-10 w-[500px] h-[300px] rounded-full bg-cyan-50/30 blur-3xl" />
 
-      <div className="mx-auto max-w-6xl">
-        {/* Text content */}
+      {/* Subtle grid pattern overlay */}
+      <div className="absolute inset-0 -z-10 opacity-[0.03]" style={{ backgroundImage: 'radial-gradient(circle, #6366f1 1px, transparent 1px)', backgroundSize: '24px 24px' }} />
+
+      <div className="mx-auto max-w-7xl relative">
+        {/* ─── Decorative illustration nodes (LEFT) ─── */}
+        <div className="hidden xl:block absolute -left-8 top-20 w-[70px] h-[200px]">
+          <svg viewBox="0 0 70 200" className="w-full h-full">
+            {leftNodes.map((n, i) => (
+              <g key={i}>
+                <circle cx={n.x} cy={n.y} r={n.r} fill={n.color} opacity="0.4" />
+                {i < leftNodes.length - 1 && (
+                  <line x1={n.x} y1={n.y} x2={leftNodes[i + 1].x} y2={leftNodes[i + 1].y}
+                    stroke={n.color} strokeWidth="0.8" opacity="0.2" strokeDasharray="3 3" />
+                )}
+              </g>
+            ))}
+          </svg>
+        </div>
+
+        {/* ─── Decorative illustration nodes (RIGHT) ─── */}
+        <div className="hidden xl:block absolute -right-8 top-16 w-[70px] h-[200px]">
+          <svg viewBox="0 0 70 200" className="w-full h-full">
+            {rightNodes.map((n, i) => (
+              <g key={i}>
+                <circle cx={n.x} cy={n.y} r={n.r} fill={n.color} opacity="0.4" />
+                {i < rightNodes.length - 1 && (
+                  <line x1={n.x} y1={n.y} x2={rightNodes[i + 1].x} y2={rightNodes[i + 1].y}
+                    stroke={n.color} strokeWidth="0.8" opacity="0.2" strokeDasharray="3 3" />
+                )}
+              </g>
+            ))}
+          </svg>
+        </div>
+
+        {/* ═══ Text content ═══ */}
         <div className="text-center max-w-4xl mx-auto">
           <motion.div initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, ease: 'easeOut' }}>
             <div className="inline-flex items-center gap-2 rounded-full border border-indigo-200 bg-indigo-50/80 px-4 py-1.5 text-sm font-medium text-indigo-700 mb-8 backdrop-blur-sm">
@@ -54,30 +97,75 @@ export function HeroSection() {
             </p>
           </motion.div>
 
+          {/* CTA row */}
           <motion.div initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.2 }} className="mt-10 flex flex-col sm:flex-row items-center justify-center gap-4">
             <Button asChild size="lg" className="bg-gradient-to-r from-indigo-600 to-violet-600 text-white border-0 shadow-lg shadow-indigo-200/50 px-8 text-base hover:shadow-xl hover:shadow-indigo-300/50 transition-all duration-200 hover:-translate-y-0.5">
-              <Link to="/signup">Start free trial →</Link>
+              <Link to="/signup">Start free trial <ArrowRight className="ml-1.5 h-4 w-4" /></Link>
             </Button>
             <Button asChild size="lg" variant="outline" className="px-8 text-base border-gray-300 hover:border-indigo-300 hover:bg-indigo-50/50 transition-all duration-200">
               <Link to="/how-it-works">See how it works</Link>
             </Button>
           </motion.div>
+
+          {/* ─── Social proof bar ─── */}
+          <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.35 }}
+            className="mt-8 flex flex-col sm:flex-row items-center justify-center gap-5 sm:gap-8"
+          >
+            {/* Avatar stack */}
+            <div className="flex items-center">
+              <div className="flex -space-x-2">
+                {['bg-indigo-500', 'bg-violet-500', 'bg-emerald-500', 'bg-amber-500', 'bg-pink-500'].map((color, i) => (
+                  <div key={i} className={`w-7 h-7 rounded-full ${color} border-2 border-white flex items-center justify-center text-[8px] font-bold text-white`}>
+                    {['SC', 'MW', 'EV', 'KT', 'AO'][i]}
+                  </div>
+                ))}
+              </div>
+              <span className="ml-2.5 text-sm text-gray-500 font-medium">500+ teams</span>
+            </div>
+
+            <div className="hidden sm:block w-px h-5 bg-gray-200" />
+
+            {/* Star rating */}
+            <div className="flex items-center gap-1.5">
+              <div className="flex gap-0.5">
+                {Array.from({ length: 5 }).map((_, i) => (
+                  <Star key={i} className="h-3.5 w-3.5 fill-amber-400 text-amber-400" />
+                ))}
+              </div>
+              <span className="text-sm font-semibold text-gray-700">4.9/5</span>
+              <span className="text-sm text-gray-400">rating</span>
+            </div>
+
+            <div className="hidden sm:block w-px h-5 bg-gray-200" />
+
+            {/* Quick stats */}
+            <div className="flex items-center gap-4 text-sm text-gray-500">
+              <span className="flex items-center gap-1"><Users className="h-3.5 w-3.5 text-indigo-400" />2.8M+ profiles</span>
+              <span className="flex items-center gap-1"><Zap className="h-3.5 w-3.5 text-violet-400" />50+ sources</span>
+            </div>
+          </motion.div>
         </div>
 
-        {/* Workflow Steps — visual pipeline */}
-        <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.35 }} className="mt-14">
+        {/* ═══ Workflow visual — icon strip ═══ */}
+        <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.45 }} className="mt-12">
           <div className="flex items-center justify-center">
-            <div className="flex items-center gap-0 sm:gap-0">
-              {workflowSteps.map((step, i) => (
+            <div className="flex items-center gap-0">
+              {[
+                { icon: Search, label: 'Discover', color: 'from-indigo-500 to-indigo-600' },
+                { icon: Sparkles, label: 'Enrich', color: 'from-violet-500 to-violet-600' },
+                { icon: Network, label: 'Map', color: 'from-purple-500 to-purple-600' },
+                { icon: Target, label: 'Match', color: 'from-fuchsia-500 to-fuchsia-600' },
+                { icon: BarChart3, label: 'Track', color: 'from-pink-500 to-pink-600' },
+              ].map((step, i, arr) => (
                 <div key={step.label} className="flex items-center">
-                  <div className="flex flex-col items-center gap-2 group">
-                    <div className={`w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-gradient-to-br ${step.color} flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform duration-200`}>
-                      <step.icon className="h-5 w-5 sm:h-6 sm:w-6 text-white" />
+                  <div className="flex flex-col items-center gap-1.5 group">
+                    <div className={`w-10 h-10 sm:w-11 sm:h-11 rounded-xl bg-gradient-to-br ${step.color} flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform duration-200`}>
+                      <step.icon className="h-5 w-5 text-white" />
                     </div>
-                    <span className="text-xs sm:text-sm font-semibold text-gray-700">{step.label}</span>
+                    <span className="text-[10px] sm:text-xs font-semibold text-gray-600">{step.label}</span>
                   </div>
-                  {i < workflowSteps.length - 1 && (
-                    <div className="w-8 sm:w-16 h-0.5 bg-gradient-to-r from-gray-300 to-gray-200 mx-1 sm:mx-2 mt-[-20px]" />
+                  {i < arr.length - 1 && (
+                    <div className="w-6 sm:w-12 h-0.5 bg-gradient-to-r from-gray-300 to-gray-200 mx-1 sm:mx-2 mt-[-16px]" />
                   )}
                 </div>
               ))}
@@ -85,8 +173,8 @@ export function HeroSection() {
           </div>
         </motion.div>
 
-        {/* Rich Product Preview */}
-        <motion.div initial={{ opacity: 0, y: 48 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8, delay: 0.5 }} className="mt-14 relative">
+        {/* ═══ Rich Product Preview ═══ */}
+        <motion.div initial={{ opacity: 0, y: 48 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8, delay: 0.55 }} className="mt-10 relative">
           <div className="absolute -inset-4 bg-gradient-to-r from-indigo-100/40 via-violet-100/40 to-purple-100/40 rounded-3xl blur-2xl" />
 
           <div className="relative rounded-2xl border border-gray-200/80 shadow-2xl overflow-hidden bg-white ring-1 ring-black/5">
@@ -107,12 +195,11 @@ export function HeroSection() {
 
             {/* Product UI */}
             <div className="bg-gradient-to-br from-gray-50 to-white">
-              <div className="flex min-h-[420px] sm:min-h-[480px]">
+              <div className="flex min-h-[400px] sm:min-h-[460px]">
                 {/* Sidebar */}
                 <div className="hidden sm:flex w-48 bg-gray-900 flex-col p-3 shrink-0">
-                  <div className="flex items-center gap-2 px-2 mb-5">
+                  <div className="flex items-center px-2 mb-5">
                     <img src="/polsya-logo-white.png" alt="" className="h-5 w-auto opacity-90" />
-                    <span className="text-white/80 text-xs font-semibold tracking-wide">Polsya</span>
                   </div>
                   <div className="space-y-0.5">
                     {[
@@ -220,7 +307,7 @@ export function HeroSection() {
                             <div className="text-[10px] text-gray-400 truncate">{creative.role}</div>
                           </div>
                         </div>
-                        <div className="col-span-2 flex items-center gap-1 hidden sm:flex">
+                        <div className="col-span-2 items-center gap-1 hidden sm:flex">
                           <MapPin className="h-2.5 w-2.5 text-gray-300" />
                           <span className="text-[10px] text-gray-500">{creative.location}</span>
                         </div>
@@ -229,7 +316,7 @@ export function HeroSection() {
                             <span key={tag} className="text-[9px] bg-gray-100 text-gray-600 px-1.5 py-0.5 rounded-md font-medium">{tag}</span>
                           ))}
                         </div>
-                        <div className="col-span-1 flex items-center gap-0.5 hidden sm:flex">
+                        <div className="col-span-1 items-center gap-0.5 hidden sm:flex">
                           <Star className="h-2.5 w-2.5 text-amber-400 fill-amber-400" />
                           <span className="text-[10px] font-semibold text-gray-700">{creative.rating}</span>
                         </div>
