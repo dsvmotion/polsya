@@ -1,30 +1,12 @@
+import { useState, useEffect, useCallback } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import {
-  LayoutDashboard,
-  Users,
-  UserRound,
-  FolderKanban,
-  Briefcase,
-  Image,
-  Sparkles,
-  Settings,
-  CreditCard,
   ChevronLeft,
   ChevronRight,
-  Palette,
+  ChevronRight as ChevronRightIcon,
   X,
   MessageSquare,
-  Download,
-  Zap,
-  Layers,
-  GitBranch,
-  GitMerge,
-  BarChart3,
-  BookOpen,
-  Mail,
-  Calendar,
-  TrendingUp,
-  Search,
+  type LucideIcon,
 } from 'lucide-react';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
@@ -34,8 +16,24 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from '@/components/ui/tooltip';
+import {
+  Collapsible,
+  CollapsibleTrigger,
+  CollapsibleContent,
+} from '@/components/ui/collapsible';
 import { cn } from '@/lib/utils';
 import { NotificationBell } from '@/components/creative/notifications/NotificationBell';
+import {
+  dashboardItem,
+  navGroups,
+  bottomNavItems,
+  type NavItem,
+  type NavGroup,
+} from './sidebar-nav-config';
+
+// ---------------------------------------------------------------------------
+// Props
+// ---------------------------------------------------------------------------
 
 interface CreativeSidebarProps {
   open: boolean;
@@ -45,32 +43,232 @@ interface CreativeSidebarProps {
   onOpenAiChat?: () => void;
 }
 
-const mainNavItems = [
-  { label: 'Dashboard', icon: LayoutDashboard, path: '/creative' },
-  { label: 'Discover', icon: Search, path: '/creative/discover' },
-  { label: 'Reports', icon: BarChart3, path: '/creative/reports' },
-  { label: 'Analytics', icon: TrendingUp, path: '/creative/analytics' },
-  { label: 'Knowledge Base', icon: BookOpen, path: '/creative/knowledge-base' },
-  { label: 'Clients', icon: Users, path: '/creative/clients' },
-  { label: 'Projects', icon: FolderKanban, path: '/creative/projects' },
-  { label: 'Contacts', icon: UserRound, path: '/creative/contacts' },
-  { label: 'Opportunities', icon: Briefcase, path: '/creative/opportunities' },
-  { label: 'Portfolios', icon: Image, path: '/creative/portfolios' },
-  { label: 'Style Intelligence', icon: Sparkles, path: '/creative/style' },
-  { label: 'Signals', icon: Zap, path: '/creative/signals' },
-  { label: 'Workflows', icon: GitBranch, path: '/creative/workflows' },
-  { label: 'Enrichment', icon: Layers, path: '/creative/enrichment' },
-  { label: 'Resolution', icon: GitMerge, path: '/creative/resolution' },
-  { label: 'Ingestion', icon: Download, path: '/creative/ingestion' },
-  { label: 'Email', icon: Mail, path: '/creative/inbox' },
-  { label: 'Calendar', icon: Calendar, path: '/creative/calendar' },
-];
+// ---------------------------------------------------------------------------
+// Helpers
+// ---------------------------------------------------------------------------
 
-const bottomNavItems = [
-  { label: 'Integrations', icon: Palette, path: '/integrations' },
-  { label: 'Billing', icon: CreditCard, path: '/billing' },
-  { label: 'Settings', icon: Settings, path: '/profile' },
-];
+function useIsActive(): (path: string) => boolean {
+  const location = useLocation();
+  return useCallback(
+    (path: string) => {
+      if (path === '/creative') return location.pathname === '/creative';
+      return location.pathname.startsWith(path);
+    },
+    [location.pathname],
+  );
+}
+
+function isGroupActive(group: NavGroup, pathname: string): boolean {
+  return group.items.some((item) => {
+    if (item.future) return false;
+    if (item.path === '/creative') return pathname === '/creative';
+    return pathname.startsWith(item.path);
+  });
+}
+
+function buildInitialOpenState(
+  groups: NavGroup[],
+  pathname: string,
+): Record<string, boolean> {
+  const state: Record<string, boolean> = {};
+  for (const group of groups) {
+    const hasActiveChild = isGroupActive(group, pathname);
+    state[group.label] = group.defaultOpen !== false || hasActiveChild;
+  }
+  return state;
+}
+
+// ---------------------------------------------------------------------------
+// SidebarNavButton
+// ---------------------------------------------------------------------------
+
+function SidebarNavButton({
+  item,
+  isActive,
+  collapsed,
+  onNavigate,
+}: {
+  item: NavItem;
+  isActive: boolean;
+  collapsed: boolean;
+  onNavigate: (path: string) => void;
+}) {
+  const Icon = item.icon;
+
+  // Future item — muted, non-interactive
+  if (item.future) {
+    if (collapsed) {
+      return (
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <div className="flex items-center justify-center w-10 h-10 rounded-lg text-sidebar-foreground/30 cursor-default select-none">
+              <Icon className="h-4 w-4" />
+            </div>
+          </TooltipTrigger>
+          <TooltipContent side="right" sideOffset={8}>
+            {item.label} — Coming soon
+          </TooltipContent>
+        </Tooltip>
+      );
+    }
+
+    return (
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <div className="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium w-full text-left text-sidebar-foreground/30 cursor-default select-none">
+            <Icon className="h-4 w-4 shrink-0" />
+            <span className="truncate">{item.label}</span>
+          </div>
+        </TooltipTrigger>
+        <TooltipContent side="right" sideOffset={8}>
+          Coming soon
+        </TooltipContent>
+      </Tooltip>
+    );
+  }
+
+  // Collapsed — tooltip-wrapped icon button
+  if (collapsed) {
+    return (
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <button
+            onClick={() => onNavigate(item.path)}
+            className={cn(
+              'flex items-center justify-center w-10 h-10 rounded-lg transition-colors',
+              isActive
+                ? 'bg-sidebar-accent text-sidebar-primary'
+                : 'text-sidebar-foreground/70 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground',
+            )}
+          >
+            <Icon className="h-5 w-5" />
+          </button>
+        </TooltipTrigger>
+        <TooltipContent side="right" sideOffset={8}>
+          {item.label}
+        </TooltipContent>
+      </Tooltip>
+    );
+  }
+
+  // Expanded — button with icon + label
+  return (
+    <button
+      onClick={() => onNavigate(item.path)}
+      className={cn(
+        'flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors w-full text-left',
+        isActive
+          ? 'bg-sidebar-accent text-sidebar-primary'
+          : 'text-sidebar-foreground/70 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground',
+      )}
+    >
+      <Icon className="h-4 w-4 shrink-0" />
+      <span className="truncate">{item.label}</span>
+    </button>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// SidebarNavGroup
+// ---------------------------------------------------------------------------
+
+function SidebarNavGroup({
+  group,
+  isOpen,
+  onOpenChange,
+  collapsed,
+  onNavigate,
+  isActiveFn,
+}: {
+  group: NavGroup;
+  isOpen: boolean;
+  onOpenChange: (open: boolean) => void;
+  collapsed: boolean;
+  onNavigate: (path: string) => void;
+  isActiveFn: (path: string) => boolean;
+}) {
+  const GroupIcon = group.icon;
+  const groupHasActive = group.items.some(
+    (item) => !item.future && isActiveFn(item.path),
+  );
+
+  // Collapsed mode — single icon button representing the whole group
+  if (collapsed) {
+    return (
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <button
+            onClick={() => onOpenChange(true)}
+            className={cn(
+              'flex items-center justify-center w-10 h-10 rounded-lg transition-colors',
+              groupHasActive
+                ? 'bg-sidebar-accent text-sidebar-primary'
+                : 'text-sidebar-foreground/70 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground',
+            )}
+          >
+            <GroupIcon className="h-5 w-5" />
+          </button>
+        </TooltipTrigger>
+        <TooltipContent side="right" sideOffset={8}>
+          {group.label}
+        </TooltipContent>
+      </Tooltip>
+    );
+  }
+
+  // Expanded mode — collapsible section
+  return (
+    <Collapsible open={isOpen} onOpenChange={onOpenChange}>
+      {/* Group header */}
+      <div className="flex items-center justify-between px-3 py-1.5">
+        <div className="flex items-center gap-2">
+          <GroupIcon className="h-3.5 w-3.5 text-sidebar-foreground/50" />
+          {group.path ? (
+            <button
+              onClick={() => onNavigate(group.path!)}
+              className="text-xs font-semibold uppercase tracking-wider text-sidebar-foreground/50 hover:text-sidebar-foreground transition-colors"
+            >
+              {group.label}
+            </button>
+          ) : (
+            <span className="text-xs font-semibold uppercase tracking-wider text-sidebar-foreground/50">
+              {group.label}
+            </span>
+          )}
+        </div>
+        <CollapsibleTrigger asChild>
+          <button className="h-5 w-5 flex items-center justify-center rounded text-sidebar-foreground/50 hover:text-sidebar-foreground transition-colors">
+            <ChevronRightIcon
+              className={cn(
+                'h-3.5 w-3.5 transition-transform duration-200',
+                isOpen && 'rotate-90',
+              )}
+            />
+          </button>
+        </CollapsibleTrigger>
+      </div>
+
+      {/* Group items */}
+      <CollapsibleContent>
+        <div className="flex flex-col gap-0.5">
+          {group.items.map((item) => (
+            <SidebarNavButton
+              key={item.path}
+              item={item}
+              isActive={isActiveFn(item.path)}
+              collapsed={false}
+              onNavigate={onNavigate}
+            />
+          ))}
+        </div>
+      </CollapsibleContent>
+    </Collapsible>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// CreativeSidebar
+// ---------------------------------------------------------------------------
 
 export function CreativeSidebar({
   open,
@@ -81,59 +279,38 @@ export function CreativeSidebar({
 }: CreativeSidebarProps) {
   const navigate = useNavigate();
   const location = useLocation();
+  const isActiveFn = useIsActive();
 
-  const isActive = (path: string) => {
-    if (path === '/creative') return location.pathname === '/creative';
-    return location.pathname.startsWith(path);
-  };
+  const [groupOpenState, setGroupOpenState] = useState<Record<string, boolean>>(
+    () => buildInitialOpenState(navGroups, location.pathname),
+  );
+
+  // Auto-open group containing the active route when pathname changes
+  useEffect(() => {
+    setGroupOpenState((prev) => {
+      const next = { ...prev };
+      let changed = false;
+      for (const group of navGroups) {
+        if (isGroupActive(group, location.pathname) && !prev[group.label]) {
+          next[group.label] = true;
+          changed = true;
+        }
+      }
+      return changed ? next : prev;
+    });
+  }, [location.pathname]);
 
   const handleNavigate = (path: string) => {
     navigate(path);
     onOpenChange(false);
   };
 
-  const NavItem = ({ label, icon: Icon, path }: { label: string; icon: typeof LayoutDashboard; path: string }) => {
-    const active = isActive(path);
-
-    if (collapsed) {
-      return (
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <button
-              onClick={() => handleNavigate(path)}
-              className={cn(
-                'flex items-center justify-center w-10 h-10 rounded-lg transition-colors',
-                active
-                  ? 'bg-sidebar-accent text-sidebar-primary'
-                  : 'text-sidebar-foreground/70 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground',
-              )}
-            >
-              <Icon className="h-5 w-5" />
-            </button>
-          </TooltipTrigger>
-          <TooltipContent side="right" sideOffset={8}>
-            {label}
-          </TooltipContent>
-        </Tooltip>
-      );
-    }
-
-    return (
-      <button
-        onClick={() => handleNavigate(path)}
-        className={cn(
-          'flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors w-full text-left',
-          active
-            ? 'bg-sidebar-accent text-sidebar-primary'
-            : 'text-sidebar-foreground/70 hover:bg-sidebar-accent/50 hover:text-sidebar-foreground',
-        )}
-      >
-        <Icon className="h-5 w-5 shrink-0" />
-        <span className="truncate">{label}</span>
-      </button>
-    );
+  const handleGroupExpandSidebar = (groupLabel: string) => {
+    onCollapsedChange(false);
+    setGroupOpenState((prev) => ({ ...prev, [groupLabel]: true }));
   };
 
+  // ------- Sidebar content -------
   const sidebarContent = (
     <div className="flex flex-col h-full">
       {/* Header */}
@@ -158,10 +335,39 @@ export function CreativeSidebar({
 
       {/* Main nav */}
       <ScrollArea className="flex-1 px-3 py-3">
-        <nav className={cn('flex flex-col gap-1', collapsed && 'items-center')}>
-          {mainNavItems.map((item) => (
-            <NavItem key={item.path} {...item} />
-          ))}
+        <nav className={cn('flex flex-col', collapsed ? 'items-center gap-1' : 'gap-1')}>
+          {/* Dashboard — standalone */}
+          <SidebarNavButton
+            item={dashboardItem}
+            isActive={isActiveFn(dashboardItem.path)}
+            collapsed={collapsed}
+            onNavigate={handleNavigate}
+          />
+
+          <Separator className="my-2 bg-sidebar-border" />
+
+          {/* Grouped nav */}
+          <div className={cn('flex flex-col', collapsed ? 'gap-1 items-center' : 'gap-3')}>
+            {navGroups.map((group) => (
+              <SidebarNavGroup
+                key={group.label}
+                group={group}
+                isOpen={groupOpenState[group.label] ?? true}
+                onOpenChange={
+                  collapsed
+                    ? () => handleGroupExpandSidebar(group.label)
+                    : (open) =>
+                        setGroupOpenState((prev) => ({
+                          ...prev,
+                          [group.label]: open,
+                        }))
+                }
+                collapsed={collapsed}
+                onNavigate={handleNavigate}
+                isActiveFn={isActiveFn}
+              />
+            ))}
+          </div>
         </nav>
       </ScrollArea>
 
@@ -190,7 +396,13 @@ export function CreativeSidebar({
             </Tooltip>
           )}
           {bottomNavItems.map((item) => (
-            <NavItem key={item.path} {...item} />
+            <SidebarNavButton
+              key={item.path}
+              item={item}
+              isActive={isActiveFn(item.path)}
+              collapsed={collapsed}
+              onNavigate={handleNavigate}
+            />
           ))}
         </nav>
 
