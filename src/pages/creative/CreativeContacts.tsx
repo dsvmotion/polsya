@@ -9,7 +9,7 @@ import { ContactCard } from '@/components/creative/contacts/ContactCard';
 import { ContactFormSheet } from '@/components/creative/contacts/ContactFormSheet';
 import { ContactDetail } from '@/components/creative/contacts/ContactDetail';
 import { useCreativeContacts } from '@/hooks/useCreativeContacts';
-import { useCreativeLayout } from '@/components/creative/layout/CreativeLayout';
+import { useCreativeLayout } from '@/components/creative/layout/creative-layout-context';
 import type { CreativeContact } from '@/types/creative';
 import type { ViewMode } from '@/lib/design-tokens';
 

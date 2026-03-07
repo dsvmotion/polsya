@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest';
 import {
   formatThreadSubject,
   getParticipants,
-} from '@/components/creative/email/EmailThreadView';
+} from '@/components/creative/email/email-thread-utils';
 
 // ---------------------------------------------------------------------------
 // 1. formatThreadSubject

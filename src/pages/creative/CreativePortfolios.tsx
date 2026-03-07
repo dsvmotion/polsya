@@ -9,7 +9,7 @@ import { PortfolioCard } from '@/components/creative/portfolios/PortfolioCard';
 import { PortfolioFormSheet } from '@/components/creative/portfolios/PortfolioFormSheet';
 import { PortfolioDetail } from '@/components/creative/portfolios/PortfolioDetail';
 import { useCreativePortfolios } from '@/hooks/useCreativePortfolios';
-import { useCreativeLayout } from '@/components/creative/layout/CreativeLayout';
+import { useCreativeLayout } from '@/components/creative/layout/creative-layout-context';
 import type { CreativePortfolio } from '@/types/creative';
 import type { ViewMode } from '@/lib/design-tokens';
 

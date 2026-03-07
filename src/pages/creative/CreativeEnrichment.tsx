@@ -11,7 +11,7 @@ import { RecipeFormSheet } from '@/components/creative/enrichment/RecipeFormShee
 import { RunNowDialog } from '@/components/creative/enrichment/RunNowDialog';
 import { RunDetail } from '@/components/creative/enrichment/RunDetail';
 import { useEnrichmentCredits, useEnrichmentRecipes, useEnrichmentRuns } from '@/hooks/useEnrichmentEngine';
-import { useCreativeLayout } from '@/components/creative/layout/CreativeLayout';
+import { useCreativeLayout } from '@/components/creative/layout/creative-layout-context';
 import type { EnrichmentRecipe } from '@/types/enrichment-engine';
 import type { EnrichmentRun } from '@/types/enrichment-engine';
 

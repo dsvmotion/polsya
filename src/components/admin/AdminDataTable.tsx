@@ -28,7 +28,7 @@ interface AdminDataTableProps<T> {
   isLoading?: boolean;
 }
 
-export function AdminDataTable<T extends Record<string, any>>({
+export function AdminDataTable<T extends Record<string, unknown>>({
   data,
   columns,
   searchPlaceholder = 'Search...',

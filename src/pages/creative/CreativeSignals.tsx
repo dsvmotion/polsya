@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { WorkspaceContainer } from '@/components/creative/layout/WorkspaceContainer';
-import { useCreativeLayout } from '@/components/creative/layout/CreativeLayout';
+import { useCreativeLayout } from '@/components/creative/layout/creative-layout-context';
 import { DataTable } from '@/components/creative/shared/DataTable';
 import { ruleColumns } from '@/components/creative/signals/rule-columns';
 import { SignalCard } from '@/components/creative/signals/SignalCard';

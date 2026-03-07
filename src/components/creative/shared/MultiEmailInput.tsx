@@ -2,41 +2,7 @@ import * as React from 'react';
 import { X } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
-
-// ---------------------------------------------------------------------------
-// Pure helpers (exported for testing)
-// ---------------------------------------------------------------------------
-
-const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-
-export function isValidEmail(email: string): boolean {
-  return EMAIL_REGEX.test(email);
-}
-
-export function parseEmailInput(raw: string): { valid: string[]; invalid: string[] } {
-  const tokens = raw
-    .split(/[,;\s]+/)
-    .map((t) => t.trim())
-    .filter(Boolean);
-
-  const valid: string[] = [];
-  const invalid: string[] = [];
-
-  for (const token of tokens) {
-    const lower = token.toLowerCase();
-    if (isValidEmail(lower)) {
-      valid.push(lower);
-    } else {
-      invalid.push(token);
-    }
-  }
-
-  return { valid, invalid };
-}
-
-// ---------------------------------------------------------------------------
-// Component
-// ---------------------------------------------------------------------------
+import { parseEmailInput } from './multi-email-utils';
 
 interface MultiEmailInputProps {
   value: string[];

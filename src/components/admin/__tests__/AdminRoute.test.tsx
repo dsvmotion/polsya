@@ -21,8 +21,8 @@ const mockedUsePlatformOwnerStatus = vi.mocked(usePlatformOwnerStatus);
 
 describe('AdminRoute', () => {
   it('shows loading state while checking ownership', () => {
-    mockedUseAuth.mockReturnValue({ user: { id: '1' } } as any);
-    mockedUsePlatformOwnerStatus.mockReturnValue({ isOwner: false, isLoading: true } as any);
+    mockedUseAuth.mockReturnValue({ user: { id: '1' } } as unknown as ReturnType<typeof useAuth>);
+    mockedUsePlatformOwnerStatus.mockReturnValue({ isOwner: false, isLoading: true });
 
     render(
       <MemoryRouter>
@@ -36,8 +36,8 @@ describe('AdminRoute', () => {
   });
 
   it('renders children when user is platform owner', () => {
-    mockedUseAuth.mockReturnValue({ user: { id: '1' } } as any);
-    mockedUsePlatformOwnerStatus.mockReturnValue({ isOwner: true, isLoading: false } as any);
+    mockedUseAuth.mockReturnValue({ user: { id: '1' } } as unknown as ReturnType<typeof useAuth>);
+    mockedUsePlatformOwnerStatus.mockReturnValue({ isOwner: true, isLoading: false });
 
     render(
       <MemoryRouter>
@@ -51,8 +51,8 @@ describe('AdminRoute', () => {
   });
 
   it('redirects non-owner users', () => {
-    mockedUseAuth.mockReturnValue({ user: { id: '1' } } as any);
-    mockedUsePlatformOwnerStatus.mockReturnValue({ isOwner: false, isLoading: false } as any);
+    mockedUseAuth.mockReturnValue({ user: { id: '1' } } as unknown as ReturnType<typeof useAuth>);
+    mockedUsePlatformOwnerStatus.mockReturnValue({ isOwner: false, isLoading: false });
 
     render(
       <MemoryRouter initialEntries={['/admin']}>

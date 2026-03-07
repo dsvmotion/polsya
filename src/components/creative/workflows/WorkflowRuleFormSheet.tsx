@@ -118,14 +118,14 @@ export function WorkflowRuleFormSheet({ open, onOpenChange, editRule }: Workflow
         conditionTo: editRule.triggerCondition.to,
         actions: editRule.actions.map((a) => ({
           type: a.type,
-          title: 'title' in a ? (a as any).title ?? '' : '',
-          body: 'body' in a ? (a as any).body ?? '' : '',
-          activityType: 'activityType' in a ? (a as any).activityType ?? 'task' : 'task',
-          field: 'field' in a ? (a as any).field ?? '' : '',
-          value: 'value' in a ? String((a as any).value ?? '') : '',
-          titleTemplate: 'titleTemplate' in a ? (a as any).titleTemplate ?? '' : '',
-          status: 'status' in a ? (a as any).status ?? '' : '',
-          notifyRole: 'notifyRole' in a ? (a as any).notifyRole ?? 'all' : 'all',
+          title: 'title' in a ? a.title ?? '' : '',
+          body: 'body' in a ? a.body ?? '' : '',
+          activityType: 'activityType' in a ? a.activityType ?? 'task' : 'task',
+          field: 'field' in a ? a.field ?? '' : '',
+          value: 'value' in a ? String(a.value ?? '') : '',
+          titleTemplate: 'titleTemplate' in a ? a.titleTemplate ?? '' : '',
+          status: 'status' in a ? a.status ?? '' : '',
+          notifyRole: 'notifyRole' in a ? a.notifyRole ?? 'all' : 'all',
         })),
       });
     } else {

@@ -10,7 +10,7 @@ import { OpportunityFormSheet } from '@/components/creative/opportunities/Opport
 import { OpportunityDetail } from '@/components/creative/opportunities/OpportunityDetail';
 import { useCreativeOpportunities } from '@/hooks/useCreativeOpportunities';
 import { useCreativeClients } from '@/hooks/useCreativeClients';
-import { useCreativeLayout } from '@/components/creative/layout/CreativeLayout';
+import { useCreativeLayout } from '@/components/creative/layout/creative-layout-context';
 import type { CreativeOpportunity } from '@/types/creative';
 import type { ViewMode } from '@/lib/design-tokens';
 import { KanbanBoard } from '@/components/creative/shared/KanbanBoard';

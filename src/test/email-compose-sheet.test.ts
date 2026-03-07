@@ -2,8 +2,8 @@ import { describe, it, expect } from 'vitest';
 import {
   toSendEmailInput,
   buildReplyDefaults,
-} from '@/components/creative/email/EmailComposeSheet';
-import type { ComposeFormValues } from '@/components/creative/email/EmailComposeSheet';
+} from '@/components/creative/email/email-compose-utils';
+import type { ComposeFormValues } from '@/components/creative/email/email-compose-utils';
 import type { CreativeEmail } from '@/types/creative-emails';
 
 // ---------------------------------------------------------------------------
