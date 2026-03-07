@@ -123,7 +123,7 @@ export default function HowItWorks() {
         headline="See it in action"
         subtitle="Start your free trial and connect your first data source in under two minutes."
         primaryCta={{ label: 'Start free trial', href: '/signup' }}
-        secondaryCta={{ label: 'Watch demo', href: '/contact' }}
+        secondaryCta={{ label: 'Request a demo', href: '/contact' }}
       />
     </>
   );

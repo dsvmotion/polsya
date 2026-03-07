@@ -405,8 +405,8 @@ export default function Home() {
       <CTASection
         headline="Start discovering creative talent today"
         subtitle="Free 7-day trial. No credit card required."
-        primaryCta={{ label: 'Start free trial →', href: '/signup' }}
-        secondaryCta={{ label: 'Request a demo →', href: '/contact' }}
+        primaryCta={{ label: 'Start free trial', href: '/signup' }}
+        secondaryCta={{ label: 'Request a demo', href: '/contact' }}
       />
     </>
   );

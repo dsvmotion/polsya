@@ -109,7 +109,7 @@ export default function UseCases() {
           {PERSONAS.map((persona, idx) => {
             const Icon = persona.icon;
             return (
-              <ScrollAnimation key={persona.title} delay={idx * 0.05}>
+              <ScrollAnimation key={persona.title} delay={idx * 0.05} id={persona.title.toLowerCase()}>
                 <div className="rounded-2xl border border-gray-200/60 bg-white p-6 shadow-sm h-full hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200 group">
                   <div className={`flex h-12 w-12 items-center justify-center rounded-xl ${persona.bg} group-hover:scale-105 transition-transform duration-200`}>
                     <Icon className={`h-6 w-6 ${persona.color}`} />
@@ -134,7 +134,7 @@ export default function UseCases() {
         headline="See how Polsya fits your team"
         subtitle="Book a personalized demo and learn how creative intelligence can transform your workflow."
         primaryCta={{ label: 'Start free trial', href: '/signup' }}
-        secondaryCta={{ label: 'Book a demo', href: '/contact' }}
+        secondaryCta={{ label: 'Request a demo', href: '/contact' }}
       />
     </>
   );

@@ -10,11 +10,13 @@ interface ScrollAnimationProps {
   children: ReactNode;
   className?: string;
   delay?: number;
+  id?: string;
 }
 
-export function ScrollAnimation({ children, className, delay = 0 }: ScrollAnimationProps) {
+export function ScrollAnimation({ children, className, delay = 0, id }: ScrollAnimationProps) {
   return (
     <motion.div
+      id={id}
       initial="hidden"
       whileInView="visible"
       viewport={{ once: true, margin: '-60px' }}

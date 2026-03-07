@@ -88,7 +88,7 @@ export default function Product() {
         const Icon = cap.icon;
         const isEven = idx % 2 === 1;
         return (
-          <section key={cap.title} className={`py-24 px-4 sm:px-6 lg:px-8 ${isEven ? '' : 'relative overflow-hidden'}`}>
+          <section key={cap.title} id={cap.title.toLowerCase()} className={`py-24 px-4 sm:px-6 lg:px-8 ${isEven ? '' : 'relative overflow-hidden'}`}>
             {!isEven && <div className="absolute inset-0 -z-10 bg-[linear-gradient(to_bottom,white,hsl(245_30%_97%),white)]" />}
             <div className="mx-auto max-w-6xl">
               <ScrollAnimation>
