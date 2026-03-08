@@ -15,6 +15,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/components/ui/use-toast';
+import { getErrorMessage } from '@/lib/utils';
 
 interface RunNowDialogProps {
   recipe: EnrichmentRecipe;
@@ -45,7 +46,7 @@ export function RunNowDialog({ recipe, open, onOpenChange }: RunNowDialogProps) 
       onOpenChange(false);
       setEntityIdsInput('');
     } catch (err) {
-      toast({ title: 'Error', description: (err as Error).message, variant: 'destructive' });
+      toast({ title: 'Error', description: getErrorMessage(err), variant: 'destructive' });
     }
   }
 

@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { useToast } from '@/components/ui/use-toast';
 import { Pencil, Trash2, Link, Type } from 'lucide-react';
+import { getErrorMessage } from '@/lib/utils';
 
 interface StyleAnalysisDetailProps {
   analysis: StyleAnalysis;
@@ -26,7 +27,7 @@ export function StyleAnalysisDetail({ analysis, onClose, onFindSimilar }: StyleA
       toast({ title: 'Analysis deleted' });
       onClose();
     } catch (err) {
-      toast({ title: 'Error', description: (err as Error).message, variant: 'destructive' });
+      toast({ title: 'Error', description: getErrorMessage(err), variant: 'destructive' });
     }
   }
 

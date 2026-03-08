@@ -9,6 +9,7 @@ import { Button } from '@/components/ui/button';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { useToast } from '@/components/ui/use-toast';
 import { Pencil, Trash2, Globe, Lock, Building2, ExternalLink } from 'lucide-react';
+import { getErrorMessage } from '@/lib/utils';
 
 interface PortfolioDetailProps {
   portfolio: CreativePortfolio;
@@ -27,7 +28,7 @@ export function PortfolioDetail({ portfolio, onClose }: PortfolioDetailProps) {
       toast({ title: 'Portfolio deleted' });
       onClose();
     } catch (err) {
-      toast({ title: 'Error', description: (err as Error).message, variant: 'destructive' });
+      toast({ title: 'Error', description: getErrorMessage(err), variant: 'destructive' });
     }
   }
 

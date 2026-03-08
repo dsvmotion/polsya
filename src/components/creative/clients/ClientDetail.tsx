@@ -17,6 +17,7 @@ import { SIGNAL_SEVERITY_COLORS } from '@/types/signal-engine';
 import { ActivityTimeline } from '@/components/creative/shared/ActivityTimeline';
 import { ActivityFormSheet } from '@/components/creative/shared/ActivityFormSheet';
 import { useCreativeActivities } from '@/hooks/useCreativeActivities';
+import { getErrorMessage } from '@/lib/utils';
 
 interface ClientDetailProps {
   client: CreativeClient;
@@ -40,7 +41,7 @@ export function ClientDetail({ client, onClose }: ClientDetailProps) {
       toast({ title: 'Client deleted' });
       onClose();
     } catch (err) {
-      toast({ title: 'Error', description: (err as Error).message, variant: 'destructive' });
+      toast({ title: 'Error', description: getErrorMessage(err), variant: 'destructive' });
     }
   }
 

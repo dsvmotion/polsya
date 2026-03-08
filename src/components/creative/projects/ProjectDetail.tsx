@@ -12,6 +12,7 @@ import { CollapsibleEngineSection } from '@/components/creative/shared/Collapsib
 import { ActivityTimeline } from '@/components/creative/shared/ActivityTimeline';
 import { ActivityFormSheet } from '@/components/creative/shared/ActivityFormSheet';
 import { useCreativeActivities } from '@/hooks/useCreativeActivities';
+import { getErrorMessage } from '@/lib/utils';
 
 interface ProjectDetailProps {
   project: CreativeProject;
@@ -37,7 +38,7 @@ export function ProjectDetail({ project, clientName, onClose }: ProjectDetailPro
       toast({ title: 'Project deleted' });
       onClose();
     } catch (err) {
-      toast({ title: 'Error', description: (err as Error).message, variant: 'destructive' });
+      toast({ title: 'Error', description: getErrorMessage(err), variant: 'destructive' });
     }
   }
 

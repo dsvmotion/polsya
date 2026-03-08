@@ -17,6 +17,7 @@ import {
   ACTION_TYPE_LABELS,
 } from '@/types/creative-workflow';
 import type { WorkflowRule, TriggerEntity, TriggerEvent, ActionType, WorkflowAction } from '@/types/creative-workflow';
+import { getErrorMessage } from '@/lib/utils';
 
 // Entity-specific field options for condition builder
 const ENTITY_FIELDS: Record<string, { label: string; options: string[] }[]> = {
@@ -177,7 +178,7 @@ export function WorkflowRuleFormSheet({ open, onOpenChange, editRule }: Workflow
       }
       onOpenChange(false);
     } catch (err) {
-      toast({ title: 'Error', description: (err as Error).message, variant: 'destructive' });
+      toast({ title: 'Error', description: getErrorMessage(err), variant: 'destructive' });
     }
   }
 
