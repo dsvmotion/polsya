@@ -119,8 +119,7 @@ export default function AdminIngestion() {
   const { data: runs = [], isLoading: runsLoading } = useQuery<IngestionRunRow[]>({
     queryKey: ['admin', 'ingestion-runs'],
     queryFn: async () => {
-      // @ts-expect-error — table exists in DB but not yet in generated types
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from('ingestion_runs')
         .select('*')
         .order('created_at', { ascending: false })
@@ -134,8 +133,7 @@ export default function AdminIngestion() {
   const { data: providers = [], isLoading: providersLoading } = useQuery<IngestionProviderRow[]>({
     queryKey: ['admin', 'ingestion-providers'],
     queryFn: async () => {
-      // @ts-expect-error — table exists in DB but not yet in generated types
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from('ingestion_providers')
         .select('*')
         .order('created_at', { ascending: false });

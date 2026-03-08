@@ -59,7 +59,7 @@ describe('OutlookOAuthCallback', () => {
       isSuccess: false,
       error: null,
       data: null,
-    } as ReturnType<typeof useExchangeOutlookOAuth>);
+    } as unknown as ReturnType<typeof useExchangeOutlookOAuth>);
 
     renderWith('?code=abc&state=xyz');
     expect(screen.getByText('Connecting Outlook')).toBeInTheDocument();

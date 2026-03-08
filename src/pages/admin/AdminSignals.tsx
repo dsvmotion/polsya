@@ -126,8 +126,7 @@ export default function AdminSignals() {
   const { data: signals = [], isLoading: signalsLoading } = useQuery<SignalRow[]>({
     queryKey: ['admin', 'signals'],
     queryFn: async () => {
-      // @ts-expect-error — table exists in DB but not yet in generated types
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from('signals')
         .select('*')
         .order('created_at', { ascending: false })
@@ -141,8 +140,7 @@ export default function AdminSignals() {
   const { data: rules = [], isLoading: rulesLoading } = useQuery<SignalRuleRow[]>({
     queryKey: ['admin', 'signal-rules'],
     queryFn: async () => {
-      // @ts-expect-error — table exists in DB but not yet in generated types
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from('signal_rules')
         .select('*')
         .order('created_at', { ascending: false });

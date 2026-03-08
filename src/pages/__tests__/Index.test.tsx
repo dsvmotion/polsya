@@ -200,7 +200,7 @@ describe('Index (Dashboard)', () => {
       isLoading: true,
       error: null,
       refetch: mockRefetch,
-    } as ReturnType<typeof useWooCommerceOrders>);
+    } as unknown as ReturnType<typeof useWooCommerceOrders>);
 
     render(
       <TestProviders>

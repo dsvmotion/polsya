@@ -59,7 +59,7 @@ describe('GoogleDriveOAuthCallback', () => {
       isSuccess: false,
       error: null,
       data: null,
-    } as ReturnType<typeof useExchangeOAuth>);
+    } as unknown as ReturnType<typeof useExchangeOAuth>);
 
     renderWith('?code=abc&state=xyz');
     expect(screen.getByText('Connecting Google Drive')).toBeInTheDocument();

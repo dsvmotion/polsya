@@ -108,8 +108,7 @@ export default function AdminAiJobs() {
   const { data: documents = [], isLoading: docsLoading } = useQuery<AiDocumentRow[]>({
     queryKey: ['admin', 'ai-documents'],
     queryFn: async () => {
-      // @ts-expect-error — table exists in DB but not yet in generated types
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from('ai_documents')
         .select('*')
         .order('created_at', { ascending: false })
@@ -123,8 +122,7 @@ export default function AdminAiJobs() {
   const { data: usage = [], isLoading: usageLoading } = useQuery<AiUsageRow[]>({
     queryKey: ['admin', 'ai-usage'],
     queryFn: async () => {
-      // @ts-expect-error — table exists in DB but not yet in generated types
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from('ai_usage_monthly')
         .select('*')
         .order('period', { ascending: false })

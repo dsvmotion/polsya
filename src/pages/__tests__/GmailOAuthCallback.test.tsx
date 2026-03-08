@@ -60,7 +60,7 @@ describe('GmailOAuthCallback', () => {
       isSuccess: false,
       error: null,
       data: null,
-    } as ReturnType<typeof useExchangeGmailOAuth>);
+    } as unknown as ReturnType<typeof useExchangeGmailOAuth>);
 
     renderWith('?code=abc&state=xyz');
     expect(screen.getByText('Connecting Gmail')).toBeInTheDocument();
