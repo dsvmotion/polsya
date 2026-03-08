@@ -84,6 +84,7 @@ export function ActivityTimeline({ entityType, entityId, onAddClick }: ActivityT
                   );
                 }}
                 className="shrink-0 mt-0.5"
+                aria-label={activity.isCompleted ? 'Mark task as incomplete' : 'Mark task as complete'}
               >
                 {activity.isCompleted ? (
                   <CheckCircle2 className="h-5 w-5 text-green-500" />
@@ -134,6 +135,7 @@ export function ActivityTimeline({ entityType, entityId, onAddClick }: ActivityT
               variant="ghost"
               size="icon"
               className="h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity shrink-0"
+              aria-label="Delete activity"
               onClick={() => deleteMutation.mutate(activity.id, {
                 onError: (err) => toast({ title: 'Failed to delete activity', description: getErrorMessage(err), variant: 'destructive' }),
               })}

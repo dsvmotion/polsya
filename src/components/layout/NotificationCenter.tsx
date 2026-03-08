@@ -152,11 +152,14 @@ export function NotificationCenter() {
               return (
                 <div
                   key={n.id}
+                  role="button"
+                  tabIndex={0}
                   className={cn(
-                    'flex gap-3 px-4 py-3 transition-colors hover:bg-muted/50',
+                    'flex gap-3 px-4 py-3 transition-colors hover:bg-muted/50 cursor-pointer',
                     !n.read && 'bg-muted/30',
                   )}
                   onClick={() => setReadIds((prev) => new Set(prev).add(n.id))}
+                  onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setReadIds((prev) => new Set(prev).add(n.id)); } }}
                 >
                   <div className={cn('shrink-0 mt-0.5', typeColors[n.type])}>
                     <Icon className="h-4 w-4" />

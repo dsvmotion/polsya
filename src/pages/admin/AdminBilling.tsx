@@ -1,4 +1,4 @@
-import { Wallet, TrendingUp, AlertTriangle, CheckCircle } from 'lucide-react';
+import { Wallet, AlertTriangle, CheckCircle } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
 import { AdminStatsCard } from '@/components/admin/AdminStatsCard';
 import { AdminDataTable, type AdminColumn } from '@/components/admin/AdminDataTable';
