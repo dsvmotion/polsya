@@ -18,6 +18,7 @@ import { evaluateBillingAccess, useBillingOverview } from '@/hooks/useBilling';
 import { useUpdateOrganizationSettings } from '@/hooks/useOrganizationSettings';
 import { toast } from 'sonner';
 import { canManageWorkspace as canManageWorkspaceRole } from '@/lib/rbac';
+import { getErrorMessage } from '@/lib/utils';
 import {
   getIndustryTemplate,
   getIndustryTemplateOptions,
@@ -200,7 +201,7 @@ export default function Profile() {
       });
       toast.success('Workspace settings updated');
     } catch (error) {
-      const message = error instanceof Error ? error.message : 'Could not update workspace settings';
+      const message = getErrorMessage(error);
       toast.error(message);
     }
   };
@@ -464,7 +465,7 @@ export default function Profile() {
                       {
                         onSuccess: () => toast.success('AI provider updated'),
                         onError: (err) => {
-                          toast.error(err instanceof Error ? err.message : 'Failed to update AI settings');
+                          toast.error(getErrorMessage(err));
                         },
                       },
                     );

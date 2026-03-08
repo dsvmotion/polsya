@@ -159,8 +159,8 @@ export function ClientDetail({ client, onClose }: ClientDetailProps) {
               {analyses.slice(0, 3).map((a) => (
                 <Link key={a.id} to="/creative/style" className="flex items-center gap-2 py-1 hover:bg-muted/50 rounded px-1">
                   <div className="flex gap-0.5">
-                    {(a.colorPalette ?? []).slice(0, 4).map((swatch, i) => (
-                      <div key={i} className="h-4 w-4 rounded-full border border-border" style={{ backgroundColor: swatch.hex }} />
+                    {(a.colorPalette ?? []).slice(0, 4).map((swatch) => (
+                      <div key={swatch.hex} className="h-4 w-4 rounded-full border border-border" style={{ backgroundColor: swatch.hex }} />
                     ))}
                   </div>
                   <span className="text-xs text-muted-foreground">{a.confidenceScore ? `${a.confidenceScore}%` : '--'}</span>

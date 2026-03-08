@@ -23,9 +23,9 @@ export const styleColumns: ColumnDef<StyleAnalysis, unknown>[] = [
       const palette = row.original.colorPalette.slice(0, 5);
       return (
         <div className="flex items-center gap-1">
-          {palette.map((swatch, i) => (
+          {palette.map((swatch) => (
             <div
-              key={i}
+              key={swatch.hex}
               className="h-5 w-5 rounded-full border border-border"
               style={{ backgroundColor: swatch.hex }}
               title={swatch.name ?? swatch.hex}

@@ -107,8 +107,8 @@ export function PortfolioDetail({ portfolio, onClose }: PortfolioDetailProps) {
         <div>
           <h3 className="text-sm font-medium mb-2">Media</h3>
           <div className="space-y-1">
-            {portfolio.mediaUrls.map((url, i) => (
-              <a key={i} href={url} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1.5 text-sm text-primary hover:underline truncate">
+            {portfolio.mediaUrls.map((url) => (
+              <a key={url} href={url} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1.5 text-sm text-primary hover:underline truncate">
                 <ExternalLink className="h-3.5 w-3.5 shrink-0" />
                 <span className="truncate">{url}</span>
               </a>

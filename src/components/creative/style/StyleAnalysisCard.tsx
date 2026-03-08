@@ -17,9 +17,9 @@ export function StyleAnalysisCard({ analysis, onClick }: StyleAnalysisCardProps)
       {/* Color palette bar */}
       <div className="h-3 flex">
         {analysis.colorPalette.length > 0 ? (
-          analysis.colorPalette.map((swatch, i) => (
+          analysis.colorPalette.map((swatch) => (
             <div
-              key={i}
+              key={swatch.hex}
               className="flex-1"
               style={{ backgroundColor: swatch.hex }}
             />

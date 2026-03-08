@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { projectSchema, type ProjectFormValues } from '@/lib/creative-schemas';
@@ -41,6 +42,22 @@ export function ProjectFormSheet({ open, onOpenChange, project, onSuccess }: Pro
       description: project?.description ?? '',
     },
   });
+
+  useEffect(() => {
+    if (open) {
+      form.reset({
+        name: project?.name ?? '',
+        clientId: project?.clientId ?? '',
+        projectType: project?.projectType ?? '',
+        status: project?.status ?? 'draft',
+        budgetCents: project?.budgetCents ?? undefined,
+        currency: project?.currency ?? 'USD',
+        startDate: project?.startDate ?? '',
+        endDate: project?.endDate ?? '',
+        description: project?.description ?? '',
+      });
+    }
+  }, [open, project, form]);
 
   async function onSubmit(values: ProjectFormValues) {
     try {

@@ -8,6 +8,7 @@ import { useAddPlatformOwner } from '@/hooks/useAddPlatformOwner';
 import { useRemovePlatformOwner } from '@/hooks/useRemovePlatformOwner';
 import { useState } from 'react';
 import { toast } from 'sonner';
+import { getErrorMessage } from '@/lib/utils';
 
 export default function AdminSettings() {
   const { data: owners = [], isLoading } = usePlatformOwnerEmails();
@@ -27,7 +28,7 @@ export default function AdminSettings() {
         toast.success(`Added ${email} as admin`);
       },
       onError: (err) => {
-        toast.error(err instanceof Error ? err.message : 'Failed to add admin');
+        toast.error(getErrorMessage(err));
       },
     });
   };
@@ -40,7 +41,7 @@ export default function AdminSettings() {
     removeOwner.mutate(email, {
       onSuccess: () => toast.success(`Removed ${email}`),
       onError: (err) => {
-        toast.error(err instanceof Error ? err.message : 'Failed to remove admin');
+        toast.error(getErrorMessage(err));
       },
     });
   };

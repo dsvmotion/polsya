@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { contactSchema, type ContactFormValues } from '@/lib/creative-schemas';
@@ -42,6 +43,23 @@ export function ContactFormSheet({ open, onOpenChange, contact, onSuccess }: Con
       status: contact?.status ?? 'active',
     },
   });
+
+  useEffect(() => {
+    if (open) {
+      form.reset({
+        firstName: contact?.firstName ?? '',
+        lastName: contact?.lastName ?? '',
+        email: contact?.email ?? '',
+        phone: contact?.phone ?? '',
+        title: contact?.title ?? '',
+        role: contact?.role ?? '',
+        clientId: contact?.clientId ?? undefined,
+        linkedinUrl: contact?.linkedinUrl ?? '',
+        isDecisionMaker: contact?.isDecisionMaker ?? false,
+        status: contact?.status ?? 'active',
+      });
+    }
+  }, [open, contact, form]);
 
   async function onSubmit(values: ContactFormValues) {
     try {

@@ -3,7 +3,9 @@ import { RESOLUTION_STATUS_LABELS, RESOLUTION_STATUS_COLORS } from '@/types/enti
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { useResolveCandidate } from '@/hooks/useEntityResolution';
+import { useToast } from '@/hooks/use-toast';
 import { Check, X } from 'lucide-react';
+import { getErrorMessage } from '@/lib/utils';
 
 interface CandidateCardProps {
   candidate: ResolutionCandidate;
@@ -11,6 +13,7 @@ interface CandidateCardProps {
 
 export function CandidateCard({ candidate }: CandidateCardProps) {
   const resolveMutation = useResolveCandidate();
+  const { toast } = useToast();
   const pct = Math.round(candidate.confidenceScore * 100);
   const statusColors = RESOLUTION_STATUS_COLORS[candidate.status];
 
@@ -41,8 +44,8 @@ export function CandidateCard({ candidate }: CandidateCardProps) {
       {/* Match reasons */}
       {candidate.matchReasons.length > 0 && (
         <div className="flex flex-wrap gap-1">
-          {candidate.matchReasons.map((reason, i) => (
-            <Badge key={i} variant="outline" className="text-xs">{reason}</Badge>
+          {candidate.matchReasons.map((reason) => (
+            <Badge key={reason} variant="outline" className="text-xs">{reason}</Badge>
           ))}
         </div>
       )}
@@ -54,7 +57,10 @@ export function CandidateCard({ candidate }: CandidateCardProps) {
             size="sm"
             variant="outline"
             className="flex-1 h-8 text-xs gap-1"
-            onClick={() => resolveMutation.mutate({ id: candidate.id, status: 'confirmed' })}
+            onClick={() => resolveMutation.mutate(
+              { id: candidate.id, status: 'confirmed' },
+              { onError: (err) => toast({ title: 'Failed to resolve candidate', description: getErrorMessage(err), variant: 'destructive' }) },
+            )}
             disabled={resolveMutation.isPending}
           >
             <Check className="h-3 w-3" /> Confirm Match
@@ -63,7 +69,10 @@ export function CandidateCard({ candidate }: CandidateCardProps) {
             size="sm"
             variant="ghost"
             className="flex-1 h-8 text-xs gap-1 text-destructive"
-            onClick={() => resolveMutation.mutate({ id: candidate.id, status: 'rejected' })}
+            onClick={() => resolveMutation.mutate(
+              { id: candidate.id, status: 'rejected' },
+              { onError: (err) => toast({ title: 'Failed to resolve candidate', description: getErrorMessage(err), variant: 'destructive' }) },
+            )}
             disabled={resolveMutation.isPending}
           >
             <X className="h-3 w-3" /> Reject

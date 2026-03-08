@@ -70,8 +70,8 @@ export function StyleAnalysisDetail({ analysis, onClose, onFindSimilar }: StyleA
         <div>
           <h3 className="text-sm font-medium mb-2">Color Palette</h3>
           <div className="flex flex-wrap gap-2">
-            {analysis.colorPalette.map((swatch, i) => (
-              <div key={i} className="flex items-center gap-2 rounded-md border px-2 py-1">
+            {analysis.colorPalette.map((swatch) => (
+              <div key={swatch.hex} className="flex items-center gap-2 rounded-md border px-2 py-1">
                 <div className="h-6 w-6 rounded border border-border" style={{ backgroundColor: swatch.hex }} />
                 <div className="text-xs">
                   <div className="font-medium">{swatch.name ?? swatch.hex}</div>

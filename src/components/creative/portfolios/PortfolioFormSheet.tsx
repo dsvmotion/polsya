@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { portfolioSchema, type PortfolioFormValues } from '@/lib/creative-schemas';
@@ -44,6 +45,21 @@ export function PortfolioFormSheet({ open, onOpenChange, portfolio, onSuccess }:
       clientId: portfolio?.clientId ?? undefined,
     },
   });
+
+  useEffect(() => {
+    if (open) {
+      form.reset({
+        title: portfolio?.title ?? '',
+        description: portfolio?.description ?? '',
+        category: portfolio?.category ?? undefined,
+        mediaUrls: portfolio?.mediaUrls?.join(', ') ?? '',
+        thumbnailUrl: portfolio?.thumbnailUrl ?? '',
+        isPublic: portfolio?.isPublic ?? false,
+        projectId: portfolio?.projectId ?? undefined,
+        clientId: portfolio?.clientId ?? undefined,
+      });
+    }
+  }, [open, portfolio, form]);
 
   async function onSubmit(values: PortfolioFormValues) {
     try {

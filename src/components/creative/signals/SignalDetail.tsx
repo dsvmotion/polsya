@@ -1,9 +1,11 @@
 import type { Signal } from '@/types/signal-engine';
 import { SIGNAL_SEVERITY_LABELS, SIGNAL_SEVERITY_COLORS, SIGNAL_STATUS_LABELS, SIGNAL_STATUS_COLORS } from '@/types/signal-engine';
 import { useUpdateSignalStatus } from '@/hooks/useSignals';
+import { useToast } from '@/hooks/use-toast';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Eye, CheckCircle2, XCircle } from 'lucide-react';
+import { getErrorMessage } from '@/lib/utils';
 
 interface SignalDetailProps {
   signal: Signal;
@@ -23,6 +25,7 @@ function getTimeAgo(dateStr: string): string {
 
 export function SignalDetail({ signal, onClose }: SignalDetailProps) {
   const updateStatus = useUpdateSignalStatus();
+  const { toast } = useToast();
   const severityColors = SIGNAL_SEVERITY_COLORS[signal.severity];
   const statusColors = SIGNAL_STATUS_COLORS[signal.status];
 
@@ -97,7 +100,10 @@ export function SignalDetail({ signal, onClose }: SignalDetailProps) {
           variant="outline"
           size="sm"
           className="flex-1 gap-1.5"
-          onClick={() => updateStatus.mutate({ id: signal.id, status: 'seen' })}
+          onClick={() => updateStatus.mutate(
+            { id: signal.id, status: 'seen' },
+            { onError: (err) => toast({ title: 'Failed to update signal', description: getErrorMessage(err), variant: 'destructive' }) },
+          )}
           disabled={updateStatus.isPending}
         >
           <Eye className="h-3.5 w-3.5" /> Mark Seen
@@ -106,7 +112,10 @@ export function SignalDetail({ signal, onClose }: SignalDetailProps) {
           variant="outline"
           size="sm"
           className="flex-1 gap-1.5"
-          onClick={() => updateStatus.mutate({ id: signal.id, status: 'actioned' })}
+          onClick={() => updateStatus.mutate(
+            { id: signal.id, status: 'actioned' },
+            { onError: (err) => toast({ title: 'Failed to update signal', description: getErrorMessage(err), variant: 'destructive' }) },
+          )}
           disabled={updateStatus.isPending}
         >
           <CheckCircle2 className="h-3.5 w-3.5" /> Action
@@ -115,7 +124,10 @@ export function SignalDetail({ signal, onClose }: SignalDetailProps) {
           variant="outline"
           size="sm"
           className="flex-1 gap-1.5"
-          onClick={() => updateStatus.mutate({ id: signal.id, status: 'dismissed' })}
+          onClick={() => updateStatus.mutate(
+            { id: signal.id, status: 'dismissed' },
+            { onError: (err) => toast({ title: 'Failed to update signal', description: getErrorMessage(err), variant: 'destructive' }) },
+          )}
           disabled={updateStatus.isPending}
         >
           <XCircle className="h-3.5 w-3.5" /> Dismiss

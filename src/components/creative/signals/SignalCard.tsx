@@ -3,7 +3,9 @@ import { SIGNAL_SEVERITY_LABELS, SIGNAL_SEVERITY_COLORS, SIGNAL_STATUS_LABELS, S
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { useUpdateSignalStatus } from '@/hooks/useSignals';
+import { useToast } from '@/hooks/use-toast';
 import { Eye, CheckCircle2, XCircle } from 'lucide-react';
+import { getErrorMessage } from '@/lib/utils';
 
 interface SignalCardProps {
   signal: Signal;
@@ -11,6 +13,7 @@ interface SignalCardProps {
 
 export function SignalCard({ signal }: SignalCardProps) {
   const updateStatus = useUpdateSignalStatus();
+  const { toast } = useToast();
   const severityColors = SIGNAL_SEVERITY_COLORS[signal.severity];
   const statusColors = SIGNAL_STATUS_COLORS[signal.status];
 
@@ -48,7 +51,10 @@ export function SignalCard({ signal }: SignalCardProps) {
               size="sm"
               variant="outline"
               className="h-7 text-xs gap-1"
-              onClick={() => updateStatus.mutate({ id: signal.id, status: 'seen' })}
+              onClick={() => updateStatus.mutate(
+                { id: signal.id, status: 'seen' },
+                { onError: (err) => toast({ title: 'Failed to update signal', description: getErrorMessage(err), variant: 'destructive' }) },
+              )}
               disabled={updateStatus.isPending}
             >
               <Eye className="h-3 w-3" /> Mark Seen
@@ -57,7 +63,10 @@ export function SignalCard({ signal }: SignalCardProps) {
               size="sm"
               variant="outline"
               className="h-7 text-xs gap-1"
-              onClick={() => updateStatus.mutate({ id: signal.id, status: 'actioned' })}
+              onClick={() => updateStatus.mutate(
+                { id: signal.id, status: 'actioned' },
+                { onError: (err) => toast({ title: 'Failed to update signal', description: getErrorMessage(err), variant: 'destructive' }) },
+              )}
               disabled={updateStatus.isPending}
             >
               <CheckCircle2 className="h-3 w-3" /> Action
@@ -66,7 +75,10 @@ export function SignalCard({ signal }: SignalCardProps) {
               size="sm"
               variant="ghost"
               className="h-7 text-xs gap-1 text-muted-foreground"
-              onClick={() => updateStatus.mutate({ id: signal.id, status: 'dismissed' })}
+              onClick={() => updateStatus.mutate(
+                { id: signal.id, status: 'dismissed' },
+                { onError: (err) => toast({ title: 'Failed to update signal', description: getErrorMessage(err), variant: 'destructive' }) },
+              )}
               disabled={updateStatus.isPending}
             >
               <XCircle className="h-3 w-3" /> Dismiss

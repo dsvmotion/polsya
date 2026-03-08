@@ -66,8 +66,8 @@ export function CandidateDetail({ candidate, onClose }: CandidateDetailProps) {
         <div>
           <h3 className="text-sm font-medium mb-2">Match Reasons</h3>
           <div className="flex flex-wrap gap-1">
-            {candidate.matchReasons.map((reason, i) => (
-              <Badge key={i} variant="outline" className="text-xs">
+            {candidate.matchReasons.map((reason) => (
+              <Badge key={reason} variant="outline" className="text-xs">
                 {reason}
               </Badge>
             ))}

@@ -66,9 +66,9 @@ export function StyleSimilarityResults({ analysisId }: StyleSimilarityResultsPro
             </div>
             {palette.length > 0 && (
               <div className="flex gap-1">
-                {palette.slice(0, 6).map((color, i) => (
+                {palette.slice(0, 6).map((color) => (
                   <div
-                    key={i}
+                    key={color}
                     className="h-6 w-6 rounded-full border border-border"
                     style={{ backgroundColor: color }}
                     title={color}

@@ -4,6 +4,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { buildEdgeFunctionHeaders } from '@/lib/edge-function-headers';
 import { useCurrentOrganization } from '@/hooks/useOrganizationContext';
 import { useAuth } from '@/contexts/AuthContext';
+import { getErrorMessage } from '@/lib/utils';
 
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
 
@@ -103,7 +104,7 @@ export function useAiChat() {
       return { reply, sources: data.sources };
     } catch (err) {
       if (err instanceof DOMException && err.name === 'AbortError') return null;
-      const msg = err instanceof Error ? err.message : 'Unknown error';
+      const msg = getErrorMessage(err);
       setError(msg);
       return null;
     } finally {

@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { clientSchema, type ClientFormValues } from '@/lib/creative-schemas';
@@ -36,6 +37,19 @@ export function ClientFormSheet({ open, onOpenChange, client, onSuccess }: Clien
       description: client?.description ?? '',
     },
   });
+
+  useEffect(() => {
+    if (open) {
+      form.reset({
+        name: client?.name ?? '',
+        website: client?.website ?? '',
+        industry: client?.industry ?? '',
+        sizeCategory: client?.sizeCategory ?? undefined,
+        status: client?.status ?? 'prospect',
+        description: client?.description ?? '',
+      });
+    }
+  }, [open, client, form]);
 
   async function onSubmit(values: ClientFormValues) {
     try {

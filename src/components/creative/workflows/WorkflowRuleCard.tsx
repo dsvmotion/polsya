@@ -4,8 +4,10 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
 import { useToggleRule, useDeleteRule } from '@/hooks/useWorkflowRules';
+import { useToast } from '@/hooks/use-toast';
 import { TRIGGER_ENTITY_LABELS, TRIGGER_EVENT_LABELS, ACTION_TYPE_LABELS } from '@/types/creative-workflow';
 import type { WorkflowRule } from '@/types/creative-workflow';
+import { getErrorMessage } from '@/lib/utils';
 
 interface WorkflowRuleCardProps {
   rule: WorkflowRule;
@@ -15,6 +17,7 @@ interface WorkflowRuleCardProps {
 export function WorkflowRuleCard({ rule, onEdit }: WorkflowRuleCardProps) {
   const toggleMutation = useToggleRule();
   const deleteMutation = useDeleteRule();
+  const { toast } = useToast();
 
   const triggerSummary = `When ${TRIGGER_ENTITY_LABELS[rule.triggerEntity]} ${TRIGGER_EVENT_LABELS[rule.triggerEvent].toLowerCase()}${
     rule.triggerCondition.to ? ` to "${rule.triggerCondition.to}"` : ''
@@ -33,7 +36,7 @@ export function WorkflowRuleCard({ rule, onEdit }: WorkflowRuleCardProps) {
               <p className="text-xs text-muted-foreground mt-0.5">{triggerSummary}</p>
               <div className="flex flex-wrap gap-1 mt-2">
                 {rule.actions.map((action, i) => (
-                  <Badge key={i} variant="secondary" className="text-[10px]">
+                  <Badge key={`${action.type}-${i}`} variant="secondary" className="text-[10px]">
                     {ACTION_TYPE_LABELS[action.type]}
                   </Badge>
                 ))}
@@ -43,7 +46,10 @@ export function WorkflowRuleCard({ rule, onEdit }: WorkflowRuleCardProps) {
           <div className="flex items-center gap-2 shrink-0">
             <Switch
               checked={rule.isActive}
-              onCheckedChange={(checked) => toggleMutation.mutate({ id: rule.id, isActive: checked })}
+              onCheckedChange={(checked) => toggleMutation.mutate(
+                { id: rule.id, isActive: checked },
+                { onError: (err) => toast({ title: 'Failed to toggle rule', description: getErrorMessage(err), variant: 'destructive' }) },
+              )}
             />
             <Button
               variant="ghost"
@@ -57,7 +63,9 @@ export function WorkflowRuleCard({ rule, onEdit }: WorkflowRuleCardProps) {
               variant="ghost"
               size="icon"
               className="h-8 w-8 opacity-0 group-hover:opacity-100 transition-opacity text-destructive"
-              onClick={() => deleteMutation.mutate(rule.id)}
+              onClick={() => deleteMutation.mutate(rule.id, {
+                onError: (err) => toast({ title: 'Failed to delete rule', description: getErrorMessage(err), variant: 'destructive' }),
+              })}
             >
               <Trash2 className="h-3.5 w-3.5" />
             </Button>
