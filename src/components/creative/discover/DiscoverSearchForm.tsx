@@ -50,11 +50,11 @@ export function DiscoverSearchForm({ onSearch, isLoading }: DiscoverSearchFormPr
       const res = await fetch(
         `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(text)}&key=${apiKey}`,
       );
-      const data = await res.json();
-      if (data.results?.[0]?.geometry?.location) {
-        return data.results[0].geometry.location as { lat: number; lng: number };
-      }
-      return null;
+      if (!res.ok) return null;
+      const data: unknown = await res.json();
+      const loc = (data as { results?: { geometry?: { location?: { lat: number; lng: number } } }[] })
+        ?.results?.[0]?.geometry?.location;
+      return loc?.lat != null && loc?.lng != null ? loc : null;
     } catch {
       return null;
     }
