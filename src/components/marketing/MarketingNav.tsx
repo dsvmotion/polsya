@@ -160,7 +160,13 @@ export function MarketingNav() {
         {/* ── Logo ── */}
         <Link to="/" className="flex items-center hover:opacity-80 transition-opacity shrink-0">
           <img src="/polsya-logo-black.png" alt="Polsya" className="h-16 w-auto" onError={(e) => {
-            (e.target as HTMLImageElement).style.display = 'none';
+            const img = e.target as HTMLImageElement;
+            img.style.display = 'none';
+            // Show text fallback next to the hidden image
+            const fallback = document.createElement('span');
+            fallback.textContent = 'Polsya';
+            fallback.className = 'text-xl font-bold text-gray-900';
+            img.parentElement?.appendChild(fallback);
           }} />
         </Link>
 
