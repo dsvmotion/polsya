@@ -119,13 +119,14 @@ export default function AdminIngestion() {
   const { data: runs = [], isLoading: runsLoading } = useQuery<IngestionRunRow[]>({
     queryKey: ['admin', 'ingestion-runs'],
     queryFn: async () => {
-      const { data, error } = await (supabase as any)
+      const { data, error } = await supabase
+        // @ts-expect-error — table exists in DB but not yet in generated types
         .from('ingestion_runs')
         .select('*')
         .order('created_at', { ascending: false })
         .limit(100);
       if (error) throw error;
-      return (data ?? []) as IngestionRunRow[];
+      return (data ?? []) as unknown as IngestionRunRow[];
     },
   });
 
@@ -133,12 +134,13 @@ export default function AdminIngestion() {
   const { data: providers = [], isLoading: providersLoading } = useQuery<IngestionProviderRow[]>({
     queryKey: ['admin', 'ingestion-providers'],
     queryFn: async () => {
-      const { data, error } = await (supabase as any)
+      const { data, error } = await supabase
+        // @ts-expect-error — table exists in DB but not yet in generated types
         .from('ingestion_providers')
         .select('*')
         .order('created_at', { ascending: false });
       if (error) throw error;
-      return (data ?? []) as IngestionProviderRow[];
+      return (data ?? []) as unknown as IngestionProviderRow[];
     },
   });
 

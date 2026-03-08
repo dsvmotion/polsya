@@ -126,13 +126,14 @@ export default function AdminSignals() {
   const { data: signals = [], isLoading: signalsLoading } = useQuery<SignalRow[]>({
     queryKey: ['admin', 'signals'],
     queryFn: async () => {
-      const { data, error } = await (supabase as any)
+      const { data, error } = await supabase
+        // @ts-expect-error — table exists in DB but not yet in generated types
         .from('signals')
         .select('*')
         .order('created_at', { ascending: false })
         .limit(200);
       if (error) throw error;
-      return (data ?? []) as SignalRow[];
+      return (data ?? []) as unknown as SignalRow[];
     },
   });
 
@@ -140,12 +141,13 @@ export default function AdminSignals() {
   const { data: rules = [], isLoading: rulesLoading } = useQuery<SignalRuleRow[]>({
     queryKey: ['admin', 'signal-rules'],
     queryFn: async () => {
-      const { data, error } = await (supabase as any)
+      const { data, error } = await supabase
+        // @ts-expect-error — table exists in DB but not yet in generated types
         .from('signal_rules')
         .select('*')
         .order('created_at', { ascending: false });
       if (error) throw error;
-      return (data ?? []) as SignalRuleRow[];
+      return (data ?? []) as unknown as SignalRuleRow[];
     },
   });
 
