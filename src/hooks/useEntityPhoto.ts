@@ -1,6 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { buildEdgeFunctionHeaders } from '@/lib/edge-function-headers';
+import { logger } from '@/lib/logger';
 
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
 
@@ -55,14 +56,14 @@ export function useEntityPhoto(pharmacyId: string | null): UseEntityPhotoResult 
         });
 
         if (!response.ok) {
-          console.warn('Failed to fetch photo URL');
+          logger.warn('Failed to fetch photo URL');
           return null;
         }
 
         const data = await response.json();
         return data.photoUrl || null;
       } catch (e) {
-        console.warn('Error fetching pharmacy photo:', e);
+        logger.warn('Error fetching pharmacy photo:', e);
         return null;
       }
     },

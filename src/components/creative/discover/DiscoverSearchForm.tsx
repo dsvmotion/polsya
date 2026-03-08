@@ -45,15 +45,19 @@ export function DiscoverSearchForm({ onSearch, isLoading }: DiscoverSearchFormPr
 
   const geocodeLocation = useCallback(async (text: string) => {
     if (!text.trim()) return null;
-    const apiKey = import.meta.env.VITE_GOOGLE_MAPS_API_KEY;
-    const res = await fetch(
-      `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(text)}&key=${apiKey}`,
-    );
-    const data = await res.json();
-    if (data.results?.[0]?.geometry?.location) {
-      return data.results[0].geometry.location as { lat: number; lng: number };
+    try {
+      const apiKey = import.meta.env.VITE_GOOGLE_MAPS_API_KEY;
+      const res = await fetch(
+        `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(text)}&key=${apiKey}`,
+      );
+      const data = await res.json();
+      if (data.results?.[0]?.geometry?.location) {
+        return data.results[0].geometry.location as { lat: number; lng: number };
+      }
+      return null;
+    } catch {
+      return null;
     }
-    return null;
   }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {

@@ -6,6 +6,7 @@ import { toBusinessEntity } from '@/services/entityService';
 import { toast } from 'sonner';
 import type { Json } from '@/integrations/supabase/types';
 import { buildEdgeFunctionHeaders } from '@/lib/edge-function-headers';
+import { logger } from '@/lib/logger';
 
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
 
@@ -182,7 +183,7 @@ export function useProspectingSearch() {
 
         if (!response.ok) {
           const errorText = await response.text();
-          console.error('Google Places search error:', response.status, errorText);
+          logger.error('Google Places search error:', response.status, errorText);
           throw new Error(`Search failed: ${response.status} — ${errorText}`);
         }
 
@@ -244,7 +245,7 @@ export function useProspectingSearch() {
           });
 
           if (!detailsResponse.ok) {
-            console.warn(`Failed to get details for ${basic.google_place_id}: ${detailsResponse.status}`);
+            logger.warn(`Failed to get details for ${basic.google_place_id}: ${detailsResponse.status}`);
             processed++;
             failed++;
             flushProgress();
@@ -345,7 +346,7 @@ export function useProspectingSearch() {
           flushProgress();
         } catch (detailError) {
           if (isAbortError(detailError)) return;
-          console.warn(`Error fetching details for ${basic.google_place_id}:`, detailError);
+          logger.warn(`Error fetching details for ${basic.google_place_id}:`, detailError);
           processed++;
           failed++;
           flushProgress();
@@ -375,7 +376,7 @@ export function useProspectingSearch() {
       }
     } catch (error) {
       if (isAbortError(error)) return;
-      console.error('Search error:', error);
+      logger.error('Search error:', error);
       const msg = toUserError(error, 'Search');
       if (msg) toast.error(msg);
     } finally {

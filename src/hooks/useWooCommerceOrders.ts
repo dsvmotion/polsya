@@ -1,6 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { Sale } from '@/types/sale';
 import { buildEdgeFunctionHeaders } from '@/lib/edge-function-headers';
+import { logger } from '@/lib/logger';
 
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
 
@@ -81,7 +82,7 @@ export function useWooCommerceOrders() {
           } catch {
             detail = `WooCommerce API failed: ${response.status}`;
           }
-          console.error(detail);
+          logger.error(detail);
           throw new Error(detail);
         }
         
@@ -98,7 +99,7 @@ export function useWooCommerceOrders() {
             }
           }
           if (skipped > 0) {
-            console.warn(`Skipped ${skipped} orders due to missing/invalid geocoding`);
+            logger.warn(`Skipped ${skipped} orders due to missing/invalid geocoding`);
           }
           return sales;
         }
@@ -106,7 +107,7 @@ export function useWooCommerceOrders() {
         // Return empty array - NO mock data fallback
         return [];
       } catch (error) {
-        console.error('Error fetching WooCommerce orders:', error);
+        logger.error('Error fetching WooCommerce orders:', error);
         throw error instanceof Error ? error : new Error('Unknown WooCommerce fetch error');
       }
     },
