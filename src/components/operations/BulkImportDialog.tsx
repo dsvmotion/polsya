@@ -242,7 +242,7 @@ export function BulkImportDialog({
           const detected = autoDetectMapping(h, industryTemplateKey);
           setMapping((prev) => ({ ...detected, ...prev }));
         } catch (e) {
-          console.error(e);
+          console.error('Failed to parse import file:', e);
           setHeaders([]);
           setRows([]);
         }
