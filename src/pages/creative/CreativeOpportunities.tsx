@@ -1,5 +1,5 @@
 import { useState, useMemo } from 'react';
-import { Plus } from 'lucide-react';
+import { Plus, AlertCircle, RefreshCw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { WorkspaceContainer } from '@/components/creative/layout/WorkspaceContainer';
 import { ViewSwitcher } from '@/components/creative/navigation/ViewSwitcher';
@@ -18,11 +18,14 @@ import type { KanbanColumn } from '@/components/creative/shared/KanbanBoard';
 import { OPPORTUNITY_STAGES, OPPORTUNITY_STAGE_LABELS, OPPORTUNITY_STAGE_COLORS } from '@/types/creative';
 import type { OpportunityStage } from '@/types/creative';
 import { useUpdateCreativeOpportunity } from '@/hooks/useCreativeOpportunities';
+import { useToast } from '@/components/ui/use-toast';
+import { getErrorMessage } from '@/lib/utils';
 
 export default function CreativeOpportunities() {
   const [viewMode, setViewMode] = useState<ViewMode>('table');
   const [formOpen, setFormOpen] = useState(false);
-  const { data: opportunities = [], isLoading } = useCreativeOpportunities();
+  const { data: opportunities = [], isLoading, error, refetch } = useCreativeOpportunities();
+  const { toast } = useToast();
   const { data: clients = [] } = useCreativeClients();
   const { setContextPanelOpen, setContextPanelContent } = useCreativeLayout();
 
@@ -65,6 +68,16 @@ export default function CreativeOpportunities() {
         </div>
       }
     >
+      {error ? (
+        <div className="flex flex-col items-center justify-center py-12 text-sm text-destructive gap-3">
+          <AlertCircle className="h-8 w-8 opacity-60" />
+          <p>Failed to load opportunities: {getErrorMessage(error)}</p>
+          <Button size="sm" variant="outline" className="gap-1.5" onClick={() => refetch()}>
+            <RefreshCw className="h-3.5 w-3.5" />
+            Retry
+          </Button>
+        </div>
+      ) : (
       <div className="mt-2">
         {viewMode === 'table' ? (
           <DataTable
@@ -80,7 +93,10 @@ export default function CreativeOpportunities() {
             columns={opportunityColumns}
             items={opportunities}
             getColumnKey={(opp) => opp.stage}
-            onMove={(id, newStage) => updateMutation.mutate({ id, values: { stage: newStage as OpportunityStage } })}
+            onMove={(id, newStage) => updateMutation.mutate(
+              { id, values: { stage: newStage as OpportunityStage } },
+              { onError: (err) => toast({ title: 'Failed to move opportunity', description: getErrorMessage(err), variant: 'destructive' }) },
+            )}
             isLoading={isLoading}
             renderCard={(opp) => (
               <div className="space-y-1.5" onClick={() => handleRowClick(opp)}>
@@ -126,6 +142,7 @@ export default function CreativeOpportunities() {
           </div>
         )}
       </div>
+      )}
 
       <OpportunityFormSheet open={formOpen} onOpenChange={setFormOpen} />
     </WorkspaceContainer>

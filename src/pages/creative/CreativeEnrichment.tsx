@@ -1,5 +1,5 @@
 import { useState, useMemo } from 'react';
-import { Plus } from 'lucide-react';
+import { Plus, AlertCircle, RefreshCw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { WorkspaceContainer } from '@/components/creative/layout/WorkspaceContainer';
@@ -14,6 +14,7 @@ import { useEnrichmentCredits, useEnrichmentRecipes, useEnrichmentRuns } from '@
 import { useCreativeLayout } from '@/components/creative/layout/useCreativeLayout';
 import type { EnrichmentRecipe } from '@/types/enrichment-engine';
 import type { EnrichmentRun } from '@/types/enrichment-engine';
+import { getErrorMessage } from '@/lib/utils';
 
 export default function CreativeEnrichment() {
   const [formOpen, setFormOpen] = useState(false);
@@ -21,9 +22,9 @@ export default function CreativeEnrichment() {
   const [runNowOpen, setRunNowOpen] = useState(false);
   const { setContextPanelOpen, setContextPanelContent } = useCreativeLayout();
 
-  const { data: credits = [], isLoading: creditsLoading } = useEnrichmentCredits();
-  const { data: recipes = [], isLoading: recipesLoading } = useEnrichmentRecipes();
-  const { data: runs = [], isLoading: runsLoading } = useEnrichmentRuns();
+  const { data: credits = [], isLoading: creditsLoading, error: creditsError, refetch: refetchCredits } = useEnrichmentCredits();
+  const { data: recipes = [], isLoading: recipesLoading, error: recipesError, refetch: refetchRecipes } = useEnrichmentRecipes();
+  const { data: runs = [], isLoading: runsLoading, error: runsError, refetch: refetchRuns } = useEnrichmentRuns();
 
   const recipeColumns = useMemo(
     () =>
@@ -66,6 +67,16 @@ export default function CreativeEnrichment() {
               <span>Add Recipe</span>
             </Button>
           </div>
+          {recipesError ? (
+            <div className="flex flex-col items-center justify-center py-12 text-sm text-destructive gap-3">
+              <AlertCircle className="h-8 w-8 opacity-60" />
+              <p>Failed to load recipes: {getErrorMessage(recipesError)}</p>
+              <Button size="sm" variant="outline" className="gap-1.5" onClick={() => refetchRecipes()}>
+                <RefreshCw className="h-3.5 w-3.5" />
+                Retry
+              </Button>
+            </div>
+          ) : (
           <DataTable
             columns={recipeColumns}
             data={recipes}
@@ -73,9 +84,20 @@ export default function CreativeEnrichment() {
             searchKey="name"
             searchPlaceholder="Search recipes..."
           />
+          )}
         </TabsContent>
 
         <TabsContent value="credits" className="mt-4">
+          {creditsError ? (
+            <div className="flex flex-col items-center justify-center py-12 text-sm text-destructive gap-3">
+              <AlertCircle className="h-8 w-8 opacity-60" />
+              <p>Failed to load credits: {getErrorMessage(creditsError)}</p>
+              <Button size="sm" variant="outline" className="gap-1.5" onClick={() => refetchCredits()}>
+                <RefreshCw className="h-3.5 w-3.5" />
+                Retry
+              </Button>
+            </div>
+          ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {creditsLoading ? (
               Array.from({ length: 3 }).map((_, i) => (
@@ -95,9 +117,20 @@ export default function CreativeEnrichment() {
               ))
             )}
           </div>
+          )}
         </TabsContent>
 
         <TabsContent value="history" className="mt-4">
+          {runsError ? (
+            <div className="flex flex-col items-center justify-center py-12 text-sm text-destructive gap-3">
+              <AlertCircle className="h-8 w-8 opacity-60" />
+              <p>Failed to load run history: {getErrorMessage(runsError)}</p>
+              <Button size="sm" variant="outline" className="gap-1.5" onClick={() => refetchRuns()}>
+                <RefreshCw className="h-3.5 w-3.5" />
+                Retry
+              </Button>
+            </div>
+          ) : (
           <DataTable
             columns={runColumns}
             data={runs}
@@ -106,6 +139,7 @@ export default function CreativeEnrichment() {
             searchPlaceholder="Search runs..."
             onRowClick={handleRunClick}
           />
+          )}
         </TabsContent>
       </Tabs>
 

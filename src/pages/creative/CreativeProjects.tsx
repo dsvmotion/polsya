@@ -1,5 +1,5 @@
 import { useState, useMemo } from 'react';
-import { Plus } from 'lucide-react';
+import { Plus, AlertCircle, RefreshCw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { WorkspaceContainer } from '@/components/creative/layout/WorkspaceContainer';
 import { ViewSwitcher } from '@/components/creative/navigation/ViewSwitcher';
@@ -18,11 +18,14 @@ import type { KanbanColumn } from '@/components/creative/shared/KanbanBoard';
 import { PROJECT_STATUSES, PROJECT_STATUS_LABELS, PROJECT_STATUS_COLORS } from '@/types/creative';
 import type { ProjectStatus } from '@/types/creative';
 import { useUpdateCreativeProject } from '@/hooks/useCreativeProjects';
+import { useToast } from '@/components/ui/use-toast';
+import { getErrorMessage } from '@/lib/utils';
 
 export default function CreativeProjects() {
   const [viewMode, setViewMode] = useState<ViewMode>('table');
   const [formOpen, setFormOpen] = useState(false);
-  const { data: projects = [], isLoading } = useCreativeProjects();
+  const { data: projects = [], isLoading, error, refetch } = useCreativeProjects();
+  const { toast } = useToast();
   const { data: clients = [] } = useCreativeClients();
   const { setContextPanelOpen, setContextPanelContent } = useCreativeLayout();
 
@@ -65,6 +68,16 @@ export default function CreativeProjects() {
         </div>
       }
     >
+      {error ? (
+        <div className="flex flex-col items-center justify-center py-12 text-sm text-destructive gap-3">
+          <AlertCircle className="h-8 w-8 opacity-60" />
+          <p>Failed to load projects: {getErrorMessage(error)}</p>
+          <Button size="sm" variant="outline" className="gap-1.5" onClick={() => refetch()}>
+            <RefreshCw className="h-3.5 w-3.5" />
+            Retry
+          </Button>
+        </div>
+      ) : (
       <div className="mt-2">
         {viewMode === 'table' ? (
           <DataTable
@@ -80,7 +93,10 @@ export default function CreativeProjects() {
             columns={projectColumns}
             items={projects}
             getColumnKey={(p) => p.status}
-            onMove={(id, newStatus) => updateMutation.mutate({ id, values: { status: newStatus as ProjectStatus } })}
+            onMove={(id, newStatus) => updateMutation.mutate(
+              { id, values: { status: newStatus as ProjectStatus } },
+              { onError: (err) => toast({ title: 'Failed to move project', description: getErrorMessage(err), variant: 'destructive' }) },
+            )}
             isLoading={isLoading}
             renderCard={(project) => (
               <div className="space-y-1.5" onClick={() => handleRowClick(project)}>
@@ -128,6 +144,7 @@ export default function CreativeProjects() {
           </div>
         )}
       </div>
+      )}
 
       <ProjectFormSheet open={formOpen} onOpenChange={setFormOpen} />
     </WorkspaceContainer>

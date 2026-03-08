@@ -7,6 +7,7 @@ import { useDiscoverSearch } from '@/hooks/useDiscoverSearch';
 import { useSaveDiscoverResults } from '@/hooks/useSaveDiscoverResults';
 import type { PlaceResult, PlacesSearchParams } from '@/services/discoverService';
 import { useToast } from '@/hooks/use-toast';
+import { getErrorMessage } from '@/lib/utils';
 
 export default function CreativeDiscover() {
   const { toast } = useToast();
@@ -31,7 +32,7 @@ export default function CreativeDiscover() {
     } catch (err) {
       toast({
         title: 'Search failed',
-        description: err instanceof Error ? err.message : 'Unknown error',
+        description: getErrorMessage(err),
         variant: 'destructive',
       });
     }
@@ -49,7 +50,7 @@ export default function CreativeDiscover() {
     } catch (err) {
       toast({
         title: 'Save failed',
-        description: err instanceof Error ? err.message : 'Unknown error',
+        description: getErrorMessage(err),
         variant: 'destructive',
       });
     }

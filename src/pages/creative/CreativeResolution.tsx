@@ -1,4 +1,6 @@
 import { useState, useMemo } from 'react';
+import { AlertCircle, RefreshCw } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { WorkspaceContainer } from '@/components/creative/layout/WorkspaceContainer';
@@ -13,6 +15,8 @@ import { useResolutionCandidates, useResolveCandidate, useEntitySourceMappings }
 import { RESOLUTION_STATUSES, RESOLUTION_STATUS_LABELS } from '@/types/entity-resolution';
 import type { ResolutionCandidate, ResolutionStatus } from '@/types/entity-resolution';
 import type { ViewMode } from '@/lib/design-tokens';
+import { useToast } from '@/hooks/use-toast';
+import { getErrorMessage } from '@/lib/utils';
 
 export default function CreativeResolution() {
   const [statusFilter, setStatusFilter] = useState<string>('pending');
@@ -20,6 +24,7 @@ export default function CreativeResolution() {
   const { setContextPanelOpen, setContextPanelContent } = useCreativeLayout();
 
   const resolveMutation = useResolveCandidate();
+  const { toast } = useToast();
 
   function handleCandidateClick(candidate: ResolutionCandidate) {
     setContextPanelContent(
@@ -34,14 +39,17 @@ export default function CreativeResolution() {
     setContextPanelOpen(true);
   }
 
-  const { data: candidates = [], isLoading: candidatesLoading } = useResolutionCandidates(
+  const { data: candidates = [], isLoading: candidatesLoading, error: candidatesError, refetch: refetchCandidates } = useResolutionCandidates(
     statusFilter !== 'all' ? (statusFilter as ResolutionStatus) : undefined
   );
-  const { data: mappings = [], isLoading: mappingsLoading } = useEntitySourceMappings();
+  const { data: mappings = [], isLoading: mappingsLoading, error: mappingsError, refetch: refetchMappings } = useEntitySourceMappings();
 
   const candidateColumns = useMemo(
-    () => createCandidateColumns((id, status) => resolveMutation.mutate({ id, status })),
-    [resolveMutation]
+    () => createCandidateColumns((id, status) => resolveMutation.mutate(
+      { id, status },
+      { onError: (err) => toast({ title: 'Failed to resolve candidate', description: getErrorMessage(err), variant: 'destructive' }) },
+    )),
+    [resolveMutation, toast]
   );
 
   return (
@@ -71,7 +79,16 @@ export default function CreativeResolution() {
             <ViewSwitcher value={viewMode} onChange={setViewMode} availableViews={['table', 'cards']} />
           </div>
 
-          {viewMode === 'table' ? (
+          {candidatesError ? (
+            <div className="flex flex-col items-center justify-center py-12 text-sm text-destructive gap-3">
+              <AlertCircle className="h-8 w-8 opacity-60" />
+              <p>Failed to load candidates: {getErrorMessage(candidatesError)}</p>
+              <Button size="sm" variant="outline" className="gap-1.5" onClick={() => refetchCandidates()}>
+                <RefreshCw className="h-3.5 w-3.5" />
+                Retry
+              </Button>
+            </div>
+          ) : viewMode === 'table' ? (
             <DataTable
               columns={candidateColumns}
               data={candidates}
@@ -106,6 +123,16 @@ export default function CreativeResolution() {
         </TabsContent>
 
         <TabsContent value="mappings" className="mt-4">
+          {mappingsError ? (
+            <div className="flex flex-col items-center justify-center py-12 text-sm text-destructive gap-3">
+              <AlertCircle className="h-8 w-8 opacity-60" />
+              <p>Failed to load source mappings: {getErrorMessage(mappingsError)}</p>
+              <Button size="sm" variant="outline" className="gap-1.5" onClick={() => refetchMappings()}>
+                <RefreshCw className="h-3.5 w-3.5" />
+                Retry
+              </Button>
+            </div>
+          ) : (
           <DataTable
             columns={mappingColumns}
             data={mappings}
@@ -113,6 +140,7 @@ export default function CreativeResolution() {
             searchKey="sourceProvider"
             searchPlaceholder="Search mappings..."
           />
+          )}
         </TabsContent>
       </Tabs>
     </WorkspaceContainer>

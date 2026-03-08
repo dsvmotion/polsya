@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Plus } from 'lucide-react';
+import { Plus, AlertCircle, RefreshCw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -13,6 +13,7 @@ import { SignalRuleFormSheet } from '@/components/creative/signals/SignalRuleFor
 import { useSignalRules, useSignals } from '@/hooks/useSignals';
 import { SIGNAL_SEVERITIES, SIGNAL_SEVERITY_LABELS, SIGNAL_STATUSES, SIGNAL_STATUS_LABELS } from '@/types/signal-engine';
 import type { Signal, SignalStatus } from '@/types/signal-engine';
+import { getErrorMessage } from '@/lib/utils';
 
 export default function CreativeSignals() {
   const [formOpen, setFormOpen] = useState(false);
@@ -20,8 +21,8 @@ export default function CreativeSignals() {
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const { setContextPanelOpen, setContextPanelContent } = useCreativeLayout();
 
-  const { data: rules = [], isLoading: rulesLoading } = useSignalRules();
-  const { data: signals = [], isLoading: signalsLoading } = useSignals({
+  const { data: rules = [], isLoading: rulesLoading, error: rulesError, refetch: refetchRules } = useSignalRules();
+  const { data: signals = [], isLoading: signalsLoading, error: signalsError, refetch: refetchSignals } = useSignals({
     severity: severityFilter !== 'all' ? severityFilter : undefined,
     status: (statusFilter !== 'all' ? statusFilter : undefined) as SignalStatus | undefined,
   });
@@ -78,6 +79,16 @@ export default function CreativeSignals() {
           </div>
 
           {/* Signal list */}
+          {signalsError ? (
+            <div className="flex flex-col items-center justify-center py-12 text-sm text-destructive gap-3">
+              <AlertCircle className="h-8 w-8 opacity-60" />
+              <p>Failed to load signals: {getErrorMessage(signalsError)}</p>
+              <Button size="sm" variant="outline" className="gap-1.5" onClick={() => refetchSignals()}>
+                <RefreshCw className="h-3.5 w-3.5" />
+                Retry
+              </Button>
+            </div>
+          ) : (
           <div className="space-y-2">
             {signalsLoading ? (
               Array.from({ length: 5 }).map((_, i) => (
@@ -98,6 +109,7 @@ export default function CreativeSignals() {
               ))
             )}
           </div>
+          )}
         </TabsContent>
 
         <TabsContent value="rules" className="mt-4">
@@ -107,6 +119,16 @@ export default function CreativeSignals() {
               <span>Add Rule</span>
             </Button>
           </div>
+          {rulesError ? (
+            <div className="flex flex-col items-center justify-center py-12 text-sm text-destructive gap-3">
+              <AlertCircle className="h-8 w-8 opacity-60" />
+              <p>Failed to load rules: {getErrorMessage(rulesError)}</p>
+              <Button size="sm" variant="outline" className="gap-1.5" onClick={() => refetchRules()}>
+                <RefreshCw className="h-3.5 w-3.5" />
+                Retry
+              </Button>
+            </div>
+          ) : (
           <DataTable
             columns={ruleColumns}
             data={rules}
@@ -114,6 +136,7 @@ export default function CreativeSignals() {
             searchKey="name"
             searchPlaceholder="Search rules..."
           />
+          )}
         </TabsContent>
       </Tabs>
 

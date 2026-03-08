@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Plus } from 'lucide-react';
+import { Plus, AlertCircle, RefreshCw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { WorkspaceContainer } from '@/components/creative/layout/WorkspaceContainer';
 import { ViewSwitcher } from '@/components/creative/navigation/ViewSwitcher';
@@ -12,11 +12,12 @@ import { useCreativePortfolios } from '@/hooks/useCreativePortfolios';
 import { useCreativeLayout } from '@/components/creative/layout/useCreativeLayout';
 import type { CreativePortfolio } from '@/types/creative';
 import type { ViewMode } from '@/lib/design-tokens';
+import { getErrorMessage } from '@/lib/utils';
 
 export default function CreativePortfolios() {
   const [viewMode, setViewMode] = useState<ViewMode>('cards');
   const [formOpen, setFormOpen] = useState(false);
-  const { data: portfolios = [], isLoading } = useCreativePortfolios();
+  const { data: portfolios = [], isLoading, error, refetch } = useCreativePortfolios();
   const { setContextPanelOpen, setContextPanelContent } = useCreativeLayout();
 
   function handleRowClick(portfolio: CreativePortfolio) {
@@ -46,6 +47,16 @@ export default function CreativePortfolios() {
         </div>
       }
     >
+      {error ? (
+        <div className="flex flex-col items-center justify-center py-12 text-sm text-destructive gap-3">
+          <AlertCircle className="h-8 w-8 opacity-60" />
+          <p>Failed to load portfolios: {getErrorMessage(error)}</p>
+          <Button size="sm" variant="outline" className="gap-1.5" onClick={() => refetch()}>
+            <RefreshCw className="h-3.5 w-3.5" />
+            Retry
+          </Button>
+        </div>
+      ) : (
       <div className="mt-2">
         {viewMode === 'table' ? (
           <DataTable
@@ -80,6 +91,7 @@ export default function CreativePortfolios() {
           </div>
         )}
       </div>
+      )}
 
       <PortfolioFormSheet open={formOpen} onOpenChange={setFormOpen} />
     </WorkspaceContainer>

@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Plus } from 'lucide-react';
+import { Plus, AlertCircle, RefreshCw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { WorkspaceContainer } from '@/components/creative/layout/WorkspaceContainer';
@@ -14,13 +14,14 @@ import { useStyleAnalyses } from '@/hooks/useStyleAnalyses';
 import { useCreativeLayout } from '@/components/creative/layout/useCreativeLayout';
 import type { StyleAnalysis } from '@/types/style-intelligence';
 import type { ViewMode } from '@/lib/design-tokens';
+import { getErrorMessage } from '@/lib/utils';
 
 export default function CreativeStyle() {
   const [viewMode, setViewMode] = useState<ViewMode>('table');
   const [formOpen, setFormOpen] = useState(false);
   const [activeTab, setActiveTab] = useState('analyses');
   const [similarityAnalysisId, setSimilarityAnalysisId] = useState<string | null>(null);
-  const { data: analyses = [], isLoading } = useStyleAnalyses();
+  const { data: analyses = [], isLoading, error, refetch } = useStyleAnalyses();
   const { setContextPanelOpen, setContextPanelContent } = useCreativeLayout();
 
   function handleFindSimilar(id: string) {
@@ -63,7 +64,16 @@ export default function CreativeStyle() {
         </TabsList>
 
         <TabsContent value="analyses">
-          {viewMode === 'table' ? (
+          {error ? (
+            <div className="flex flex-col items-center justify-center py-12 text-sm text-destructive gap-3">
+              <AlertCircle className="h-8 w-8 opacity-60" />
+              <p>Failed to load analyses: {getErrorMessage(error)}</p>
+              <Button size="sm" variant="outline" className="gap-1.5" onClick={() => refetch()}>
+                <RefreshCw className="h-3.5 w-3.5" />
+                Retry
+              </Button>
+            </div>
+          ) : viewMode === 'table' ? (
             <DataTable
               columns={styleColumns}
               data={analyses}

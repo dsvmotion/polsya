@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Plus } from 'lucide-react';
+import { Plus, AlertCircle, RefreshCw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { WorkspaceContainer } from '@/components/creative/layout/WorkspaceContainer';
 import { ViewSwitcher } from '@/components/creative/navigation/ViewSwitcher';
@@ -12,11 +12,12 @@ import { useCreativeContacts } from '@/hooks/useCreativeContacts';
 import { useCreativeLayout } from '@/components/creative/layout/useCreativeLayout';
 import type { CreativeContact } from '@/types/creative';
 import type { ViewMode } from '@/lib/design-tokens';
+import { getErrorMessage } from '@/lib/utils';
 
 export default function CreativeContacts() {
   const [viewMode, setViewMode] = useState<ViewMode>('table');
   const [formOpen, setFormOpen] = useState(false);
-  const { data: contacts = [], isLoading } = useCreativeContacts();
+  const { data: contacts = [], isLoading, error, refetch } = useCreativeContacts();
   const { setContextPanelOpen, setContextPanelContent } = useCreativeLayout();
 
   function handleRowClick(contact: CreativeContact) {
@@ -46,6 +47,16 @@ export default function CreativeContacts() {
         </div>
       }
     >
+      {error ? (
+        <div className="flex flex-col items-center justify-center py-12 text-sm text-destructive gap-3">
+          <AlertCircle className="h-8 w-8 opacity-60" />
+          <p>Failed to load contacts: {getErrorMessage(error)}</p>
+          <Button size="sm" variant="outline" className="gap-1.5" onClick={() => refetch()}>
+            <RefreshCw className="h-3.5 w-3.5" />
+            Retry
+          </Button>
+        </div>
+      ) : (
       <div className="mt-2">
         {viewMode === 'table' ? (
           <DataTable
@@ -78,6 +89,7 @@ export default function CreativeContacts() {
           </div>
         )}
       </div>
+      )}
 
       <ContactFormSheet open={formOpen} onOpenChange={setFormOpen} />
     </WorkspaceContainer>
