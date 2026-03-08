@@ -174,7 +174,7 @@ export function ActivityFormSheet({ open, onOpenChange, entityType, entityId }: 
                 <FormItem>
                   <FormLabel>Duration (minutes)</FormLabel>
                   <FormControl>
-                    <Input type="number" placeholder="30" {...field} />
+                    <Input type="number" placeholder="30" min={0} max={1440} {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>

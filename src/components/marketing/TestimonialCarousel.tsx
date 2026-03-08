@@ -42,7 +42,7 @@ export function TestimonialCarousel() {
           </div>
           <div className="mt-14 grid grid-cols-1 md:grid-cols-3 gap-6">
             {testimonials.map((t, i) => (
-              <ScrollAnimation key={i} delay={i * 0.12}>
+              <ScrollAnimation key={t.author} delay={i * 0.12}>
                 <div className="rounded-2xl border border-gray-200/60 bg-white p-8 shadow-sm hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200 h-full flex flex-col group">
                   {/* Stars */}
                   <div className="flex gap-0.5 mb-4">

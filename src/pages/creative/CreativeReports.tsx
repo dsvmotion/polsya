@@ -221,8 +221,8 @@ export default function CreativeReports() {
                           `${PROJECT_STATUS_LABELS[status as ProjectStatus] ?? status} ${(percent * 100).toFixed(0)}%`
                         }
                       >
-                        {(data?.projectStatusBreakdown ?? []).map((_, idx) => (
-                          <Cell key={idx} fill={CHART_COLORS[idx % CHART_COLORS.length]} />
+                        {(data?.projectStatusBreakdown ?? []).map((entry, idx) => (
+                          <Cell key={entry.status} fill={CHART_COLORS[idx % CHART_COLORS.length]} />
                         ))}
                       </Pie>
                       <Tooltip />

@@ -323,7 +323,7 @@ function OrderCard({ order, pharmacyId }: { order: DetailedOrder; pharmacyId: st
         <p className="text-xs text-gray-500 mb-1">Products:</p>
         <div className="space-y-1">
           {order.products.map((product, idx) => (
-            <div key={idx} className="text-xs text-gray-700 flex justify-between">
+            <div key={`${product.name}-${idx}`} className="text-xs text-gray-700 flex justify-between">
               <span className="truncate max-w-[200px]">{product.name}</span>
               <span className="text-gray-500">×{product.quantity}</span>
             </div>

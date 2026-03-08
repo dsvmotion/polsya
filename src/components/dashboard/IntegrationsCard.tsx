@@ -401,6 +401,8 @@ function IntegrationRow({
               onChange={(e) => setImapForm((prev) => ({ ...prev, imapPort: e.target.value }))}
               className="h-8 text-sm"
               type="number"
+              min={1}
+              max={65535}
             />
             <Input
               placeholder="SMTP host *"
@@ -414,6 +416,8 @@ function IntegrationRow({
               onChange={(e) => setImapForm((prev) => ({ ...prev, smtpPort: e.target.value }))}
               className="h-8 text-sm"
               type="number"
+              min={1}
+              max={65535}
             />
             <Input
               placeholder="Password *"

@@ -66,7 +66,7 @@ export default function CommunicationAnalytics() {
               <div className="h-[300px]">
                 {hasEmailByClient ? (
                   <ResponsiveContainer width="100%" height="100%">
-                    <BarChart data={data!.emailMetrics.byClient} layout="vertical">
+                    <BarChart data={data?.emailMetrics.byClient ?? []} layout="vertical">
                       <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
                       <XAxis type="number" tick={{ fontSize: 12 }} />
                       <YAxis
@@ -115,7 +115,7 @@ export default function CommunicationAnalytics() {
               <div className="h-[300px]">
                 {hasMeetings ? (
                   <ResponsiveContainer width="100%" height="100%">
-                    <AreaChart data={data!.calendarMetrics.meetingsPerWeek}>
+                    <AreaChart data={data?.calendarMetrics.meetingsPerWeek ?? []}>
                       <defs>
                         <linearGradient id="colorMeetings" x1="0" y1="0" x2="0" y2="1">
                           <stop offset="5%" stopColor="hsl(38, 92%, 50%)" stopOpacity={0.3} />
@@ -177,7 +177,7 @@ export default function CommunicationAnalytics() {
                       </tr>
                     </thead>
                     <tbody>
-                      {data!.communicationScores
+                      {(data?.communicationScores ?? [])
                         .sort((a, b) => b.compositeScore - a.compositeScore)
                         .map((entry) => (
                           <tr key={entry.clientId} className="border-b last:border-0">
