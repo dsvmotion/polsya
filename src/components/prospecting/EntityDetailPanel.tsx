@@ -992,7 +992,7 @@ export function EntityDetailPanel({ pharmacy, onClose }: EntityDetailPanelProps)
                 variant="ghost"
                 size="icon"
                 className="h-8 w-8 opacity-0 group-hover:opacity-100 transition-opacity text-gray-500"
-                onClick={() => copyToClipboard(pharmacy.phone!, 'phone')}
+                onClick={() => copyToClipboard(pharmacy.phone ?? '', 'phone')}
               >
                 {copiedField === 'phone' ? (
                   <Check className="h-3 w-3 text-gray-700" />

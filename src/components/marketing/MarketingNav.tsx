@@ -177,7 +177,7 @@ export function MarketingNav() {
               <div
                 key={item.label}
                 className="relative"
-                onMouseEnter={() => handleNavEnter(item.key!)}
+                onMouseEnter={() => handleNavEnter(item.key as string)}
                 onMouseLeave={handleNavLeave}
               >
                 <button
@@ -199,7 +199,7 @@ export function MarketingNav() {
             ) : (
               <Link
                 key={item.label}
-                to={item.href!}
+                to={item.href ?? '/'}
                 className="px-3 py-2 rounded-lg text-sm font-medium text-gray-600 hover:text-gray-900 hover:bg-gray-100/60 transition-all duration-150"
               >
                 {item.label}

@@ -27,15 +27,19 @@ const TOOLTIP_STYLE = {
   borderRadius: '8px',
 };
 
+/** Score thresholds for color-coding communication scores */
+const SCORE_THRESHOLD_HIGH = 80;
+const SCORE_THRESHOLD_MEDIUM = 50;
+
 function getScoreColor(score: number): string {
-  if (score >= 80) return 'text-green-600 dark:text-green-400';
-  if (score >= 50) return 'text-yellow-600 dark:text-yellow-400';
+  if (score >= SCORE_THRESHOLD_HIGH) return 'text-green-600 dark:text-green-400';
+  if (score >= SCORE_THRESHOLD_MEDIUM) return 'text-yellow-600 dark:text-yellow-400';
   return 'text-red-600 dark:text-red-400';
 }
 
 function getScoreBg(score: number): string {
-  if (score >= 80) return 'bg-green-100 dark:bg-green-900/30';
-  if (score >= 50) return 'bg-yellow-100 dark:bg-yellow-900/30';
+  if (score >= SCORE_THRESHOLD_HIGH) return 'bg-green-100 dark:bg-green-900/30';
+  if (score >= SCORE_THRESHOLD_MEDIUM) return 'bg-yellow-100 dark:bg-yellow-900/30';
   return 'bg-red-100 dark:bg-red-900/30';
 }
 
