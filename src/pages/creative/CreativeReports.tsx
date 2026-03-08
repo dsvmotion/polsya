@@ -105,7 +105,7 @@ export default function CreativeReports() {
               <div className="h-[300px]">
                 {(data?.pipelineByStage.length ?? 0) > 0 ? (
                   <ResponsiveContainer width="100%" height="100%">
-                    <BarChart data={data!.pipelineByStage} layout="vertical">
+                    <BarChart data={data?.pipelineByStage ?? []} layout="vertical">
                       <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
                       <XAxis type="number" tick={{ fontSize: 12 }} tickFormatter={(v) => `$${(v / 1000).toFixed(0)}k`} />
                       <YAxis
@@ -139,7 +139,7 @@ export default function CreativeReports() {
               <div className="h-[300px]">
                 {(data?.revenueOverTime.length ?? 0) > 0 ? (
                   <ResponsiveContainer width="100%" height="100%">
-                    <AreaChart data={data!.revenueOverTime}>
+                    <AreaChart data={data?.revenueOverTime ?? []}>
                       <defs>
                         <linearGradient id="colorRevenue" x1="0" y1="0" x2="0" y2="1">
                           <stop offset="5%" stopColor="hsl(142, 72%, 46%)" stopOpacity={0.3} />
@@ -173,7 +173,7 @@ export default function CreativeReports() {
               <div className="h-[300px]">
                 {(data?.funnelData.length ?? 0) > 0 ? (
                   <ResponsiveContainer width="100%" height="100%">
-                    <BarChart data={data!.funnelData}>
+                    <BarChart data={data?.funnelData ?? []}>
                       <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
                       <XAxis
                         dataKey="stage"
@@ -210,7 +210,7 @@ export default function CreativeReports() {
                   <ResponsiveContainer width="100%" height="100%">
                     <PieChart>
                       <Pie
-                        data={data!.projectStatusBreakdown}
+                        data={data?.projectStatusBreakdown ?? []}
                         cx="50%"
                         cy="50%"
                         innerRadius={60}
@@ -221,7 +221,7 @@ export default function CreativeReports() {
                           `${PROJECT_STATUS_LABELS[status as ProjectStatus] ?? status} ${(percent * 100).toFixed(0)}%`
                         }
                       >
-                        {data!.projectStatusBreakdown.map((_, idx) => (
+                        {(data?.projectStatusBreakdown ?? []).map((_, idx) => (
                           <Cell key={idx} fill={CHART_COLORS[idx % CHART_COLORS.length]} />
                         ))}
                       </Pie>

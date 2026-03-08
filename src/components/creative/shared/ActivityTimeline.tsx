@@ -76,6 +76,7 @@ export function ActivityTimeline({ entityType, entityId, onAddClick }: ActivityT
           <div key={activity.id} className="flex items-start gap-3 py-2 group">
             {activity.activityType === 'task' && (
               <button
+                type="button"
                 onClick={(e) => {
                   e.stopPropagation();
                   toggleMutation.mutate(

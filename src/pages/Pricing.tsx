@@ -134,7 +134,7 @@ export default function Pricing() {
               ctaElement = (
                 <Button
                   className={linkButtonClass}
-                  onClick={() => handleSubscribe(apiPlan!.id)}
+                  onClick={() => apiPlan && handleSubscribe(apiPlan.id)}
                   disabled={createCheckout.isPending}
                 >
                   {createCheckout.isPending ? (
