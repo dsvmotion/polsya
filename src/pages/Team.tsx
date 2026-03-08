@@ -5,7 +5,6 @@ import {
   Shield,
   Mail,
   Clock,
-  MoreHorizontal,
   Copy,
   Check,
 } from 'lucide-react';
@@ -31,12 +30,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
 import { toast } from 'sonner';
 import { useAuth } from '@/contexts/AuthContext';
 import { useCurrentOrganization } from '@/hooks/useOrganizationContext';

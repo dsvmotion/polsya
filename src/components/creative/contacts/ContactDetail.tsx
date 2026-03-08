@@ -58,12 +58,12 @@ export function ContactDetail({ contact, onClose }: ContactDetailProps) {
           </Badge>
         </div>
         <div className="flex gap-1">
-          <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setEditOpen(true)}>
+          <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setEditOpen(true)} aria-label="Edit contact">
             <Pencil className="h-4 w-4" />
           </Button>
           <AlertDialog>
             <AlertDialogTrigger asChild>
-              <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive">
+              <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive" aria-label="Delete contact">
                 <Trash2 className="h-4 w-4" />
               </Button>
             </AlertDialogTrigger>

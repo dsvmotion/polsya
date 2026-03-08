@@ -1,5 +1,5 @@
 import { useState, useMemo } from 'react';
-import { Bell, AlertTriangle, CheckCircle, Info, Plug, XCircle, Trash2 } from 'lucide-react';
+import { Bell, AlertTriangle, CheckCircle, Info, XCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   Popover,

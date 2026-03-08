@@ -1,7 +1,6 @@
 import { useState, useMemo, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { ShoppingCart, Building2, Users, MapPin, RefreshCw, AlertCircle, ClipboardList, X } from 'lucide-react';
-import { Link } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { usePlatformOwnerStatus } from '@/hooks/usePlatformOwnerStatus';
 import { getPendingSignupPlan, clearPendingSignupPlan } from '@/lib/signupPlan';

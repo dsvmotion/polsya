@@ -113,7 +113,7 @@ export default function CreativeResolution() {
                 </div>
               ) : (
                 candidates.map((candidate) => (
-                  <div key={candidate.id} className="cursor-pointer" onClick={() => handleCandidateClick(candidate)}>
+                  <div key={candidate.id} className="cursor-pointer" role="button" tabIndex={0} onClick={() => handleCandidateClick(candidate)} onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handleCandidateClick(candidate); } }}>
                     <CandidateCard candidate={candidate} />
                   </div>
                 ))

@@ -103,7 +103,7 @@ export default function CreativeSignals() {
               </div>
             ) : (
               signals.map((signal) => (
-                <div key={signal.id} className="cursor-pointer" onClick={() => handleSignalClick(signal)}>
+                <div key={signal.id} className="cursor-pointer" role="button" tabIndex={0} onClick={() => handleSignalClick(signal)} onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handleSignalClick(signal); } }}>
                   <SignalCard signal={signal} />
                 </div>
               ))

@@ -99,7 +99,7 @@ export default function CreativeProjects() {
             )}
             isLoading={isLoading}
             renderCard={(project) => (
-              <div className="space-y-1.5" onClick={() => handleRowClick(project)}>
+              <div className="space-y-1.5" role="button" tabIndex={0} onClick={() => handleRowClick(project)} onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handleRowClick(project); } }}>
                 <p className="text-sm font-medium truncate">{project.name}</p>
                 {project.clientId && clientMap.get(project.clientId) && (
                   <p className="text-xs text-muted-foreground truncate">{clientMap.get(project.clientId)}</p>

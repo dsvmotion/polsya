@@ -99,7 +99,7 @@ export default function CreativeOpportunities() {
             )}
             isLoading={isLoading}
             renderCard={(opp) => (
-              <div className="space-y-1.5" onClick={() => handleRowClick(opp)}>
+              <div className="space-y-1.5" role="button" tabIndex={0} onClick={() => handleRowClick(opp)} onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handleRowClick(opp); } }}>
                 <p className="text-sm font-medium truncate">{opp.title}</p>
                 {opp.clientId && clientMap.get(opp.clientId) && (
                   <p className="text-xs text-muted-foreground truncate">{clientMap.get(opp.clientId)}</p>
