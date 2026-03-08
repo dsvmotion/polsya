@@ -1,5 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { fromTable, rpcCall } from '@/integrations/supabase/helpers';
+import { safeJsonParse } from '@/lib/utils';
 import type { StyleAnalysis } from '@/types/style-intelligence';
 import type { StyleAnalysisFormValues } from '@/lib/creative-schemas';
 import { toStyleAnalysis, toStyleAnalyses, type StyleAnalysisRow } from '@/services/styleAnalysisService';
@@ -55,9 +56,9 @@ export function useCreateStyleAnalysis() {
       const orgId = membership?.organization_id;
       if (!orgId) throw new Error('No organization');
 
-      const colorPalette = values.colorPalette ? JSON.parse(values.colorPalette) : [];
-      const typographyProfile = values.typographyProfile ? JSON.parse(values.typographyProfile) : {};
-      const brandAttributes = values.brandAttributes ? JSON.parse(values.brandAttributes) : {};
+      const colorPalette = values.colorPalette ? safeJsonParse<unknown[]>(values.colorPalette, []) : [];
+      const typographyProfile = values.typographyProfile ? safeJsonParse(values.typographyProfile, {}) : {};
+      const brandAttributes = values.brandAttributes ? safeJsonParse(values.brandAttributes, {}) : {};
 
       const { data, error } = await fromTable('creative_style_analyses')
         .insert({
@@ -89,9 +90,9 @@ export function useUpdateStyleAnalysis() {
       if (values.clientId !== undefined) patch.client_id = values.clientId || null;
       if (values.portfolioId !== undefined) patch.portfolio_id = values.portfolioId || null;
       if (values.sourceUrl !== undefined) patch.source_url = values.sourceUrl || null;
-      if (values.colorPalette !== undefined) patch.color_palette = values.colorPalette ? JSON.parse(values.colorPalette) : [];
-      if (values.typographyProfile !== undefined) patch.typography_profile = values.typographyProfile ? JSON.parse(values.typographyProfile) : {};
-      if (values.brandAttributes !== undefined) patch.brand_attributes = values.brandAttributes ? JSON.parse(values.brandAttributes) : {};
+      if (values.colorPalette !== undefined) patch.color_palette = values.colorPalette ? safeJsonParse<unknown[]>(values.colorPalette, []) : [];
+      if (values.typographyProfile !== undefined) patch.typography_profile = values.typographyProfile ? safeJsonParse(values.typographyProfile, {}) : {};
+      if (values.brandAttributes !== undefined) patch.brand_attributes = values.brandAttributes ? safeJsonParse(values.brandAttributes, {}) : {};
 
       const { data, error } = await fromTable('creative_style_analyses')
         .update(patch)

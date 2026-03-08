@@ -39,24 +39,27 @@ export default function Login() {
 
     const result = loginSchema.safeParse({ email, password });
     if (!result.success) {
-      setError(result.error.errors[0].message);
+      setError(result.error.errors[0]?.message ?? 'Invalid input');
       return;
     }
 
     setIsLoading(true);
+    try {
+      const { error: signInError } = await signIn(email, password);
 
-    const { error: signInError } = await signIn(email, password);
+      if (signInError) {
+        setError(signInError.message);
+        return;
+      }
 
-    if (signInError) {
-      setError(signInError.message);
+      const { data: { session } } = await supabase.auth.getSession();
+      const target = isPlatformOwner(session?.user) ? '/platform' : (location.state?.from?.pathname ?? '/dashboard');
+      navigate(target, { replace: true });
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'An unexpected error occurred');
+    } finally {
       setIsLoading(false);
-      return;
     }
-
-    const { data: { session } } = await supabase.auth.getSession();
-    const target = isPlatformOwner(session?.user) ? '/platform' : (location.state?.from?.pathname ?? '/dashboard');
-    navigate(target, { replace: true });
-    setIsLoading(false);
   };
 
   return (

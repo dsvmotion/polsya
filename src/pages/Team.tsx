@@ -60,6 +60,7 @@ export default function Team() {
     joinedAt: user?.created_at ?? new Date().toISOString(),
     avatarInitials: user?.user_metadata?.full_name
       ?.split(' ')
+      .filter(Boolean)
       .map((n: string) => n[0])
       .join('')
       .toUpperCase()
@@ -76,11 +77,15 @@ export default function Team() {
     setInviteDialogOpen(false);
   };
 
-  const handleCopyInviteLink = () => {
-    navigator.clipboard.writeText(`${window.location.origin}/signup?org=${organization?.id ?? ''}`);
-    setCopied(true);
-    toast.success('Invite link copied to clipboard');
-    setTimeout(() => setCopied(false), 2000);
+  const handleCopyInviteLink = async () => {
+    try {
+      await navigator.clipboard.writeText(`${window.location.origin}/signup?org=${organization?.id ?? ''}`);
+      setCopied(true);
+      toast.success('Invite link copied to clipboard');
+      setTimeout(() => setCopied(false), 2000);
+    } catch {
+      toast.error('Failed to copy to clipboard');
+    }
   };
 
   return (

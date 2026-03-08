@@ -55,23 +55,26 @@ export default function Signup() {
     // Validate input
     const result = signupSchema.safeParse({ fullName, email, password, confirmPassword });
     if (!result.success) {
-      setError(result.error.errors[0].message);
+      setError(result.error.errors[0]?.message ?? 'Invalid input');
       return;
     }
-    
+
     setIsLoading(true);
-    
-    const { error: signUpError } = await signUp(email, password, fullName);
-    
-    if (signUpError) {
-      setError(signUpError.message);
+    try {
+      const { error: signUpError } = await signUp(email, password, fullName);
+
+      if (signUpError) {
+        setError(signUpError.message);
+        return;
+      }
+
+      // Show confirmation message (email verification required)
+      setShowConfirmation(true);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'An unexpected error occurred');
+    } finally {
       setIsLoading(false);
-      return;
     }
-    
-    // Show confirmation message (email verification required)
-    setShowConfirmation(true);
-    setIsLoading(false);
   };
 
   if (showConfirmation) {

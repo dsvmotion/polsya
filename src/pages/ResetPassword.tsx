@@ -37,14 +37,19 @@ export default function ResetPassword() {
       return;
     }
     setIsLoading(true);
-    const { error: err } = await supabase.auth.updateUser({ password });
-    setIsLoading(false);
-    if (err) {
-      setError(err.message);
-      return;
+    try {
+      const { error: err } = await supabase.auth.updateUser({ password });
+      if (err) {
+        setError(err.message);
+        return;
+      }
+      setSuccess(true);
+      setTimeout(() => navigate('/dashboard', { replace: true }), 2000);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'An unexpected error occurred');
+    } finally {
+      setIsLoading(false);
     }
-    setSuccess(true);
-    setTimeout(() => navigate('/dashboard', { replace: true }), 2000);
   };
 
   if (success) {

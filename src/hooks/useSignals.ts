@@ -1,5 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { fromTable } from '@/integrations/supabase/helpers';
+import { safeJsonParse } from '@/lib/utils';
 import type { SignalRule, Signal, SignalStatus } from '@/types/signal-engine';
 import type { SignalRuleFormValues } from '@/lib/creative-schemas';
 import { toSignalRule, toSignalRules, type SignalRuleRow, toSignal, toSignals, type SignalRow } from '@/services/signalService';
@@ -40,8 +41,8 @@ export function useCreateSignalRule() {
       const orgId = membership?.organization_id;
       if (!orgId) throw new Error('No organization');
 
-      const conditions = values.conditions ? JSON.parse(values.conditions) : {};
-      const actions = values.actions ? JSON.parse(values.actions) : [];
+      const conditions = values.conditions ? safeJsonParse(values.conditions, {}) : {};
+      const actions = values.actions ? safeJsonParse<unknown[]>(values.actions, []) : [];
 
       const { data, error } = await fromTable('signal_rules')
         .insert({
@@ -74,8 +75,8 @@ export function useUpdateSignalRule() {
       if (values.name !== undefined) patch.name = values.name;
       if (values.description !== undefined) patch.description = values.description || null;
       if (values.ruleType !== undefined) patch.rule_type = values.ruleType;
-      if (values.conditions !== undefined) patch.conditions = values.conditions ? JSON.parse(values.conditions) : {};
-      if (values.actions !== undefined) patch.actions = values.actions ? JSON.parse(values.actions) : [];
+      if (values.conditions !== undefined) patch.conditions = values.conditions ? safeJsonParse(values.conditions, {}) : {};
+      if (values.actions !== undefined) patch.actions = values.actions ? safeJsonParse<unknown[]>(values.actions, []) : [];
       if (values.priority !== undefined) patch.priority = values.priority;
       if (values.isActive !== undefined) patch.is_active = values.isActive;
 

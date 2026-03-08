@@ -819,10 +819,14 @@ export function EntityDetailPanel({ pharmacy, onClose }: EntityDetailPanelProps)
   const statusColor = STATUS_COLORS[status];
 
   const copyToClipboard = async (text: string, field: string) => {
-    await navigator.clipboard.writeText(text);
-    setCopiedField(field);
-    toast.success('Copied to clipboard');
-    setTimeout(() => setCopiedField(null), 2000);
+    try {
+      await navigator.clipboard.writeText(text);
+      setCopiedField(field);
+      toast.success('Copied to clipboard');
+      setTimeout(() => setCopiedField(null), 2000);
+    } catch {
+      toast.error('Failed to copy to clipboard');
+    }
   };
 
   const handleSave = async () => {

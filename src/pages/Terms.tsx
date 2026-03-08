@@ -6,7 +6,7 @@ export default function Terms() {
     <div className="py-16 sm:py-24">
       <div className="mx-auto max-w-3xl px-4 sm:px-6 lg:px-8">
         <h1 className="text-3xl font-bold text-foreground">Terms of Service</h1>
-        <p className="mt-4 text-muted-foreground">Last updated: {new Date().toLocaleDateString()}</p>
+        <p className="mt-4 text-muted-foreground">Last updated: January 2025</p>
 
         <div className="mt-12 space-y-8 text-muted-foreground">
           <section>

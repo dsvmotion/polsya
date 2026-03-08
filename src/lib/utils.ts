@@ -28,3 +28,15 @@ export function getErrorMessage(
   }
   return fallback;
 }
+
+/**
+ * Safely parse a JSON string, returning a fallback value on failure
+ * instead of throwing a SyntaxError.
+ */
+export function safeJsonParse<T>(json: string, fallback: T): T {
+  try {
+    return JSON.parse(json) as T;
+  } catch {
+    return fallback;
+  }
+}
