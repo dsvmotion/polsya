@@ -16,6 +16,7 @@ import type { IntegrationProvider } from '@/types/integrations';
 import type { CreativeEmail } from '@/types/creative-emails';
 import { toSendEmailInput, buildReplyDefaults } from './EmailComposeSheet.helpers';
 import type { ComposeFormValues } from './EmailComposeSheet.helpers';
+import { getErrorMessage } from '@/lib/utils';
 
 // ---------------------------------------------------------------------------
 // Email provider filter
@@ -93,7 +94,7 @@ export function EmailComposeSheet({ open, onOpenChange, replyTo }: EmailComposeS
     } catch (err) {
       toast({
         title: 'Failed to send email',
-        description: (err as Error).message,
+        description: getErrorMessage(err),
         variant: 'destructive',
       });
     }

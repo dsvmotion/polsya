@@ -3,6 +3,7 @@ import { useQuery } from '@tanstack/react-query';
 import { AdminStatsCard } from '@/components/admin/AdminStatsCard';
 import { AdminDataTable, type AdminColumn } from '@/components/admin/AdminDataTable';
 import { Badge } from '@/components/ui/badge';
+import { logger } from '@/lib/logger';
 import { supabase } from '@/integrations/supabase/client';
 
 interface InvoiceRow extends Record<string, unknown> {
@@ -58,7 +59,7 @@ export default function AdminBilling() {
         .order('created_at', { ascending: false })
         .limit(100);
       if (error) {
-        console.warn('billing_invoices table not found, showing empty state');
+        logger.warn('billing_invoices table not found, showing empty state');
         return [];
       }
       return (data ?? []).map((i): InvoiceRow => ({

@@ -5,6 +5,7 @@ import { type BusinessEntity } from '@/types/entity';
 import { type ClientType } from '@/types/pharmacy';
 import { buildEdgeFunctionHeaders } from '@/lib/edge-function-headers';
 import { toBusinessEntities } from '@/services/entityService';
+import { logger } from '@/lib/logger';
 
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
 
@@ -28,7 +29,7 @@ export function useDetailedOrders() {
         } catch {
           detail = `Failed to fetch detailed orders: ${response.status}`;
         }
-        console.error(detail);
+        logger.error(detail);
         throw new Error(detail);
       }
 
@@ -50,7 +51,7 @@ export function useEntityDocuments() {
         .order('uploaded_at', { ascending: false });
 
       if (error) {
-        console.error('Error fetching documents:', error);
+        logger.error('Error fetching documents:', error);
         throw new Error(`Error fetching documents: ${error.message}`);
       }
 
@@ -286,7 +287,7 @@ export function useEntitiesWithOrders(savedOnly: boolean = true, clientType?: Cl
         const { data, error } = await query;
 
         if (error) {
-          console.error('Error fetching pharmacies:', error);
+          logger.error('Error fetching pharmacies:', error);
           break;
         }
 
@@ -434,7 +435,7 @@ export function useDeleteDocument() {
         .remove([filePath]);
 
       if (storageError) {
-        console.warn('Failed to delete file from storage:', storageError);
+        logger.warn('Failed to delete file from storage:', storageError);
       }
 
       // Delete record

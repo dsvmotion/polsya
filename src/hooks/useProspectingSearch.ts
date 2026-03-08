@@ -6,6 +6,7 @@ import { toBusinessEntity } from '@/services/entityService';
 import { toast } from 'sonner';
 import type { Json } from '@/integrations/supabase/types';
 import { buildEdgeFunctionHeaders } from '@/lib/edge-function-headers';
+import { logger } from '@/lib/logger';
 
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
 
@@ -154,8 +155,6 @@ export function useProspectingSearch() {
       }
       const searchQuery = `${searchTerm} in ${locationParts.join(', ')}`;
 
-      console.log('Executing pharmacy search:', searchQuery);
-
       // Collect all results with FULL pagination - no artificial limits
       // Google Places Text Search returns up to 60 results (20 per page × 3 pages max)
       const allBasicResults: GooglePlaceBasic[] = [];
@@ -169,10 +168,7 @@ export function useProspectingSearch() {
           await new Promise((resolve) => setTimeout(resolve, 2000));
         }
 
-        if (signal.aborted) {
-          console.log('Search aborted');
-          return;
-        }
+        if (signal.aborted) return;
 
         const response = await fetch(`${SUPABASE_URL}/functions/v1/google-places-pharmacies`, {
           method: 'POST',
@@ -187,7 +183,7 @@ export function useProspectingSearch() {
 
         if (!response.ok) {
           const errorText = await response.text();
-          console.error('Google Places search error:', response.status, errorText);
+          logger.error('Google Places search error:', response.status, errorText);
           throw new Error(`Search failed: ${response.status} — ${errorText}`);
         }
 
@@ -199,12 +195,9 @@ export function useProspectingSearch() {
 
         setProgress((prev) => ({ ...prev, found: allBasicResults.length }));
 
-        console.log(`Page ${pageCount}: found ${pharmacies.length} pharmacies, total: ${allBasicResults.length}`);
         // Continue until no more pages (nextPageToken is null)
         // Google Places has a natural limit of 3 pages (60 results) per query
       } while (nextPageToken);
-
-      console.log(`Search complete: ${allBasicResults.length} total pharmacies found`);
 
       if (allBasicResults.length === 0) {
         toast.info('No pharmacies found in this area');
@@ -252,7 +245,7 @@ export function useProspectingSearch() {
           });
 
           if (!detailsResponse.ok) {
-            console.warn(`Failed to get details for ${basic.google_place_id}: ${detailsResponse.status}`);
+            logger.warn(`Failed to get details for ${basic.google_place_id}: ${detailsResponse.status}`);
             processed++;
             failed++;
             flushProgress();
@@ -353,7 +346,7 @@ export function useProspectingSearch() {
           flushProgress();
         } catch (detailError) {
           if (isAbortError(detailError)) return;
-          console.warn(`Error fetching details for ${basic.google_place_id}:`, detailError);
+          logger.warn(`Error fetching details for ${basic.google_place_id}:`, detailError);
           processed++;
           failed++;
           flushProgress();
@@ -374,7 +367,6 @@ export function useProspectingSearch() {
         });
       }
 
-      console.log(`Caching complete: ${cachedPharmacies.length} pharmacies cached, ${failed} failed`);
       if (failed > 0 && cachedPharmacies.length > 0) {
         toast.success(`Found ${cachedPharmacies.length} pharmacies (${failed} failed)`);
       } else if (cachedPharmacies.length > 0) {
@@ -383,11 +375,8 @@ export function useProspectingSearch() {
         toast.error(`All ${failed} pharmacy lookups failed. Please try again.`);
       }
     } catch (error) {
-      if (isAbortError(error)) {
-        console.log('Search was cancelled');
-        return;
-      }
-      console.error('Search error:', error);
+      if (isAbortError(error)) return;
+      logger.error('Search error:', error);
       const msg = toUserError(error, 'Search');
       if (msg) toast.error(msg);
     } finally {

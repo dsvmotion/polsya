@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Plus } from 'lucide-react';
+import { Plus, AlertCircle, RefreshCw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { WorkspaceContainer } from '@/components/creative/layout/WorkspaceContainer';
 import { DataTable } from '@/components/creative/shared/DataTable';
@@ -7,10 +7,11 @@ import { documentColumns } from '@/components/creative/documents/document-column
 import { DocumentUploadSheet } from '@/components/creative/documents/DocumentUploadSheet';
 import { useAiDocuments } from '@/hooks/useAiDocuments';
 import { useAiUsage } from '@/hooks/useAiUsage';
+import { getErrorMessage } from '@/lib/utils';
 
 export default function CreativeKnowledgeBase() {
   const [uploadOpen, setUploadOpen] = useState(false);
-  const { data: documents = [], isLoading } = useAiDocuments();
+  const { data: documents = [], isLoading, error, refetch } = useAiDocuments();
   const { data: budget } = useAiUsage();
 
   return (
@@ -24,6 +25,16 @@ export default function CreativeKnowledgeBase() {
         </Button>
       }
     >
+      {error ? (
+        <div className="flex flex-col items-center justify-center py-12 text-sm text-destructive gap-3">
+          <AlertCircle className="h-8 w-8 opacity-60" />
+          <p>Failed to load documents: {getErrorMessage(error)}</p>
+          <Button size="sm" variant="outline" className="gap-1.5" onClick={() => refetch()}>
+            <RefreshCw className="h-3.5 w-3.5" />
+            Retry
+          </Button>
+        </div>
+      ) : (
       <div className="mt-2">
         <DataTable
           columns={documentColumns}
@@ -33,6 +44,7 @@ export default function CreativeKnowledgeBase() {
           searchPlaceholder="Search documents..."
         />
       </div>
+      )}
 
       {budget && (
         <div className="mt-4 flex items-center gap-2 text-sm text-muted-foreground">

@@ -3,6 +3,7 @@ import { fromTable } from '@/integrations/supabase/helpers';
 import { supabase } from '@/integrations/supabase/client';
 import { useCurrentOrganization } from '@/hooks/useOrganizationContext';
 import type { AiDocument, DocumentSourceType } from '@/types/ai-documents';
+import { logger } from '@/lib/logger';
 
 interface AiDocumentRow {
   id: string;
@@ -137,7 +138,7 @@ export function useUploadDocument() {
         body: { document_id: (data as AiDocumentRow).id },
       });
       if (fnError) {
-        console.error('Ingest trigger failed:', fnError);
+        logger.error('Ingest trigger failed:', fnError);
         // Document stays in pending — user can retry
       }
 

@@ -3,6 +3,7 @@
 import { useEffect, useRef, useCallback, useState } from 'react';
 import { Pharmacy, STATUS_COLORS } from '@/types/pharmacy';
 import { Filter } from 'lucide-react';
+import { logger } from '@/lib/logger';
 
 interface ProspectingMapProps {
   pharmacies: Pharmacy[];
@@ -204,7 +205,7 @@ export function ProspectingMap({
     const apiKey = import.meta.env.VITE_GOOGLE_MAPS_API_KEY;
     
     if (!apiKey) {
-      console.error('Google Maps API key not found');
+      logger.error('Google Maps API key not found');
       return;
     }
 

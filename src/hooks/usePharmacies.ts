@@ -4,6 +4,7 @@ import { Pharmacy, type ClientType } from '@/types/pharmacy';
 import type { Json } from '@/integrations/supabase/types';
 import { buildEdgeFunctionHeaders } from '@/lib/edge-function-headers';
 import { toBusinessEntity, toBusinessEntities } from '@/services/entityService';
+import { logger } from '@/lib/logger';
 
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
 
@@ -25,7 +26,7 @@ export function usePharmacies(clientType?: ClientType, entityTypeId?: string) {
       const { data, error } = await query;
       
       if (error) {
-        console.error('Error fetching pharmacies:', error);
+        logger.error('Error fetching pharmacies:', error);
         throw error;
       }
       
@@ -47,7 +48,7 @@ export function usePharmacy(id: string | null) {
         .single();
       
       if (error) {
-        console.error('Error fetching pharmacy:', error);
+        logger.error('Error fetching pharmacy:', error);
         throw error;
       }
       
@@ -208,7 +209,6 @@ export function useSearchGooglePlaces() {
       pageToken?: string;
       signal?: AbortSignal;
     }) => {
-      console.log('Searching Google Places for pharmacies at:', location);
       const headers = await buildEdgeFunctionHeaders({ 'Content-Type': 'application/json' });
       
       const response = await fetch(`${SUPABASE_URL}/functions/v1/google-places-pharmacies`, {
@@ -225,12 +225,11 @@ export function useSearchGooglePlaces() {
       
       if (!response.ok) {
         const errorText = await response.text();
-        console.error('Google Places search error:', response.status, errorText);
+        logger.error('Google Places search error:', response.status, errorText);
         throw new Error(`Failed to search: ${response.status}`);
       }
       
       const data = await response.json();
-      console.log('Found pharmacies:', data?.pharmacies?.length);
       return data;
     },
   });
@@ -239,7 +238,6 @@ export function useSearchGooglePlaces() {
 export function useGetPharmacyDetails() {
   return useMutation({
     mutationFn: async (placeId: string) => {
-      console.log('Fetching pharmacy details for:', placeId);
       const headers = await buildEdgeFunctionHeaders({ 'Content-Type': 'application/json' });
       
       const response = await fetch(`${SUPABASE_URL}/functions/v1/google-places-pharmacies`, {
@@ -253,7 +251,7 @@ export function useGetPharmacyDetails() {
       
       if (!response.ok) {
         const errorText = await response.text();
-        console.error('Google Places details error:', response.status, errorText);
+        logger.error('Google Places details error:', response.status, errorText);
         throw new Error(`Failed to get details: ${response.status}`);
       }
       

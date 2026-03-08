@@ -1,6 +1,7 @@
 import { useState, useCallback } from 'react';
 import * as XLSX from 'xlsx';
 import { Upload, Loader2, FileSpreadsheet } from 'lucide-react';
+import { logger } from '@/lib/logger';
 import {
   Dialog,
   DialogContent,
@@ -242,7 +243,7 @@ export function BulkImportDialog({
           const detected = autoDetectMapping(h, industryTemplateKey);
           setMapping((prev) => ({ ...detected, ...prev }));
         } catch (e) {
-          console.error(e);
+          logger.error('Failed to parse import file:', e);
           setHeaders([]);
           setRows([]);
         }

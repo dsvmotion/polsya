@@ -126,9 +126,12 @@ export function useAiChat() {
       .eq('organization_id', orgId)
       .eq('user_id', user.id);
 
-    if (!deleteError) {
-      qc.invalidateQueries({ queryKey: ['ai-chat-messages', orgId, user.id] });
+    if (deleteError) {
+      setError(deleteError.message);
+      return;
     }
+
+    qc.invalidateQueries({ queryKey: ['ai-chat-messages', orgId, user.id] });
   }, [orgId, user?.id, qc]);
 
   return { sendMessage, cancelRequest, clearHistory, isLoading, error };

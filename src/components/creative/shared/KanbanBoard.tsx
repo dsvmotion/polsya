@@ -49,7 +49,8 @@ export function KanbanBoard<T extends { id: string }>({
   function handleDrop(e: DragEvent, columnKey: string) {
     e.preventDefault();
     const itemId = e.dataTransfer.getData('text/plain');
-    if (itemId && getColumnKey(items.find((i) => i.id === itemId)!) !== columnKey) {
+    const item = items.find((i) => i.id === itemId);
+    if (itemId && item && getColumnKey(item) !== columnKey) {
       onMove(itemId, columnKey);
     }
     setDragOverColumn(null);
@@ -85,6 +86,8 @@ export function KanbanBoard<T extends { id: string }>({
         return (
           <div
             key={col.key}
+            role="group"
+            aria-label={`${col.label} column`}
             className={cn(
               'flex-shrink-0 w-72 rounded-lg border bg-muted/30 transition-colors',
               dragOverColumn === col.key && 'ring-2 ring-primary/50 bg-primary/5',
@@ -109,11 +112,14 @@ export function KanbanBoard<T extends { id: string }>({
                   columnItems.map((item) => (
                     <div
                       key={item.id}
+                      role="listitem"
+                      tabIndex={0}
+                      aria-roledescription="draggable item"
                       draggable
                       onDragStart={(e) => handleDragStart(e, item.id)}
                       onDragEnd={handleDragEnd}
                       className={cn(
-                        'cursor-grab active:cursor-grabbing rounded-lg border bg-card p-3 shadow-sm hover:shadow-md transition-shadow',
+                        'cursor-grab active:cursor-grabbing rounded-lg border bg-card p-3 shadow-sm hover:shadow-md transition-shadow focus-visible:ring-2 focus-visible:ring-primary/50 outline-none',
                         draggedItemId === item.id && 'opacity-50',
                       )}
                     >

@@ -9,6 +9,7 @@ import {
   toEnrichmentRun, toEnrichmentRuns, type EnrichmentRunRow,
 } from '@/services/enrichmentService';
 import { useCurrentOrganization } from '@/hooks/useOrganizationContext';
+import { logger } from '@/lib/logger';
 
 const enrichmentKeys = {
   credits: (orgId: string) => ['enrichment-credits', orgId] as const,
@@ -176,7 +177,7 @@ export function useTriggerEnrichmentRun() {
       supabase.functions.invoke('process-enrichment-run', {
         body: { runId: run.id },
       }).catch((err: Error) => {
-        console.error('Edge Function invocation failed:', err.message);
+        logger.error('Edge Function invocation failed:', err.message);
       });
 
       return run;

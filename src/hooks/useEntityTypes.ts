@@ -1,6 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import type { EntityTypeDefinition } from '@/types/entity';
+import { logger } from '@/lib/logger';
 
 function mapEntityTypeRow(row: {
   id: string;
@@ -42,7 +43,7 @@ export function useEntityTypes() {
       if (error) {
         const msg = (error.message ?? '').toLowerCase();
         if (error.code === '42P01' || msg.includes('does not exist') || msg.includes('relation') && msg.includes('exist')) {
-          console.warn('entity_types table not found (run migrations: supabase db push). Using defaults.');
+          logger.warn('entity_types table not found (run migrations: supabase db push). Using defaults.');
           return DEFAULT_ENTITY_TYPES;
         }
         throw new Error(error.message);

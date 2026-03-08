@@ -88,6 +88,7 @@ export function MultiEmailInput({
 
   return (
     <div>
+      {/* eslint-disable-next-line jsx-a11y/click-events-have-key-events, jsx-a11y/no-static-element-interactions -- keyboard input is handled by the inner <Input> */}
       <div
         className="flex flex-wrap items-center gap-1 rounded-md border border-input bg-background px-2 py-1.5 min-h-[2.5rem] cursor-text"
         onClick={() => inputRef.current?.focus()}
@@ -102,6 +103,7 @@ export function MultiEmailInput({
             {!disabled && (
               <button
                 type="button"
+                aria-label={`Remove ${email}`}
                 onClick={(e) => {
                   e.stopPropagation();
                   removeEmail(email);
