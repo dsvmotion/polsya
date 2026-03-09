@@ -126,8 +126,8 @@ export function useEntityOperations(
         query = query.eq('commercial_status', filters.commercialStatus as never);
       }
       if (filters?.search) {
-        const term = filters.search.replace(/,/g, ' ');
-        query = query.or(`name.ilike.%${term}%,address.ilike.%${term}%,phone.ilike.%${term}%`);
+        const escaped = filters.search.replace(/[%_.(),"\\]/g, '\\$&');
+        query = query.or(`name.ilike.%${escaped}%,address.ilike.%${escaped}%,phone.ilike.%${escaped}%`);
       }
 
       if (dbColumn) {

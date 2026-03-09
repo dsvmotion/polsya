@@ -4,6 +4,15 @@ import { AdminDataTable, type AdminColumn } from '@/components/admin/AdminDataTa
 import { Button } from '@/components/ui/button';
 import { supabase } from '@/integrations/supabase/client';
 
+/** Escape a string for safe CSV output (prevents formula injection and structure corruption). */
+function csvField(value: string): string {
+  let safe = value;
+  if (/^[=+\-@\t\r]/.test(safe)) {
+    safe = `'${safe}`;
+  }
+  return `"${safe.replace(/"/g, '""')}"`;
+}
+
 interface AuditLogRow {
   id: string;
   created_at: string;
@@ -64,11 +73,11 @@ export default function AdminLogs() {
       ['Timestamp', 'Action', 'Resource', 'Actor', 'Details'].join(','),
       ...logs.map((log) =>
         [
-          new Date(log.created_at).toISOString(),
-          log.action,
-          log.resource_type,
-          log.actor_id,
-          JSON.stringify(log.metadata ?? {}),
+          csvField(new Date(log.created_at).toISOString()),
+          csvField(log.action),
+          csvField(log.resource_type),
+          csvField(log.actor_id),
+          csvField(JSON.stringify(log.metadata ?? {})),
         ].join(','),
       ),
     ].join('\n');

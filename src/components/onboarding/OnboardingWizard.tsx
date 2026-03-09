@@ -74,14 +74,14 @@ export function OnboardingWizard({
 
   const handleNext = () => {
     if (isLast) {
-      handleComplete();
+      void handleComplete();
     } else {
       setStep((s) => s + 1);
     }
   };
 
   const handleSkip = () => {
-    handleComplete();
+    void handleComplete();
   };
 
   if (!current) return null;

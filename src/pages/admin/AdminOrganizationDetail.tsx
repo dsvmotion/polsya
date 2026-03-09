@@ -119,10 +119,10 @@ export default function AdminOrganizationDetail() {
       const { data: logs, error: logErr } = await supabase
         .from('platform_audit_logs')
         .select('*')
+        .eq('organization_id', orgId!)
         .order('created_at', { ascending: false })
         .limit(100);
       if (logErr) return [];
-      // Filter client-side since platform_audit_logs may not have org_id
       return (logs ?? []) as AuditLogRow[];
     },
   });

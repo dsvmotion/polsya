@@ -38,7 +38,7 @@ describe('GmailOAuthCallback', () => {
   it('shows error when oauth error param present', () => {
     renderWith('?error=access_denied');
     expect(screen.getByText('Gmail connection cancelled')).toBeInTheDocument();
-    expect(screen.getByText(/access_denied/)).toBeInTheDocument();
+    expect(screen.getByText(/cancelled the authorization/)).toBeInTheDocument();
   });
 
   it('shows error when code/state missing', () => {
