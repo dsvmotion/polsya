@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useRef, useEffect } from 'react';
 import { 
   X, MapPin, Phone, Globe, Clock, Copy, Check, 
   ExternalLink, Mail, FileText, Save, ShoppingCart, Package,
@@ -805,6 +805,11 @@ interface EntityDetailPanelProps {
 
 export function EntityDetailPanel({ pharmacy, onClose }: EntityDetailPanelProps) {
   const [copiedField, setCopiedField] = useState<string | null>(null);
+  const copiedTimerRef = useRef<ReturnType<typeof setTimeout>>();
+
+  // Clean up copy-feedback timer on unmount
+  useEffect(() => () => clearTimeout(copiedTimerRef.current), []);
+
   const [notes, setNotes] = useState(pharmacy.notes || '');
   const [email, setEmail] = useState(pharmacy.email || '');
   const [status, setStatus] = useState<PharmacyStatus>(pharmacy.status);
@@ -823,7 +828,7 @@ export function EntityDetailPanel({ pharmacy, onClose }: EntityDetailPanelProps)
       await navigator.clipboard.writeText(text);
       setCopiedField(field);
       toast.success('Copied to clipboard');
-      setTimeout(() => setCopiedField(null), 2000);
+      copiedTimerRef.current = setTimeout(() => setCopiedField(null), 2000);
     } catch {
       toast.error('Failed to copy to clipboard');
     }

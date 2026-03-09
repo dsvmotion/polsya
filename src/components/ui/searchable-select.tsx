@@ -46,7 +46,8 @@ export function SearchableSelect({
   React.useEffect(() => {
     if (open) {
       setSearch("");
-      setTimeout(() => inputRef.current?.focus(), 0);
+      const timeoutId = setTimeout(() => inputRef.current?.focus(), 0);
+      return () => clearTimeout(timeoutId);
     }
   }, [open]);
 

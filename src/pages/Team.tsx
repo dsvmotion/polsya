@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useRef, useEffect } from 'react';
 import {
   Users,
   UserPlus,
@@ -51,6 +51,10 @@ export default function Team() {
   const [inviteRole, setInviteRole] = useState('member');
   const [inviteDialogOpen, setInviteDialogOpen] = useState(false);
   const [copied, setCopied] = useState(false);
+  const copiedTimerRef = useRef<ReturnType<typeof setTimeout>>();
+
+  // Clean up copy-feedback timer on unmount
+  useEffect(() => () => clearTimeout(copiedTimerRef.current), []);
 
   const currentMember = useMemo(() => ({
     id: user?.id ?? '',
@@ -82,7 +86,7 @@ export default function Team() {
       await navigator.clipboard.writeText(`${window.location.origin}/signup?org=${organization?.id ?? ''}`);
       setCopied(true);
       toast.success('Invite link copied to clipboard');
-      setTimeout(() => setCopied(false), 2000);
+      copiedTimerRef.current = setTimeout(() => setCopied(false), 2000);
     } catch {
       toast.error('Failed to copy to clipboard');
     }
