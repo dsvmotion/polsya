@@ -3,6 +3,7 @@ import { Outlet } from 'react-router-dom';
 import { AdminSidebar } from './AdminSidebar';
 import { AdminTopBar } from './AdminTopBar';
 import { AdminBreadcrumbs } from './AdminBreadcrumbs';
+import { ErrorBoundary } from '@/components/layout/ErrorBoundary';
 
 export function AdminLayout() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -20,7 +21,9 @@ export function AdminLayout() {
         <AdminTopBar onMobileMenuToggle={() => setSidebarOpen(true)} />
         <main className="flex-1 overflow-y-auto p-4 md:p-6">
           <AdminBreadcrumbs />
-          <Outlet />
+          <ErrorBoundary section="admin-page-content">
+            <Outlet />
+          </ErrorBoundary>
         </main>
       </div>
     </div>

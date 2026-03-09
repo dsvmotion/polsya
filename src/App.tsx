@@ -93,7 +93,18 @@ const MarketingResources = lazy(() => import('./pages/marketing/Resources'));
 const MarketingSecurity = lazy(() => import('./pages/marketing/Security'));
 const MarketingContact = lazy(() => import('./pages/marketing/Contact'));
 
-const queryClient = new QueryClient();
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      retry: 1,
+      staleTime: 30_000,
+      refetchOnWindowFocus: false,
+    },
+    mutations: {
+      retry: 0,
+    },
+  },
+});
 
 function ProspectingByType() {
   const { typeKey } = useParams<{ typeKey: string }>();
