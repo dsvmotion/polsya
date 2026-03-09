@@ -20,7 +20,7 @@ export function usePlatformOwnerStatus() {
       const { data } = await supabase
         .from('platform_owner_emails')
         .select('email')
-        .ilike('email', user.email)
+        .eq('email', user.email.toLowerCase())
         .maybeSingle();
       return !!data;
     },

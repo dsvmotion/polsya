@@ -374,6 +374,17 @@ export function useEntitiesWithOrders(savedOnly: boolean = true, clientType?: Cl
   };
 }
 
+const ALLOWED_UPLOAD_TYPES = new Set([
+  'application/pdf',
+  'image/jpeg',
+  'image/png',
+  'image/webp',
+  'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', // xlsx
+  'application/vnd.ms-excel', // xls
+  'text/csv',
+]);
+const MAX_UPLOAD_SIZE = 10 * 1024 * 1024; // 10 MB
+
 export function useUploadDocument() {
   const queryClient = useQueryClient();
 
@@ -389,8 +400,16 @@ export function useUploadDocument() {
       documentType: PharmacyDocument['documentType'];
       file: File;
     }) => {
+      if (!ALLOWED_UPLOAD_TYPES.has(file.type)) {
+        throw new Error('File type not allowed. Accepted: PDF, images, CSV, Excel.');
+      }
+      if (file.size > MAX_UPLOAD_SIZE) {
+        throw new Error('File too large. Maximum size is 10 MB.');
+      }
+
+      const safeName = file.name.replace(/[^a-zA-Z0-9._-]/g, '_');
       const folder = orderId ?? 'general';
-      const filePath = `${pharmacyId}/${folder}/${documentType}-${Date.now()}-${file.name}`;
+      const filePath = `${pharmacyId}/${folder}/${documentType}-${Date.now()}-${safeName}`;
 
       const { error: uploadError } = await supabase.storage
         .from('pharmacy-documents')
