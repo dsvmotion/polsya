@@ -190,20 +190,33 @@ export default function EntityOperations({ clientType = 'pharmacy' }: Props) {
   }, []);
 
   const handleSaveSegment = useCallback(async (name: string) => {
-    await createSegment.mutateAsync({
-      name,
-      scope: 'operations',
-      filters,
-    });
+    try {
+      await createSegment.mutateAsync({
+        name,
+        scope: 'operations',
+        filters,
+      });
+      toast.success('Segment saved');
+    } catch {
+      toast.error('Failed to save segment');
+    }
   }, [createSegment, filters]);
 
   const handleDeleteSegment = useCallback(async (id: string) => {
-    await deleteSegment.mutateAsync({ id, scope: 'operations' });
-    if (selectedSegmentId === id) setSelectedSegmentId(null);
+    try {
+      await deleteSegment.mutateAsync({ id, scope: 'operations' });
+      if (selectedSegmentId === id) setSelectedSegmentId(null);
+    } catch {
+      toast.error('Failed to delete segment');
+    }
   }, [deleteSegment, selectedSegmentId]);
 
   const handleToggleFavorite = useCallback(async (id: string, current: boolean) => {
-    await toggleFavorite.mutateAsync({ id, scope: 'operations', is_favorite: !current });
+    try {
+      await toggleFavorite.mutateAsync({ id, scope: 'operations', is_favorite: !current });
+    } catch {
+      toast.error('Failed to update favourite');
+    }
   }, [toggleFavorite]);
 
   const createActivity = useCreateEntityActivity();
