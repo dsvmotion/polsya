@@ -53,6 +53,7 @@ function ContactsSection({ pharmacyId }: { pharmacyId: string }) {
   const deleteContact = useDeleteEntityContact();
 
   const [showForm, setShowForm] = useState(false);
+  const [settingPrimary, setSettingPrimary] = useState(false);
   const [newName, setNewName] = useState('');
   const [newRole, setNewRole] = useState<ContactRole | ''>('');
   const [newEmail, setNewEmail] = useState('');
@@ -98,6 +99,8 @@ function ContactsSection({ pharmacyId }: { pharmacyId: string }) {
   };
 
   const handleSetPrimary = async (id: string) => {
+    if (settingPrimary) return;
+    setSettingPrimary(true);
     try {
       for (const c of contacts) {
         if (c.isPrimary && c.id !== id) {
@@ -116,6 +119,8 @@ function ContactsSection({ pharmacyId }: { pharmacyId: string }) {
       toast.success('Primary contact updated');
     } catch {
       toast.error('Failed to update primary contact');
+    } finally {
+      setSettingPrimary(false);
     }
   };
 
@@ -390,6 +395,7 @@ function ActivitiesSection({ pharmacyId }: { pharmacyId: string }) {
                   className="mt-0.5 shrink-0"
                   onClick={() => !isDone && handleComplete(act.id)}
                   disabled={isDone}
+                  aria-label={isDone ? `${act.title} completed` : `Mark ${act.title} as complete`}
                 >
                   {isDone ? (
                     <CheckCircle2 className="h-4 w-4 text-green-500" />
@@ -1073,8 +1079,8 @@ export function EntityDetailPanel({ pharmacy, onClose }: EntityDetailPanelProps)
               Opening Hours
             </h3>
             <div className="text-xs space-y-1 pl-6">
-              {pharmacy.attributes.openingHours.map((hours, index) => (
-                <p key={index} className="text-gray-600">{hours}</p>
+              {pharmacy.attributes.openingHours.map((hours) => (
+                <p key={hours} className="text-gray-600">{hours}</p>
               ))}
             </div>
           </div>
