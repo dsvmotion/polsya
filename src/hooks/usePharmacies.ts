@@ -156,7 +156,7 @@ export function useCachePharmacy() {
             opening_hours: pharmacy.opening_hours as Json,
             lat: pharmacy.lat,
             lng: pharmacy.lng,
-            google_data: pharmacy.google_data ? JSON.parse(JSON.stringify(pharmacy.google_data)) as Json : null,
+            google_data: (pharmacy.google_data ?? null) as Json,
           })
           .eq('id', existing.id)
           .select()
@@ -181,7 +181,7 @@ export function useCachePharmacy() {
           opening_hours: pharmacy.opening_hours as Json,
           lat: pharmacy.lat,
           lng: pharmacy.lng,
-          google_data: pharmacy.google_data ? JSON.parse(JSON.stringify(pharmacy.google_data)) as Json : null,
+          google_data: (pharmacy.google_data ?? null) as Json,
           client_type: 'pharmacy',
         }])
         .select()

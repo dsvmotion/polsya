@@ -88,7 +88,7 @@ export default function AdminLogs() {
     a.href = url;
     a.download = `platform-logs-${new Date().toISOString().slice(0, 10)}.csv`;
     a.click();
-    URL.revokeObjectURL(url);
+    setTimeout(() => URL.revokeObjectURL(url), 200);
   };
 
   return (
