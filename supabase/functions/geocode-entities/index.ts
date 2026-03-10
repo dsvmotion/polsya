@@ -21,6 +21,12 @@ serve(async (req) => {
 
   try {
     const GOOGLE_API_KEY = Deno.env.get('GOOGLE_MAPS_API_KEY');
+    if (!GOOGLE_API_KEY) {
+      return new Response(JSON.stringify({ error: 'Google API key not configured' }), {
+        status: 500,
+        headers: { ...cors, 'Content-Type': 'application/json' },
+      });
+    }
     const serviceRoleKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? Deno.env.get('SB_SERVICE_ROLE_KEY');
     const supabaseUrl = Deno.env.get('SUPABASE_URL') ?? '';
     if (!serviceRoleKey || !supabaseUrl) {
@@ -86,8 +92,9 @@ serve(async (req) => {
         const response = await fetch(url);
         const data = await response.json();
 
-        if (data.status === 'OK' && data.results.length > 0) {
-          const location = data.results[0].geometry.location;
+        const firstResult = Array.isArray(data.results) ? data.results[0] : undefined;
+        const location = firstResult?.geometry?.location;
+        if (data.status === 'OK' && location) {
 
           const { error: updateError } = await supabase
             .from(tableName)
@@ -139,8 +146,9 @@ serve(async (req) => {
       { headers: { ...cors, 'Content-Type': 'application/json' } }
     );
   } catch (err) {
+    console.error('geocode-entities error:', err);
     return new Response(
-      JSON.stringify({ error: String(err) }),
+      JSON.stringify({ error: 'Geocoding failed. Please try again later.' }),
       { status: 500, headers: { ...cors, 'Content-Type': 'application/json' } }
     );
   }
