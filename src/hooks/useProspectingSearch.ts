@@ -277,7 +277,7 @@ export function useProspectingSearch() {
               .select('*')
               .is('google_place_id', null)
               .ilike('city', details.city)
-              .ilike('name', `%${details.name.split(' ').slice(0, 3).join('%')}%`)
+              .ilike('name', `%${details.name.split(' ').slice(0, 3).map(t => t.replace(/[%_\\]/g, '\\$&')).join('%')}%`)
               .limit(1);
 
             if (nameMatches && nameMatches.length > 0) {
