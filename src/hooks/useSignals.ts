@@ -166,7 +166,7 @@ export function useRecentSignals(limit: number = 5) {
     queryKey: [...signalKeys.signals(orgId ?? ''), 'recent', limit],
     enabled: !!orgId,
     queryFn: async () => {
-      const { data, error } = await fromTable('creative_signals')
+      const { data, error } = await fromTable('signals')
         .select('*')
         .eq('organization_id', orgId!)
         .order('created_at', { ascending: false })

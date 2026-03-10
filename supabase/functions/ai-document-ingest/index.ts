@@ -318,7 +318,6 @@ serve(async (req) => {
 
     // ── Step 6: Track credit usage ────────────────────────────────────
     const currentPeriod = new Date().toISOString().slice(0, 7) + '-01'; // YYYY-MM-01
-    await supabaseAdmin.rpc('', {}).catch(() => {}); // no-op, using raw SQL below
 
     const { error: usageError } = await supabaseAdmin
       .from('ai_usage_monthly')
