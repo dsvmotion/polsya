@@ -63,10 +63,14 @@ function entityTableForType(entityType: string): string {
 }
 
 async function fetchUrlMetadata(url: string): Promise<Record<string, string>> {
+  const fetchAbort = new AbortController();
+  const fetchTimeout = setTimeout(() => fetchAbort.abort(), 15_000);
   const response = await fetch(url, {
     headers: { 'User-Agent': 'PolsyaEnrichmentBot/1.0' },
     redirect: 'follow',
+    signal: fetchAbort.signal,
   });
+  clearTimeout(fetchTimeout);
   const html = await response.text();
 
   const titleMatch = html.match(/<title[^>]*>([^<]+)<\/title>/i);

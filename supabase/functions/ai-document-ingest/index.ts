@@ -230,11 +230,15 @@ serve(async (req) => {
       if (!doc.source_url) {
         throw new Error('No URL specified');
       }
+      const fetchAbort = new AbortController();
+      const fetchTimeout = setTimeout(() => fetchAbort.abort(), 30_000);
       const fetchRes = await fetch(doc.source_url, {
         headers: { 'User-Agent': 'Polsya-AI-Bot/1.0' },
+        signal: fetchAbort.signal,
       });
+      clearTimeout(fetchTimeout);
       if (!fetchRes.ok) {
-        throw new Error(`Failed to fetch URL (${fetchRes.status}): ${doc.source_url}`);
+        throw new Error(`Failed to fetch URL (${fetchRes.status})`);
       }
       const html = await fetchRes.text();
       rawText = stripHtml(html);
@@ -264,6 +268,11 @@ serve(async (req) => {
     }
 
     // ── Step 4: Insert chunks into database ───────────────────────────
+    if (allEmbeddings.length !== chunks.length) {
+      throw new Error(
+        `Embedding count mismatch: got ${allEmbeddings.length} embeddings for ${chunks.length} chunks`
+      );
+    }
     const chunkRows = chunks.map((content, idx) => ({
       document_id: documentId,
       organization_id: organizationId,
