@@ -51,9 +51,15 @@ export function DiscoverSearchForm({ onSearch, isLoading }: DiscoverSearchFormPr
         `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(text)}&key=${apiKey}`,
       );
       if (!res.ok) return null;
-      const data: unknown = await res.json();
-      const loc = (data as { results?: { geometry?: { location?: { lat: number; lng: number } } }[] })
-        ?.results?.[0]?.geometry?.location;
+      const data = (await res.json()) as {
+        status?: string;
+        results?: { geometry?: { location?: { lat: number; lng: number } } }[];
+      };
+      if (data.status && data.status !== 'OK' && data.status !== 'ZERO_RESULTS') {
+        console.warn('[Geocode] API status:', data.status);
+        return null;
+      }
+      const loc = data.results?.[0]?.geometry?.location;
       return loc?.lat != null && loc?.lng != null ? loc : null;
     } catch {
       return null;
