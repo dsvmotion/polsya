@@ -9,7 +9,7 @@ import { usePlatformTenants } from '@/hooks/usePlatformTenants';
 import { supabase } from '@/integrations/supabase/client';
 
 export default function AdminDashboard() {
-  const { data: tenants = [], isLoading: tenantsLoading } = usePlatformTenants();
+  const { data: tenants = [], isLoading: tenantsLoading, error: tenantsError } = usePlatformTenants();
 
   const activeCount = useMemo(
     () => tenants.filter((t) => ['active', 'trialing'].includes(t.subscriptionStatus ?? '')).length,
@@ -64,6 +64,40 @@ export default function AdminDashboard() {
       return count ?? 0;
     },
   });
+
+  if (tenantsLoading) {
+    return (
+      <div className="space-y-6 max-w-6xl">
+        <div>
+          <h1 className="text-2xl font-bold">Admin Dashboard</h1>
+          <p className="text-sm text-muted-foreground">Loading platform data…</p>
+        </div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          {Array.from({ length: 4 }).map((_, i) => (
+            <Card key={i} className="animate-pulse">
+              <CardContent className="pt-6">
+                <div className="h-4 w-24 bg-muted rounded mb-2" />
+                <div className="h-8 w-16 bg-muted rounded" />
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      </div>
+    );
+  }
+
+  if (tenantsError) {
+    return (
+      <div className="space-y-6 max-w-6xl">
+        <div>
+          <h1 className="text-2xl font-bold">Admin Dashboard</h1>
+          <p className="text-sm text-destructive">
+            Failed to load dashboard: {tenantsError instanceof Error ? tenantsError.message : 'Unknown error'}
+          </p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6 max-w-6xl">

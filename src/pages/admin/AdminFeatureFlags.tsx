@@ -15,7 +15,7 @@ interface FeatureFlagRow {
 export default function AdminFeatureFlags() {
   const queryClient = useQueryClient();
 
-  const { data: flags = [], isLoading } = useQuery<FeatureFlagRow[]>({
+  const { data: flags = [], isLoading, error } = useQuery<FeatureFlagRow[]>({
     queryKey: ['admin', 'feature-flags'],
     queryFn: async (): Promise<FeatureFlagRow[]> => {
       // 'category' column exists in DB but not in generated Supabase types
@@ -64,6 +64,12 @@ export default function AdminFeatureFlags() {
 
       {isLoading ? (
         <p className="text-muted-foreground">Loading flags…</p>
+      ) : error ? (
+        <Card>
+          <CardContent className="py-8 text-center text-destructive">
+            Failed to load feature flags: {error instanceof Error ? error.message : 'Unknown error'}
+          </CardContent>
+        </Card>
       ) : flags.length === 0 ? (
         <Card>
           <CardContent className="py-8 text-center text-muted-foreground">
