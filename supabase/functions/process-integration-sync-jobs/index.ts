@@ -554,11 +554,14 @@ serve(async (req) => {
     const integration = integrationData as unknown as IntegrationConnectionRow;
     if (!integration.is_enabled) {
       const errMsg = 'Integration is disabled';
-      await supabaseAdmin
+      const { error: cancelError } = await supabaseAdmin
         .from('integration_sync_jobs')
         .update({ status: 'cancelled', error_message: errMsg, finished_at: new Date().toISOString() })
         .eq('id', activeJob.id)
         .eq('organization_id', auth.organizationId);
+      if (cancelError) {
+        console.error('Failed to cancel sync job:', cancelError.message);
+      }
       logEdgeEvent('warn', {
         action: 'integration_sync_job_cancelled',
         organization_id: auth.organizationId,
@@ -708,7 +711,7 @@ serve(async (req) => {
         per_target: perTarget,
       };
 
-      await supabaseAdmin
+      const { error: runFinalizeError } = await supabaseAdmin
         .from('integration_sync_runs')
         .update({
           status: runStatus,
@@ -721,10 +724,13 @@ serve(async (req) => {
         })
         .eq('id', runId)
         .eq('organization_id', auth.organizationId);
+      if (runFinalizeError) {
+        console.error('Failed to finalize sync run:', runFinalizeError.message);
+      }
 
       let retry: RetryTransition | null = null;
       if (runStatus === 'success') {
-        await supabaseAdmin
+        const { error: jobSuccessError } = await supabaseAdmin
           .from('integration_sync_jobs')
           .update({
             status: 'success',
@@ -736,6 +742,9 @@ serve(async (req) => {
           })
           .eq('id', activeJob.id)
           .eq('organization_id', auth.organizationId);
+        if (jobSuccessError) {
+          console.error('Failed to mark sync job as success:', jobSuccessError.message);
+        }
       } else {
         retry = await transitionJobAfterFailure(supabaseAdmin, {
           job: activeJob,
@@ -744,7 +753,7 @@ serve(async (req) => {
         });
       }
 
-      await supabaseAdmin
+      const { error: connStatusError } = await supabaseAdmin
         .from('integration_connections')
         .update({
           status: runStatus === 'success' ? 'connected' : 'error',
@@ -753,6 +762,9 @@ serve(async (req) => {
         })
         .eq('id', integration.id)
         .eq('organization_id', auth.organizationId);
+      if (connStatusError) {
+        console.error('Failed to update integration connection status after sync:', connStatusError.message);
+      }
 
       if (runStatus === 'success') {
         logEdgeEvent('info', {

@@ -188,13 +188,16 @@ serve(async (req) => {
 
     const finishedAt = new Date().toISOString();
 
-    await supabaseAdmin
+    const { error: consumeError } = await supabaseAdmin
       .from('integration_oauth_states')
       .update({ consumed_at: finishedAt })
       .eq('state', state)
       .eq('organization_id', auth.organizationId);
+    if (consumeError) {
+      console.error('Failed to mark OAuth state as consumed:', consumeError.message);
+    }
 
-    await supabaseAdmin
+    const { error: connectError } = await supabaseAdmin
       .from('integration_connections')
       .update({
         status: 'connected',
@@ -204,6 +207,9 @@ serve(async (req) => {
       })
       .eq('id', integrationId)
       .eq('organization_id', auth.organizationId);
+    if (connectError) {
+      console.error('Failed to update integration connection status:', connectError.message);
+    }
 
     return jsonResponse({
       connected: true,

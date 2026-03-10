@@ -284,10 +284,13 @@ serve(async (req) => {
     }));
 
     // Delete any existing chunks (for re-processing)
-    await supabaseAdmin
+    const { error: deleteError } = await supabaseAdmin
       .from('ai_document_chunks')
       .delete()
       .eq('document_id', documentId);
+    if (deleteError) {
+      console.error('Failed to delete existing chunks:', deleteError.message);
+    }
 
     // Insert in batches of 50
     for (let i = 0; i < chunkRows.length; i += 50) {
@@ -302,7 +305,7 @@ serve(async (req) => {
 
     // ── Step 5: Update document status ────────────────────────────────
     const wordCount = rawText.split(/\s+/).length;
-    await supabaseAdmin
+    const { error: statusError } = await supabaseAdmin
       .from('ai_documents')
       .update({
         status: 'ready',
@@ -315,6 +318,9 @@ serve(async (req) => {
         },
       })
       .eq('id', documentId);
+    if (statusError) {
+      console.error('Failed to update document status to ready:', statusError.message);
+    }
 
     // ── Step 6: Track credit usage ────────────────────────────────────
     const currentPeriod = new Date().toISOString().slice(0, 7) + '-01'; // YYYY-MM-01
