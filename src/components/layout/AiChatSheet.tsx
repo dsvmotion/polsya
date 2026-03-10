@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect, useCallback, type KeyboardEvent } from 'react';
+import { logger } from '@/lib/logger';
 import { useLocation } from 'react-router-dom';
 import {
   Send,
@@ -204,8 +205,8 @@ export function AiChatSheet({ open, onOpenChange }: AiChatSheetProps) {
     setLatestSources(null);
     try {
       await clearHistory();
-    } catch {
-      // Silently ignore — UI is already cleared optimistically
+    } catch (err) {
+      logger.warn('[AiChat] Failed to clear history:', err);
     }
   };
 

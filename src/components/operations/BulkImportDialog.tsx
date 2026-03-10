@@ -299,8 +299,8 @@ export function BulkImportDialog({
         setImporting(false);
         return;
       }
-    } catch {
-      // If the idempotency check fails, proceed with import rather than blocking
+    } catch (err) {
+      logger.warn('[BulkImport] Idempotency check failed, proceeding:', err);
     }
 
     let imported = 0;
@@ -391,8 +391,8 @@ export function BulkImportDialog({
         if (existing) {
           dbKeys = new Set(existing.map(r => buildDedupeKey(r.name, r.city, r.address)));
         }
-      } catch {
-        // If DB check fails, proceed without dedup to avoid blocking import
+      } catch (err) {
+        logger.warn('[BulkImport] DB dedup check failed, proceeding:', err);
       }
 
       const toInsert = uniqueInBatch.filter(p => {
@@ -430,8 +430,8 @@ export function BulkImportDialog({
         skipped_duplicates: skippedDuplicates,
         status: imported > 0 ? 'success' : 'failed',
       });
-    } catch {
-      // Best-effort logging — do not block the user
+    } catch (err) {
+      logger.warn('[BulkImport] Failed to record import run:', err);
     }
 
     // saved_at is set per-row in the insert payload — never do a global update here

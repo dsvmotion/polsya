@@ -1,4 +1,5 @@
 import { useState, useCallback, useRef } from 'react';
+import { logger } from '@/lib/logger';
 import { Bot, Plus, Loader2, Check, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
@@ -243,7 +244,7 @@ export function AgentActionsCard() {
       toast.success('Action approved');
     } catch (err) {
       if (runId) {
-        try { await logRunError(runId, err instanceof Error ? err.message : 'Unknown error'); } catch { /* best-effort */ }
+        try { await logRunError(runId, err instanceof Error ? err.message : 'Unknown error'); } catch (logErr) { logger.warn('[AgentActions] Failed to log run error:', logErr); }
         invalidateRuns();
       }
       toast.error('Failed to approve action');
@@ -271,7 +272,7 @@ export function AgentActionsCard() {
       toast.success('Action rejected');
     } catch (err) {
       if (runId) {
-        try { await logRunError(runId, err instanceof Error ? err.message : 'Unknown error'); } catch { /* best-effort */ }
+        try { await logRunError(runId, err instanceof Error ? err.message : 'Unknown error'); } catch (logErr) { logger.warn('[AgentActions] Failed to log run error:', logErr); }
         invalidateRuns();
       }
       toast.error('Failed to reject action');
