@@ -21,7 +21,8 @@ export function useAnalyticsOverview(timeRange: TimeRange) {
       const cutoffIso = cutoff?.toISOString() ?? null;
 
       // Compute the "previous period" cutoff for comparison
-      const periodDays = timeRange === 'all' ? null : parseInt(timeRange);
+      const parsedDays = timeRange === 'all' ? NaN : parseInt(timeRange);
+      const periodDays = Number.isFinite(parsedDays) && parsedDays > 0 ? parsedDays : null;
       const previousCutoffIso = periodDays && cutoff
         ? new Date(cutoff.getTime() - periodDays * 24 * 60 * 60 * 1000).toISOString()
         : null;
@@ -91,6 +92,7 @@ export function useAnalyticsOverview(timeRange: TimeRange) {
       interface ActivityDayBucket { calls: number; emails: number; meetings: number; notes: number; tasks: number }
       const activityByDayMap = new Map<string, ActivityDayBucket>();
       for (const a of allActivities) {
+        if (!a.occurred_at) continue;
         const day = a.occurred_at.slice(0, 10);
         const existing = activityByDayMap.get(day) ?? { calls: 0, emails: 0, meetings: 0, notes: 0, tasks: 0 };
         const type = a.activity_type as keyof ActivityDayBucket;

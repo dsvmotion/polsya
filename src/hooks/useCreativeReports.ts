@@ -22,6 +22,7 @@ export interface CreativeReportData {
 function getCutoffDate(timeRange: TimeRange): Date | null {
   if (timeRange === 'all') return null;
   const days = parseInt(timeRange);
+  if (!Number.isFinite(days) || days <= 0) return null;
   const cutoff = new Date();
   cutoff.setDate(cutoff.getDate() - days);
   return cutoff;
