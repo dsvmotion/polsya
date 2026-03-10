@@ -1,6 +1,7 @@
 import { Component, type ReactNode } from 'react';
 import { AlertTriangle, RefreshCw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { logger } from '@/lib/logger';
 
 interface Props {
   children: ReactNode;
@@ -24,7 +25,7 @@ export class ErrorBoundary extends Component<Props, State> {
   }
 
   componentDidCatch(error: Error, info: React.ErrorInfo) {
-    console.error(`ErrorBoundary caught [${this.props.section ?? 'app'}]:`, error, info.componentStack);
+    logger.error(`ErrorBoundary caught [${this.props.section ?? 'app'}]:`, error, info.componentStack);
   }
 
   handleRetry = () => {

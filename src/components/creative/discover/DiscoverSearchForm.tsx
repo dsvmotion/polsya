@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Slider } from '@/components/ui/slider';
 import { SearchableSelect } from '@/components/ui/searchable-select';
 import { Search, MapPin } from 'lucide-react';
+import { logger } from '@/lib/logger';
 import type { PlacesSearchParams } from '@/services/discoverService';
 
 const PLACE_TYPES = [
@@ -56,12 +57,13 @@ export function DiscoverSearchForm({ onSearch, isLoading }: DiscoverSearchFormPr
         results?: { geometry?: { location?: { lat: number; lng: number } } }[];
       };
       if (data.status && data.status !== 'OK' && data.status !== 'ZERO_RESULTS') {
-        console.warn('[Geocode] API status:', data.status);
+        logger.warn('[Geocode] API status:', data.status);
         return null;
       }
       const loc = data.results?.[0]?.geometry?.location;
       return loc?.lat != null && loc?.lng != null ? loc : null;
-    } catch {
+    } catch (err) {
+      logger.warn('[Geocode] Failed to geocode location:', err);
       return null;
     }
   }, []);

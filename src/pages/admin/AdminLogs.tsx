@@ -1,4 +1,4 @@
-import { ScrollText, Download } from 'lucide-react';
+import { Download } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
 import { AdminDataTable, type AdminColumn } from '@/components/admin/AdminDataTable';
 import { Button } from '@/components/ui/button';
