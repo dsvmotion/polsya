@@ -119,15 +119,21 @@ function parseCSVLine(line: string, sep: string): string[] {
   for (let j = 0; j < line.length; j++) {
     const ch = line[j];
     if (ch === '"') {
-      inQuotes = !inQuotes;
+      if (inQuotes && j + 1 < line.length && line[j + 1] === '"') {
+        // RFC 4180: doubled quote inside a quoted field → literal quote
+        current += '"';
+        j++; // skip the second quote
+      } else {
+        inQuotes = !inQuotes;
+      }
     } else if (ch === sep && !inQuotes) {
-      row.push(current.trim().replace(/^["']|["']$/g, ''));
+      row.push(current.trim());
       current = '';
     } else {
       current += ch;
     }
   }
-  row.push(current.trim().replace(/^["']|["']$/g, ''));
+  row.push(current.trim());
   return row;
 }
 
