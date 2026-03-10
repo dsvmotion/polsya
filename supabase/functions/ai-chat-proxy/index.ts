@@ -194,18 +194,22 @@ serve(async (req) => {
 
   if (aiFeatures.includes('rag')) {
     try {
-      // Embed the user message
+      // Embed the user message (with 15s timeout to avoid stalling the request)
+      const embeddingAbort = new AbortController();
+      const embeddingTimeout = setTimeout(() => embeddingAbort.abort(), 15_000);
       const embeddingRes = await fetch('https://api.openai.com/v1/embeddings', {
         method: 'POST',
         headers: {
           Authorization: `Bearer ${openaiKey}`,
           'Content-Type': 'application/json',
         },
+        signal: embeddingAbort.signal,
         body: JSON.stringify({
           model: Deno.env.get('OPENAI_EMBEDDING_MODEL') ?? 'text-embedding-3-small',
           input: userMessage,
         }),
       });
+      clearTimeout(embeddingTimeout);
 
       if (embeddingRes.ok) {
         const embData = (await embeddingRes.json()) as { data?: Array<{ embedding: number[] }> };

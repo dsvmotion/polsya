@@ -55,10 +55,21 @@ type GeocodeResult = {
   location_type?: string;
 };
 
+const MAX_GEOCODE_CACHE_SIZE = 500;
 const geocodeCache = new Map<string, GeocodeResult | null>();
 
 function normalizeAddressForCache(addr: string): string {
   return addr.trim().replace(/\s+/g, ' ').toLowerCase();
+}
+
+/** Evict oldest entries when cache exceeds limit. */
+function geocodeCacheSet(key: string, value: GeocodeResult | null): void {
+  if (geocodeCache.size >= MAX_GEOCODE_CACHE_SIZE) {
+    // Map iterates in insertion order — delete the first (oldest) entry
+    const oldest = geocodeCache.keys().next().value;
+    if (oldest !== undefined) geocodeCache.delete(oldest);
+  }
+  geocodeCache.set(key, value);
 }
 
 function isValidLatLng(lat: unknown, lng: unknown): lat is number {
@@ -80,7 +91,7 @@ async function geocodeFullAddress(address: string): Promise<GeocodeResult | null
 
   const apiKey = Deno.env.get('GOOGLE_MAPS_API_KEY');
   if (!apiKey) {
-    geocodeCache.set(key, null);
+    geocodeCacheSet(key, null);
     return null;
   }
 
@@ -90,7 +101,7 @@ async function geocodeFullAddress(address: string): Promise<GeocodeResult | null
 
   const resp = await fetch(url.toString());
   if (!resp.ok) {
-    geocodeCache.set(key, null);
+    geocodeCacheSet(key, null);
     return null;
   }
 
@@ -100,19 +111,19 @@ async function geocodeFullAddress(address: string): Promise<GeocodeResult | null
   const locationType = first?.geometry?.location_type;
 
   if (!isValidLatLng(loc?.lat, loc?.lng)) {
-    geocodeCache.set(key, null);
+    geocodeCacheSet(key, null);
     return null;
   }
 
   // Reliability gate: allow less precise geocoding to avoid losing orders.
   const allowed = new Set(['ROOFTOP', 'RANGE_INTERPOLATED', 'GEOMETRIC_CENTER', 'APPROXIMATE']);
   if (locationType && !allowed.has(String(locationType))) {
-    geocodeCache.set(key, null);
+    geocodeCacheSet(key, null);
     return null;
   }
 
   const result: GeocodeResult = { location: { lat: loc.lat, lng: loc.lng }, location_type: locationType };
-  geocodeCache.set(key, result);
+  geocodeCacheSet(key, result);
   return result;
 }
 

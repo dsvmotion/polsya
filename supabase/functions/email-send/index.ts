@@ -373,13 +373,18 @@ async function matchEntityFromAddresses(
 // Helpers
 // ---------------------------------------------------------------------------
 
+/** Strip CR/LF to prevent MIME header injection. */
+function sanitizeHeader(value: string): string {
+  return value.replace(/[\r\n]+/g, ' ');
+}
+
 function buildMimeMessage(from: string, params: SendParams): string {
   const lines: string[] = [];
-  lines.push(`From: ${from}`);
-  lines.push(`To: ${params.to.join(', ')}`);
-  if (params.cc?.length) lines.push(`Cc: ${params.cc.join(', ')}`);
-  if (params.bcc?.length) lines.push(`Bcc: ${params.bcc.join(', ')}`);
-  lines.push(`Subject: ${params.subject}`);
+  lines.push(`From: ${sanitizeHeader(from)}`);
+  lines.push(`To: ${params.to.map(sanitizeHeader).join(', ')}`);
+  if (params.cc?.length) lines.push(`Cc: ${params.cc.map(sanitizeHeader).join(', ')}`);
+  if (params.bcc?.length) lines.push(`Bcc: ${params.bcc.map(sanitizeHeader).join(', ')}`);
+  lines.push(`Subject: ${sanitizeHeader(params.subject)}`);
   lines.push('MIME-Version: 1.0');
   lines.push('Content-Type: text/html; charset=UTF-8');
   lines.push('');
