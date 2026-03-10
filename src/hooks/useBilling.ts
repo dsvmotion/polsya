@@ -309,6 +309,8 @@ export function usePlanUsage(organizationId: string | null) {
           .eq('organization_id', organizationId!)
           .eq('status', 'active'),
       ]);
+      if (entitiesRes.error) throw new Error(entitiesRes.error.message);
+      if (membersRes.error) throw new Error(membersRes.error.message);
       return {
         entities: entitiesRes.count ?? 0,
         users: membersRes.count ?? 0,

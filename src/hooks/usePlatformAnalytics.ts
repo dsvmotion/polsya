@@ -48,6 +48,9 @@ export function usePlatformAnalytics() {
       if (orgsRes.error) throw new Error(orgsRes.error.message);
       if (subsRes.error) throw new Error(subsRes.error.message);
       if (plansRes.error) throw new Error(plansRes.error.message);
+      if (newOrgs7Res.error) throw new Error(newOrgs7Res.error.message);
+      if (newOrgs30Res.error) throw new Error(newOrgs30Res.error.message);
+      if (churnedRes.error) throw new Error(churnedRes.error.message);
 
       const plansByPrice = new Map(
         (plansRes.data ?? []).map((p) => [p.stripe_price_id, p.amount_cents])

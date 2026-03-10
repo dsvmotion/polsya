@@ -79,6 +79,11 @@ export function usePlatformOrganizationDetail(orgId: string | undefined) {
       ]);
 
       if (orgRes.error) throw new Error(orgRes.error.message);
+      if (membersRes.error) throw new Error(membersRes.error.message);
+      if (subRes.error) throw new Error(subRes.error.message);
+      if (entityRes.error) throw new Error(entityRes.error.message);
+      if (integrationsRes.error) throw new Error(integrationsRes.error.message);
+      if (aiConfigRes.error) throw new Error(aiConfigRes.error.message);
       if (!orgRes.data) return null;
 
       const org = orgRes.data;

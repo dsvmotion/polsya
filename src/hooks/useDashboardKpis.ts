@@ -56,6 +56,7 @@ export function useDashboardKpis(filters?: KpiFilters) {
 
       if (oppResult.error) throw new Error(oppResult.error.message);
       if (pharmResult.error) throw new Error(pharmResult.error.message);
+      if (docResult.error) throw new Error(docResult.error.message);
 
       return computeDashboardKpis({
         pharmacies: (pharmResult.data ?? []) as unknown as PharmacyRow[],
