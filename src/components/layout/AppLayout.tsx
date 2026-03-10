@@ -9,6 +9,7 @@ import { ActivateSubscriptionGate } from '@/components/auth/ActivateSubscription
 import { ImpersonationBanner } from '@/components/auth/ImpersonationBanner';
 import { cn } from '@/lib/utils';
 import { LayoutContext } from './useLayout';
+import { ErrorBoundary } from '@/components/layout/ErrorBoundary';
 
 export function AppLayout() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -56,7 +57,9 @@ export function AppLayout() {
           <ImpersonationBanner />
           <SubscriptionBanner />
           <main className="flex-1">
-            <ActivateSubscriptionGate />
+            <ErrorBoundary section="app-page-content">
+              <ActivateSubscriptionGate />
+            </ErrorBoundary>
           </main>
         </div>
 

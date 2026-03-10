@@ -1,5 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { rpcCall } from '@/integrations/supabase/helpers';
+import { safeJsonParse } from '@/lib/utils';
 import { useCurrentOrganization } from '@/hooks/useOrganizationContext';
 import type { AiBudget } from '@/types/ai-documents';
 
@@ -28,7 +29,7 @@ export function useAiUsage() {
         monthlyCredits: row.monthly_credits,
         creditsUsed: row.credits_used,
         creditsPurchased: row.credits_purchased,
-        aiFeatures: Array.isArray(row.ai_features) ? row.ai_features : JSON.parse(row.ai_features || '["chat"]'),
+        aiFeatures: Array.isArray(row.ai_features) ? row.ai_features : safeJsonParse<string[]>(row.ai_features || '["chat"]', ['chat']),
         remaining: row.monthly_credits === null
           ? null
           : row.monthly_credits + row.credits_purchased - row.credits_used,

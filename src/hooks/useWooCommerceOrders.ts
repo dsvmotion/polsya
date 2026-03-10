@@ -1,6 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { Sale } from '@/types/sale';
 import { buildEdgeFunctionHeaders } from '@/lib/edge-function-headers';
+import { logger } from '@/lib/logger';
 
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
 
@@ -63,7 +64,6 @@ export function useWooCommerceOrders() {
     queryKey: ['woocommerce-orders'],
     queryFn: async (): Promise<Sale[]> => {
       try {
-        console.log('Fetching WooCommerce orders...');
         const headers = await buildEdgeFunctionHeaders({ 'Content-Type': 'application/json' });
         
         const response = await fetch(`${SUPABASE_URL}/functions/v1/woocommerce-orders`, {
@@ -82,14 +82,13 @@ export function useWooCommerceOrders() {
           } catch {
             detail = `WooCommerce API failed: ${response.status}`;
           }
-          console.error(detail);
+          logger.error(detail);
           throw new Error(detail);
         }
         
         const data = await response.json();
         
         if (data.orders && Array.isArray(data.orders) && data.orders.length > 0) {
-          console.log(`Fetched ${data.orders.length} orders from WooCommerce`);
           const sales: Sale[] = [];
           let skipped = 0;
           for (const o of data.orders as WooCommerceOrderResponse[]) {
@@ -100,16 +99,15 @@ export function useWooCommerceOrders() {
             }
           }
           if (skipped > 0) {
-            console.warn(`Skipped ${skipped} orders due to missing/invalid geocoding`);
+            logger.warn(`Skipped ${skipped} orders due to missing/invalid geocoding`);
           }
           return sales;
         }
         
-        console.log('No orders returned from WooCommerce');
         // Return empty array - NO mock data fallback
         return [];
       } catch (error) {
-        console.error('Error fetching WooCommerce orders:', error);
+        logger.error('Error fetching WooCommerce orders:', error);
         throw error instanceof Error ? error : new Error('Unknown WooCommerce fetch error');
       }
     },

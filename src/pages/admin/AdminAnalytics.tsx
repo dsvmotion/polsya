@@ -12,11 +12,12 @@ import {
 } from 'recharts';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { AdminStatsCard } from '@/components/admin/AdminStatsCard';
+import { ErrorBoundary } from '@/components/layout/ErrorBoundary';
 import { usePlatformTenants } from '@/hooks/usePlatformTenants';
 import { supabase } from '@/integrations/supabase/client';
 
 export default function AdminAnalytics() {
-  const { data: tenants = [] } = usePlatformTenants();
+  const { data: tenants = [], error: tenantsError } = usePlatformTenants();
 
   // amount_cents may exist at DB level but is not in generated Supabase types;
   // select all fields and access dynamically for forward-compatibility
@@ -68,6 +69,12 @@ export default function AdminAnalytics() {
         </p>
       </div>
 
+      {tenantsError && (
+        <p className="text-sm text-destructive">
+          Failed to load analytics: {tenantsError instanceof Error ? tenantsError.message : 'Unknown error'}
+        </p>
+      )}
+
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <AdminStatsCard title="Total Users" value={memberCount} icon={Users} />
         <AdminStatsCard title="Organizations" value={tenants.length} icon={Building2} />
@@ -76,39 +83,43 @@ export default function AdminAnalytics() {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-sm font-medium">Organization Growth</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <ResponsiveContainer width="100%" height={250}>
-              <LineChart data={chartData}>
-                <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
-                <XAxis dataKey="month" className="text-xs" />
-                <YAxis className="text-xs" />
-                <Tooltip />
-                <Line type="monotone" dataKey="orgs" stroke="hsl(var(--primary))" strokeWidth={2} dot={false} />
-              </LineChart>
-            </ResponsiveContainer>
-          </CardContent>
-        </Card>
+        <ErrorBoundary section="org-growth-chart">
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-sm font-medium">Organization Growth</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <ResponsiveContainer width="100%" height={250}>
+                <LineChart data={chartData}>
+                  <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
+                  <XAxis dataKey="month" className="text-xs" />
+                  <YAxis className="text-xs" />
+                  <Tooltip />
+                  <Line type="monotone" dataKey="orgs" stroke="hsl(var(--primary))" strokeWidth={2} dot={false} />
+                </LineChart>
+              </ResponsiveContainer>
+            </CardContent>
+          </Card>
+        </ErrorBoundary>
 
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-sm font-medium">MRR Trend</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <ResponsiveContainer width="100%" height={250}>
-              <LineChart data={chartData}>
-                <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
-                <XAxis dataKey="month" className="text-xs" />
-                <YAxis className="text-xs" tickFormatter={(v) => `$${v}`} />
-                <Tooltip formatter={(v: number) => [`$${v}`, 'MRR']} />
-                <Line type="monotone" dataKey="mrr" stroke="hsl(var(--chart-2))" strokeWidth={2} dot={false} />
-              </LineChart>
-            </ResponsiveContainer>
-          </CardContent>
-        </Card>
+        <ErrorBoundary section="mrr-trend-chart">
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-sm font-medium">MRR Trend</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <ResponsiveContainer width="100%" height={250}>
+                <LineChart data={chartData}>
+                  <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
+                  <XAxis dataKey="month" className="text-xs" />
+                  <YAxis className="text-xs" tickFormatter={(v) => `$${v}`} />
+                  <Tooltip formatter={(v: number) => [`$${v}`, 'MRR']} />
+                  <Line type="monotone" dataKey="mrr" stroke="hsl(var(--chart-2))" strokeWidth={2} dot={false} />
+                </LineChart>
+              </ResponsiveContainer>
+            </CardContent>
+          </Card>
+        </ErrorBoundary>
       </div>
     </div>
   );

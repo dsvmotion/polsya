@@ -230,11 +230,15 @@ serve(async (req) => {
       if (!doc.source_url) {
         throw new Error('No URL specified');
       }
+      const fetchAbort = new AbortController();
+      const fetchTimeout = setTimeout(() => fetchAbort.abort(), 30_000);
       const fetchRes = await fetch(doc.source_url, {
         headers: { 'User-Agent': 'Polsya-AI-Bot/1.0' },
+        signal: fetchAbort.signal,
       });
+      clearTimeout(fetchTimeout);
       if (!fetchRes.ok) {
-        throw new Error(`Failed to fetch URL (${fetchRes.status}): ${doc.source_url}`);
+        throw new Error(`Failed to fetch URL (${fetchRes.status})`);
       }
       const html = await fetchRes.text();
       rawText = stripHtml(html);
@@ -264,6 +268,11 @@ serve(async (req) => {
     }
 
     // ── Step 4: Insert chunks into database ───────────────────────────
+    if (allEmbeddings.length !== chunks.length) {
+      throw new Error(
+        `Embedding count mismatch: got ${allEmbeddings.length} embeddings for ${chunks.length} chunks`
+      );
+    }
     const chunkRows = chunks.map((content, idx) => ({
       document_id: documentId,
       organization_id: organizationId,
@@ -275,10 +284,13 @@ serve(async (req) => {
     }));
 
     // Delete any existing chunks (for re-processing)
-    await supabaseAdmin
+    const { error: deleteError } = await supabaseAdmin
       .from('ai_document_chunks')
       .delete()
       .eq('document_id', documentId);
+    if (deleteError) {
+      console.error('Failed to delete existing chunks:', deleteError.message);
+    }
 
     // Insert in batches of 50
     for (let i = 0; i < chunkRows.length; i += 50) {
@@ -293,7 +305,7 @@ serve(async (req) => {
 
     // ── Step 5: Update document status ────────────────────────────────
     const wordCount = rawText.split(/\s+/).length;
-    await supabaseAdmin
+    const { error: statusError } = await supabaseAdmin
       .from('ai_documents')
       .update({
         status: 'ready',
@@ -306,10 +318,12 @@ serve(async (req) => {
         },
       })
       .eq('id', documentId);
+    if (statusError) {
+      console.error('Failed to update document status to ready:', statusError.message);
+    }
 
     // ── Step 6: Track credit usage ────────────────────────────────────
     const currentPeriod = new Date().toISOString().slice(0, 7) + '-01'; // YYYY-MM-01
-    await supabaseAdmin.rpc('', {}).catch(() => {}); // no-op, using raw SQL below
 
     const { error: usageError } = await supabaseAdmin
       .from('ai_usage_monthly')

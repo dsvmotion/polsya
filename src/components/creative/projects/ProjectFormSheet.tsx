@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { projectSchema, type ProjectFormValues } from '@/lib/creative-schemas';
@@ -11,6 +12,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/components/ui/use-toast';
+import { getErrorMessage } from '@/lib/utils';
 
 interface ProjectFormSheetProps {
   open: boolean;
@@ -41,6 +43,22 @@ export function ProjectFormSheet({ open, onOpenChange, project, onSuccess }: Pro
     },
   });
 
+  useEffect(() => {
+    if (open) {
+      form.reset({
+        name: project?.name ?? '',
+        clientId: project?.clientId ?? '',
+        projectType: project?.projectType ?? '',
+        status: project?.status ?? 'draft',
+        budgetCents: project?.budgetCents ?? undefined,
+        currency: project?.currency ?? 'USD',
+        startDate: project?.startDate ?? '',
+        endDate: project?.endDate ?? '',
+        description: project?.description ?? '',
+      });
+    }
+  }, [open, project, form]);
+
   async function onSubmit(values: ProjectFormValues) {
     try {
       if (isEditing) {
@@ -54,7 +72,7 @@ export function ProjectFormSheet({ open, onOpenChange, project, onSuccess }: Pro
       form.reset();
       onSuccess?.();
     } catch (err) {
-      toast({ title: 'Error', description: (err as Error).message, variant: 'destructive' });
+      toast({ title: 'Error', description: getErrorMessage(err), variant: 'destructive' });
     }
   }
 

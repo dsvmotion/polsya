@@ -117,7 +117,7 @@ serve(async (req) => {
     if (!googleRes.ok) {
       const errText = await googleRes.text();
       console.error('Google Places API error:', googleRes.status, errText);
-      return json({ error: 'Google Places API error', details: errText }, 502);
+      return json({ error: `Places search failed (${googleRes.status})` }, 502);
     }
 
     const googleData = await googleRes.json();
@@ -165,6 +165,6 @@ serve(async (req) => {
     return json({ results, alreadySavedIds, totalResults: results.length });
   } catch (err) {
     console.error('places-search error:', err);
-    return json({ error: String(err) }, 500);
+    return json({ error: 'Places search failed. Please try again later.' }, 500);
   }
 });

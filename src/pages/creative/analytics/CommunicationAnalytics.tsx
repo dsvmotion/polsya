@@ -27,15 +27,19 @@ const TOOLTIP_STYLE = {
   borderRadius: '8px',
 };
 
+/** Score thresholds for color-coding communication scores */
+const SCORE_THRESHOLD_HIGH = 80;
+const SCORE_THRESHOLD_MEDIUM = 50;
+
 function getScoreColor(score: number): string {
-  if (score >= 80) return 'text-green-600 dark:text-green-400';
-  if (score >= 50) return 'text-yellow-600 dark:text-yellow-400';
+  if (score >= SCORE_THRESHOLD_HIGH) return 'text-green-600 dark:text-green-400';
+  if (score >= SCORE_THRESHOLD_MEDIUM) return 'text-yellow-600 dark:text-yellow-400';
   return 'text-red-600 dark:text-red-400';
 }
 
 function getScoreBg(score: number): string {
-  if (score >= 80) return 'bg-green-100 dark:bg-green-900/30';
-  if (score >= 50) return 'bg-yellow-100 dark:bg-yellow-900/30';
+  if (score >= SCORE_THRESHOLD_HIGH) return 'bg-green-100 dark:bg-green-900/30';
+  if (score >= SCORE_THRESHOLD_MEDIUM) return 'bg-yellow-100 dark:bg-yellow-900/30';
   return 'bg-red-100 dark:bg-red-900/30';
 }
 
@@ -66,7 +70,7 @@ export default function CommunicationAnalytics() {
               <div className="h-[300px]">
                 {hasEmailByClient ? (
                   <ResponsiveContainer width="100%" height="100%">
-                    <BarChart data={data!.emailMetrics.byClient} layout="vertical">
+                    <BarChart data={data?.emailMetrics.byClient ?? []} layout="vertical">
                       <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
                       <XAxis type="number" tick={{ fontSize: 12 }} />
                       <YAxis
@@ -115,7 +119,7 @@ export default function CommunicationAnalytics() {
               <div className="h-[300px]">
                 {hasMeetings ? (
                   <ResponsiveContainer width="100%" height="100%">
-                    <AreaChart data={data!.calendarMetrics.meetingsPerWeek}>
+                    <AreaChart data={data?.calendarMetrics.meetingsPerWeek ?? []}>
                       <defs>
                         <linearGradient id="colorMeetings" x1="0" y1="0" x2="0" y2="1">
                           <stop offset="5%" stopColor="hsl(38, 92%, 50%)" stopOpacity={0.3} />
@@ -177,7 +181,7 @@ export default function CommunicationAnalytics() {
                       </tr>
                     </thead>
                     <tbody>
-                      {data!.communicationScores
+                      {(data?.communicationScores ?? [])
                         .sort((a, b) => b.compositeScore - a.compositeScore)
                         .map((entry) => (
                           <tr key={entry.clientId} className="border-b last:border-0">

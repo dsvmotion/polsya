@@ -16,6 +16,7 @@ import { PROVIDER_LABELS } from '@/types/integrations';
 import type { IntegrationProvider } from '@/types/integrations';
 import { toCreateEventInput } from './CalendarEventFormSheet.helpers';
 import type { EventFormValues } from './CalendarEventFormSheet.helpers';
+import { getErrorMessage } from '@/lib/utils';
 
 // ---------------------------------------------------------------------------
 // Component
@@ -69,7 +70,7 @@ export function CalendarEventFormSheet({ open, onOpenChange }: CalendarEventForm
       form.reset();
       onOpenChange(false);
     } catch (err) {
-      toast({ title: 'Error', description: (err as Error).message, variant: 'destructive' });
+      toast({ title: 'Error', description: getErrorMessage(err), variant: 'destructive' });
     }
   }
 

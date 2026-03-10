@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { clientSchema, type ClientFormValues } from '@/lib/creative-schemas';
@@ -10,6 +11,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/components/ui/use-toast';
+import { getErrorMessage } from '@/lib/utils';
 
 interface ClientFormSheetProps {
   open: boolean;
@@ -36,6 +38,19 @@ export function ClientFormSheet({ open, onOpenChange, client, onSuccess }: Clien
     },
   });
 
+  useEffect(() => {
+    if (open) {
+      form.reset({
+        name: client?.name ?? '',
+        website: client?.website ?? '',
+        industry: client?.industry ?? '',
+        sizeCategory: client?.sizeCategory ?? undefined,
+        status: client?.status ?? 'prospect',
+        description: client?.description ?? '',
+      });
+    }
+  }, [open, client, form]);
+
   async function onSubmit(values: ClientFormValues) {
     try {
       if (isEditing) {
@@ -49,7 +64,7 @@ export function ClientFormSheet({ open, onOpenChange, client, onSuccess }: Clien
       form.reset();
       onSuccess?.();
     } catch (err) {
-      toast({ title: 'Error', description: (err as Error).message, variant: 'destructive' });
+      toast({ title: 'Error', description: getErrorMessage(err), variant: 'destructive' });
     }
   }
 

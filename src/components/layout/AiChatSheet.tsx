@@ -159,19 +159,32 @@ export function AiChatSheet({ open, onOpenChange }: AiChatSheetProps) {
     setLocalMessages([optimisticUser]);
     scrollToBottom();
 
-    // Pass page context so AI knows where the user is
-    const result = await sendMessage(text, { currentPage: location.pathname });
+    try {
+      // Pass page context so AI knows where the user is
+      const result = await sendMessage(text, { currentPage: location.pathname });
 
-    if (result) {
-      setLatestSources(result.sources?.length ? result.sources : null);
-      setLocalMessages([]);
-    } else {
+      if (result) {
+        setLatestSources(result.sources?.length ? result.sources : null);
+        setLocalMessages([]);
+      } else {
+        setLocalMessages([
+          optimisticUser,
+          {
+            id: `opt-err-${Date.now()}`,
+            role: 'assistant',
+            content: error || 'Something went wrong. Please try again.',
+            createdAt: new Date().toISOString(),
+            isStreaming: false,
+          },
+        ]);
+      }
+    } catch {
       setLocalMessages([
         optimisticUser,
         {
           id: `opt-err-${Date.now()}`,
           role: 'assistant',
-          content: error || 'Something went wrong. Please try again.',
+          content: 'Something went wrong. Please try again.',
           createdAt: new Date().toISOString(),
           isStreaming: false,
         },
@@ -189,7 +202,11 @@ export function AiChatSheet({ open, onOpenChange }: AiChatSheetProps) {
   const handleClearHistory = async () => {
     setLocalMessages([]);
     setLatestSources(null);
-    await clearHistory();
+    try {
+      await clearHistory();
+    } catch {
+      // Silently ignore — UI is already cleared optimistically
+    }
   };
 
   const handleSuggestedPrompt = (prompt: string) => {

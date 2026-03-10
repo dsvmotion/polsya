@@ -43,7 +43,7 @@ export function Breadcrumbs() {
   return (
     <nav aria-label="breadcrumb" className="flex items-center gap-1 text-sm min-w-0">
       {crumbs.map((crumb, i) => (
-        <span key={i} className="flex items-center gap-1 min-w-0">
+        <span key={crumb.href ?? crumb.label} className="flex items-center gap-1 min-w-0">
           {i > 0 && <ChevronRight className="h-3.5 w-3.5 text-muted-foreground shrink-0" />}
           {i === 0 && crumbs.length > 1 ? (
             <Link to="/dashboard" className="text-muted-foreground hover:text-foreground transition-colors shrink-0">

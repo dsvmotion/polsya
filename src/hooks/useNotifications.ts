@@ -69,6 +69,8 @@ export function useNotifications() {
   });
 
   // Realtime subscription for new notifications
+  // queryClient is excluded from deps — it's a stable singleton from context
+  // and including it could cause unnecessary resubscriptions.
   useEffect(() => {
     if (!userId) return;
 
@@ -92,7 +94,8 @@ export function useNotifications() {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [userId, queryClient]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [userId]);
 
   return query;
 }

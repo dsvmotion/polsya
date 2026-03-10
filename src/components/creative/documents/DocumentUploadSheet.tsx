@@ -11,6 +11,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useToast } from '@/components/ui/use-toast';
 import { useUploadDocument, type UploadDocumentInput } from '@/hooks/useAiDocuments';
 import type { DocumentSourceType } from '@/types/ai-documents';
+import { getErrorMessage } from '@/lib/utils';
 
 interface DocumentUploadSheetProps {
   open: boolean;
@@ -47,7 +48,7 @@ export function DocumentUploadSheet({ open, onOpenChange, onSuccess }: DocumentU
       resetAll();
       onSuccess?.();
     } catch (err) {
-      toast({ title: 'Upload failed', description: (err as Error).message, variant: 'destructive' });
+      toast({ title: 'Upload failed', description: getErrorMessage(err), variant: 'destructive' });
     }
   }
 

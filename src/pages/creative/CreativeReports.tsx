@@ -1,11 +1,13 @@
 // src/pages/creative/CreativeReports.tsx
 import { useState } from 'react';
 import {
+  AlertCircle,
   BarChart3,
-  TrendingUp,
-  PieChart as PieChartIcon,
-  Calendar,
   Briefcase,
+  Calendar,
+  PieChart as PieChartIcon,
+  RefreshCw,
+  TrendingUp,
 } from 'lucide-react';
 import {
   BarChart,
@@ -23,6 +25,7 @@ import {
 } from 'recharts';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Button } from '@/components/ui/button';
 import { WorkspaceContainer } from '@/components/creative/layout/WorkspaceContainer';
 import { ErrorBoundary } from '@/components/layout/ErrorBoundary';
 import { useCreativeReports } from '@/hooks/useCreativeReports';
@@ -30,6 +33,7 @@ import { OPPORTUNITY_STAGE_LABELS } from '@/types/creative';
 import { PROJECT_STATUS_LABELS } from '@/types/creative';
 import type { OpportunityStage } from '@/types/creative';
 import type { ProjectStatus } from '@/types/creative';
+import { getErrorMessage } from '@/lib/utils';
 
 const CHART_COLORS = [
   'hsl(217, 91%, 60%)',
@@ -44,7 +48,7 @@ type TimeRange = '7d' | '30d' | '90d' | '365d' | 'all';
 
 export default function CreativeReports() {
   const [timeRange, setTimeRange] = useState<TimeRange>('90d');
-  const { data, isLoading } = useCreativeReports(timeRange);
+  const { data, isLoading, error, refetch } = useCreativeReports(timeRange);
 
   const kpis = data?.kpis ?? { pipelineTotal: 0, winRate: 0, avgDealSize: 0, activeProjects: 0 };
 
@@ -71,6 +75,17 @@ export default function CreativeReports() {
         </Select>
       }
     >
+      {error ? (
+        <div className="flex flex-col items-center justify-center py-12 text-sm text-destructive gap-3">
+          <AlertCircle className="h-8 w-8 opacity-60" />
+          <p>Failed to load reports: {getErrorMessage(error)}</p>
+          <Button size="sm" variant="outline" className="gap-1.5" onClick={() => refetch()}>
+            <RefreshCw className="h-3.5 w-3.5" />
+            Retry
+          </Button>
+        </div>
+      ) : (
+      <>
       {/* KPI cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mt-2 mb-8">
         <KpiCard icon={Briefcase} label="Pipeline Total" value={formatCurrency(kpis.pipelineTotal)} loading={isLoading} />
@@ -90,7 +105,7 @@ export default function CreativeReports() {
               <div className="h-[300px]">
                 {(data?.pipelineByStage.length ?? 0) > 0 ? (
                   <ResponsiveContainer width="100%" height="100%">
-                    <BarChart data={data!.pipelineByStage} layout="vertical">
+                    <BarChart data={data?.pipelineByStage ?? []} layout="vertical">
                       <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
                       <XAxis type="number" tick={{ fontSize: 12 }} tickFormatter={(v) => `$${(v / 1000).toFixed(0)}k`} />
                       <YAxis
@@ -124,7 +139,7 @@ export default function CreativeReports() {
               <div className="h-[300px]">
                 {(data?.revenueOverTime.length ?? 0) > 0 ? (
                   <ResponsiveContainer width="100%" height="100%">
-                    <AreaChart data={data!.revenueOverTime}>
+                    <AreaChart data={data?.revenueOverTime ?? []}>
                       <defs>
                         <linearGradient id="colorRevenue" x1="0" y1="0" x2="0" y2="1">
                           <stop offset="5%" stopColor="hsl(142, 72%, 46%)" stopOpacity={0.3} />
@@ -158,7 +173,7 @@ export default function CreativeReports() {
               <div className="h-[300px]">
                 {(data?.funnelData.length ?? 0) > 0 ? (
                   <ResponsiveContainer width="100%" height="100%">
-                    <BarChart data={data!.funnelData}>
+                    <BarChart data={data?.funnelData ?? []}>
                       <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
                       <XAxis
                         dataKey="stage"
@@ -195,7 +210,7 @@ export default function CreativeReports() {
                   <ResponsiveContainer width="100%" height="100%">
                     <PieChart>
                       <Pie
-                        data={data!.projectStatusBreakdown}
+                        data={data?.projectStatusBreakdown ?? []}
                         cx="50%"
                         cy="50%"
                         innerRadius={60}
@@ -206,8 +221,8 @@ export default function CreativeReports() {
                           `${PROJECT_STATUS_LABELS[status as ProjectStatus] ?? status} ${(percent * 100).toFixed(0)}%`
                         }
                       >
-                        {data!.projectStatusBreakdown.map((_, idx) => (
-                          <Cell key={idx} fill={CHART_COLORS[idx % CHART_COLORS.length]} />
+                        {(data?.projectStatusBreakdown ?? []).map((entry, idx) => (
+                          <Cell key={entry.status} fill={CHART_COLORS[idx % CHART_COLORS.length]} />
                         ))}
                       </Pie>
                       <Tooltip />
@@ -221,6 +236,8 @@ export default function CreativeReports() {
           </Card>
         </ErrorBoundary>
       </div>
+      </>
+      )}
     </WorkspaceContainer>
   );
 }

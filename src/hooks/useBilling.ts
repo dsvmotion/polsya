@@ -2,6 +2,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import type { Json } from '@/integrations/supabase/types';
 import { buildEdgeFunctionHeaders } from '@/lib/edge-function-headers';
+import { logger } from '@/lib/logger';
 import type {
   BillingCustomer,
   BillingInvoice,
@@ -78,7 +79,7 @@ export function useBillingPlans() {
       if (error) {
         const msg = (error.message ?? '').toLowerCase();
         if (error.code === '42P01' || msg.includes('does not exist') || (msg.includes('relation') && msg.includes('exist'))) {
-          console.warn('billing_plans table not found (run migrations: supabase db push).');
+          logger.warn('billing_plans table not found (run migrations: supabase db push).');
           return [];
         }
         throw new Error(error.message);
@@ -121,7 +122,7 @@ export function useBillingOverview(organizationId: string | null) {
       ]);
 
       if (isTableNotFoundError(customerRes.error) || isTableNotFoundError(subscriptionRes.error) || isTableNotFoundError(invoiceRes.error)) {
-        console.warn('Billing tables not found (run migrations: supabase db push).');
+        logger.warn('Billing tables not found (run migrations: supabase db push).');
         return { customer: null, subscription: null, invoices: [] };
       }
       if (customerRes.error) throw new Error(customerRes.error.message);
@@ -308,6 +309,8 @@ export function usePlanUsage(organizationId: string | null) {
           .eq('organization_id', organizationId!)
           .eq('status', 'active'),
       ]);
+      if (entitiesRes.error) throw new Error(entitiesRes.error.message);
+      if (membersRes.error) throw new Error(membersRes.error.message);
       return {
         entities: entitiesRes.count ?? 0,
         users: membersRes.count ?? 0,

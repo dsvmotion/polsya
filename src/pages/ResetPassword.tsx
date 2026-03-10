@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
@@ -15,6 +15,15 @@ export default function ResetPassword() {
   const [isLoading, setIsLoading] = useState(false);
   const [success, setSuccess] = useState(false);
   const navigate = useNavigate();
+  const redirectTimerRef = useRef<ReturnType<typeof setTimeout>>();
+
+  // Redirect to dashboard after successful password reset
+  useEffect(() => {
+    if (success) {
+      redirectTimerRef.current = setTimeout(() => navigate('/dashboard', { replace: true }), 2000);
+      return () => clearTimeout(redirectTimerRef.current);
+    }
+  }, [success, navigate]);
 
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event) => {
@@ -37,14 +46,18 @@ export default function ResetPassword() {
       return;
     }
     setIsLoading(true);
-    const { error: err } = await supabase.auth.updateUser({ password });
-    setIsLoading(false);
-    if (err) {
-      setError(err.message);
-      return;
+    try {
+      const { error: err } = await supabase.auth.updateUser({ password });
+      if (err) {
+        setError(err.message);
+        return;
+      }
+      setSuccess(true);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'An unexpected error occurred');
+    } finally {
+      setIsLoading(false);
     }
-    setSuccess(true);
-    setTimeout(() => navigate('/dashboard', { replace: true }), 2000);
   };
 
   if (success) {

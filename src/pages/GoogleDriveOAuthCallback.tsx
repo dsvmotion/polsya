@@ -30,7 +30,11 @@ export default function GoogleDriveOAuthCallback() {
         <div className="max-w-md w-full rounded-xl border border-border bg-card p-6 text-center space-y-3">
           <XCircle className="h-8 w-8 text-destructive mx-auto" />
           <h1 className="text-lg font-semibold">Google Drive connection cancelled</h1>
-          <p className="text-sm text-muted-foreground">Google returned: {oauthError}</p>
+          <p className="text-sm text-muted-foreground">
+            {oauthError === 'access_denied'
+              ? 'You cancelled the authorization request.'
+              : 'An authorization error occurred. Please try again.'}
+          </p>
           <Button onClick={() => navigate('/integrations')}>Back to Integrations</Button>
         </div>
       </div>

@@ -4,7 +4,6 @@ import {
   TrendingUp,
   PieChart as PieChartIcon,
   Calendar,
-  Download,
   Filter,
 } from 'lucide-react';
 import {
@@ -23,7 +22,6 @@ import {
   AreaChart,
   Area,
 } from 'recharts';
-import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import {
   Select,
@@ -290,8 +288,8 @@ export default function Reports() {
                         dataKey="value"
                         label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
                       >
-                        {statusDistribution.map((_, idx) => (
-                          <Cell key={idx} fill={CHART_COLORS[idx % CHART_COLORS.length]} />
+                        {statusDistribution.map((entry, idx) => (
+                          <Cell key={entry.name} fill={CHART_COLORS[idx % CHART_COLORS.length]} />
                         ))}
                       </Pie>
                       <Tooltip />

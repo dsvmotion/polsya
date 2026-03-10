@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useRef, useEffect } from 'react';
 import { 
   X, MapPin, Phone, Globe, Clock, Copy, Check, 
   ExternalLink, Mail, FileText, Save, ShoppingCart, Package,
@@ -53,6 +53,7 @@ function ContactsSection({ pharmacyId }: { pharmacyId: string }) {
   const deleteContact = useDeleteEntityContact();
 
   const [showForm, setShowForm] = useState(false);
+  const [settingPrimary, setSettingPrimary] = useState(false);
   const [newName, setNewName] = useState('');
   const [newRole, setNewRole] = useState<ContactRole | ''>('');
   const [newEmail, setNewEmail] = useState('');
@@ -98,6 +99,8 @@ function ContactsSection({ pharmacyId }: { pharmacyId: string }) {
   };
 
   const handleSetPrimary = async (id: string) => {
+    if (settingPrimary) return;
+    setSettingPrimary(true);
     try {
       for (const c of contacts) {
         if (c.isPrimary && c.id !== id) {
@@ -116,6 +119,8 @@ function ContactsSection({ pharmacyId }: { pharmacyId: string }) {
       toast.success('Primary contact updated');
     } catch {
       toast.error('Failed to update primary contact');
+    } finally {
+      setSettingPrimary(false);
     }
   };
 
@@ -390,6 +395,7 @@ function ActivitiesSection({ pharmacyId }: { pharmacyId: string }) {
                   className="mt-0.5 shrink-0"
                   onClick={() => !isDone && handleComplete(act.id)}
                   disabled={isDone}
+                  aria-label={isDone ? `${act.title} completed` : `Mark ${act.title} as complete`}
                 >
                   {isDone ? (
                     <CheckCircle2 className="h-4 w-4 text-green-500" />
@@ -805,6 +811,11 @@ interface EntityDetailPanelProps {
 
 export function EntityDetailPanel({ pharmacy, onClose }: EntityDetailPanelProps) {
   const [copiedField, setCopiedField] = useState<string | null>(null);
+  const copiedTimerRef = useRef<ReturnType<typeof setTimeout>>();
+
+  // Clean up copy-feedback timer on unmount
+  useEffect(() => () => clearTimeout(copiedTimerRef.current), []);
+
   const [notes, setNotes] = useState(pharmacy.notes || '');
   const [email, setEmail] = useState(pharmacy.email || '');
   const [status, setStatus] = useState<PharmacyStatus>(pharmacy.status);
@@ -819,10 +830,14 @@ export function EntityDetailPanel({ pharmacy, onClose }: EntityDetailPanelProps)
   const statusColor = STATUS_COLORS[status];
 
   const copyToClipboard = async (text: string, field: string) => {
-    await navigator.clipboard.writeText(text);
-    setCopiedField(field);
-    toast.success('Copied to clipboard');
-    setTimeout(() => setCopiedField(null), 2000);
+    try {
+      await navigator.clipboard.writeText(text);
+      setCopiedField(field);
+      toast.success('Copied to clipboard');
+      copiedTimerRef.current = setTimeout(() => setCopiedField(null), 2000);
+    } catch {
+      toast.error('Failed to copy to clipboard');
+    }
   };
 
   const handleSave = async () => {
@@ -992,7 +1007,7 @@ export function EntityDetailPanel({ pharmacy, onClose }: EntityDetailPanelProps)
                 variant="ghost"
                 size="icon"
                 className="h-8 w-8 opacity-0 group-hover:opacity-100 transition-opacity text-gray-500"
-                onClick={() => copyToClipboard(pharmacy.phone!, 'phone')}
+                onClick={() => copyToClipboard(pharmacy.phone ?? '', 'phone')}
               >
                 {copiedField === 'phone' ? (
                   <Check className="h-3 w-3 text-gray-700" />
@@ -1064,8 +1079,8 @@ export function EntityDetailPanel({ pharmacy, onClose }: EntityDetailPanelProps)
               Opening Hours
             </h3>
             <div className="text-xs space-y-1 pl-6">
-              {pharmacy.attributes.openingHours.map((hours, index) => (
-                <p key={index} className="text-gray-600">{hours}</p>
+              {pharmacy.attributes.openingHours.map((hours) => (
+                <p key={hours} className="text-gray-600">{hours}</p>
               ))}
             </div>
           </div>

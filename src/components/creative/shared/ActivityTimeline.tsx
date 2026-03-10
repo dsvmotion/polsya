@@ -2,9 +2,10 @@ import { Phone, Mail, Users, FileText, CheckSquare, Trash2, CheckCircle2, Circle
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { useCreativeActivities, useDeleteActivity, useToggleComplete } from '@/hooks/useCreativeActivities';
+import { useToast } from '@/hooks/use-toast';
 import { ACTIVITY_TYPE_LABELS, ACTIVITY_TYPE_COLORS } from '@/types/creative-activity';
 import type { ActivityType } from '@/types/creative-activity';
-import { cn } from '@/lib/utils';
+import { cn, getErrorMessage } from '@/lib/utils';
 
 const ACTIVITY_ICONS: Record<ActivityType, typeof Phone> = {
   call: Phone,
@@ -35,6 +36,7 @@ export function ActivityTimeline({ entityType, entityId, onAddClick }: ActivityT
   const { data: activities = [], isLoading } = useCreativeActivities(entityType, entityId);
   const deleteMutation = useDeleteActivity();
   const toggleMutation = useToggleComplete();
+  const { toast } = useToast();
 
   if (isLoading) {
     return (
@@ -68,17 +70,22 @@ export function ActivityTimeline({ entityType, entityId, onAddClick }: ActivityT
   return (
     <div className="space-y-1">
       {activities.map((activity) => {
-        const Icon = ACTIVITY_ICONS[activity.activityType];
-        const colors = ACTIVITY_TYPE_COLORS[activity.activityType];
+        const Icon = ACTIVITY_ICONS[activity.activityType] ?? FileText;
+        const colors = ACTIVITY_TYPE_COLORS[activity.activityType] ?? { bg: 'bg-gray-100', text: 'text-gray-800' };
         return (
           <div key={activity.id} className="flex items-start gap-3 py-2 group">
             {activity.activityType === 'task' && (
               <button
+                type="button"
                 onClick={(e) => {
                   e.stopPropagation();
-                  toggleMutation.mutate({ id: activity.id, isCompleted: activity.isCompleted });
+                  toggleMutation.mutate(
+                    { id: activity.id, isCompleted: activity.isCompleted },
+                    { onError: (err) => toast({ title: 'Failed to update activity', description: getErrorMessage(err), variant: 'destructive' }) },
+                  );
                 }}
                 className="shrink-0 mt-0.5"
+                aria-label={activity.isCompleted ? 'Mark task as incomplete' : 'Mark task as complete'}
               >
                 {activity.isCompleted ? (
                   <CheckCircle2 className="h-5 w-5 text-green-500" />
@@ -129,7 +136,10 @@ export function ActivityTimeline({ entityType, entityId, onAddClick }: ActivityT
               variant="ghost"
               size="icon"
               className="h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity shrink-0"
-              onClick={() => deleteMutation.mutate(activity.id)}
+              aria-label="Delete activity"
+              onClick={() => deleteMutation.mutate(activity.id, {
+                onError: (err) => toast({ title: 'Failed to delete activity', description: getErrorMessage(err), variant: 'destructive' }),
+              })}
             >
               <Trash2 className="h-3 w-3 text-muted-foreground" />
             </Button>

@@ -28,8 +28,8 @@ export function useCreativeDashboard() {
         fromTable('creative_clients').select('id', { count: 'exact', head: true }).eq('organization_id', orgId!),
         fromTable('creative_projects').select('id', { count: 'exact', head: true }).eq('organization_id', orgId!).eq('status', 'active'),
         fromTable('creative_opportunities').select('stage, value_cents, currency').eq('organization_id', orgId!),
-        fromTable('creative_signals').select('id', { count: 'exact', head: true }).eq('organization_id', orgId!).eq('status', 'new'),
-        fromTable('creative_signal_rules').select('id', { count: 'exact', head: true }).eq('organization_id', orgId!).eq('is_active', true),
+        fromTable('signals').select('id', { count: 'exact', head: true }).eq('organization_id', orgId!).eq('status', 'new'),
+        fromTable('signal_rules').select('id', { count: 'exact', head: true }).eq('organization_id', orgId!).eq('is_active', true),
         fromTable('entity_resolution_candidates').select('id', { count: 'exact', head: true }).eq('organization_id', orgId!).eq('status', 'pending'),
         fromTable('enrichment_credits').select('total_credits, used_credits').eq('organization_id', orgId!),
       ]);

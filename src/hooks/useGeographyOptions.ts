@@ -1,5 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
+import { logger } from '@/lib/logger';
 
 interface Country {
   code: string;
@@ -41,7 +42,7 @@ export function useGeographyOptions(selectedCountry: string, selectedProvince: s
         .order('name');
 
       if (error) {
-        console.error('Error fetching countries:', error);
+        logger.error('Error fetching countries:', error);
         throw error;
       }
 
@@ -63,7 +64,7 @@ export function useGeographyOptions(selectedCountry: string, selectedProvince: s
         .maybeSingle();
 
       if (error) {
-        console.error('Error fetching country code:', error);
+        logger.error('Error fetching country code:', error);
         throw error;
       }
 
@@ -88,7 +89,7 @@ export function useGeographyOptions(selectedCountry: string, selectedProvince: s
         .order('name');
 
       if (error) {
-        console.error('Error fetching provinces:', error);
+        logger.error('Error fetching provinces:', error);
         throw error;
       }
 
@@ -112,7 +113,7 @@ export function useGeographyOptions(selectedCountry: string, selectedProvince: s
         .maybeSingle();
 
       if (error) {
-        console.error('Error fetching province ID:', error);
+        logger.error('Error fetching province ID:', error);
         throw error;
       }
 
@@ -137,7 +138,7 @@ export function useGeographyOptions(selectedCountry: string, selectedProvince: s
         .order('name');
 
       if (error) {
-        console.error('Error fetching cities:', error);
+        logger.error('Error fetching cities:', error);
         throw error;
       }
 

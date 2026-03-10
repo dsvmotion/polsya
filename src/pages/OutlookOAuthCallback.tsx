@@ -30,7 +30,11 @@ export default function OutlookOAuthCallback() {
         <div className="max-w-md w-full bg-white rounded-xl border border-gray-200 p-6 text-center space-y-3">
           <XCircle className="h-8 w-8 text-red-500 mx-auto" />
           <h1 className="text-lg font-semibold text-gray-900">Outlook connection cancelled</h1>
-          <p className="text-sm text-gray-600">Microsoft returned: {oauthError}</p>
+          <p className="text-sm text-gray-600">
+            {oauthError === 'access_denied'
+              ? 'You cancelled the authorization request.'
+              : 'An authorization error occurred. Please try again.'}
+          </p>
           <Button onClick={() => navigate('/dashboard')}>Back to Dashboard</Button>
         </div>
       </div>

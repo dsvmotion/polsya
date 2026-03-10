@@ -37,6 +37,7 @@ export function ContextPanel({ children, onClose, className }: ContextPanelProps
           variant="ghost"
           size="icon"
           className="h-7 w-7 text-muted-foreground hover:text-foreground"
+          aria-label="Close details panel"
           onClick={onClose}
         >
           <X className="h-4 w-4" />

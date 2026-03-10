@@ -43,6 +43,7 @@ export function NotificationItem({ notification, onMarkRead }: NotificationItemP
   return (
     <button
       onClick={handleClick}
+      aria-label={`${notification.isRead ? '' : 'Unread: '}${notification.title}`}
       className={cn(
         'flex items-start gap-3 w-full rounded-lg px-3 py-2.5 text-left transition-colors',
         'hover:bg-muted/60',

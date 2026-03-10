@@ -29,11 +29,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     );
 
     // Then check for existing session
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session);
-      setUser(session?.user ?? null);
-      setIsLoading(false);
-    });
+    supabase.auth.getSession()
+      .then(({ data: { session } }) => {
+        setSession(session);
+        setUser(session?.user ?? null);
+      })
+      .catch(() => {
+        // Auth session retrieval failed — clear state gracefully
+        setSession(null);
+        setUser(null);
+      })
+      .finally(() => {
+        setIsLoading(false);
+      });
 
     return () => subscription.unsubscribe();
   }, []);

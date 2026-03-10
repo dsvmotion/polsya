@@ -154,8 +154,8 @@ export function useCreateCalendarEvent() {
       );
 
       if (!res.ok) {
-        const err = await res.json().catch(() => ({ error: 'Create failed' }));
-        throw new Error((err as { error: string }).error);
+        const err = await res.json().catch(() => ({}));
+        throw new Error((err as Record<string, unknown>)?.error as string ?? `Create failed (${res.status})`);
       }
 
       return res.json();

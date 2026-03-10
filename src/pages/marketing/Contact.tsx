@@ -68,6 +68,7 @@ export default function Contact() {
                       id="name"
                       type="text"
                       required
+                      maxLength={200}
                       className="mt-1 block w-full rounded-lg border border-gray-300 px-3 py-2 text-sm shadow-sm focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-colors"
                     />
                   </div>
@@ -79,6 +80,7 @@ export default function Contact() {
                       id="email"
                       type="email"
                       required
+                      maxLength={254}
                       className="mt-1 block w-full rounded-lg border border-gray-300 px-3 py-2 text-sm shadow-sm focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-colors"
                     />
                   </div>
@@ -89,6 +91,7 @@ export default function Contact() {
                     <input
                       id="company"
                       type="text"
+                      maxLength={200}
                       className="mt-1 block w-full rounded-lg border border-gray-300 px-3 py-2 text-sm shadow-sm focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-colors"
                     />
                   </div>
@@ -113,6 +116,7 @@ export default function Contact() {
                       id="message"
                       rows={4}
                       required
+                      maxLength={2000}
                       className="mt-1 block w-full rounded-lg border border-gray-300 px-3 py-2 text-sm shadow-sm focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-colors"
                     />
                   </div>

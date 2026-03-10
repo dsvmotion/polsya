@@ -17,6 +17,7 @@ export function CreativeTopBar({ onMenuClick, onSearchClick }: CreativeTopBarPro
         variant="ghost"
         size="icon"
         className="lg:hidden h-9 w-9"
+        aria-label="Open menu"
         onClick={onMenuClick}
       >
         <Menu className="h-5 w-5" />
@@ -46,6 +47,7 @@ export function CreativeTopBar({ onMenuClick, onSearchClick }: CreativeTopBarPro
           variant="ghost"
           size="icon"
           className="md:hidden h-9 w-9"
+          aria-label="Search"
           onClick={onSearchClick}
         >
           <Search className="h-5 w-5" />

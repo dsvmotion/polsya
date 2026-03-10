@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Slider } from '@/components/ui/slider';
 import { SearchableSelect } from '@/components/ui/searchable-select';
 import { Search, MapPin } from 'lucide-react';
+import { logger } from '@/lib/logger';
 import type { PlacesSearchParams } from '@/services/discoverService';
 
 const PLACE_TYPES = [
@@ -45,15 +46,26 @@ export function DiscoverSearchForm({ onSearch, isLoading }: DiscoverSearchFormPr
 
   const geocodeLocation = useCallback(async (text: string) => {
     if (!text.trim()) return null;
-    const apiKey = import.meta.env.VITE_GOOGLE_MAPS_API_KEY;
-    const res = await fetch(
-      `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(text)}&key=${apiKey}`,
-    );
-    const data = await res.json();
-    if (data.results?.[0]?.geometry?.location) {
-      return data.results[0].geometry.location as { lat: number; lng: number };
+    try {
+      const apiKey = import.meta.env.VITE_GOOGLE_MAPS_API_KEY;
+      const res = await fetch(
+        `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(text)}&key=${apiKey}`,
+      );
+      if (!res.ok) return null;
+      const data = (await res.json()) as {
+        status?: string;
+        results?: { geometry?: { location?: { lat: number; lng: number } } }[];
+      };
+      if (data.status && data.status !== 'OK' && data.status !== 'ZERO_RESULTS') {
+        logger.warn('[Geocode] API status:', data.status);
+        return null;
+      }
+      const loc = data.results?.[0]?.geometry?.location;
+      return loc?.lat != null && loc?.lng != null ? loc : null;
+    } catch (err) {
+      logger.warn('[Geocode] Failed to geocode location:', err);
+      return null;
     }
-    return null;
   }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {

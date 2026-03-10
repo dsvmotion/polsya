@@ -311,9 +311,9 @@ CATCH-ALL
 
 ### 13.2 Robustez
 - [x] Backups automáticos (Supabase) — docs/BACKUPS_SUPABASE.md
-- [ ] Migraciones seguras (ya con gen_01a resiliente)
-- [ ] Índices para consultas frecuentes
-- [ ] Límites por plan (ej. máximo entidades en tier Starter)
+- [x] Migraciones seguras (ya con gen_01a resiliente)
+- [x] Índices para consultas frecuentes — perf_04a_index_pack + engine_index_pack
+- [x] Límites por plan — bill_02a: entity_limit, user_limit + triggers + UI en /billing
 
 ### 13.3 Privacidad
 - Datos encriptados en reposo (Supabase)

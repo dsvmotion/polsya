@@ -6,6 +6,7 @@ import { toBusinessEntity } from '@/services/entityService';
 import { toast } from 'sonner';
 import type { Json } from '@/integrations/supabase/types';
 import { buildEdgeFunctionHeaders } from '@/lib/edge-function-headers';
+import { logger } from '@/lib/logger';
 
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
 
@@ -154,8 +155,6 @@ export function useProspectingSearch() {
       }
       const searchQuery = `${searchTerm} in ${locationParts.join(', ')}`;
 
-      console.log('Executing pharmacy search:', searchQuery);
-
       // Collect all results with FULL pagination - no artificial limits
       // Google Places Text Search returns up to 60 results (20 per page × 3 pages max)
       const allBasicResults: GooglePlaceBasic[] = [];
@@ -169,10 +168,7 @@ export function useProspectingSearch() {
           await new Promise((resolve) => setTimeout(resolve, 2000));
         }
 
-        if (signal.aborted) {
-          console.log('Search aborted');
-          return;
-        }
+        if (signal.aborted) return;
 
         const response = await fetch(`${SUPABASE_URL}/functions/v1/google-places-pharmacies`, {
           method: 'POST',
@@ -187,7 +183,7 @@ export function useProspectingSearch() {
 
         if (!response.ok) {
           const errorText = await response.text();
-          console.error('Google Places search error:', response.status, errorText);
+          logger.error('Google Places search error:', response.status, errorText);
           throw new Error(`Search failed: ${response.status} — ${errorText}`);
         }
 
@@ -199,12 +195,9 @@ export function useProspectingSearch() {
 
         setProgress((prev) => ({ ...prev, found: allBasicResults.length }));
 
-        console.log(`Page ${pageCount}: found ${pharmacies.length} pharmacies, total: ${allBasicResults.length}`);
         // Continue until no more pages (nextPageToken is null)
         // Google Places has a natural limit of 3 pages (60 results) per query
       } while (nextPageToken);
-
-      console.log(`Search complete: ${allBasicResults.length} total pharmacies found`);
 
       if (allBasicResults.length === 0) {
         toast.info('No pharmacies found in this area');
@@ -218,6 +211,7 @@ export function useProspectingSearch() {
       let failed = 0;
 
       const flushProgress = () => {
+        if (signal.aborted) return;
         setProgress({ found: allBasicResults.length, cached: cachedPharmacies.length, processed, failed });
         setResults([...cachedPharmacies]);
       };
@@ -227,11 +221,12 @@ export function useProspectingSearch() {
 
         try {
           // Check if already in database
-          const { data: existing } = await supabase
+          const { data: existing, error: existingError } = await supabase
             .from('pharmacies')
             .select('*')
             .eq('google_place_id', basic.google_place_id)
             .maybeSingle();
+          if (existingError) logger.warn('Pharmacy lookup failed:', existingError.message);
 
           if (existing) {
             cachedPharmacies.push(toBusinessEntity(existing as never));
@@ -252,7 +247,7 @@ export function useProspectingSearch() {
           });
 
           if (!detailsResponse.ok) {
-            console.warn(`Failed to get details for ${basic.google_place_id}: ${detailsResponse.status}`);
+            logger.warn(`Failed to get details for ${basic.google_place_id}: ${detailsResponse.status}`);
             processed++;
             failed++;
             flushProgress();
@@ -263,11 +258,12 @@ export function useProspectingSearch() {
           const details: GooglePlaceDetails = detailsData.pharmacy;
 
           // Check if already exists by google_place_id (race-condition guard)
-          const { data: existingByPlaceId } = await supabase
+          const { data: existingByPlaceId, error: placeIdError } = await supabase
             .from('pharmacies')
             .select('*')
             .eq('google_place_id', details.google_place_id)
             .maybeSingle();
+          if (placeIdError) logger.warn('Pharmacy place-id lookup failed:', placeIdError.message);
 
           if (existingByPlaceId) {
             cachedPharmacies.push(toBusinessEntity(existingByPlaceId as never));
@@ -279,13 +275,14 @@ export function useProspectingSearch() {
           // Check if exists by similar name + same city (CSV imports without google_place_id)
           let existingByName = null;
           if (details.city) {
-            const { data: nameMatches } = await supabase
+            const { data: nameMatches, error: nameMatchError } = await supabase
               .from('pharmacies')
               .select('*')
               .is('google_place_id', null)
               .ilike('city', details.city)
-              .ilike('name', `%${details.name.split(' ').slice(0, 3).join('%')}%`)
+              .ilike('name', `%${details.name.split(' ').slice(0, 3).map(t => t.replace(/[%_\\]/g, '\\$&')).join('%')}%`)
               .limit(1);
+            if (nameMatchError) logger.warn('Pharmacy name-match lookup failed:', nameMatchError.message);
 
             if (nameMatches && nameMatches.length > 0) {
               existingByName = nameMatches[0];
@@ -293,7 +290,13 @@ export function useProspectingSearch() {
           }
 
           if (existingByName) {
-            const { data: updated } = await supabase
+            let googleDataJson: Json = null;
+            try {
+              googleDataJson = details.google_data ? (JSON.parse(JSON.stringify(details.google_data)) as Json) : null;
+            } catch {
+              logger.warn(`Failed to serialize google_data for ${basic.google_place_id}`);
+            }
+            const { data: updated, error: updateError } = await supabase
               .from('pharmacies')
               .update({
                 google_place_id: details.google_place_id,
@@ -302,15 +305,22 @@ export function useProspectingSearch() {
                 opening_hours: details.opening_hours as Json,
                 lat: details.lat || existingByName.lat,
                 lng: details.lng || existingByName.lng,
-                google_data: details.google_data ? (JSON.parse(JSON.stringify(details.google_data)) as Json) : null,
+                google_data: googleDataJson,
                 address: details.address || existingByName.address,
               })
               .eq('id', existingByName.id)
               .select()
               .single();
+            if (updateError) logger.warn('Pharmacy update failed:', updateError.message);
 
             cachedPharmacies.push(toBusinessEntity((updated ?? existingByName) as never));
           } else {
+            let insertGoogleData: Json = null;
+            try {
+              insertGoogleData = details.google_data ? (JSON.parse(JSON.stringify(details.google_data)) as Json) : null;
+            } catch {
+              logger.warn(`Failed to serialize google_data for insert ${basic.google_place_id}`);
+            }
             const { data: inserted, error: insertError } = await supabase
               .from('pharmacies')
               .insert([
@@ -326,7 +336,7 @@ export function useProspectingSearch() {
                   opening_hours: details.opening_hours as Json,
                   lat: details.lat,
                   lng: details.lng,
-                  google_data: details.google_data ? (JSON.parse(JSON.stringify(details.google_data)) as Json) : null,
+                  google_data: insertGoogleData,
                   client_type: (filters.clientType || 'pharmacy') as 'pharmacy' | 'herbalist',
                 },
               ])
@@ -334,11 +344,13 @@ export function useProspectingSearch() {
               .single();
 
             if (insertError) {
-              const { data: refetched } = await supabase
+              logger.warn('Pharmacy insert failed (likely duplicate):', insertError.message);
+              const { data: refetched, error: refetchError } = await supabase
                 .from('pharmacies')
                 .select('*')
                 .eq('google_place_id', basic.google_place_id)
                 .maybeSingle();
+              if (refetchError) logger.warn('Pharmacy refetch failed:', refetchError.message);
               if (refetched) {
                 cachedPharmacies.push(toBusinessEntity(refetched as never));
               } else {
@@ -353,7 +365,7 @@ export function useProspectingSearch() {
           flushProgress();
         } catch (detailError) {
           if (isAbortError(detailError)) return;
-          console.warn(`Error fetching details for ${basic.google_place_id}:`, detailError);
+          logger.warn(`Error fetching details for ${basic.google_place_id}:`, detailError);
           processed++;
           failed++;
           flushProgress();
@@ -374,7 +386,6 @@ export function useProspectingSearch() {
         });
       }
 
-      console.log(`Caching complete: ${cachedPharmacies.length} pharmacies cached, ${failed} failed`);
       if (failed > 0 && cachedPharmacies.length > 0) {
         toast.success(`Found ${cachedPharmacies.length} pharmacies (${failed} failed)`);
       } else if (cachedPharmacies.length > 0) {
@@ -383,11 +394,8 @@ export function useProspectingSearch() {
         toast.error(`All ${failed} pharmacy lookups failed. Please try again.`);
       }
     } catch (error) {
-      if (isAbortError(error)) {
-        console.log('Search was cancelled');
-        return;
-      }
-      console.error('Search error:', error);
+      if (isAbortError(error)) return;
+      logger.error('Search error:', error);
       const msg = toUserError(error, 'Search');
       if (msg) toast.error(msg);
     } finally {

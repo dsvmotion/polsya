@@ -1,4 +1,4 @@
-import { Settings, UserPlus, Trash2 } from 'lucide-react';
+import { UserPlus, Trash2 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -8,6 +8,7 @@ import { useAddPlatformOwner } from '@/hooks/useAddPlatformOwner';
 import { useRemovePlatformOwner } from '@/hooks/useRemovePlatformOwner';
 import { useState } from 'react';
 import { toast } from 'sonner';
+import { getErrorMessage } from '@/lib/utils';
 
 export default function AdminSettings() {
   const { data: owners = [], isLoading } = usePlatformOwnerEmails();
@@ -26,6 +27,9 @@ export default function AdminSettings() {
         setNewEmail('');
         toast.success(`Added ${email} as admin`);
       },
+      onError: (err) => {
+        toast.error(getErrorMessage(err));
+      },
     });
   };
 
@@ -36,6 +40,9 @@ export default function AdminSettings() {
     }
     removeOwner.mutate(email, {
       onSuccess: () => toast.success(`Removed ${email}`),
+      onError: (err) => {
+        toast.error(getErrorMessage(err));
+      },
     });
   };
 

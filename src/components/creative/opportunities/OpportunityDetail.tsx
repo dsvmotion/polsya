@@ -12,6 +12,7 @@ import { CollapsibleEngineSection } from '@/components/creative/shared/Collapsib
 import { ActivityTimeline } from '@/components/creative/shared/ActivityTimeline';
 import { ActivityFormSheet } from '@/components/creative/shared/ActivityFormSheet';
 import { useCreativeActivities } from '@/hooks/useCreativeActivities';
+import { getErrorMessage } from '@/lib/utils';
 
 interface OpportunityDetailProps {
   opportunity: CreativeOpportunity;
@@ -37,7 +38,7 @@ export function OpportunityDetail({ opportunity, clientName, onClose }: Opportun
       toast({ title: 'Opportunity deleted' });
       onClose();
     } catch (err) {
-      toast({ title: 'Error', description: (err as Error).message, variant: 'destructive' });
+      toast({ title: 'Error', description: getErrorMessage(err), variant: 'destructive' });
     }
   }
 
@@ -52,12 +53,12 @@ export function OpportunityDetail({ opportunity, clientName, onClose }: Opportun
           </Badge>
         </div>
         <div className="flex gap-1">
-          <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setEditOpen(true)}>
+          <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setEditOpen(true)} aria-label="Edit opportunity">
             <Pencil className="h-4 w-4" />
           </Button>
           <AlertDialog>
             <AlertDialogTrigger asChild>
-              <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive">
+              <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive" aria-label="Delete opportunity">
                 <Trash2 className="h-4 w-4" />
               </Button>
             </AlertDialogTrigger>

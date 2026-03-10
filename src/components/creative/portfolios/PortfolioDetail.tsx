@@ -9,6 +9,7 @@ import { Button } from '@/components/ui/button';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { useToast } from '@/components/ui/use-toast';
 import { Pencil, Trash2, Globe, Lock, Building2, ExternalLink } from 'lucide-react';
+import { getErrorMessage } from '@/lib/utils';
 
 interface PortfolioDetailProps {
   portfolio: CreativePortfolio;
@@ -27,7 +28,7 @@ export function PortfolioDetail({ portfolio, onClose }: PortfolioDetailProps) {
       toast({ title: 'Portfolio deleted' });
       onClose();
     } catch (err) {
-      toast({ title: 'Error', description: (err as Error).message, variant: 'destructive' });
+      toast({ title: 'Error', description: getErrorMessage(err), variant: 'destructive' });
     }
   }
 
@@ -58,12 +59,12 @@ export function PortfolioDetail({ portfolio, onClose }: PortfolioDetailProps) {
           </div>
         </div>
         <div className="flex gap-1">
-          <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setEditOpen(true)}>
+          <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setEditOpen(true)} aria-label="Edit portfolio">
             <Pencil className="h-4 w-4" />
           </Button>
           <AlertDialog>
             <AlertDialogTrigger asChild>
-              <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive">
+              <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive" aria-label="Delete portfolio">
                 <Trash2 className="h-4 w-4" />
               </Button>
             </AlertDialogTrigger>
@@ -106,8 +107,8 @@ export function PortfolioDetail({ portfolio, onClose }: PortfolioDetailProps) {
         <div>
           <h3 className="text-sm font-medium mb-2">Media</h3>
           <div className="space-y-1">
-            {portfolio.mediaUrls.map((url, i) => (
-              <a key={i} href={url} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1.5 text-sm text-primary hover:underline truncate">
+            {portfolio.mediaUrls.map((url) => (
+              <a key={url} href={url} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1.5 text-sm text-primary hover:underline truncate">
                 <ExternalLink className="h-3.5 w-3.5 shrink-0" />
                 <span className="truncate">{url}</span>
               </a>

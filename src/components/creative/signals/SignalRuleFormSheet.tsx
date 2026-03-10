@@ -12,6 +12,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Switch } from '@/components/ui/switch';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/components/ui/use-toast';
+import { getErrorMessage } from '@/lib/utils';
 
 interface SignalRuleFormSheetProps {
   open: boolean;
@@ -52,7 +53,7 @@ export function SignalRuleFormSheet({ open, onOpenChange, rule, onSuccess }: Sig
       form.reset();
       onSuccess?.();
     } catch (err) {
-      toast({ title: 'Error', description: (err as Error).message, variant: 'destructive' });
+      toast({ title: 'Error', description: getErrorMessage(err), variant: 'destructive' });
     }
   }
 

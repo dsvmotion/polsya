@@ -62,7 +62,7 @@ export default function ActivityAnalytics() {
               <div className="h-[300px]">
                 {hasCorrelation ? (
                   <ResponsiveContainer width="100%" height="100%">
-                    <BarChart data={data!.correlation}>
+                    <BarChart data={data?.correlation ?? []}>
                       <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
                       <XAxis dataKey="activityType" tick={{ fontSize: 12 }} />
                       <YAxis tick={{ fontSize: 12 }} />
@@ -104,7 +104,7 @@ export default function ActivityAnalytics() {
               <div className="h-[300px]">
                 {hasTouch ? (
                   <ResponsiveContainer width="100%" height="100%">
-                    <BarChart data={data!.touchPatterns}>
+                    <BarChart data={data?.touchPatterns ?? []}>
                       <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
                       <XAxis dataKey="touchCount" tick={{ fontSize: 12 }} />
                       <YAxis tick={{ fontSize: 12 }} />
@@ -176,7 +176,7 @@ export default function ActivityAnalytics() {
                       </tr>
                     </thead>
                     <tbody>
-                      {data!.coldClients
+                      {(data?.coldClients ?? [])
                         .sort((a, b) => b.daysSinceActivity - a.daysSinceActivity)
                         .map((client) => (
                           <tr key={client.id} className="border-b last:border-0">

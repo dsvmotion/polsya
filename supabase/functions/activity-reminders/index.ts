@@ -38,8 +38,11 @@ serve(async (_req) => {
     const targetUserId = act.assigned_to || act.created_by;
     if (!targetUserId) continue;
 
-    // Determine action_url based on entity type
-    const actionUrl = act.entity_type ? `/creative/${act.entity_type}s` : '/creative';
+    // Determine action_url based on entity type (validate to prevent path traversal)
+    const safeEntityType = typeof act.entity_type === 'string'
+      ? act.entity_type.replace(/[^a-z0-9_-]/gi, '')
+      : '';
+    const actionUrl = safeEntityType ? `/creative/${safeEntityType}s` : '/creative';
 
     const { error: insertError } = await supabase
       .from('creative_notifications')

@@ -1,5 +1,5 @@
 import { WorkspaceContainer } from '@/components/creative/layout/WorkspaceContainer';
-import { Users, FolderKanban, Briefcase, TrendingUp, Activity, BarChart3, Zap, Shield, GitMerge, Layers } from 'lucide-react';
+import { Users, FolderKanban, Briefcase, TrendingUp, BarChart3, Zap, Shield, GitMerge, Layers, Clock } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useCreativeDashboard } from '@/hooks/useCreativeDashboard';
 import { useRecentSignals } from '@/hooks/useSignals';
@@ -11,7 +11,6 @@ import { Badge } from '@/components/ui/badge';
 import { useRecentActivities } from '@/hooks/useCreativeActivities';
 import { ACTIVITY_TYPE_COLORS } from '@/types/creative-activity';
 import type { ActivityType } from '@/types/creative-activity';
-import { Clock } from 'lucide-react';
 
 const formatCurrency = (cents: number) =>
   new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(cents / 100);

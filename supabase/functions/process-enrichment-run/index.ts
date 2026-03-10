@@ -63,10 +63,14 @@ function entityTableForType(entityType: string): string {
 }
 
 async function fetchUrlMetadata(url: string): Promise<Record<string, string>> {
+  const fetchAbort = new AbortController();
+  const fetchTimeout = setTimeout(() => fetchAbort.abort(), 15_000);
   const response = await fetch(url, {
     headers: { 'User-Agent': 'PolsyaEnrichmentBot/1.0' },
     redirect: 'follow',
+    signal: fetchAbort.signal,
   });
+  clearTimeout(fetchTimeout);
   const html = await response.text();
 
   const titleMatch = html.match(/<title[^>]*>([^<]+)<\/title>/i);
@@ -238,7 +242,7 @@ serve(async (req) => {
     const completedAt = new Date().toISOString();
     const finalStatus = errorLog.length > 0 && results.length === 0 ? 'failed' : 'completed';
 
-    await supabase
+    const { error: finalizeError } = await supabase
       .from('enrichment_runs')
       .update({
         status: finalStatus,
@@ -248,6 +252,9 @@ serve(async (req) => {
         credits_used: creditsUsed,
       })
       .eq('id', run.id);
+    if (finalizeError) {
+      console.error('Failed to finalize enrichment run:', finalizeError.message);
+    }
 
     // 6. Update recipe run_count and last_run_at
     if (run.recipe_id) {

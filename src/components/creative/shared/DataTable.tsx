@@ -100,7 +100,9 @@ export function DataTable<TData, TValue>({
                 <TableRow
                   key={row.id}
                   className={onRowClick ? 'cursor-pointer' : ''}
+                  tabIndex={onRowClick ? 0 : undefined}
                   onClick={() => onRowClick?.(row.original)}
+                  onKeyDown={onRowClick ? (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onRowClick(row.original); } } : undefined}
                 >
                   {row.getVisibleCells().map((cell) => (
                     <TableCell key={cell.id}>

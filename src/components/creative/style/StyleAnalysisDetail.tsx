@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { useToast } from '@/components/ui/use-toast';
 import { Pencil, Trash2, Link, Type } from 'lucide-react';
+import { getErrorMessage } from '@/lib/utils';
 
 interface StyleAnalysisDetailProps {
   analysis: StyleAnalysis;
@@ -26,7 +27,7 @@ export function StyleAnalysisDetail({ analysis, onClose, onFindSimilar }: StyleA
       toast({ title: 'Analysis deleted' });
       onClose();
     } catch (err) {
-      toast({ title: 'Error', description: (err as Error).message, variant: 'destructive' });
+      toast({ title: 'Error', description: getErrorMessage(err), variant: 'destructive' });
     }
   }
 
@@ -69,8 +70,8 @@ export function StyleAnalysisDetail({ analysis, onClose, onFindSimilar }: StyleA
         <div>
           <h3 className="text-sm font-medium mb-2">Color Palette</h3>
           <div className="flex flex-wrap gap-2">
-            {analysis.colorPalette.map((swatch, i) => (
-              <div key={i} className="flex items-center gap-2 rounded-md border px-2 py-1">
+            {analysis.colorPalette.map((swatch) => (
+              <div key={swatch.hex} className="flex items-center gap-2 rounded-md border px-2 py-1">
                 <div className="h-6 w-6 rounded border border-border" style={{ backgroundColor: swatch.hex }} />
                 <div className="text-xs">
                   <div className="font-medium">{swatch.name ?? swatch.hex}</div>

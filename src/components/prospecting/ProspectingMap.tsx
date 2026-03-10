@@ -3,6 +3,7 @@
 import { useEffect, useRef, useCallback, useState } from 'react';
 import { Pharmacy, STATUS_COLORS } from '@/types/pharmacy';
 import { Filter } from 'lucide-react';
+import { logger } from '@/lib/logger';
 
 interface ProspectingMapProps {
   pharmacies: Pharmacy[];
@@ -42,6 +43,8 @@ export function ProspectingMap({
   const mapInstanceRef = useRef<google.maps.Map | null>(null);
   const markersByIdRef = useRef<Map<string, google.maps.Marker>>(new Map());
   const infoWindowRef = useRef<google.maps.InfoWindow | null>(null);
+  const onSelectRef = useRef(onSelectPharmacy);
+  onSelectRef.current = onSelectPharmacy;
   const [isMapReady, setIsMapReady] = useState(false);
 
   // Get marker icon using status colors (Yellow/Blue/Green)
@@ -161,7 +164,7 @@ export function ProspectingMap({
       });
 
       marker.addListener('click', () => {
-        onSelectPharmacy(pharmacy);
+        onSelectRef.current(pharmacy);
 
         if (infoWindowRef.current) {
           const statusLabels = {
@@ -197,14 +200,14 @@ export function ProspectingMap({
 
       markersById.set(pharmacy.id, marker);
     });
-  }, [pharmacies, selectedPharmacyId, getMarkerIcon, onSelectPharmacy, isMapReady]);
+  }, [pharmacies, selectedPharmacyId, getMarkerIcon, isMapReady]);
 
   // Load Google Maps script
   useEffect(() => {
     const apiKey = import.meta.env.VITE_GOOGLE_MAPS_API_KEY;
     
     if (!apiKey) {
-      console.error('Google Maps API key not found');
+      logger.error('Google Maps API key not found');
       return;
     }
 

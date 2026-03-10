@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { format } from 'date-fns';
 import { ArrowLeft, Reply, ChevronDown, ChevronUp } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -119,12 +119,11 @@ export function EmailThreadView({
   // When thread data loads, expand only the last message
   const lastMessageId = messages[messages.length - 1]?.id;
 
-  // Ensure the last message from loaded thread data is expanded
-  useMemo(() => {
-    if (lastMessageId && !expandedIds.has(lastMessageId)) {
+  // When the thread finishes loading, expand the last message
+  useEffect(() => {
+    if (lastMessageId) {
       setExpandedIds(new Set([lastMessageId]));
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [lastMessageId]);
 
   const toggleExpanded = (id: string) => {

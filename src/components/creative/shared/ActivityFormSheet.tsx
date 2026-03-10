@@ -9,6 +9,7 @@ import { useToast } from '@/components/ui/use-toast';
 import { useCreateActivity } from '@/hooks/useCreativeActivities';
 import { ACTIVITY_TYPES, ACTIVITY_TYPE_LABELS } from '@/types/creative-activity';
 import type { ActivityType } from '@/types/creative-activity';
+import { getErrorMessage } from '@/lib/utils';
 
 interface ActivityFormSheetProps {
   open: boolean;
@@ -68,7 +69,7 @@ export function ActivityFormSheet({ open, onOpenChange, entityType, entityId }: 
       form.reset();
       onOpenChange(false);
     } catch (err) {
-      toast({ title: 'Error', description: (err as Error).message, variant: 'destructive' });
+      toast({ title: 'Error', description: getErrorMessage(err), variant: 'destructive' });
     }
   }
 
@@ -173,7 +174,7 @@ export function ActivityFormSheet({ open, onOpenChange, entityType, entityId }: 
                 <FormItem>
                   <FormLabel>Duration (minutes)</FormLabel>
                   <FormControl>
-                    <Input type="number" placeholder="30" {...field} />
+                    <Input type="number" placeholder="30" min={0} max={1440} {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>

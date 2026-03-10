@@ -133,6 +133,7 @@ function SidebarNavButton({
       <Tooltip>
         <TooltipTrigger asChild>
           <button
+            type="button"
             onClick={() => onNavigate(item.path)}
             className={cn(
               'flex items-center justify-center w-10 h-10 rounded-lg transition-colors',
@@ -154,6 +155,7 @@ function SidebarNavButton({
   // Expanded — button with icon + label
   return (
     <button
+      type="button"
       onClick={() => onNavigate(item.path)}
       className={cn(
         'flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors w-full text-left',
@@ -198,6 +200,7 @@ function SidebarNavGroup({
       <Tooltip>
         <TooltipTrigger asChild>
           <button
+            type="button"
             onClick={() => onOpenChange(true)}
             className={cn(
               'flex items-center justify-center w-10 h-10 rounded-lg transition-colors',
@@ -225,7 +228,8 @@ function SidebarNavGroup({
           <GroupIcon className="h-3.5 w-3.5 text-sidebar-foreground/50" />
           {group.path ? (
             <button
-              onClick={() => onNavigate(group.path!)}
+              type="button"
+              onClick={() => onNavigate(group.path ?? '')}
               className="text-xs font-semibold uppercase tracking-wider text-sidebar-foreground/50 hover:text-sidebar-foreground transition-colors"
             >
               {group.label}
@@ -237,7 +241,7 @@ function SidebarNavGroup({
           )}
         </div>
         <CollapsibleTrigger asChild>
-          <button className="h-5 w-5 flex items-center justify-center rounded text-sidebar-foreground/50 hover:text-sidebar-foreground transition-colors">
+          <button type="button" className="h-5 w-5 flex items-center justify-center rounded text-sidebar-foreground/50 hover:text-sidebar-foreground transition-colors">
             <ChevronRightIcon
               className={cn(
                 'h-3.5 w-3.5 transition-transform duration-200',
@@ -379,6 +383,7 @@ export function CreativeSidebar({
             <Tooltip>
               <TooltipTrigger asChild>
                 <button
+                  type="button"
                   onClick={onOpenAiChat}
                   className={cn(
                     'flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors w-full text-left',

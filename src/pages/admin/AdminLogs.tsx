@@ -1,8 +1,17 @@
-import { ScrollText, Download } from 'lucide-react';
+import { Download } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
 import { AdminDataTable, type AdminColumn } from '@/components/admin/AdminDataTable';
 import { Button } from '@/components/ui/button';
 import { supabase } from '@/integrations/supabase/client';
+
+/** Escape a string for safe CSV output (prevents formula injection and structure corruption). */
+function csvField(value: string): string {
+  let safe = value;
+  if (/^[=+\-@\t\r]/.test(safe)) {
+    safe = `'${safe}`;
+  }
+  return `"${safe.replace(/"/g, '""')}"`;
+}
 
 interface AuditLogRow {
   id: string;
@@ -43,7 +52,7 @@ const columns: AdminColumn<AuditLogRow>[] = [
 ];
 
 export default function AdminLogs() {
-  const { data: logs = [], isLoading } = useQuery<AuditLogRow[]>({
+  const { data: logs = [], isLoading, error } = useQuery<AuditLogRow[]>({
     queryKey: ['admin', 'logs'],
     queryFn: async (): Promise<AuditLogRow[]> => {
       const { data, error } = await supabase
@@ -64,11 +73,11 @@ export default function AdminLogs() {
       ['Timestamp', 'Action', 'Resource', 'Actor', 'Details'].join(','),
       ...logs.map((log) =>
         [
-          new Date(log.created_at).toISOString(),
-          log.action,
-          log.resource_type,
-          log.actor_id,
-          JSON.stringify(log.metadata ?? {}),
+          csvField(new Date(log.created_at).toISOString()),
+          csvField(log.action),
+          csvField(log.resource_type),
+          csvField(log.actor_id),
+          csvField(JSON.stringify(log.metadata ?? {})),
         ].join(','),
       ),
     ].join('\n');
@@ -79,7 +88,7 @@ export default function AdminLogs() {
     a.href = url;
     a.download = `platform-logs-${new Date().toISOString().slice(0, 10)}.csv`;
     a.click();
-    URL.revokeObjectURL(url);
+    setTimeout(() => URL.revokeObjectURL(url), 200);
   };
 
   return (
@@ -95,6 +104,12 @@ export default function AdminLogs() {
           <Download className="h-4 w-4" /> Export CSV
         </Button>
       </div>
+
+      {error && (
+        <p className="text-sm text-destructive">
+          Failed to load logs: {error instanceof Error ? error.message : 'Unknown error'}
+        </p>
+      )}
 
       <AdminDataTable
         data={logs}

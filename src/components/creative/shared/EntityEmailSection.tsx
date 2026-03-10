@@ -29,7 +29,7 @@ export function EntityEmailSection({ entityType, entityId }: EntityEmailSectionP
       ) : (
         <div className="divide-y">
           {emails.map((email) => {
-            const dirColors = EMAIL_DIRECTION_COLORS[email.direction];
+            const dirColors = EMAIL_DIRECTION_COLORS[email.direction] ?? { bg: 'bg-gray-100', text: 'text-gray-800' };
             return (
               <div key={email.id} className="py-2 flex items-start gap-2">
                 <div className="flex-1 min-w-0">

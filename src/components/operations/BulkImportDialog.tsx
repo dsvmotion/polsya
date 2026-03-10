@@ -1,6 +1,7 @@
 import { useState, useCallback } from 'react';
 import * as XLSX from 'xlsx';
 import { Upload, Loader2, FileSpreadsheet } from 'lucide-react';
+import { logger } from '@/lib/logger';
 import {
   Dialog,
   DialogContent,
@@ -118,15 +119,21 @@ function parseCSVLine(line: string, sep: string): string[] {
   for (let j = 0; j < line.length; j++) {
     const ch = line[j];
     if (ch === '"') {
-      inQuotes = !inQuotes;
+      if (inQuotes && j + 1 < line.length && line[j + 1] === '"') {
+        // RFC 4180: doubled quote inside a quoted field → literal quote
+        current += '"';
+        j++; // skip the second quote
+      } else {
+        inQuotes = !inQuotes;
+      }
     } else if (ch === sep && !inQuotes) {
-      row.push(current.trim().replace(/^["']|["']$/g, ''));
+      row.push(current.trim());
       current = '';
     } else {
       current += ch;
     }
   }
-  row.push(current.trim().replace(/^["']|["']$/g, ''));
+  row.push(current.trim());
   return row;
 }
 
@@ -242,7 +249,7 @@ export function BulkImportDialog({
           const detected = autoDetectMapping(h, industryTemplateKey);
           setMapping((prev) => ({ ...detected, ...prev }));
         } catch (e) {
-          console.error(e);
+          logger.error('Failed to parse import file:', e);
           setHeaders([]);
           setRows([]);
         }
@@ -336,8 +343,8 @@ export function BulkImportDialog({
             province: sanitizeTextInput(getVal(row, 'province')),
             autonomous_community: sanitizeTextInput(getVal(row, 'autonomous_community')),
             country: sanitizeTextInput(getVal(row, 'country')) || 'Spain',
-            lat: parseFloat(getVal(row, 'lat')) || 0,
-            lng: parseFloat(getVal(row, 'lng')) || 0,
+            lat: Number.isFinite(parseFloat(getVal(row, 'lat'))) ? parseFloat(getVal(row, 'lat')) : null,
+            lng: Number.isFinite(parseFloat(getVal(row, 'lng'))) ? parseFloat(getVal(row, 'lng')) : null,
             phone: sanitizeTextInput(getVal(row, 'phone')),
             secondary_phone: sanitizeTextInput(getVal(row, 'secondary_phone')),
             email: sanitizeTextInput(getVal(row, 'email')),

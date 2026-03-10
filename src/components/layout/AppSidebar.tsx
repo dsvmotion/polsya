@@ -165,7 +165,7 @@ export function AppSidebar({ open, onOpenChange, collapsed, onCollapsedChange, o
 
                 {expanded && (
                   <div className="ml-8 mt-1 space-y-0.5">
-                    {item.children!.map((child) => (
+                    {item.children?.map((child) => (
                       <Link
                         key={child.href}
                         to={child.href}

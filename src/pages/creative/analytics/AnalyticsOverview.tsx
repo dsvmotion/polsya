@@ -96,7 +96,7 @@ export default function AnalyticsOverview() {
               <div className="h-[300px]">
                 {hasRevenue ? (
                   <ResponsiveContainer width="100%" height="100%">
-                    <AreaChart data={data!.revenueByMonth}>
+                    <AreaChart data={data?.revenueByMonth ?? []}>
                       <defs>
                         <linearGradient id="colorCurrent" x1="0" y1="0" x2="0" y2="1">
                           <stop offset="5%" stopColor="hsl(217, 91%, 60%)" stopOpacity={0.3} />
@@ -153,7 +153,7 @@ export default function AnalyticsOverview() {
               <div className="h-[300px]">
                 {hasHealth ? (
                   <ResponsiveContainer width="100%" height="100%">
-                    <BarChart data={data!.pipelineHealth}>
+                    <BarChart data={data?.pipelineHealth ?? []}>
                       <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
                       <XAxis dataKey="label" tick={{ fontSize: 12 }} />
                       <YAxis tick={{ fontSize: 12 }} />
@@ -162,8 +162,8 @@ export default function AnalyticsOverview() {
                         formatter={(value: number) => [value, 'Deals']}
                       />
                       <Bar dataKey="value" radius={[4, 4, 0, 0]}>
-                        {data!.pipelineHealth.map((entry, idx) => (
-                          <Cell key={idx} fill={entry.color} />
+                        {(data?.pipelineHealth ?? []).map((entry) => (
+                          <Cell key={entry.label} fill={entry.color} />
                         ))}
                       </Bar>
                     </BarChart>
@@ -186,7 +186,7 @@ export default function AnalyticsOverview() {
               <div className="h-[300px]">
                 {hasActivity ? (
                   <ResponsiveContainer width="100%" height="100%">
-                    <BarChart data={data!.activityByDay}>
+                    <BarChart data={data?.activityByDay ?? []}>
                       <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
                       <XAxis
                         dataKey="date"

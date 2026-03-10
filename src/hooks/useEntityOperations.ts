@@ -5,6 +5,7 @@ import { type BusinessEntity } from '@/types/entity';
 import { type ClientType } from '@/types/pharmacy';
 import { buildEdgeFunctionHeaders } from '@/lib/edge-function-headers';
 import { toBusinessEntities } from '@/services/entityService';
+import { logger } from '@/lib/logger';
 
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
 
@@ -28,7 +29,7 @@ export function useDetailedOrders() {
         } catch {
           detail = `Failed to fetch detailed orders: ${response.status}`;
         }
-        console.error(detail);
+        logger.error(detail);
         throw new Error(detail);
       }
 
@@ -50,7 +51,7 @@ export function useEntityDocuments() {
         .order('uploaded_at', { ascending: false });
 
       if (error) {
-        console.error('Error fetching documents:', error);
+        logger.error('Error fetching documents:', error);
         throw new Error(`Error fetching documents: ${error.message}`);
       }
 
@@ -125,8 +126,8 @@ export function useEntityOperations(
         query = query.eq('commercial_status', filters.commercialStatus as never);
       }
       if (filters?.search) {
-        const term = filters.search.replace(/,/g, ' ');
-        query = query.or(`name.ilike.%${term}%,address.ilike.%${term}%,phone.ilike.%${term}%`);
+        const escaped = filters.search.replace(/[%_.(),"\\]/g, '\\$&');
+        query = query.or(`name.ilike.%${escaped}%,address.ilike.%${escaped}%,phone.ilike.%${escaped}%`);
       }
 
       if (dbColumn) {
@@ -286,7 +287,7 @@ export function useEntitiesWithOrders(savedOnly: boolean = true, clientType?: Cl
         const { data, error } = await query;
 
         if (error) {
-          console.error('Error fetching pharmacies:', error);
+          logger.error('Error fetching pharmacies:', error);
           break;
         }
 
@@ -373,6 +374,17 @@ export function useEntitiesWithOrders(savedOnly: boolean = true, clientType?: Cl
   };
 }
 
+const ALLOWED_UPLOAD_TYPES = new Set([
+  'application/pdf',
+  'image/jpeg',
+  'image/png',
+  'image/webp',
+  'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', // xlsx
+  'application/vnd.ms-excel', // xls
+  'text/csv',
+]);
+const MAX_UPLOAD_SIZE = 10 * 1024 * 1024; // 10 MB
+
 export function useUploadDocument() {
   const queryClient = useQueryClient();
 
@@ -388,8 +400,16 @@ export function useUploadDocument() {
       documentType: PharmacyDocument['documentType'];
       file: File;
     }) => {
+      if (!ALLOWED_UPLOAD_TYPES.has(file.type)) {
+        throw new Error('File type not allowed. Accepted: PDF, images, CSV, Excel.');
+      }
+      if (file.size > MAX_UPLOAD_SIZE) {
+        throw new Error('File too large. Maximum size is 10 MB.');
+      }
+
+      const safeName = file.name.replace(/[^a-zA-Z0-9._-]/g, '_');
       const folder = orderId ?? 'general';
-      const filePath = `${pharmacyId}/${folder}/${documentType}-${Date.now()}-${file.name}`;
+      const filePath = `${pharmacyId}/${folder}/${documentType}-${Date.now()}-${safeName}`;
 
       const { error: uploadError } = await supabase.storage
         .from('pharmacy-documents')
@@ -434,7 +454,7 @@ export function useDeleteDocument() {
         .remove([filePath]);
 
       if (storageError) {
-        console.warn('Failed to delete file from storage:', storageError);
+        logger.warn('Failed to delete file from storage:', storageError);
       }
 
       // Delete record

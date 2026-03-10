@@ -6,6 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { supabase } from '@/integrations/supabase/client';
+import { getErrorMessage } from '@/lib/utils';
 
 const SUBJECT_LABELS: Record<string, string> = {
   enterprise: 'Enterprise plan inquiry',
@@ -52,7 +53,7 @@ export default function Contact() {
       }
       setSubmitted(true);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to send message');
+      setError(getErrorMessage(err));
     } finally {
       setIsLoading(false);
     }

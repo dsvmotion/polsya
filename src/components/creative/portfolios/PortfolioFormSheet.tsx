@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { portfolioSchema, type PortfolioFormValues } from '@/lib/creative-schemas';
@@ -14,6 +15,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Switch } from '@/components/ui/switch';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/components/ui/use-toast';
+import { getErrorMessage } from '@/lib/utils';
 
 interface PortfolioFormSheetProps {
   open: boolean;
@@ -44,6 +46,21 @@ export function PortfolioFormSheet({ open, onOpenChange, portfolio, onSuccess }:
     },
   });
 
+  useEffect(() => {
+    if (open) {
+      form.reset({
+        title: portfolio?.title ?? '',
+        description: portfolio?.description ?? '',
+        category: portfolio?.category ?? undefined,
+        mediaUrls: portfolio?.mediaUrls?.join(', ') ?? '',
+        thumbnailUrl: portfolio?.thumbnailUrl ?? '',
+        isPublic: portfolio?.isPublic ?? false,
+        projectId: portfolio?.projectId ?? undefined,
+        clientId: portfolio?.clientId ?? undefined,
+      });
+    }
+  }, [open, portfolio, form]);
+
   async function onSubmit(values: PortfolioFormValues) {
     try {
       if (isEditing) {
@@ -57,7 +74,7 @@ export function PortfolioFormSheet({ open, onOpenChange, portfolio, onSuccess }:
       form.reset();
       onSuccess?.();
     } catch (err) {
-      toast({ title: 'Error', description: (err as Error).message, variant: 'destructive' });
+      toast({ title: 'Error', description: getErrorMessage(err), variant: 'destructive' });
     }
   }
 

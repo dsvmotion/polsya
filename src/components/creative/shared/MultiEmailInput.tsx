@@ -102,6 +102,7 @@ export function MultiEmailInput({
             {!disabled && (
               <button
                 type="button"
+                aria-label={`Remove ${email}`}
                 onClick={(e) => {
                   e.stopPropagation();
                   removeEmail(email);

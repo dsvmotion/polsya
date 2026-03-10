@@ -25,6 +25,16 @@ function sanitize(str: string, maxLen: number): string {
   return String(str ?? '').trim().slice(0, maxLen);
 }
 
+/** Escape HTML special chars to prevent injection in email templates. */
+function escapeHtml(str: string): string {
+  return str
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
 function isValidEmail(email: string): boolean {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 }
@@ -99,11 +109,11 @@ serve(async (req) => {
       const subjectLabel = subject || 'General inquiry';
       const html = `
         <h2>New contact form submission</h2>
-        <p><strong>From:</strong> ${name} &lt;${email}&gt;</p>
-        ${company ? `<p><strong>Company:</strong> ${company}</p>` : ''}
-        <p><strong>Subject:</strong> ${subjectLabel}</p>
+        <p><strong>From:</strong> ${escapeHtml(name)} &lt;${escapeHtml(email)}&gt;</p>
+        ${company ? `<p><strong>Company:</strong> ${escapeHtml(company)}</p>` : ''}
+        <p><strong>Subject:</strong> ${escapeHtml(subjectLabel)}</p>
         <hr />
-        <pre style="white-space: pre-wrap; font-family: sans-serif;">${message}</pre>
+        <pre style="white-space: pre-wrap; font-family: sans-serif;">${escapeHtml(message)}</pre>
         <hr />
         <p><small>Submitted at ${row?.created_at ?? new Date().toISOString()} | ID: ${row?.id ?? ''}</small></p>
       `;
@@ -138,13 +148,13 @@ serve(async (req) => {
       try {
         const confirmHtml = `
           <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; max-width: 560px; margin: 0 auto; padding: 24px;">
-            <h2 style="color: #1a1a1a;">Thanks for reaching out, ${name}!</h2>
+            <h2 style="color: #1a1a1a;">Thanks for reaching out, ${escapeHtml(name)}!</h2>
             <p style="color: #555; line-height: 1.6;">
               We've received your message and will get back to you within 24 hours.
             </p>
             <div style="background: #f5f5f5; border-radius: 8px; padding: 16px; margin: 20px 0;">
               <p style="margin: 0 0 8px; font-weight: 600; color: #333;">Your message:</p>
-              <p style="margin: 0; color: #555; white-space: pre-wrap;">${message}</p>
+              <p style="margin: 0; color: #555; white-space: pre-wrap;">${escapeHtml(message)}</p>
             </div>
             <p style="color: #555; line-height: 1.6;">
               In the meantime, feel free to explore our platform at
@@ -197,7 +207,7 @@ serve(async (req) => {
   } catch (err) {
     console.error('submit-contact error:', err);
     return jsonResponse(
-      { error: err instanceof Error ? err.message : 'Internal error' },
+      { error: 'Failed to process your message. Please try again later.' },
       500,
       corsHeaders
     );

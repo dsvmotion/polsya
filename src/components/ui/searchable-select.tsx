@@ -46,7 +46,8 @@ export function SearchableSelect({
   React.useEffect(() => {
     if (open) {
       setSearch("");
-      setTimeout(() => inputRef.current?.focus(), 0);
+      const timeoutId = setTimeout(() => inputRef.current?.focus(), 0);
+      return () => clearTimeout(timeoutId);
     }
   }, [open]);
 
@@ -57,7 +58,10 @@ export function SearchableSelect({
   };
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === "Enter" && search.trim()) {
+    if (e.key === "Escape") {
+      e.preventDefault();
+      setOpen(false);
+    } else if (e.key === "Enter" && search.trim()) {
       e.preventDefault();
       handleSelect(search.trim());
     }

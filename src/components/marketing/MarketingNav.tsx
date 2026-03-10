@@ -160,7 +160,13 @@ export function MarketingNav() {
         {/* ── Logo ── */}
         <Link to="/" className="flex items-center hover:opacity-80 transition-opacity shrink-0">
           <img src="/polsya-logo-black.png" alt="Polsya" className="h-16 w-auto" onError={(e) => {
-            (e.target as HTMLImageElement).style.display = 'none';
+            const img = e.target as HTMLImageElement;
+            img.style.display = 'none';
+            // Show text fallback next to the hidden image
+            const fallback = document.createElement('span');
+            fallback.textContent = 'Polsya';
+            fallback.className = 'text-xl font-bold text-gray-900';
+            img.parentElement?.appendChild(fallback);
           }} />
         </Link>
 
@@ -171,7 +177,7 @@ export function MarketingNav() {
               <div
                 key={item.label}
                 className="relative"
-                onMouseEnter={() => handleNavEnter(item.key!)}
+                onMouseEnter={() => handleNavEnter(item.key as string)}
                 onMouseLeave={handleNavLeave}
               >
                 <button
@@ -193,7 +199,7 @@ export function MarketingNav() {
             ) : (
               <Link
                 key={item.label}
-                to={item.href!}
+                to={item.href ?? '/'}
                 className="px-3 py-2 rounded-lg text-sm font-medium text-gray-600 hover:text-gray-900 hover:bg-gray-100/60 transition-all duration-150"
               >
                 {item.label}

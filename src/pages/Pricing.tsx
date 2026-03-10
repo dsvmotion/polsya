@@ -14,7 +14,7 @@ import type { BillingPlan } from '@/types/billing';
 import { ScrollAnimation } from '@/components/marketing/ScrollAnimation';
 
 function formatMoney(cents: number, currency: string): string {
-  return new Intl.NumberFormat('en-EU', {
+  return new Intl.NumberFormat('en-IE', {
     style: 'currency',
     currency: currency.toUpperCase(),
     minimumFractionDigits: 0,
@@ -134,7 +134,7 @@ export default function Pricing() {
               ctaElement = (
                 <Button
                   className={linkButtonClass}
-                  onClick={() => handleSubscribe(apiPlan!.id)}
+                  onClick={() => apiPlan && handleSubscribe(apiPlan.id)}
                   disabled={createCheckout.isPending}
                 >
                   {createCheckout.isPending ? (

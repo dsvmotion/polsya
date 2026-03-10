@@ -16,7 +16,6 @@ import {
   Palette,
   FolderKanban,
   Briefcase,
-  Sparkles,
 } from 'lucide-react';
 import {
   CommandDialog,

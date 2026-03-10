@@ -18,6 +18,7 @@ import { evaluateBillingAccess, useBillingOverview } from '@/hooks/useBilling';
 import { useUpdateOrganizationSettings } from '@/hooks/useOrganizationSettings';
 import { toast } from 'sonner';
 import { canManageWorkspace as canManageWorkspaceRole } from '@/lib/rbac';
+import { getErrorMessage } from '@/lib/utils';
 import {
   getIndustryTemplate,
   getIndustryTemplateOptions,
@@ -78,7 +79,7 @@ export default function Profile() {
       setAiProvider('openai');
       setAiModel('gpt-4o-mini');
     }
-  }, [aiChatConfig?.provider, aiChatConfig?.model, aiChatConfigLoading]);
+  }, [aiChatConfig, aiChatConfigLoading]);
 
   useEffect(() => {
     if (!organization) return;
@@ -200,7 +201,7 @@ export default function Profile() {
       });
       toast.success('Workspace settings updated');
     } catch (error) {
-      const message = error instanceof Error ? error.message : 'Could not update workspace settings';
+      const message = getErrorMessage(error);
       toast.error(message);
     }
   };
@@ -459,8 +460,15 @@ export default function Profile() {
                 <Button
                   onClick={() => {
                     if (!organization?.id) return;
-                    upsertAiChat.mutate({ organizationId: organization.id, provider: aiProvider, model: aiModel });
-                    toast.success('AI provider updated');
+                    upsertAiChat.mutate(
+                      { organizationId: organization.id, provider: aiProvider, model: aiModel },
+                      {
+                        onSuccess: () => toast.success('AI provider updated'),
+                        onError: (err) => {
+                          toast.error(getErrorMessage(err));
+                        },
+                      },
+                    );
                   }}
                   disabled={upsertAiChat.isPending}
                 >

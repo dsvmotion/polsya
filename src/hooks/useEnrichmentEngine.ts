@@ -1,6 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { fromTable } from '@/integrations/supabase/helpers';
+import { safeJsonParse } from '@/lib/utils';
 import type { EnrichmentCredit, EnrichmentRecipe, EnrichmentRun } from '@/types/enrichment-engine';
 import type { EnrichmentRecipeFormValues } from '@/lib/creative-schemas';
 import {
@@ -9,6 +10,7 @@ import {
   toEnrichmentRun, toEnrichmentRuns, type EnrichmentRunRow,
 } from '@/services/enrichmentService';
 import { useCurrentOrganization } from '@/hooks/useOrganizationContext';
+import { logger } from '@/lib/logger';
 
 const enrichmentKeys = {
   credits: (orgId: string) => ['enrichment-credits', orgId] as const,
@@ -65,7 +67,7 @@ export function useCreateEnrichmentRecipe() {
       const orgId = membership?.organization_id;
       if (!orgId) throw new Error('No organization');
 
-      const steps = values.steps ? JSON.parse(values.steps) : [];
+      const steps = values.steps ? safeJsonParse<unknown[]>(values.steps, []) : [];
 
       const { data, error } = await fromTable('enrichment_recipes')
         .insert({
@@ -96,7 +98,7 @@ export function useUpdateEnrichmentRecipe() {
       if (values.name !== undefined) patch.name = values.name;
       if (values.description !== undefined) patch.description = values.description || null;
       if (values.targetEntityType !== undefined) patch.target_entity_type = values.targetEntityType;
-      if (values.steps !== undefined) patch.steps = values.steps ? JSON.parse(values.steps) : [];
+      if (values.steps !== undefined) patch.steps = values.steps ? safeJsonParse<unknown[]>(values.steps, []) : [];
       if (values.isActive !== undefined) patch.is_active = values.isActive;
 
       const { data, error } = await fromTable('enrichment_recipes')
@@ -176,7 +178,7 @@ export function useTriggerEnrichmentRun() {
       supabase.functions.invoke('process-enrichment-run', {
         body: { runId: run.id },
       }).catch((err: Error) => {
-        console.error('Edge Function invocation failed:', err.message);
+        logger.error('Edge Function invocation failed:', err.message);
       });
 
       return run;

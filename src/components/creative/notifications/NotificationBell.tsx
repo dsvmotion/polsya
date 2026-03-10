@@ -14,6 +14,7 @@ export function NotificationBell() {
         variant="ghost"
         size="icon"
         className="relative h-8 w-8"
+        aria-label="Notifications"
         onClick={() => setOpen((prev) => !prev)}
       >
         <Bell className="h-4 w-4" />

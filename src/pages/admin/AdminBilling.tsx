@@ -1,8 +1,9 @@
-import { Wallet, TrendingUp, AlertTriangle, CheckCircle } from 'lucide-react';
+import { Wallet, AlertTriangle, CheckCircle } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
 import { AdminStatsCard } from '@/components/admin/AdminStatsCard';
 import { AdminDataTable, type AdminColumn } from '@/components/admin/AdminDataTable';
 import { Badge } from '@/components/ui/badge';
+import { logger } from '@/lib/logger';
 import { supabase } from '@/integrations/supabase/client';
 
 interface InvoiceRow extends Record<string, unknown> {
@@ -49,7 +50,7 @@ const columns: AdminColumn<InvoiceRow>[] = [
 ];
 
 export default function AdminBilling() {
-  const { data: invoices = [], isLoading } = useQuery<InvoiceRow[]>({
+  const { data: invoices = [], isLoading, error } = useQuery<InvoiceRow[]>({
     queryKey: ['admin', 'invoices'],
     queryFn: async () => {
       const { data, error } = await supabase
@@ -58,7 +59,7 @@ export default function AdminBilling() {
         .order('created_at', { ascending: false })
         .limit(100);
       if (error) {
-        console.warn('billing_invoices table not found, showing empty state');
+        logger.warn('billing_invoices table not found, showing empty state');
         return [];
       }
       return (data ?? []).map((i): InvoiceRow => ({
@@ -74,6 +75,12 @@ export default function AdminBilling() {
         <h1 className="text-2xl font-bold">Billing & Invoices</h1>
         <p className="text-sm text-muted-foreground">View invoices and revenue data.</p>
       </div>
+
+      {error && (
+        <p className="text-sm text-destructive">
+          Failed to load billing data: {error instanceof Error ? error.message : 'Unknown error'}
+        </p>
+      )}
 
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <AdminStatsCard title="Total Invoices" value={invoices.length} icon={Wallet} />

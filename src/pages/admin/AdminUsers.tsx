@@ -44,7 +44,7 @@ const columns: AdminColumn<AdminUser>[] = [
 ];
 
 export default function AdminUsers() {
-  const { data: users = [], isLoading } = useQuery({
+  const { data: users = [], isLoading, error } = useQuery({
     queryKey: ['admin', 'users'],
     queryFn: async () => {
       const { data, error } = await supabase
@@ -81,6 +81,12 @@ export default function AdminUsers() {
           Manage platform users and their roles.
         </p>
       </div>
+
+      {error && (
+        <p className="text-sm text-destructive">
+          Failed to load users: {error instanceof Error ? error.message : 'Unknown error'}
+        </p>
+      )}
 
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <AdminStatsCard title="Total Users" value={users.length} icon={Users} />

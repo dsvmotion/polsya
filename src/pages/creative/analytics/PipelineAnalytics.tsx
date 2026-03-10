@@ -88,7 +88,7 @@ export default function PipelineAnalytics() {
               <div className="h-[300px]">
                 {hasForecast ? (
                   <ResponsiveContainer width="100%" height="100%">
-                    <LineChart data={data!.forecast}>
+                    <LineChart data={data?.forecast ?? []}>
                       <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
                       <XAxis dataKey="month" tick={{ fontSize: 12 }} />
                       <YAxis
@@ -159,7 +159,7 @@ export default function PipelineAnalytics() {
                       </tr>
                     </thead>
                     <tbody>
-                      {data!.dealAging
+                      {(data?.dealAging ?? [])
                         .sort((a, b) => b.ageDays - a.ageDays)
                         .map((deal) => (
                           <tr key={deal.id} className="border-b last:border-0">

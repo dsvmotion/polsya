@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Plus, Play, RefreshCw } from 'lucide-react';
+import { Plus, Play, RefreshCw, AlertCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
@@ -18,6 +18,7 @@ import { Label } from '@/components/ui/label';
 import { PROVIDER_TYPES } from '@/types/ingestion';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { Trash2 } from 'lucide-react';
+import { getErrorMessage } from '@/lib/utils';
 
 // ─── Provider Form ──────────────────────────
 
@@ -37,7 +38,7 @@ function ProviderFormSheet({ open, onOpenChange }: { open: boolean; onOpenChange
       setName('');
       setProviderType('');
     } catch (err) {
-      toast({ title: 'Error', description: (err as Error).message, variant: 'destructive' });
+      toast({ title: 'Error', description: getErrorMessage(err), variant: 'destructive' });
     }
   }
 
@@ -86,7 +87,7 @@ function ProviderCard({ provider }: { provider: IngestionProvider }) {
     try {
       await updateMutation.mutateAsync({ id: provider.id, values: { isActive: checked } });
     } catch (err) {
-      toast({ title: 'Error', description: (err as Error).message, variant: 'destructive' });
+      toast({ title: 'Error', description: getErrorMessage(err), variant: 'destructive' });
     }
   }
 
@@ -95,7 +96,7 @@ function ProviderCard({ provider }: { provider: IngestionProvider }) {
       await triggerMutation.mutateAsync(provider.id);
       toast({ title: 'Sync triggered', description: `Started ingestion run for ${provider.name}` });
     } catch (err) {
-      toast({ title: 'Error', description: (err as Error).message, variant: 'destructive' });
+      toast({ title: 'Error', description: getErrorMessage(err), variant: 'destructive' });
     }
   }
 
@@ -104,7 +105,7 @@ function ProviderCard({ provider }: { provider: IngestionProvider }) {
       await deleteMutation.mutateAsync(provider.id);
       toast({ title: 'Provider deleted' });
     } catch (err) {
-      toast({ title: 'Error', description: (err as Error).message, variant: 'destructive' });
+      toast({ title: 'Error', description: getErrorMessage(err), variant: 'destructive' });
     }
   }
 
@@ -210,8 +211,8 @@ function RunRow({ run, providerName }: { run: IngestionRun; providerName: string
 
 export default function CreativeIngestion() {
   const [formOpen, setFormOpen] = useState(false);
-  const { data: providers = [], isLoading: loadingProviders } = useIngestionProviders();
-  const { data: runs = [], isLoading: loadingRuns } = useIngestionRuns();
+  const { data: providers = [], isLoading: loadingProviders, error: providersError, refetch: refetchProviders } = useIngestionProviders();
+  const { data: runs = [], isLoading: loadingRuns, error: runsError, refetch: refetchRuns } = useIngestionRuns();
 
   const providerMap = Object.fromEntries(providers.map((p) => [p.id, p.name]));
 
@@ -233,7 +234,16 @@ export default function CreativeIngestion() {
         </TabsList>
 
         <TabsContent value="providers" className="mt-4">
-          {loadingProviders ? (
+          {providersError ? (
+            <div className="flex flex-col items-center justify-center py-12 text-sm text-destructive gap-3">
+              <AlertCircle className="h-8 w-8 opacity-60" />
+              <p>Failed to load providers: {getErrorMessage(providersError)}</p>
+              <Button size="sm" variant="outline" className="gap-1.5" onClick={() => refetchProviders()}>
+                <RefreshCw className="h-3.5 w-3.5" />
+                Retry
+              </Button>
+            </div>
+          ) : loadingProviders ? (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
               {Array.from({ length: 3 }).map((_, i) => (
                 <div key={i} className="rounded-lg border bg-card p-4 space-y-3 animate-pulse">
@@ -256,7 +266,16 @@ export default function CreativeIngestion() {
         </TabsContent>
 
         <TabsContent value="runs" className="mt-4">
-          {loadingRuns ? (
+          {runsError ? (
+            <div className="flex flex-col items-center justify-center py-12 text-sm text-destructive gap-3">
+              <AlertCircle className="h-8 w-8 opacity-60" />
+              <p>Failed to load run history: {getErrorMessage(runsError)}</p>
+              <Button size="sm" variant="outline" className="gap-1.5" onClick={() => refetchRuns()}>
+                <RefreshCw className="h-3.5 w-3.5" />
+                Retry
+              </Button>
+            </div>
+          ) : loadingRuns ? (
             <div className="space-y-2">
               {Array.from({ length: 5 }).map((_, i) => (
                 <div key={i} className="h-12 bg-muted rounded animate-pulse" />

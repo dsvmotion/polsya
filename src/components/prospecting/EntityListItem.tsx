@@ -67,7 +67,13 @@ export function EntityListItem({
         </div>
 
         {/* Content */}
-        <div className="flex-1 min-w-0" onClick={onClick}>
+        <div
+          className="flex-1 min-w-0"
+          role="button"
+          tabIndex={0}
+          onClick={onClick}
+          onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onClick(); } }}
+        >
           <div className="flex items-start justify-between gap-2 mb-2">
             <h3 className="font-semibold text-sm leading-tight truncate flex-1 text-gray-900">
               {pharmacy.name}

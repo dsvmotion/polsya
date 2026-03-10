@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useMemo, useCallback } from 'react';
 import {
   Table,
   TableBody,
@@ -39,21 +39,21 @@ export function DiscoverResultsTable({
   const selectableResults = results.filter((r) => !savedSet.has(r.placeId));
   const allSelected = selectableResults.length > 0 && selectableResults.every((r) => selectedSet.has(r.placeId));
 
-  const toggleRow = (place: PlaceResult) => {
+  const toggleRow = useCallback((place: PlaceResult) => {
     if (selectedSet.has(place.placeId)) {
       onSelectedRowsChange(selectedRows.filter((r) => r.placeId !== place.placeId));
     } else {
       onSelectedRowsChange([...selectedRows, place]);
     }
-  };
+  }, [selectedSet, selectedRows, onSelectedRowsChange]);
 
-  const toggleAll = () => {
+  const toggleAll = useCallback(() => {
     if (allSelected) {
       onSelectedRowsChange([]);
     } else {
       onSelectedRowsChange(selectableResults);
     }
-  };
+  }, [allSelected, selectableResults, onSelectedRowsChange]);
 
   const getHostname = (url: string): string => {
     try {

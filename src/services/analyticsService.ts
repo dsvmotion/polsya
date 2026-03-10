@@ -24,6 +24,7 @@ import type { OpportunityStage } from '@/types/creative';
 export function getCutoffDate(timeRange: TimeRange, now: Date = new Date()): Date | null {
   if (timeRange === 'all') return null;
   const days = parseInt(timeRange);
+  if (!Number.isFinite(days) || days <= 0) return null;
   const cutoff = new Date(now);
   cutoff.setDate(cutoff.getDate() - days);
   return cutoff;

@@ -7,6 +7,7 @@ import { CommandPalette } from '@/components/layout/CommandPalette';
 import { AiChatSheet } from '@/components/layout/AiChatSheet';
 import { SubscriptionBanner } from '@/components/auth/SubscriptionBanner';
 import { ImpersonationBanner } from '@/components/auth/ImpersonationBanner';
+import { ErrorBoundary } from '@/components/layout/ErrorBoundary';
 import { cn } from '@/lib/utils';
 import { CreativeLayoutContext } from './useCreativeLayout';
 
@@ -73,7 +74,9 @@ export function CreativeLayout() {
 
           <div className="flex flex-1 overflow-hidden">
             <main className="flex-1 overflow-auto">
-              <Outlet />
+              <ErrorBoundary section="page-content">
+                <Outlet />
+              </ErrorBoundary>
             </main>
 
             {contextPanelOpen && (

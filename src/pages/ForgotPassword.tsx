@@ -22,15 +22,20 @@ export default function ForgotPassword() {
       return;
     }
     setIsLoading(true);
-    const { error: err } = await supabase.auth.resetPasswordForEmail(email.trim(), {
-      redirectTo: `${window.location.origin}/reset-password`,
-    });
-    setIsLoading(false);
-    if (err) {
-      setError(err.message);
-      return;
+    try {
+      const { error: err } = await supabase.auth.resetPasswordForEmail(email.trim(), {
+        redirectTo: `${window.location.origin}/reset-password`,
+      });
+      if (err) {
+        setError(err.message);
+        return;
+      }
+      setSent(true);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'An unexpected error occurred');
+    } finally {
+      setIsLoading(false);
     }
-    setSent(true);
   };
 
   if (sent) {
