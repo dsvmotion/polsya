@@ -52,7 +52,7 @@ const columns: AdminColumn<AuditLogRow>[] = [
 ];
 
 export default function AdminLogs() {
-  const { data: logs = [], isLoading } = useQuery<AuditLogRow[]>({
+  const { data: logs = [], isLoading, error } = useQuery<AuditLogRow[]>({
     queryKey: ['admin', 'logs'],
     queryFn: async (): Promise<AuditLogRow[]> => {
       const { data, error } = await supabase
@@ -104,6 +104,12 @@ export default function AdminLogs() {
           <Download className="h-4 w-4" /> Export CSV
         </Button>
       </div>
+
+      {error && (
+        <p className="text-sm text-destructive">
+          Failed to load logs: {error instanceof Error ? error.message : 'Unknown error'}
+        </p>
+      )}
 
       <AdminDataTable
         data={logs}

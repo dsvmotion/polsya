@@ -123,7 +123,7 @@ export default function AdminSignals() {
   const oneDayAgo = new Date(now.getTime() - 24 * 60 * 60 * 1000).toISOString();
 
   // Fetch recent signals (cross-org, platform owner RLS)
-  const { data: signals = [], isLoading: signalsLoading } = useQuery<SignalRow[]>({
+  const { data: signals = [], isLoading: signalsLoading, error: signalsError } = useQuery<SignalRow[]>({
     queryKey: ['admin', 'signals'],
     queryFn: async () => {
       const { data, error } = await supabase
@@ -138,7 +138,7 @@ export default function AdminSignals() {
   });
 
   // Fetch signal rules
-  const { data: rules = [], isLoading: rulesLoading } = useQuery<SignalRuleRow[]>({
+  const { data: rules = [], isLoading: rulesLoading, error: rulesError } = useQuery<SignalRuleRow[]>({
     queryKey: ['admin', 'signal-rules'],
     queryFn: async () => {
       const { data, error } = await supabase
@@ -184,6 +184,12 @@ export default function AdminSignals() {
           Monitor creative intelligence signal pipeline health across all organizations.
         </p>
       </div>
+
+      {(signalsError || rulesError) && (
+        <p className="text-sm text-destructive">
+          Failed to load signals data: {(signalsError ?? rulesError) instanceof Error ? (signalsError ?? rulesError)!.message : 'Unknown error'}
+        </p>
+      )}
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <AdminStatsCard

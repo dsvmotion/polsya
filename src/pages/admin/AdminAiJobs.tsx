@@ -105,7 +105,7 @@ const usageColumns: AdminColumn<AiUsageRow>[] = [
 
 export default function AdminAiJobs() {
   // Fetch AI documents (cross-org, platform owner RLS)
-  const { data: documents = [], isLoading: docsLoading } = useQuery<AiDocumentRow[]>({
+  const { data: documents = [], isLoading: docsLoading, error: docsError } = useQuery<AiDocumentRow[]>({
     queryKey: ['admin', 'ai-documents'],
     queryFn: async () => {
       const { data, error } = await supabase
@@ -120,7 +120,7 @@ export default function AdminAiJobs() {
   });
 
   // Fetch AI usage stats
-  const { data: usage = [], isLoading: usageLoading } = useQuery<AiUsageRow[]>({
+  const { data: usage = [], isLoading: usageLoading, error: usageError } = useQuery<AiUsageRow[]>({
     queryKey: ['admin', 'ai-usage'],
     queryFn: async () => {
       const { data, error } = await supabase
@@ -169,6 +169,12 @@ export default function AdminAiJobs() {
           Track AI processing jobs, usage, and costs across all organizations.
         </p>
       </div>
+
+      {(docsError || usageError) && (
+        <p className="text-sm text-destructive">
+          Failed to load AI data: {(docsError ?? usageError) instanceof Error ? (docsError ?? usageError)!.message : 'Unknown error'}
+        </p>
+      )}
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <AdminStatsCard

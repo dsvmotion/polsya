@@ -46,7 +46,7 @@ const columns: AdminColumn<SubscriptionRow>[] = [
 ];
 
 export default function AdminSubscriptions() {
-  const { data: subs = [], isLoading } = useQuery({
+  const { data: subs = [], isLoading, error } = useQuery({
     queryKey: ['admin', 'subscriptions'],
     queryFn: async () => {
       const { data, error } = await supabase
@@ -77,6 +77,12 @@ export default function AdminSubscriptions() {
         <h1 className="text-2xl font-bold">Subscriptions</h1>
         <p className="text-sm text-muted-foreground">Manage all platform subscriptions.</p>
       </div>
+
+      {error && (
+        <p className="text-sm text-destructive">
+          Failed to load subscriptions: {error instanceof Error ? error.message : 'Unknown error'}
+        </p>
+      )}
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <AdminStatsCard title="Active" value={active.length} icon={CreditCard} />

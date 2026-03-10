@@ -116,7 +116,7 @@ const providerColumns: AdminColumn<IngestionProviderRow>[] = [
 
 export default function AdminIngestion() {
   // Fetch recent ingestion runs (cross-org, platform owner RLS)
-  const { data: runs = [], isLoading: runsLoading } = useQuery<IngestionRunRow[]>({
+  const { data: runs = [], isLoading: runsLoading, error: runsError } = useQuery<IngestionRunRow[]>({
     queryKey: ['admin', 'ingestion-runs'],
     queryFn: async () => {
       const { data, error } = await supabase
@@ -131,7 +131,7 @@ export default function AdminIngestion() {
   });
 
   // Fetch ingestion providers
-  const { data: providers = [], isLoading: providersLoading } = useQuery<IngestionProviderRow[]>({
+  const { data: providers = [], isLoading: providersLoading, error: providersError } = useQuery<IngestionProviderRow[]>({
     queryKey: ['admin', 'ingestion-providers'],
     queryFn: async () => {
       const { data, error } = await supabase
@@ -175,6 +175,12 @@ export default function AdminIngestion() {
           Monitor and manage data ingestion jobs across all organizations.
         </p>
       </div>
+
+      {(runsError || providersError) && (
+        <p className="text-sm text-destructive">
+          Failed to load ingestion data: {(runsError ?? providersError) instanceof Error ? (runsError ?? providersError)!.message : 'Unknown error'}
+        </p>
+      )}
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <AdminStatsCard

@@ -50,7 +50,7 @@ const columns: AdminColumn<InvoiceRow>[] = [
 ];
 
 export default function AdminBilling() {
-  const { data: invoices = [], isLoading } = useQuery<InvoiceRow[]>({
+  const { data: invoices = [], isLoading, error } = useQuery<InvoiceRow[]>({
     queryKey: ['admin', 'invoices'],
     queryFn: async () => {
       const { data, error } = await supabase
@@ -75,6 +75,12 @@ export default function AdminBilling() {
         <h1 className="text-2xl font-bold">Billing & Invoices</h1>
         <p className="text-sm text-muted-foreground">View invoices and revenue data.</p>
       </div>
+
+      {error && (
+        <p className="text-sm text-destructive">
+          Failed to load billing data: {error instanceof Error ? error.message : 'Unknown error'}
+        </p>
+      )}
 
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <AdminStatsCard title="Total Invoices" value={invoices.length} icon={Wallet} />

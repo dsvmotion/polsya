@@ -17,7 +17,7 @@ import { usePlatformTenants } from '@/hooks/usePlatformTenants';
 import { supabase } from '@/integrations/supabase/client';
 
 export default function AdminAnalytics() {
-  const { data: tenants = [] } = usePlatformTenants();
+  const { data: tenants = [], error: tenantsError } = usePlatformTenants();
 
   // amount_cents may exist at DB level but is not in generated Supabase types;
   // select all fields and access dynamically for forward-compatibility
@@ -68,6 +68,12 @@ export default function AdminAnalytics() {
           Key metrics and growth trends.
         </p>
       </div>
+
+      {tenantsError && (
+        <p className="text-sm text-destructive">
+          Failed to load analytics: {tenantsError instanceof Error ? tenantsError.message : 'Unknown error'}
+        </p>
+      )}
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <AdminStatsCard title="Total Users" value={memberCount} icon={Users} />

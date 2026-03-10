@@ -31,7 +31,7 @@ const columns: AdminColumn<TenantWithBilling>[] = [
 
 export default function AdminOrganizations() {
   const navigate = useNavigate();
-  const { data: tenants = [], isLoading } = usePlatformTenants();
+  const { data: tenants = [], isLoading, error } = usePlatformTenants();
 
   const activeCount = tenants.filter((t) =>
     ['active', 'trialing'].includes(t.subscriptionStatus ?? ''),
@@ -45,6 +45,12 @@ export default function AdminOrganizations() {
           Manage tenant organizations.
         </p>
       </div>
+
+      {error && (
+        <p className="text-sm text-destructive">
+          Failed to load organizations: {error instanceof Error ? error.message : 'Unknown error'}
+        </p>
+      )}
 
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <AdminStatsCard title="Total Orgs" value={tenants.length} icon={Building2} />
