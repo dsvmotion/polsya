@@ -1,20 +1,10 @@
 import { AlertTriangle, CheckCircle2, Clock3, Loader2, Timer, Waves } from 'lucide-react';
 import { useIntegrationHealth } from '@/hooks/useIntegrationHealth';
 import { cn } from '@/lib/utils';
+import { timeAgo } from '@/lib/time-utils';
 
 function msToSeconds(ms: number): string {
   return `${(ms / 1000).toFixed(1)}s`;
-}
-
-function timeAgo(dateStr: string): string {
-  const diff = Date.now() - new Date(dateStr).getTime();
-  const mins = Math.floor(diff / 60_000);
-  if (mins < 1) return 'just now';
-  if (mins < 60) return `${mins}m ago`;
-  const hours = Math.floor(mins / 60);
-  if (hours < 24) return `${hours}h ago`;
-  const days = Math.floor(hours / 24);
-  return `${days}d ago`;
 }
 
 export function IntegrationHealthCard() {

@@ -3,6 +3,7 @@ import { Bell, GitBranch, AtSign, Info, Sparkles } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import type { CreativeNotification, NotificationType } from '@/types/creative-notification';
 import { NOTIFICATION_TYPE_COLORS } from '@/types/creative-notification';
+import { timeAgo } from '@/lib/time-utils';
 
 const NOTIFICATION_ICONS: Record<NotificationType, typeof Bell> = {
   reminder: Bell,
@@ -11,17 +12,6 @@ const NOTIFICATION_ICONS: Record<NotificationType, typeof Bell> = {
   system: Info,
   ai_insight: Sparkles,
 };
-
-function timeAgo(dateStr: string): string {
-  const diff = Date.now() - new Date(dateStr).getTime();
-  const mins = Math.floor(diff / 60000);
-  if (mins < 60) return `${mins}m ago`;
-  const hours = Math.floor(mins / 60);
-  if (hours < 24) return `${hours}h ago`;
-  const days = Math.floor(hours / 24);
-  if (days < 30) return `${days}d ago`;
-  return new Date(dateStr).toLocaleDateString();
-}
 
 interface NotificationItemProps {
   notification: CreativeNotification;

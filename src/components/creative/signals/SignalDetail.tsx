@@ -6,21 +6,11 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Eye, CheckCircle2, XCircle } from 'lucide-react';
 import { getErrorMessage } from '@/lib/utils';
+import { timeAgo } from '@/lib/time-utils';
 
 interface SignalDetailProps {
   signal: Signal;
   onClose: () => void;
-}
-
-function getTimeAgo(dateStr: string): string {
-  const seconds = Math.floor((Date.now() - new Date(dateStr).getTime()) / 1000);
-  if (seconds < 60) return 'just now';
-  const minutes = Math.floor(seconds / 60);
-  if (minutes < 60) return `${minutes}m ago`;
-  const hours = Math.floor(minutes / 60);
-  if (hours < 24) return `${hours}h ago`;
-  const days = Math.floor(hours / 24);
-  return `${days}d ago`;
 }
 
 export function SignalDetail({ signal, onClose }: SignalDetailProps) {
@@ -70,18 +60,18 @@ export function SignalDetail({ signal, onClose }: SignalDetailProps) {
       <div className="space-y-2 text-sm">
         <div className="flex justify-between">
           <span className="text-muted-foreground">Created</span>
-          <span>{getTimeAgo(signal.createdAt)}</span>
+          <span>{timeAgo(signal.createdAt)}</span>
         </div>
         {signal.seenAt && (
           <div className="flex justify-between">
             <span className="text-muted-foreground">Seen</span>
-            <span>{getTimeAgo(signal.seenAt)}</span>
+            <span>{timeAgo(signal.seenAt)}</span>
           </div>
         )}
         {signal.actionedAt && (
           <div className="flex justify-between">
             <span className="text-muted-foreground">Actioned</span>
-            <span>{getTimeAgo(signal.actionedAt)}</span>
+            <span>{timeAgo(signal.actionedAt)}</span>
           </div>
         )}
       </div>
