@@ -10,8 +10,8 @@ const { mockMutate } = vi.hoisted(() => ({
   mockMutate: vi.fn(),
 }));
 
-vi.mock('@/hooks/useOutlookOAuth', () => ({
-  useExchangeOutlookOAuth: vi.fn(() => ({
+vi.mock('@/hooks/useOAuth', () => ({
+  useExchangeOAuth: vi.fn(() => ({
     mutate: mockMutate,
     isPending: false,
     isError: false,
@@ -51,30 +51,30 @@ describe('OutlookOAuthCallback', () => {
   });
 
   it('shows loading state when exchange is pending', async () => {
-    const { useExchangeOutlookOAuth } = await import('@/hooks/useOutlookOAuth');
-    vi.mocked(useExchangeOutlookOAuth).mockReturnValue({
+    const { useExchangeOAuth } = await import('@/hooks/useOAuth');
+    vi.mocked(useExchangeOAuth).mockReturnValue({
       mutate: mockMutate,
       isPending: true,
       isError: false,
       isSuccess: false,
       error: null,
       data: null,
-    } as unknown as ReturnType<typeof useExchangeOutlookOAuth>);
+    } as unknown as ReturnType<typeof useExchangeOAuth>);
 
     renderWith('?code=abc&state=xyz');
     expect(screen.getByText('Connecting Outlook')).toBeInTheDocument();
   });
 
   it('shows success state when exchange succeeds', async () => {
-    const { useExchangeOutlookOAuth } = await import('@/hooks/useOutlookOAuth');
-    vi.mocked(useExchangeOutlookOAuth).mockReturnValue({
+    const { useExchangeOAuth } = await import('@/hooks/useOAuth');
+    vi.mocked(useExchangeOAuth).mockReturnValue({
       mutate: mockMutate,
       isPending: false,
       isError: false,
       isSuccess: true,
       error: null,
       data: { accountEmail: 'user@outlook.com' },
-    } as unknown as ReturnType<typeof useExchangeOutlookOAuth>);
+    } as unknown as ReturnType<typeof useExchangeOAuth>);
 
     renderWith('?code=abc&state=xyz');
     expect(screen.getByText('Outlook connected')).toBeInTheDocument();
