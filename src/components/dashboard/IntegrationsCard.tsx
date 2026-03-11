@@ -79,13 +79,13 @@ function MetadataFields({
             value={values[field.key] ?? ''}
             onChange={(e) => onChange(field.key, e.target.value)}
             className={cn(
-              'h-8 text-sm bg-white border-gray-300',
-              errors[field.key] && 'border-red-400'
+              'h-8 text-sm bg-background border-border',
+              errors[field.key] && 'border-destructive'
             )}
             type={field.type === 'email' ? 'email' : 'text'}
           />
           {errors[field.key] && (
-            <p className="text-[10px] text-red-500 mt-0.5 pl-1">{errors[field.key]}</p>
+            <p className="text-[10px] text-destructive mt-0.5 pl-1">{errors[field.key]}</p>
           )}
         </div>
       ))}
@@ -274,11 +274,11 @@ function IntegrationRow({
     .join(' · ');
 
   return (
-    <div className="px-2 py-2 rounded border border-gray-100 bg-white space-y-1">
+    <div className="px-2 py-2 rounded border border-border bg-card space-y-1">
       <div className="flex items-center justify-between gap-2">
         <div className="flex items-center gap-2 min-w-0 flex-1">
           <span className="text-sm shrink-0">{providerIcon}</span>
-          <span className="text-sm text-gray-900 truncate">{intg.display_name}</span>
+          <span className="text-sm text-foreground truncate">{intg.display_name}</span>
           <span className={cn('text-[10px] px-1.5 py-0.5 rounded font-medium shrink-0', statusColor.bg, statusColor.text)}>
             {intg.status}
           </span>
@@ -287,7 +287,7 @@ function IntegrationRow({
           <Button
             variant="ghost"
             size="sm"
-            className="h-7 px-1.5 text-gray-400 hover:text-blue-600"
+            className="h-7 px-1.5 text-muted-foreground hover:text-primary"
             onClick={handleQueueSync}
             disabled={isSyncing}
             title="Queue sync"
@@ -298,7 +298,7 @@ function IntegrationRow({
             <Button
               variant="ghost"
               size="sm"
-              className="h-7 px-1.5 text-gray-400 hover:text-blue-600"
+              className="h-7 px-1.5 text-muted-foreground hover:text-primary"
               onClick={handleConnectOAuth}
               disabled={isConnectingOAuth}
               title={intg.status === 'connected' ? `Reconnect ${providerLabel}` : `Connect ${providerLabel}`}
@@ -312,7 +312,7 @@ function IntegrationRow({
             <Button
               variant="ghost"
               size="sm"
-              className="h-7 px-1.5 text-gray-400 hover:text-blue-600"
+              className="h-7 px-1.5 text-muted-foreground hover:text-primary"
               onClick={startCredentialsConfig}
               title={`Configure ${providerLabel} credentials`}
             >
@@ -323,7 +323,7 @@ function IntegrationRow({
             <Button
               variant="ghost"
               size="sm"
-              className="h-7 px-1.5 text-gray-400 hover:text-blue-600"
+              className="h-7 px-1.5 text-muted-foreground hover:text-primary"
               onClick={startApiKeyConfig}
               title={`Configure ${providerLabel} API key`}
             >
@@ -334,7 +334,7 @@ function IntegrationRow({
             <Button
               variant="ghost"
               size="sm"
-              className="h-7 px-1.5 text-gray-400 hover:text-blue-600"
+              className="h-7 px-1.5 text-muted-foreground hover:text-primary"
               onClick={startEdit}
               title="Edit metadata"
             >
@@ -346,7 +346,7 @@ function IntegrationRow({
             onClick={() => onToggle(intg.id, intg.is_enabled)}
             className={cn(
               'relative inline-flex h-5 w-9 items-center rounded-full transition-colors',
-              intg.is_enabled ? 'bg-green-500' : 'bg-gray-300'
+              intg.is_enabled ? 'bg-green-500' : 'bg-muted-foreground/40'
             )}
             title={intg.is_enabled ? 'Disable' : 'Enable'}
           >
@@ -360,7 +360,7 @@ function IntegrationRow({
           <Button
             variant="ghost"
             size="sm"
-            className="h-7 px-1.5 text-gray-400 hover:text-red-600"
+            className="h-7 px-1.5 text-muted-foreground hover:text-destructive"
             onClick={() => onDelete(intg.id)}
           >
             <Trash2 className="h-3.5 w-3.5" />
@@ -370,7 +370,7 @@ function IntegrationRow({
 
       {/* Metadata summary */}
       {metaSummary && !editing && (
-        <p className="text-[10px] text-gray-400 pl-6 truncate">{metaSummary}</p>
+        <p className="text-[10px] text-muted-foreground pl-6 truncate">{metaSummary}</p>
       )}
 
       {configuringCredentials && authType === 'credentials' && (
@@ -427,7 +427,7 @@ function IntegrationRow({
               type="password"
             />
           </div>
-          <div className="flex items-center gap-4 text-xs text-gray-600">
+          <div className="flex items-center gap-4 text-xs text-muted-foreground">
             <label className="inline-flex items-center gap-1.5">
               <input
                 type="checkbox"
@@ -513,7 +513,7 @@ function IntegrationRow({
 
       {/* Latest job status */}
       {latestJob && (latestJob.status === 'queued' || latestJob.status === 'running' || latestJob.status === 'error') && (
-        <div className="flex items-center gap-1.5 pl-6 text-[10px] text-gray-400">
+        <div className="flex items-center gap-1.5 pl-6 text-[10px] text-muted-foreground">
           <span>job:</span>
           <span className={cn('px-1 py-0.5 rounded font-medium', INTEGRATION_JOB_STATUS_COLORS[latestJob.status].bg, INTEGRATION_JOB_STATUS_COLORS[latestJob.status].text)}>
             {latestJob.status}
@@ -529,7 +529,7 @@ function IntegrationRow({
       )}
 
       {/* Last sync info + mini run history */}
-      <div className="flex items-center gap-3 pl-6 text-[10px] text-gray-400">
+      <div className="flex items-center gap-3 pl-6 text-[10px] text-muted-foreground">
         {lastRun ? (
           <>
             <span className="flex items-center gap-1">
@@ -546,7 +546,7 @@ function IntegrationRow({
               <span>{(lastRun.duration_ms / 1000).toFixed(1)}s</span>
             )}
             {lastRun.records_failed > 0 && (
-              <span className="text-red-500">{lastRun.records_failed} failed</span>
+              <span className="text-destructive">{lastRun.records_failed} failed</span>
             )}
           </>
         ) : (
@@ -663,8 +663,8 @@ export function IntegrationsCard() {
   return (
     <div className="surface-card">
       <div className="surface-card-header">
-        <h2 className="font-semibold text-gray-900 flex items-center gap-2">
-          <Plug className="h-4 w-4 text-gray-500" />
+        <h2 className="font-semibold text-foreground flex items-center gap-2">
+          <Plug className="h-4 w-4 text-muted-foreground" />
           Integrations
         </h2>
         {!showForm && (
@@ -672,7 +672,7 @@ export function IntegrationsCard() {
             variant="ghost"
             size="sm"
             onClick={() => setShowForm(true)}
-            className="h-7 px-2 text-gray-500"
+            className="h-7 px-2 text-muted-foreground"
           >
             <Plus className="h-3.5 w-3.5 mr-1" />
             Add
@@ -688,7 +688,7 @@ export function IntegrationsCard() {
             {counts.connected} connected
           </span>
           <span className="flex items-center gap-1.5">
-            <span className="w-2 h-2 rounded-full bg-gray-400" />
+            <span className="w-2 h-2 rounded-full bg-muted-foreground" />
             {counts.disconnected} disconnected
           </span>
           {counts.error > 0 && (
@@ -701,12 +701,12 @@ export function IntegrationsCard() {
 
         {/* Add form */}
         {showForm && (
-          <div className="p-3 border border-gray-200 rounded-lg bg-gray-50 space-y-2 mb-3">
+          <div className="p-3 border border-border rounded-lg bg-muted space-y-2 mb-3">
             <Select value={newProvider} onValueChange={handleProviderChange}>
-              <SelectTrigger className="h-8 text-sm bg-white border-gray-300">
+              <SelectTrigger className="h-8 text-sm bg-background border-border">
                 <SelectValue />
               </SelectTrigger>
-              <SelectContent className="bg-white border-gray-200">
+              <SelectContent className="bg-background border-border">
                 {providerOptions.map((p) => (
                   <SelectItem key={p.value} value={p.value}>
                     {p.icon} {p.label}
@@ -722,10 +722,10 @@ export function IntegrationsCard() {
                   setNewName(e.target.value);
                   setFormErrors((prev) => { const next = { ...prev }; delete next._name; return next; });
                 }}
-                className={cn('h-8 text-sm bg-white border-gray-300', formErrors._name && 'border-red-400')}
+                className={cn('h-8 text-sm bg-background border-border', formErrors._name && 'border-destructive')}
               />
               {formErrors._name && (
-                <p className="text-[10px] text-red-500 mt-0.5 pl-1">{formErrors._name}</p>
+                <p className="text-[10px] text-destructive mt-0.5 pl-1">{formErrors._name}</p>
               )}
             </div>
             <MetadataFields

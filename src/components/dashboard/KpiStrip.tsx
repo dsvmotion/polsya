@@ -40,15 +40,15 @@ interface KpiCardProps {
   accent?: string;
 }
 
-function KpiCard({ label, value, icon, accent = 'text-gray-900' }: KpiCardProps) {
+function KpiCard({ label, value, icon, accent = 'text-foreground' }: KpiCardProps) {
   return (
     <div className="metric-card flex items-center gap-3 min-w-0">
-      <div className="p-1.5 rounded-md bg-gray-100 text-gray-500 shrink-0">
+      <div className="p-1.5 rounded-md bg-muted text-muted-foreground shrink-0">
         {icon}
       </div>
       <div className="min-w-0">
         <p className={`text-lg font-bold leading-tight ${accent}`}>{value}</p>
-        <p className="text-[11px] text-gray-500 truncate">{label}</p>
+        <p className="text-[11px] text-muted-foreground truncate">{label}</p>
       </div>
     </div>
   );
@@ -57,10 +57,10 @@ function KpiCard({ label, value, icon, accent = 'text-gray-900' }: KpiCardProps)
 function SkeletonCard() {
   return (
     <div className="metric-card flex items-center gap-3 animate-pulse">
-      <div className="h-8 w-8 rounded-md bg-gray-200" />
+      <div className="h-8 w-8 rounded-md bg-muted" />
       <div className="space-y-1.5">
-        <div className="h-5 w-16 rounded bg-gray-200" />
-        <div className="h-3 w-24 rounded bg-gray-100" />
+        <div className="h-5 w-16 rounded bg-muted" />
+        <div className="h-3 w-24 rounded bg-muted/50" />
       </div>
     </div>
   );
@@ -89,10 +89,10 @@ export function KpiStrip() {
           value={entityTypeKey}
           onValueChange={(v) => setEntityTypeKey(v as KpiEntityTypeFilter)}
         >
-          <SelectTrigger className="h-7 w-32 text-xs bg-white border-gray-300">
+          <SelectTrigger className="h-7 w-32 text-xs bg-background border-border">
             <SelectValue />
           </SelectTrigger>
-          <SelectContent className="bg-white border-gray-200 z-50">
+          <SelectContent className="bg-background border-border z-50">
             {entityTypeOptions.map((o) => (
               <SelectItem key={o.value} value={o.value} className="text-xs">
                 {o.label}
@@ -105,10 +105,10 @@ export function KpiStrip() {
           value={timeRange}
           onValueChange={(v) => setTimeRange(v as KpiTimeRange)}
         >
-          <SelectTrigger className="h-7 w-32 text-xs bg-white border-gray-300">
+          <SelectTrigger className="h-7 w-32 text-xs bg-background border-border">
             <SelectValue />
           </SelectTrigger>
-          <SelectContent className="bg-white border-gray-200 z-50">
+          <SelectContent className="bg-background border-border z-50">
             {TIME_RANGE_OPTIONS.map((o) => (
               <SelectItem key={o.value} value={o.value} className="text-xs">
                 {o.label}
@@ -118,7 +118,7 @@ export function KpiStrip() {
         </Select>
 
         {(entityTypeKey !== 'all' || timeRange !== '90d') && (
-          <span className="text-[10px] text-gray-400">
+          <span className="text-[10px] text-muted-foreground">
             Filtered
           </span>
         )}
@@ -143,7 +143,7 @@ export function KpiStrip() {
               label="At Risk"
               value={String(kpis.atRiskCount)}
               icon={<AlertTriangle className="h-4 w-4" />}
-              accent={kpis.atRiskCount > 0 ? 'text-red-600' : 'text-gray-900'}
+              accent={kpis.atRiskCount > 0 ? 'text-red-600' : 'text-foreground'}
             />
             <KpiCard
               label={`Active ${entityPlural}`}

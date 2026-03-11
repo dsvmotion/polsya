@@ -49,27 +49,27 @@ interface ActionRowProps {
 function ActionRow({ action, runs, onApprove, onReject, isPending }: ActionRowProps) {
 
   return (
-    <div className="py-2 border-b border-gray-100 last:border-0">
+    <div className="py-2 border-b border-border last:border-0">
       <div className="flex items-start gap-2">
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-1.5">
-            <span className="text-xs font-medium text-gray-700 truncate">
+            <span className="text-xs font-medium text-foreground truncate">
               {action.agent_name}
             </span>
-            <span className="text-gray-300">·</span>
-            <span className="text-xs text-gray-500">
+            <span className="text-muted-foreground/50">·</span>
+            <span className="text-xs text-muted-foreground">
               {ACTION_TYPE_LABELS[action.action_type] ?? action.action_type}
             </span>
-            <span className="text-gray-300">→</span>
-            <span className="text-xs text-gray-500">
+            <span className="text-muted-foreground/50">→</span>
+            <span className="text-xs text-muted-foreground">
               {TARGET_TYPE_LABELS[action.target_type] ?? action.target_type}
             </span>
           </div>
           {action.status === 'error' && action.error_message && (
-            <p className="text-xs text-red-600 mt-0.5 truncate">{action.error_message}</p>
+            <p className="text-xs text-destructive mt-0.5 truncate">{action.error_message}</p>
           )}
           {action.approved_by && (
-            <p className="text-[10px] text-gray-400 mt-0.5">
+            <p className="text-[10px] text-muted-foreground mt-0.5">
               {action.status === 'rejected' ? 'Rejected' : 'Approved'} by {action.approved_by}
               {action.approved_at ? ` · ${timeAgo(action.approved_at)}` : ''}
             </p>
@@ -103,12 +103,12 @@ function ActionRow({ action, runs, onApprove, onReject, isPending }: ActionRowPr
           <span
             className={cn(
               'text-[10px] font-medium px-1.5 py-0.5 rounded',
-              ACTION_STATUS_COLORS[action.status] ?? 'bg-gray-100 text-gray-600',
+              ACTION_STATUS_COLORS[action.status] ?? 'bg-muted text-muted-foreground',
             )}
           >
             {action.status}
           </span>
-          <span className="text-[10px] text-gray-400 whitespace-nowrap">
+          <span className="text-[10px] text-muted-foreground whitespace-nowrap">
             {timeAgo(action.created_at)}
           </span>
         </div>
@@ -120,18 +120,18 @@ function ActionRow({ action, runs, onApprove, onReject, isPending }: ActionRowPr
               <span
                 className={cn(
                   'text-[9px] font-medium px-1 py-px rounded',
-                  RUN_STATUS_COLORS[run.run_status] ?? 'bg-gray-100 text-gray-500',
+                  RUN_STATUS_COLORS[run.run_status] ?? 'bg-muted text-muted-foreground',
                 )}
               >
                 {run.run_status}
               </span>
               {run.operation_summary && (
-                <span className="text-[9px] text-gray-400 truncate max-w-[180px]">{run.operation_summary}</span>
+                <span className="text-[9px] text-muted-foreground truncate max-w-[180px]">{run.operation_summary}</span>
               )}
               {run.error_message && (
-                <span className="text-[9px] text-red-500 truncate max-w-[180px]">{run.error_message}</span>
+                <span className="text-[9px] text-destructive truncate max-w-[180px]">{run.error_message}</span>
               )}
-              <span className="text-[9px] text-gray-300">{timeAgo(run.started_at)}</span>
+              <span className="text-[9px] text-muted-foreground/60">{timeAgo(run.started_at)}</span>
             </div>
           ))}
         </div>
@@ -293,10 +293,10 @@ export function AgentActionsCard() {
     <div className="surface-card">
       <div className="surface-card-header">
         <div className="flex items-center gap-2">
-          <Bot className="h-4 w-4 text-gray-500" />
-          <h3 className="text-sm font-semibold text-gray-900">Agent Actions</h3>
+          <Bot className="h-4 w-4 text-muted-foreground" />
+          <h3 className="text-sm font-semibold text-foreground">Agent Actions</h3>
           {actions.length > 0 && (
-            <span className="text-[10px] text-gray-400">
+            <span className="text-[10px] text-muted-foreground">
               {statusCounts.success ?? 0} ok · {statusCounts.error ?? 0} err · {statusCounts.queued ?? 0} queued
             </span>
           )}
