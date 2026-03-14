@@ -45,7 +45,7 @@ export default function Signup() {
   // Redirect if already logged in (unless we're showing post-signup confirmation)
   useEffect(() => {
     if (!user || showConfirmation) return;
-    navigate(isPlatformOwner(user) ? '/platform' : '/dashboard', { replace: true });
+    navigate(isPlatformOwner(user) ? '/admin' : '/app', { replace: true });
   }, [user, navigate, showConfirmation]);
 
   const handleSubmit = async (e: React.FormEvent) => {

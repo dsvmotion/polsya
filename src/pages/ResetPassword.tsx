@@ -20,7 +20,7 @@ export default function ResetPassword() {
   // Redirect to dashboard after successful password reset
   useEffect(() => {
     if (success) {
-      redirectTimerRef.current = setTimeout(() => navigate('/dashboard', { replace: true }), 2000);
+      redirectTimerRef.current = setTimeout(() => navigate('/app', { replace: true }), 2000);
       return () => clearTimeout(redirectTimerRef.current);
     }
   }, [success, navigate]);

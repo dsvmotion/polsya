@@ -60,7 +60,7 @@ export function UserMenu() {
         <DropdownMenuSeparator className="bg-muted" />
         {platformOwner && (
           <DropdownMenuItem asChild className="cursor-pointer text-foreground focus:bg-accent focus:text-accent-foreground">
-            <Link to="/platform" className="flex items-center">
+            <Link to="/admin" className="flex items-center">
               <Shield className="mr-2 h-4 w-4" />
               <span>Platform Admin</span>
             </Link>

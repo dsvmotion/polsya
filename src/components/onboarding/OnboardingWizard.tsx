@@ -25,7 +25,7 @@ const STEPS = [
     title: 'Your sales dashboard',
     description: 'See orders, entities, and revenue at a glance. Filter by geography and customer type.',
     icon: BarChart3,
-    action: { label: 'Go to dashboard', to: '/dashboard' },
+    action: { label: 'Go to dashboard', to: '/app' },
   },
   {
     id: 'prospecting',

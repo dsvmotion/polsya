@@ -10,7 +10,7 @@ const SKIP_GATE = import.meta.env.VITE_BILLING_SKIP_GATE === 'true' || import.me
 
 /** Rutas que muestran ActivateSubscriptionCard cuando no hay acceso. */
 const GATED_PATHS = [
-  '/dashboard',
+  '/app',
   '/prospecting',
   '/operations',
   '/reports',
