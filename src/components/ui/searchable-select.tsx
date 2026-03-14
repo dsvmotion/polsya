@@ -76,8 +76,8 @@ export function SearchableSelect({
           aria-expanded={open}
           disabled={disabled}
           className={cn(
-            "h-9 w-full justify-between border rounded-md bg-white border-gray-300 text-gray-900 font-normal text-sm",
-            !displayValue && "text-gray-500",
+            "h-9 w-full justify-between border rounded-md bg-background border-border text-foreground font-normal text-sm",
+            !displayValue && "text-muted-foreground",
             disabled && "opacity-50",
             className
           )}
@@ -87,7 +87,7 @@ export function SearchableSelect({
         </Button>
       </PopoverTrigger>
       <PopoverContent
-        className="p-0 bg-white border-gray-200"
+        className="p-0 bg-background border-border"
         align="start"
         style={{ width: 'var(--radix-popover-trigger-width)' }}
       >
@@ -98,14 +98,14 @@ export function SearchableSelect({
             onChange={(e) => setSearch(e.target.value)}
             onKeyDown={handleKeyDown}
             placeholder="Type to search..."
-            className="px-3 py-2 text-sm border-b border-gray-200 outline-none"
+            className="px-3 py-2 text-sm border-b border-border outline-none bg-background"
           />
           <div className="max-h-60 overflow-y-auto">
             {/* All option */}
             <button
               type="button"
               className={cn(
-                "flex items-center w-full px-3 py-2 text-sm hover:bg-gray-100 text-left",
+                "flex items-center w-full px-3 py-2 text-sm hover:bg-muted text-left",
                 (!value || value === "all") && "font-medium"
               )}
               onClick={() => handleSelect("all")}
@@ -117,7 +117,7 @@ export function SearchableSelect({
             {search.trim() && filtered.length === 0 && (
               <button
                 type="button"
-                className="flex items-center w-full px-3 py-2 text-sm hover:bg-gray-100 text-left text-blue-600"
+                className="flex items-center w-full px-3 py-2 text-sm hover:bg-muted text-left text-primary"
                 onClick={() => handleSelect(search.trim())}
               >
                 Use &quot;{search.trim()}&quot;
@@ -129,7 +129,7 @@ export function SearchableSelect({
                 type="button"
                 key={option}
                 className={cn(
-                  "flex items-center w-full px-3 py-2 text-sm hover:bg-gray-100 text-left",
+                  "flex items-center w-full px-3 py-2 text-sm hover:bg-muted text-left",
                   value === option && "font-medium"
                 )}
                 onClick={() => handleSelect(option)}
@@ -139,7 +139,7 @@ export function SearchableSelect({
               </button>
             ))}
             {filtered.length === 0 && !search.trim() && (
-              <div className="px-3 py-2 text-sm text-gray-500">No options available</div>
+              <div className="px-3 py-2 text-sm text-muted-foreground">No options available</div>
             )}
           </div>
         </div>

@@ -127,7 +127,7 @@ function ContactsSection({ pharmacyId }: { pharmacyId: string }) {
   return (
     <div className="space-y-3">
       <div className="flex items-center justify-between">
-        <h3 className="text-sm font-medium text-gray-500 flex items-center gap-2">
+        <h3 className="text-sm font-medium text-muted-foreground flex items-center gap-2">
           <Users className="h-4 w-4" />
           Contacts ({contacts.length})
         </h3>
@@ -136,7 +136,7 @@ function ContactsSection({ pharmacyId }: { pharmacyId: string }) {
             variant="ghost"
             size="sm"
             onClick={() => setShowForm(true)}
-            className="h-7 px-2 text-gray-500"
+            className="h-7 px-2 text-muted-foreground"
           >
             <Plus className="h-3.5 w-3.5 mr-1" />
             Add
@@ -145,18 +145,18 @@ function ContactsSection({ pharmacyId }: { pharmacyId: string }) {
       </div>
 
       {showForm && (
-        <div className="p-3 border border-gray-200 rounded-lg bg-gray-50 space-y-2">
+        <div className="p-3 border border-border rounded-lg bg-muted space-y-2">
           <Input
             placeholder="Name *"
             value={newName}
             onChange={(e) => setNewName(e.target.value)}
-            className="h-8 text-sm bg-white border-gray-300"
+            className="h-8 text-sm bg-background border-border"
           />
           <Select value={newRole} onValueChange={(v) => setNewRole(v as ContactRole)}>
-            <SelectTrigger className="h-8 text-sm bg-white border-gray-300">
+            <SelectTrigger className="h-8 text-sm bg-background border-border">
               <SelectValue placeholder="Role (optional)" />
             </SelectTrigger>
-            <SelectContent className="bg-white border-gray-200">
+            <SelectContent className="bg-background border-border">
               {(Object.keys(CONTACT_ROLE_LABELS) as ContactRole[]).map((r) => (
                 <SelectItem key={r} value={r}>{CONTACT_ROLE_LABELS[r]}</SelectItem>
               ))}
@@ -167,13 +167,13 @@ function ContactsSection({ pharmacyId }: { pharmacyId: string }) {
             type="email"
             value={newEmail}
             onChange={(e) => setNewEmail(e.target.value)}
-            className="h-8 text-sm bg-white border-gray-300"
+            className="h-8 text-sm bg-background border-border"
           />
           <Input
             placeholder="Phone"
             value={newPhone}
             onChange={(e) => setNewPhone(e.target.value)}
-            className="h-8 text-sm bg-white border-gray-300"
+            className="h-8 text-sm bg-background border-border"
           />
           <div className="flex items-center gap-2 pt-1">
             <Button size="sm" onClick={handleAdd} disabled={createContact.isPending}>
@@ -185,33 +185,33 @@ function ContactsSection({ pharmacyId }: { pharmacyId: string }) {
       )}
 
       {isLoading ? (
-        <p className="text-xs text-gray-400">Loading contacts...</p>
+        <p className="text-xs text-muted-foreground">Loading contacts...</p>
       ) : contacts.length === 0 && !showForm ? (
-        <p className="text-xs text-gray-400">No contacts yet</p>
+        <p className="text-xs text-muted-foreground">Nocontacts yet</p>
       ) : (
         <div className="space-y-2">
           {contacts.map((contact) => (
             <div
               key={contact.id}
-              className="flex items-start justify-between gap-2 p-2 rounded border border-gray-100 bg-white"
+              className="flex items-start justify-between gap-2 p-2 rounded border border-border bg-background"
             >
               <div className="min-w-0 flex-1">
                 <div className="flex items-center gap-1.5">
-                  <span className="text-sm font-medium text-gray-900 truncate">{contact.name}</span>
+                  <span className="text-sm font-medium text-foreground truncate">{contact.name}</span>
                   {contact.isPrimary && (
                     <Star className="h-3 w-3 text-yellow-500 fill-yellow-500 shrink-0" />
                   )}
                   {contact.role && (
-                    <span className="text-[10px] px-1.5 py-0.5 rounded bg-gray-100 text-gray-600 shrink-0">
+                    <span className="text-[10px] px-1.5 py-0.5 rounded bg-muted text-muted-foreground shrink-0">
                       {CONTACT_ROLE_LABELS[contact.role] ?? contact.role}
                     </span>
                   )}
                 </div>
                 {contact.email && (
-                  <p className="text-xs text-gray-500 truncate">{contact.email}</p>
+                  <p className="text-xs text-muted-foreground truncate">{contact.email}</p>
                 )}
                 {contact.phone && (
-                  <p className="text-xs text-gray-500">{contact.phone}</p>
+                  <p className="text-xs text-muted-foreground">{contact.phone}</p>
                 )}
               </div>
               <div className="flex items-center gap-0.5 shrink-0">
@@ -219,7 +219,7 @@ function ContactsSection({ pharmacyId }: { pharmacyId: string }) {
                   <Button
                     variant="ghost"
                     size="sm"
-                    className="h-7 px-1.5 text-gray-400 hover:text-yellow-600"
+                    className="h-7 px-1.5 text-muted-foreground hover:text-yellow-600"
                     onClick={() => handleSetPrimary(contact.id)}
                     title="Set as primary"
                   >
@@ -229,7 +229,7 @@ function ContactsSection({ pharmacyId }: { pharmacyId: string }) {
                 <Button
                   variant="ghost"
                   size="sm"
-                  className="h-7 px-1.5 text-gray-400 hover:text-red-600"
+                  className="h-7 px-1.5 text-muted-foreground hover:text-red-600"
                   onClick={() => handleDelete(contact.id)}
                 >
                   <Trash2 className="h-3.5 w-3.5" />
@@ -307,7 +307,7 @@ function ActivitiesSection({ pharmacyId }: { pharmacyId: string }) {
   return (
     <div className="space-y-3">
       <div className="flex items-center justify-between">
-        <h3 className="text-sm font-medium text-gray-500 flex items-center gap-2">
+        <h3 className="text-sm font-medium text-muted-foreground flex items-center gap-2">
           <Activity className="h-4 w-4" />
           Activities ({activities.length})
           {pendingCount > 0 && (
@@ -321,7 +321,7 @@ function ActivitiesSection({ pharmacyId }: { pharmacyId: string }) {
             variant="ghost"
             size="sm"
             onClick={() => setShowForm(true)}
-            className="h-7 px-2 text-gray-500"
+            className="h-7 px-2 text-muted-foreground"
           >
             <Plus className="h-3.5 w-3.5 mr-1" />
             Add
@@ -330,12 +330,12 @@ function ActivitiesSection({ pharmacyId }: { pharmacyId: string }) {
       </div>
 
       {showForm && (
-        <div className="p-3 border border-gray-200 rounded-lg bg-gray-50 space-y-2">
+        <div className="p-3 border border-border rounded-lg bg-muted space-y-2">
           <Select value={newType} onValueChange={(v) => setNewType(v as ActivityType)}>
-            <SelectTrigger className="h-8 text-sm bg-white border-gray-300">
+            <SelectTrigger className="h-8 text-sm bg-background border-border">
               <SelectValue />
             </SelectTrigger>
-            <SelectContent className="bg-white border-gray-200">
+            <SelectContent className="bg-background border-border">
               {(Object.keys(ACTIVITY_TYPE_LABELS) as ActivityType[]).map((t) => (
                 <SelectItem key={t} value={t}>
                   {ACTIVITY_TYPE_ICONS[t]} {ACTIVITY_TYPE_LABELS[t]}
@@ -347,21 +347,21 @@ function ActivitiesSection({ pharmacyId }: { pharmacyId: string }) {
             placeholder="Title *"
             value={newTitle}
             onChange={(e) => setNewTitle(e.target.value)}
-            className="h-8 text-sm bg-white border-gray-300"
+            className="h-8 text-sm bg-background border-border"
           />
           <Textarea
             placeholder="Description (optional)"
             value={newDescription}
             onChange={(e) => setNewDescription(e.target.value)}
-            className="min-h-[60px] text-sm bg-white border-gray-300 resize-none"
+            className="min-h-[60px] text-sm bg-background border-border resize-none"
           />
           <div className="flex items-center gap-2">
-            <Calendar className="h-3.5 w-3.5 text-gray-400 shrink-0" />
+            <Calendar className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
             <Input
               type="datetime-local"
               value={newDueAt}
               onChange={(e) => setNewDueAt(e.target.value)}
-              className="h-8 text-sm bg-white border-gray-300"
+              className="h-8 text-sm bg-background border-border"
             />
           </div>
           <div className="flex items-center gap-2 pt-1">
@@ -374,9 +374,9 @@ function ActivitiesSection({ pharmacyId }: { pharmacyId: string }) {
       )}
 
       {isLoading ? (
-        <p className="text-xs text-gray-400">Loading activities...</p>
+        <p className="text-xs text-muted-foreground">Loading activities...</p>
       ) : activities.length === 0 && !showForm ? (
-        <p className="text-xs text-gray-400">No activities yet</p>
+        <p className="text-xs text-muted-foreground">Noactivities yet</p>
       ) : (
         <div className="space-y-2">
           {activities.map((act) => {
@@ -387,7 +387,7 @@ function ActivitiesSection({ pharmacyId }: { pharmacyId: string }) {
                 key={act.id}
                 className={cn(
                   'flex items-start gap-2 p-2 rounded border bg-white',
-                  isDone ? 'border-gray-100 opacity-60' : isOverdue ? 'border-red-200' : 'border-gray-100'
+                  isDone ? 'border-border opacity-60' : isOverdue ? 'border-red-200' : 'border-border'
                 )}
               >
                 <button
@@ -400,20 +400,20 @@ function ActivitiesSection({ pharmacyId }: { pharmacyId: string }) {
                   {isDone ? (
                     <CheckCircle2 className="h-4 w-4 text-green-500" />
                   ) : (
-                    <Circle className="h-4 w-4 text-gray-300 hover:text-green-400" />
+                    <Circle className="h-4 w-4 text-muted-foreground/50 hover:text-green-400" />
                   )}
                 </button>
                 <div className="min-w-0 flex-1">
                   <div className="flex items-center gap-1.5">
                     <span className="text-xs">{ACTIVITY_TYPE_ICONS[act.activityType]}</span>
-                    <span className={cn('text-sm font-medium truncate', isDone ? 'line-through text-gray-400' : 'text-gray-900')}>
+                    <span className={cn('text-sm font-medium truncate', isDone ? 'line-through text-muted-foreground' : 'text-foreground')}>
                       {act.title}
                     </span>
                   </div>
                   {act.description && (
-                    <p className="text-xs text-gray-500 mt-0.5 line-clamp-2">{act.description}</p>
+                    <p className="text-xs text-muted-foreground mt-0.5 line-clamp-2">{act.description}</p>
                   )}
-                  <div className="flex items-center gap-2 mt-1 text-[10px] text-gray-400">
+                  <div className="flex items-center gap-2 mt-1 text-[10px] text-muted-foreground">
                     <span>{new Date(act.createdAt).toLocaleDateString()}</span>
                     {act.dueAt && (
                       <span className={cn(isOverdue ? 'text-red-500 font-medium' : '')}>
@@ -430,7 +430,7 @@ function ActivitiesSection({ pharmacyId }: { pharmacyId: string }) {
                 <Button
                   variant="ghost"
                   size="sm"
-                  className="h-7 px-1.5 text-gray-400 hover:text-red-600 shrink-0"
+                  className="h-7 px-1.5 text-muted-foreground hover:text-red-600 shrink-0"
                   onClick={() => handleDelete(act.id)}
                 >
                   <Trash2 className="h-3.5 w-3.5" />
@@ -508,12 +508,12 @@ function OpportunityRow({ opp, pharmacyId, onDelete }: {
   if (editing) {
     return (
       <div className="p-2.5 rounded border border-blue-200 bg-blue-50/30 space-y-2">
-        <p className="text-sm font-medium text-gray-900 truncate">{opp.title}</p>
+        <p className="text-sm font-medium text-foreground truncate">{opp.title}</p>
         <Select value={editStage} onValueChange={(v) => setEditStage(v as OpportunityStage)}>
-          <SelectTrigger className="h-8 text-sm bg-white border-gray-300">
+          <SelectTrigger className="h-8 text-sm bg-background border-border">
             <SelectValue />
           </SelectTrigger>
-          <SelectContent className="bg-white border-gray-200">
+          <SelectContent className="bg-background border-border">
             {(Object.keys(OPPORTUNITY_STAGE_LABELS) as OpportunityStage[]).map((s) => (
               <SelectItem key={s} value={s}>{OPPORTUNITY_STAGE_LABELS[s]}</SelectItem>
             ))}
@@ -525,7 +525,7 @@ function OpportunityRow({ opp, pharmacyId, onDelete }: {
             placeholder="Amount (€)"
             value={editAmount}
             onChange={(e) => setEditAmount(e.target.value)}
-            className="h-8 text-sm bg-white border-gray-300"
+            className="h-8 text-sm bg-background border-border"
             min="0"
             step="0.01"
           />
@@ -534,7 +534,7 @@ function OpportunityRow({ opp, pharmacyId, onDelete }: {
             placeholder="Prob (%)"
             value={editProbability}
             onChange={(e) => setEditProbability(e.target.value)}
-            className="h-8 text-sm bg-white border-gray-300"
+            className="h-8 text-sm bg-background border-border"
             min="0"
             max="100"
           />
@@ -543,7 +543,7 @@ function OpportunityRow({ opp, pharmacyId, onDelete }: {
           type="date"
           value={editCloseDate}
           onChange={(e) => setEditCloseDate(e.target.value)}
-          className="h-8 text-sm bg-white border-gray-300"
+          className="h-8 text-sm bg-background border-border"
         />
         <div className="flex items-center gap-2 pt-1 flex-wrap">
           <Button size="sm" onClick={handleSave} disabled={isSaving}>
@@ -561,23 +561,23 @@ function OpportunityRow({ opp, pharmacyId, onDelete }: {
     <div
       className={cn(
         'p-2 rounded border bg-white',
-        isClosed ? 'border-gray-100 opacity-70' : 'border-gray-100'
+        isClosed ? 'border-border opacity-70' : 'border-border'
       )}
     >
       <div className="flex items-start justify-between gap-2">
         <div className="min-w-0 flex-1">
           <div className="flex items-center gap-1.5 flex-wrap">
-            <span className="text-sm font-medium text-gray-900 truncate">{opp.title}</span>
+            <span className="text-sm font-medium text-foreground truncate">{opp.title}</span>
             <span className={cn('text-[10px] px-1.5 py-0.5 rounded font-medium', stageColor?.bg, stageColor?.text)}>
               {OPPORTUNITY_STAGE_LABELS[opp.stage]}
             </span>
           </div>
-          <div className="flex items-center gap-3 mt-1 text-xs text-gray-600">
+          <div className="flex items-center gap-3 mt-1 text-xs text-muted-foreground">
             <span className="font-medium">€{opp.amount.toLocaleString('es-ES', { minimumFractionDigits: 2 })}</span>
             <span>{opp.probability}%</span>
-            <span className="text-gray-400">→ €{weighted.toLocaleString('es-ES', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}</span>
+            <span className="text-muted-foreground">→ €{weighted.toLocaleString('es-ES', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}</span>
           </div>
-          <div className="flex items-center gap-2 mt-0.5 text-[10px] text-gray-400">
+          <div className="flex items-center gap-2 mt-0.5 text-[10px] text-muted-foreground">
             {opp.expectedCloseDate && (
               <span>Close: {new Date(opp.expectedCloseDate + 'T00:00:00').toLocaleDateString()}</span>
             )}
@@ -590,7 +590,7 @@ function OpportunityRow({ opp, pharmacyId, onDelete }: {
               <Button
                 variant="ghost"
                 size="sm"
-                className="h-7 px-1.5 text-gray-400 hover:text-green-600"
+                className="h-7 px-1.5 text-muted-foreground hover:text-green-600"
                 onClick={() => handleQuickStage('won')}
                 title="Mark won"
                 disabled={isSaving}
@@ -600,7 +600,7 @@ function OpportunityRow({ opp, pharmacyId, onDelete }: {
               <Button
                 variant="ghost"
                 size="sm"
-                className="h-7 px-1.5 text-gray-400 hover:text-red-600"
+                className="h-7 px-1.5 text-muted-foreground hover:text-red-600"
                 onClick={() => handleQuickStage('lost')}
                 title="Mark lost"
                 disabled={isSaving}
@@ -612,7 +612,7 @@ function OpportunityRow({ opp, pharmacyId, onDelete }: {
           <Button
             variant="ghost"
             size="sm"
-            className="h-7 px-1.5 text-gray-400 hover:text-blue-600"
+            className="h-7 px-1.5 text-muted-foreground hover:text-blue-600"
             onClick={startEdit}
             title="Edit"
           >
@@ -621,7 +621,7 @@ function OpportunityRow({ opp, pharmacyId, onDelete }: {
           <Button
             variant="ghost"
             size="sm"
-            className="h-7 px-1.5 text-gray-400 hover:text-red-600"
+            className="h-7 px-1.5 text-muted-foreground hover:text-red-600"
             onClick={() => onDelete(opp.id)}
           >
             <Trash2 className="h-3.5 w-3.5" />
@@ -697,7 +697,7 @@ function OpportunitiesSection({ pharmacyId }: { pharmacyId: string }) {
   return (
     <div className="space-y-3">
       <div className="flex items-center justify-between">
-        <h3 className="text-sm font-medium text-gray-500 flex items-center gap-2">
+        <h3 className="text-sm font-medium text-muted-foreground flex items-center gap-2">
           <TrendingUp className="h-4 w-4" />
           Opportunities ({opportunities.length})
         </h3>
@@ -706,7 +706,7 @@ function OpportunitiesSection({ pharmacyId }: { pharmacyId: string }) {
             variant="ghost"
             size="sm"
             onClick={() => setShowForm(true)}
-            className="h-7 px-2 text-gray-500"
+            className="h-7 px-2 text-muted-foreground"
           >
             <Plus className="h-3.5 w-3.5 mr-1" />
             Add
@@ -716,34 +716,34 @@ function OpportunitiesSection({ pharmacyId }: { pharmacyId: string }) {
 
       {opportunities.length > 0 && (
         <div className="grid grid-cols-2 gap-2">
-          <div className="bg-gray-50 border border-gray-200 rounded-lg p-2 text-center">
-            <p className="text-lg font-bold text-gray-900">
+          <div className="bg-muted border border-border rounded-lg p-2 text-center">
+            <p className="text-lg font-bold text-foreground">
               €{totalPipeline.toLocaleString('es-ES', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
             </p>
-            <p className="text-[10px] text-gray-500">Pipeline</p>
+            <p className="text-[10px] text-muted-foreground">Pipeline</p>
           </div>
-          <div className="bg-gray-50 border border-gray-200 rounded-lg p-2 text-center">
-            <p className="text-lg font-bold text-gray-900">
+          <div className="bg-muted border border-border rounded-lg p-2 text-center">
+            <p className="text-lg font-bold text-foreground">
               €{weightedForecast.toLocaleString('es-ES', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
             </p>
-            <p className="text-[10px] text-gray-500">Weighted Forecast</p>
+            <p className="text-[10px] text-muted-foreground">Weighted Forecast</p>
           </div>
         </div>
       )}
 
       {showForm && (
-        <div className="p-3 border border-gray-200 rounded-lg bg-gray-50 space-y-2">
+        <div className="p-3 border border-border rounded-lg bg-muted space-y-2">
           <Input
             placeholder="Title *"
             value={newTitle}
             onChange={(e) => setNewTitle(e.target.value)}
-            className="h-8 text-sm bg-white border-gray-300"
+            className="h-8 text-sm bg-background border-border"
           />
           <Select value={newStage} onValueChange={(v) => setNewStage(v as OpportunityStage)}>
-            <SelectTrigger className="h-8 text-sm bg-white border-gray-300">
+            <SelectTrigger className="h-8 text-sm bg-background border-border">
               <SelectValue />
             </SelectTrigger>
-            <SelectContent className="bg-white border-gray-200">
+            <SelectContent className="bg-background border-border">
               {(Object.keys(OPPORTUNITY_STAGE_LABELS) as OpportunityStage[]).map((s) => (
                 <SelectItem key={s} value={s}>{OPPORTUNITY_STAGE_LABELS[s]}</SelectItem>
               ))}
@@ -755,7 +755,7 @@ function OpportunitiesSection({ pharmacyId }: { pharmacyId: string }) {
               placeholder="Amount (€)"
               value={newAmount}
               onChange={(e) => setNewAmount(e.target.value)}
-              className="h-8 text-sm bg-white border-gray-300"
+              className="h-8 text-sm bg-background border-border"
               min="0"
               step="0.01"
             />
@@ -764,7 +764,7 @@ function OpportunitiesSection({ pharmacyId }: { pharmacyId: string }) {
               placeholder="Probability (%)"
               value={newProbability}
               onChange={(e) => setNewProbability(e.target.value)}
-              className="h-8 text-sm bg-white border-gray-300"
+              className="h-8 text-sm bg-background border-border"
               min="0"
               max="100"
             />
@@ -773,7 +773,7 @@ function OpportunitiesSection({ pharmacyId }: { pharmacyId: string }) {
             type="date"
             value={newCloseDate}
             onChange={(e) => setNewCloseDate(e.target.value)}
-            className="h-8 text-sm bg-white border-gray-300"
+            className="h-8 text-sm bg-background border-border"
           />
           <div className="flex items-center gap-2 pt-1">
             <Button size="sm" onClick={handleAdd} disabled={createOpportunity.isPending}>
@@ -785,9 +785,9 @@ function OpportunitiesSection({ pharmacyId }: { pharmacyId: string }) {
       )}
 
       {isLoading ? (
-        <p className="text-xs text-gray-400">Loading opportunities...</p>
+        <p className="text-xs text-muted-foreground">Loading opportunities...</p>
       ) : opportunities.length === 0 && !showForm ? (
-        <p className="text-xs text-gray-400">No opportunities yet</p>
+        <p className="text-xs text-muted-foreground">Noopportunities yet</p>
       ) : (
         <div className="space-y-2">
           {opportunities.map((opp) => (
@@ -879,10 +879,10 @@ export function EntityDetailPanel({ pharmacy, onClose }: EntityDetailPanelProps)
   };
 
   return (
-    <div className="h-full flex flex-col bg-white">
+    <div className="h-full flex flex-col bg-background">
       {/* Photo Header */}
-      <div className="border-b border-gray-200">
-        <div className="h-32 bg-gray-100 relative overflow-hidden">
+      <div className="border-b border-border">
+        <div className="h-32 bg-muted relative overflow-hidden">
           {photoUrl ? (
             <img 
               src={photoUrl} 
@@ -893,12 +893,12 @@ export function EntityDetailPanel({ pharmacy, onClose }: EntityDetailPanelProps)
             <div className="w-full h-full flex items-center justify-center">
               {photoLoading ? (
                 <div className="animate-pulse">
-                  <ImageIcon className="h-10 w-10 text-gray-300" />
+                  <ImageIcon className="h-10 w-10 text-muted-foreground/50" />
                 </div>
               ) : (
                 <div className="text-center">
-                  <Building2 className="h-10 w-10 text-gray-300 mx-auto" />
-                  <p className="text-xs text-gray-400 mt-1">No photo</p>
+                  <Building2 className="h-10 w-10 text-muted-foreground/50 mx-auto" />
+                  <p className="text-xs text-muted-foreground mt-1">No photo</p>
                 </div>
               )}
             </div>
@@ -908,14 +908,14 @@ export function EntityDetailPanel({ pharmacy, onClose }: EntityDetailPanelProps)
         {/* Title and Status */}
         <div className="p-4 flex items-start justify-between gap-4">
           <div className="flex-1 min-w-0">
-            <h2 className="font-semibold text-lg leading-tight truncate text-gray-900">
+            <h2 className="font-semibold text-lg leading-tight truncate text-foreground">
               {pharmacy.name}
             </h2>
             <span className={cn('inline-block px-2 py-0.5 rounded text-xs font-medium mt-1', statusColor.bg, statusColor.text)}>
               {STATUS_LABELS[status]}
             </span>
           </div>
-          <Button variant="ghost" size="icon" onClick={onClose} className="text-gray-500 -mr-2">
+          <Button variant="ghost" size="icon" onClick={onClose} className="text-muted-foreground -mr-2">
             <X className="h-4 w-4" />
           </Button>
         </div>
@@ -925,49 +925,49 @@ export function EntityDetailPanel({ pharmacy, onClose }: EntityDetailPanelProps)
       <div className="flex-1 overflow-y-auto p-4 space-y-6">
         {/* Order History from WooCommerce - Real Data Only */}
         <div className="space-y-3">
-          <h3 className="text-sm font-medium text-gray-500 flex items-center gap-2">
+          <h3 className="text-sm font-medium text-muted-foreground flex items-center gap-2">
             <ShoppingCart className="h-4 w-4" />
             Order History (WooCommerce)
           </h3>
           
           {relatedOrders.length === 0 ? (
-            <div className="bg-gray-50 rounded-lg p-4 text-center border border-gray-200">
-              <Package className="h-8 w-8 mx-auto text-gray-400 mb-2" />
-              <p className="text-sm text-gray-600">No sales data</p>
-              <p className="text-xs text-gray-400 mt-1">
+            <div className="bg-muted rounded-lg p-4 text-center border border-border">
+              <Package className="h-8 w-8 mx-auto text-muted-foreground mb-2" />
+              <p className="text-sm text-muted-foreground">No sales data</p>
+              <p className="text-xs text-muted-foreground mt-1">
                 No WooCommerce orders found for this pharmacy
               </p>
             </div>
           ) : (
             <div className="space-y-2">
               <div className="grid grid-cols-2 gap-2">
-                <div className="bg-gray-50 border border-gray-200 rounded-lg p-3 text-center">
-                  <p className="text-2xl font-bold text-gray-900">{orderStats.totalOrders}</p>
-                  <p className="text-xs text-gray-500">Total Orders</p>
+                <div className="bg-muted border border-border rounded-lg p-3 text-center">
+                  <p className="text-2xl font-bold text-foreground">{orderStats.totalOrders}</p>
+                  <p className="text-xs text-muted-foreground">Total Orders</p>
                 </div>
-                <div className="bg-gray-50 border border-gray-200 rounded-lg p-3 text-center">
-                  <p className="text-2xl font-bold text-gray-900">€{orderStats.totalRevenue.toLocaleString()}</p>
-                  <p className="text-xs text-gray-500">Total Revenue</p>
+                <div className="bg-muted border border-border rounded-lg p-3 text-center">
+                  <p className="text-2xl font-bold text-foreground">€{orderStats.totalRevenue.toLocaleString()}</p>
+                  <p className="text-xs text-muted-foreground">Total Revenue</p>
                 </div>
               </div>
               
               <div className="space-y-1 mt-3">
-                <p className="text-xs font-medium text-gray-500 mb-2">Recent Orders:</p>
+                <p className="text-xs font-medium text-muted-foreground mb-2">Recent Orders:</p>
                 {relatedOrders.slice(0, 5).map((order) => (
-                  <div key={order.id} className="flex items-center justify-between py-2 border-b border-gray-100 last:border-0">
+                  <div key={order.id} className="flex items-center justify-between py-2 border-b border-border last:border-0">
                     <div>
-                      <p className="text-sm font-medium text-gray-900">{order.orderId}</p>
-                      <p className="text-xs text-gray-500">
+                      <p className="text-sm font-medium text-foreground">{order.orderId}</p>
+                      <p className="text-xs text-muted-foreground">
                         {new Date(order.date).toLocaleDateString()}
                       </p>
                     </div>
-                    <span className="text-sm font-semibold text-gray-900">
+                    <span className="text-sm font-semibold text-foreground">
                       €{order.amount.toLocaleString()}
                     </span>
                   </div>
                 ))}
                 {relatedOrders.length > 5 && (
-                  <p className="text-xs text-gray-500 text-center pt-2">
+                  <p className="text-xs text-muted-foreground text-center pt-2">
                     +{relatedOrders.length - 5} more orders
                   </p>
                 )}
@@ -978,15 +978,15 @@ export function EntityDetailPanel({ pharmacy, onClose }: EntityDetailPanelProps)
 
         {/* Location Info */}
         <div className="space-y-3">
-          <h3 className="text-sm font-medium text-gray-500">Location</h3>
+          <h3 className="text-sm font-medium text-muted-foreground">Location</h3>
           
           {pharmacy.address && (
             <div className="flex items-start gap-3 group">
-              <MapPin className="h-4 w-4 mt-0.5 text-gray-400 shrink-0" />
+              <MapPin className="h-4 w-4 mt-0.5 text-muted-foreground shrink-0" />
               <div className="flex-1 min-w-0">
-                <p className="text-sm text-gray-700">{pharmacy.address}</p>
+                <p className="text-sm text-muted-foreground">{pharmacy.address}</p>
                 {(pharmacy.city || pharmacy.region) && (
-                  <p className="text-xs text-gray-500 mt-0.5">
+                  <p className="text-xs text-muted-foreground mt-0.5">
                     {[pharmacy.city, pharmacy.region, pharmacy.country].filter(Boolean).join(', ')}
                   </p>
                 )}
@@ -997,20 +997,20 @@ export function EntityDetailPanel({ pharmacy, onClose }: EntityDetailPanelProps)
 
         {/* Contact Info */}
         <div className="space-y-3">
-          <h3 className="text-sm font-medium text-gray-500">Contact</h3>
+          <h3 className="text-sm font-medium text-muted-foreground">Contact</h3>
           
           {pharmacy.phone && (
             <div className="flex items-center gap-3 group">
-              <Phone className="h-4 w-4 text-gray-400 shrink-0" />
-              <span className="text-sm flex-1 text-gray-700">{pharmacy.phone}</span>
+              <Phone className="h-4 w-4 text-muted-foreground shrink-0" />
+              <span className="text-sm flex-1 text-muted-foreground">{pharmacy.phone}</span>
               <Button
                 variant="ghost"
                 size="icon"
-                className="h-8 w-8 opacity-0 group-hover:opacity-100 transition-opacity text-gray-500"
+                className="h-8 w-8 opacity-0 group-hover:opacity-100 transition-opacity text-muted-foreground"
                 onClick={() => copyToClipboard(pharmacy.phone ?? '', 'phone')}
               >
                 {copiedField === 'phone' ? (
-                  <Check className="h-3 w-3 text-gray-700" />
+                  <Check className="h-3 w-3 text-foreground" />
                 ) : (
                   <Copy className="h-3 w-3" />
                 )}
@@ -1020,12 +1020,12 @@ export function EntityDetailPanel({ pharmacy, onClose }: EntityDetailPanelProps)
 
           {pharmacy.website && (
             <div className="flex items-center gap-3 group">
-              <Globe className="h-4 w-4 text-gray-400 shrink-0" />
+              <Globe className="h-4 w-4 text-muted-foreground shrink-0" />
               <a
                 href={pharmacy.website}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-sm text-gray-700 hover:text-gray-900 flex items-center gap-1 flex-1 truncate"
+                className="text-sm text-muted-foreground hover:text-foreground flex items-center gap-1 flex-1 truncate"
               >
                 {new URL(pharmacy.website).hostname}
                 <ExternalLink className="h-3 w-3" />
@@ -1035,7 +1035,7 @@ export function EntityDetailPanel({ pharmacy, onClose }: EntityDetailPanelProps)
 
           {/* Email Field (editable) */}
           <div className="space-y-2">
-            <Label htmlFor="email" className="flex items-center gap-2 text-xs text-gray-500">
+            <Label htmlFor="email" className="flex items-center gap-2 text-xs text-muted-foreground">
               <Mail className="h-3 w-3" />
               Email (manually added)
             </Label>
@@ -1046,14 +1046,14 @@ export function EntityDetailPanel({ pharmacy, onClose }: EntityDetailPanelProps)
                 placeholder="Add email..."
                 value={email}
                 onChange={(e) => handleEmailChange(e.target.value)}
-                className="h-8 text-sm bg-white border-gray-300"
+                className="h-8 text-sm bg-background border-border"
               />
               {email && (
                 <a
                   href={`mailto:${email}`}
                   className="shrink-0"
                 >
-                  <Button variant="outline" size="sm" className="h-8 border-gray-300">
+                  <Button variant="outline" size="sm" className="h-8 border-border">
                     <Mail className="h-3 w-3" />
                   </Button>
                 </a>
@@ -1074,13 +1074,13 @@ export function EntityDetailPanel({ pharmacy, onClose }: EntityDetailPanelProps)
         {/* Opening Hours */}
         {pharmacy.attributes.openingHours && pharmacy.attributes.openingHours.length > 0 && (
           <div className="space-y-3">
-            <h3 className="text-sm font-medium text-gray-500 flex items-center gap-2">
+            <h3 className="text-sm font-medium text-muted-foreground flex items-center gap-2">
               <Clock className="h-4 w-4" />
               Opening Hours
             </h3>
             <div className="text-xs space-y-1 pl-6">
               {pharmacy.attributes.openingHours.map((hours) => (
-                <p key={hours} className="text-gray-600">{hours}</p>
+                <p key={hours} className="text-muted-foreground">{hours}</p>
               ))}
             </div>
           </div>
@@ -1088,12 +1088,12 @@ export function EntityDetailPanel({ pharmacy, onClose }: EntityDetailPanelProps)
 
         {/* Commercial Status */}
         <div className="space-y-3">
-          <h3 className="text-sm font-medium text-gray-500">Commercial Status</h3>
+          <h3 className="text-sm font-medium text-muted-foreground">Commercial Status</h3>
           <Select value={status} onValueChange={handleStatusChange}>
-            <SelectTrigger className="bg-white border-gray-300">
+            <SelectTrigger className="bg-background border-border">
               <SelectValue />
             </SelectTrigger>
-            <SelectContent className="bg-white border-gray-200">
+            <SelectContent className="bg-background border-border">
               {(Object.keys(STATUS_LABELS) as PharmacyStatus[]).map((s) => (
                 <SelectItem key={s} value={s}>
                   {STATUS_LABELS[s]}
@@ -1105,7 +1105,7 @@ export function EntityDetailPanel({ pharmacy, onClose }: EntityDetailPanelProps)
 
         {/* Notes */}
         <div className="space-y-3">
-          <Label htmlFor="notes" className="text-sm font-medium text-gray-500 flex items-center gap-2">
+          <Label htmlFor="notes" className="text-sm font-medium text-muted-foreground flex items-center gap-2">
             <FileText className="h-4 w-4" />
             Internal Notes
           </Label>
@@ -1114,18 +1114,18 @@ export function EntityDetailPanel({ pharmacy, onClose }: EntityDetailPanelProps)
             placeholder="Add notes about this pharmacy..."
             value={notes}
             onChange={(e) => handleNotesChange(e.target.value)}
-            className="min-h-[100px] resize-none bg-white border-gray-300"
+            className="min-h-[100px] resize-none bg-background border-border"
           />
         </div>
       </div>
 
       {/* Footer */}
       {hasChanges && (
-        <div className="p-4 border-t border-gray-200">
+        <div className="p-4 border-t border-border">
           <Button
             onClick={handleSave}
             disabled={updatePharmacy.isPending}
-            className="w-full bg-gray-900 hover:bg-gray-800 text-white"
+            className="w-full bg-foreground hover:bg-foreground/90 text-background"
           >
             <Save className="h-4 w-4 mr-2" />
             {updatePharmacy.isPending ? 'Saving...' : 'Save Changes'}

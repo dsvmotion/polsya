@@ -37,11 +37,11 @@ function AlertRow({ alert, onOpen, onFollowUp }: AlertRowProps) {
     <div className="flex items-start gap-2 py-1.5">
       <span className={cn('mt-1.5 h-2 w-2 rounded-full shrink-0', cfg.dot)} />
       <div className="min-w-0 flex-1">
-        <p className="text-sm font-medium text-gray-900 truncate">{alert.pharmacyName}</p>
-        <p className="text-xs text-gray-500">
+        <p className="text-sm font-medium text-foreground truncate">{alert.pharmacyName}</p>
+        <p className="text-xs text-muted-foreground">
           {alert.reasons.map((r) => RISK_REASON_LABELS[r]).join(' · ')}
           {alert.daysSinceLastOrder !== null && (
-            <span className="ml-1 text-gray-400">({alert.daysSinceLastOrder}d ago)</span>
+            <span className="ml-1 text-muted-foreground">({alert.daysSinceLastOrder}d ago)</span>
           )}
         </p>
       </div>
@@ -49,7 +49,7 @@ function AlertRow({ alert, onOpen, onFollowUp }: AlertRowProps) {
         <Button
           variant="ghost"
           size="sm"
-          className="h-6 w-6 p-0 text-gray-400 hover:text-gray-700"
+          className="h-6 w-6 p-0 text-muted-foreground hover:text-foreground"
           onClick={() => onOpen(alert.pharmacyId, alert.pharmacyName)}
           title="Open pharmacy"
         >
@@ -58,7 +58,7 @@ function AlertRow({ alert, onOpen, onFollowUp }: AlertRowProps) {
         <Button
           variant="ghost"
           size="sm"
-          className="h-6 w-6 p-0 text-gray-400 hover:text-blue-600"
+          className="h-6 w-6 p-0 text-muted-foreground hover:text-primary"
           onClick={handleFollowUp}
           disabled={creating}
           title="Create follow-up task"
@@ -100,7 +100,7 @@ export function RiskAlertsCard({
     <div className="surface-card">
       <div className="surface-card-header">
         <ShieldAlert className="h-4 w-4 text-red-500" />
-        <h3 className="text-sm font-semibold text-gray-900">Risk Alerts</h3>
+        <h3 className="text-sm font-semibold text-foreground">Risk Alerts</h3>
       </div>
       <div className="surface-card-body pt-3">
         {isLoading ? (
@@ -133,11 +133,11 @@ export function RiskAlertsCard({
                   <span className="text-xs font-medium text-amber-700">{summary.mediumCount} Medium</span>
                 </div>
               )}
-              <span className="text-xs text-gray-400">{summary.totalAtRisk} total at risk</span>
+              <span className="text-xs text-muted-foreground">{summary.totalAtRisk} total at risk</span>
             </div>
 
             {/* Top alerts */}
-            <div className="divide-y divide-gray-100">
+            <div className="divide-y divide-border">
               {top5.map((alert) => (
                 <AlertRow
                   key={alert.pharmacyId}
@@ -149,7 +149,7 @@ export function RiskAlertsCard({
             </div>
 
             {alerts.length > 5 && (
-              <p className="text-xs text-gray-400 mt-2">+{alerts.length - 5} more</p>
+              <p className="text-xs text-muted-foreground mt-2">+{alerts.length - 5} more</p>
             )}
           </>
         )}

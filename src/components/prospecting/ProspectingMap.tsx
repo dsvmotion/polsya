@@ -288,16 +288,16 @@ export function ProspectingMap({
       
       {/* Empty state overlay when no filters applied */}
       {!hasActiveGeoFilter && (
-        <div className="absolute inset-0 flex items-center justify-center bg-gray-100/90 pointer-events-none">
+        <div className="absolute inset-0 flex items-center justify-center bg-muted/90 pointer-events-none">
           <div className="text-center p-8 max-w-md">
-            <div className="w-16 h-16 rounded-full bg-gray-200 flex items-center justify-center mx-auto mb-4">
-              <Filter className="h-8 w-8 text-gray-500" />
+            <div className="w-16 h-16 rounded-full bg-muted flex items-center justify-center mx-auto mb-4">
+              <Filter className="h-8 w-8 text-muted-foreground" />
             </div>
-            <h3 className="text-xl font-semibold mb-2 text-gray-900">Select filters to display pharmacies</h3>
-            <p className="text-gray-500 text-sm">
+            <h3 className="text-xl font-semibold mb-2 text-foreground">Select filters to display pharmacies</h3>
+            <p className="text-muted-foreground text-sm">
               Use the Country, Province, or City filters in the sidebar to view pharmacies on the map.
             </p>
-            <div className="mt-6 flex items-center justify-center gap-4 text-xs text-gray-500">
+            <div className="mt-6 flex items-center justify-center gap-4 text-xs text-muted-foreground">
               <div className="flex items-center gap-1.5">
                 <span className="w-3 h-3 rounded-full bg-yellow-500" />
                 <span>Not contacted</span>
