@@ -13,7 +13,12 @@ export function useDetailedOrders() {
   return useQuery({
     queryKey: ['detailed-orders'],
     queryFn: async (): Promise<DetailedOrder[]> => {
-      const headers = await buildEdgeFunctionHeaders({ 'Content-Type': 'application/json' });
+      let headers: Record<string, string>;
+      try {
+        headers = await buildEdgeFunctionHeaders({ 'Content-Type': 'application/json' });
+      } catch {
+        return []; // No org membership — silently return empty
+      }
       const response = await fetch(`${SUPABASE_URL}/functions/v1/woocommerce-orders-detailed`, {
         method: 'GET',
         headers,

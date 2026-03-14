@@ -1,5 +1,6 @@
+import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { Users } from 'lucide-react';
+import { Users, Info } from 'lucide-react';
 import { AdminStatsCard } from '@/components/admin/AdminStatsCard';
 import { AdminDataTable, type AdminColumn } from '@/components/admin/AdminDataTable';
 import { Badge } from '@/components/ui/badge';
@@ -49,12 +50,15 @@ const columns: AdminColumn<AdminUser>[] = [
 ];
 
 export default function AdminUsers() {
+  const [isLimitedView, setIsLimitedView] = useState(false);
+
   const { data: users = [], isLoading, error } = useQuery({
     queryKey: ['admin', 'users'],
     queryFn: async () => {
       // Try admin RPC first — returns email + name from auth.users via security definer
       const { data: rpcData, error: rpcError } = await supabase.rpc('admin_list_org_members');
       if (!rpcError && rpcData) {
+        setIsLimitedView(false);
         return (rpcData as Array<Record<string, unknown>>).map((m) => ({
           id: (m.user_id as string),
           email: (m.email as string) ?? (m.user_id as string),
@@ -67,7 +71,8 @@ export default function AdminUsers() {
         }));
       }
 
-      // Fallback: direct query (shows UUID instead of email for non-platform-owners)
+      // Fallback: direct query (limited view for non-platform-owners)
+      setIsLimitedView(true);
       const { data, error } = await supabase
         .from('organization_members')
         .select(`user_id, role, created_at, organizations (name)`)
@@ -75,9 +80,10 @@ export default function AdminUsers() {
       if (error) throw error;
       return (data ?? []).map((m) => {
         const org = m.organizations as { name: string } | null;
+        const truncatedId = `user-${m.user_id.slice(0, 7)}...`;
         return {
           id: m.user_id,
-          email: m.user_id,
+          email: truncatedId,
           full_name: null,
           organization_name: org?.name ?? null,
           role: m.role,
@@ -97,6 +103,15 @@ export default function AdminUsers() {
           Manage platform users and their roles.
         </p>
       </div>
+
+      {isLimitedView && (
+        <div className="flex items-center gap-2 rounded-md border border-border bg-muted/50 px-4 py-3 text-sm text-muted-foreground">
+          <Info className="h-4 w-4 shrink-0" />
+          <span>
+            Limited view — platform owner access is required to display full user details (email, name, last sign-in).
+          </span>
+        </div>
+      )}
 
       {error && (
         <p className="text-sm text-destructive">

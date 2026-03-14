@@ -1,8 +1,17 @@
 import { useQuery } from '@tanstack/react-query';
+import { logger } from '@/lib/logger';
 import { rpcCall } from '@/integrations/supabase/helpers';
 import { safeJsonParse } from '@/lib/utils';
 import { useCurrentOrganization } from '@/hooks/useOrganizationContext';
 import type { AiBudget } from '@/types/ai-documents';
+
+const AI_BUDGET_DEFAULTS: AiBudget = {
+  monthlyCredits: null,
+  creditsUsed: 0,
+  creditsPurchased: 0,
+  aiFeatures: ['chat', 'rag', 'documents'],
+  remaining: null,
+};
 
 export function useAiUsage() {
   const { membership } = useCurrentOrganization();
@@ -12,30 +21,24 @@ export function useAiUsage() {
     queryKey: ['ai-usage', orgId],
     queryFn: async () => {
       const { data, error } = await rpcCall('get_org_ai_budget', { p_org_id: orgId });
-      // Gracefully handle missing RPC or permission errors — return defaults
+      // Gracefully handle missing RPC, permission, or schema errors — return
+      // unlimited-trial defaults so new users never see console errors.
       if (error) {
         const msg = error.message ?? '';
-        if (msg.includes('Forbidden') || msg.includes('not a member') || msg.includes('does not exist')) {
-          return {
-            monthlyCredits: null,
-            creditsUsed: 0,
-            creditsPurchased: 0,
-            aiFeatures: ['chat', 'rag', 'documents'],
-            remaining: null,
-          } as AiBudget;
+        const isExpected =
+          msg.includes('Forbidden') ||
+          msg.includes('not a member') ||
+          msg.includes('does not exist') ||
+          msg.includes('Could not find');
+        if (!isExpected) {
+          logger.warn('[useAiUsage] Unexpected RPC error, returning defaults:', msg);
         }
-        throw error;
+        return { ...AI_BUDGET_DEFAULTS };
       }
 
       const row = Array.isArray(data) ? data[0] : data;
       if (!row) {
-        return {
-          monthlyCredits: null,
-          creditsUsed: 0,
-          creditsPurchased: 0,
-          aiFeatures: ['chat', 'rag', 'documents'],
-          remaining: null,
-        } as AiBudget;
+        return { ...AI_BUDGET_DEFAULTS };
       }
 
       const budget: AiBudget = {
@@ -50,5 +53,6 @@ export function useAiUsage() {
       return budget;
     },
     enabled: !!orgId,
+    retry: false,
   });
 }

@@ -63,9 +63,15 @@ export function useWooCommerceOrders() {
   return useQuery({
     queryKey: ['woocommerce-orders'],
     queryFn: async (): Promise<Sale[]> => {
+      let headers: Record<string, string>;
       try {
-        const headers = await buildEdgeFunctionHeaders({ 'Content-Type': 'application/json' });
-        
+        headers = await buildEdgeFunctionHeaders({ 'Content-Type': 'application/json' });
+      } catch {
+        // No org membership yet — return empty (WooCommerce requires org context)
+        return [];
+      }
+
+      try {
         const response = await fetch(`${SUPABASE_URL}/functions/v1/woocommerce-orders`, {
           method: 'POST',
           headers,
