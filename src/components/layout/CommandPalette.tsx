@@ -115,7 +115,7 @@ export function CommandPalette({ open, onOpenChange }: CommandPaletteProps) {
         <CommandSeparator />
 
         <CommandGroup heading="Pages">
-          <CommandItem onSelect={() => runCommand(() => navigate('/dashboard'))}>
+          <CommandItem onSelect={() => runCommand(() => navigate('/app'))}>
             <LayoutDashboard className="mr-2 h-4 w-4" />
             Dashboard
           </CommandItem>

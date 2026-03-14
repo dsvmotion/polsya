@@ -149,7 +149,7 @@ export function ContactDetail({ contact, onClose }: ContactDetailProps) {
               {signals.slice(0, 5).map((s) => {
                 const sevColors = SIGNAL_SEVERITY_COLORS[s.severity];
                 return (
-                  <Link key={s.id} to="/creative/signals" className="flex items-center gap-2 py-1 text-sm hover:text-foreground text-muted-foreground">
+                  <Link key={s.id} to="/app/signals" className="flex items-center gap-2 py-1 text-sm hover:text-foreground text-muted-foreground">
                     <div className={`h-2 w-2 rounded-full ${sevColors.bg}`} />
                     <span className="truncate flex-1">{s.title}</span>
                   </Link>
@@ -165,7 +165,7 @@ export function ContactDetail({ contact, onClose }: ContactDetailProps) {
           ) : (
             <div className="space-y-1">
               {candidates.slice(0, 3).map((c) => (
-                <Link key={c.id} to="/creative/resolution" className="flex items-center justify-between py-1 text-sm hover:text-foreground text-muted-foreground">
+                <Link key={c.id} to="/app/resolution" className="flex items-center justify-between py-1 text-sm hover:text-foreground text-muted-foreground">
                   <span className="capitalize">{c.entityAType} vs {c.entityBType}</span>
                   <span className="text-xs">{Math.round(c.confidenceScore * 100)}%</span>
                 </Link>

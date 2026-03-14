@@ -29,7 +29,7 @@ export default function Login() {
   // Redirect if already logged in
   useEffect(() => {
     if (!user) return;
-    const target = isPlatformOwner(user) ? '/platform' : (location.state?.from?.pathname ?? '/dashboard');
+    const target = isPlatformOwner(user) ? '/admin' : (location.state?.from?.pathname ?? '/app');
     navigate(target, { replace: true });
   }, [user, navigate, location.state?.from?.pathname]);
 
@@ -53,7 +53,7 @@ export default function Login() {
       }
 
       const { data: { session } } = await supabase.auth.getSession();
-      const target = isPlatformOwner(session?.user) ? '/platform' : (location.state?.from?.pathname ?? '/dashboard');
+      const target = isPlatformOwner(session?.user) ? '/admin' : (location.state?.from?.pathname ?? '/app');
       navigate(target, { replace: true });
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An unexpected error occurred');

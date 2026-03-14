@@ -25,50 +25,50 @@ export function PlatformLayout() {
   }
 
   if (!isOwner) {
-    return <Navigate to="/dashboard" replace />;
+    return <Navigate to="/app" replace />;
   }
 
   return (
     <div className="min-h-screen bg-background">
       <header className="sticky top-0 z-20 h-14 border-b border-border flex items-center justify-between px-4 backdrop-blur supports-[backdrop-filter]:bg-background/80 bg-background/90">
         <div className="flex items-center gap-6">
-          <Link to="/platform" className="flex items-center gap-2">
+          <Link to="/admin" className="flex items-center gap-2">
             <Sparkles className="h-6 w-6 text-primary" />
             <span className="font-semibold">{APP_NAME} — Admin</span>
           </Link>
           <nav className="hidden sm:flex items-center gap-1">
             <Button variant="ghost" size="sm" asChild>
-              <Link to="/platform" className="gap-2">
+              <Link to="/admin" className="gap-2">
                 <LayoutDashboard className="h-4 w-4" />
                 Dashboard
               </Link>
             </Button>
             <Button variant="ghost" size="sm" asChild>
-              <Link to="/platform/billing" className="gap-2">
+              <Link to="/admin/billing" className="gap-2">
                 <CreditCard className="h-4 w-4" />
                 Pagos clientes
               </Link>
             </Button>
             <Button variant="ghost" size="sm" asChild>
-              <Link to="/platform/contact-messages" className="gap-2">
+              <Link to="/admin/contact-messages" className="gap-2">
                 <Mail className="h-4 w-4" />
                 Contacto
               </Link>
             </Button>
             <Button variant="ghost" size="sm" asChild>
-              <Link to="/platform/analytics" className="gap-2">
+              <Link to="/admin/analytics" className="gap-2">
                 <BarChart3 className="h-4 w-4" />
                 Analytics
               </Link>
             </Button>
             <Button variant="ghost" size="sm" asChild>
-              <Link to="/platform/logs" className="gap-2">
+              <Link to="/admin/logs" className="gap-2">
                 <ScrollText className="h-4 w-4" />
                 Logs
               </Link>
             </Button>
             <Button variant="ghost" size="sm" asChild>
-              <Link to="/platform/settings" className="gap-2">
+              <Link to="/admin/settings" className="gap-2">
                 <Settings className="h-4 w-4" />
                 Ajustes
               </Link>
@@ -77,7 +77,7 @@ export function PlatformLayout() {
         </div>
         <div className="flex items-center gap-2">
           <Button variant="outline" size="sm" asChild>
-            <Link to="/dashboard">Ir al CRM</Link>
+            <Link to="/app">Ir al CRM</Link>
           </Button>
           <UserMenu />
         </div>

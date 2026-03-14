@@ -156,7 +156,7 @@ const App = () => (
                       <AppLayout />
                     </ProtectedRoute>
                   }>
-                    <Route path="dashboard" element={<Index />} />
+                    <Route path="dashboard" element={<Navigate to="/app" replace />} />
 
                     {/* Prospecting */}
                     <Route path="prospecting/entities" element={<EntityProspecting />} />
@@ -222,6 +222,11 @@ const App = () => (
                     <Route path="analytics/activity" element={<ActivityAnalytics />} />
                     <Route path="analytics/communication" element={<CommunicationAnalytics />} />
                     <Route path="analytics/insights" element={<AIInsights />} />
+                    <Route path="integrations" element={<IntegrationsPage />} />
+                    <Route path="integrations/gmail/callback" element={<GmailOAuthCallback />} />
+                    <Route path="integrations/outlook/callback" element={<OutlookOAuthCallback />} />
+                    <Route path="integrations/notion/callback" element={<NotionOAuthCallback />} />
+                    <Route path="integrations/google-drive/callback" element={<GoogleDriveOAuthCallback />} />
                   </Route>
 
                   {/* Admin Console routes (new) */}

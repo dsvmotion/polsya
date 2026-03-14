@@ -22,7 +22,8 @@ function buildCrumbs(pathname: string): Crumb[] {
   const segments = pathname.split('/').filter(Boolean);
   if (segments.length === 0) return [{ label: 'Dashboard' }];
 
-  const crumbs: Crumb[] = [{ label: 'Dashboard', href: '/dashboard' }];
+  const homeHref = pathname.startsWith('/app') ? '/app' : pathname.startsWith('/admin') ? '/admin' : '/dashboard';
+  const crumbs: Crumb[] = [{ label: 'Dashboard', href: homeHref }];
   let path = '';
 
   for (let i = 0; i < segments.length; i++) {
@@ -46,7 +47,7 @@ export function Breadcrumbs() {
         <span key={crumb.href ?? crumb.label} className="flex items-center gap-1 min-w-0">
           {i > 0 && <ChevronRight className="h-3.5 w-3.5 text-muted-foreground shrink-0" />}
           {i === 0 && crumbs.length > 1 ? (
-            <Link to="/dashboard" className="text-muted-foreground hover:text-foreground transition-colors shrink-0">
+            <Link to={crumbs[0]?.href ?? '/app'} className="text-muted-foreground hover:text-foreground transition-colors shrink-0">
               <Home className="h-4 w-4" />
             </Link>
           ) : crumb.href ? (
