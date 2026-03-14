@@ -1,17 +1,17 @@
 import { ArrowUpDown, ArrowUp, ArrowDown, FileText } from 'lucide-react';
-import { PharmacyWithOrders, SortField, SortDirection } from '@/types/operations';
-import { PharmacyStatus, STATUS_LABELS, STATUS_COLORS } from '@/types/pharmacy';
+import { EntityWithOrders, SortField, SortDirection } from '@/types/operations';
+import { EntityStatus, STATUS_LABELS, STATUS_COLORS } from '@/types/entity';
 import { cn } from '@/lib/utils';
 import { EmptyState, LoadingState } from '@/components/ui/view-states';
 
 interface OperationsTableProps {
-  pharmacies: PharmacyWithOrders[];
+  pharmacies: EntityWithOrders[];
   isLoading: boolean;
   sortField: SortField;
   sortDirection: SortDirection;
   onSort: (field: SortField) => void;
   selectedPharmacyId: string | null;
-  onSelectPharmacy: (pharmacy: PharmacyWithOrders) => void;
+  onSelectPharmacy: (pharmacy: EntityWithOrders) => void;
 }
 
 function SortIcon({ field, currentField, direction }: { field: SortField; currentField: SortField; direction: SortDirection }) {
@@ -23,7 +23,7 @@ function SortIcon({ field, currentField, direction }: { field: SortField; curren
     : <ArrowDown className="h-3 w-3 text-foreground" />;
 }
 
-function StatusBadge({ status }: { status: PharmacyStatus }) {
+function StatusBadge({ status }: { status: EntityStatus }) {
   const colors = STATUS_COLORS[status];
   return (
     <span className={cn('px-2 py-0.5 rounded text-xs font-medium', colors?.bg, colors?.text)}>
@@ -52,7 +52,7 @@ function PaymentBadge({ status }: { status: 'paid' | 'pending' | 'failed' | 'ref
 }
 
 interface DocCountCellProps {
-  pharmacy: PharmacyWithOrders;
+  pharmacy: EntityWithOrders;
 }
 
 function DocCountCell({ pharmacy }: DocCountCellProps) {

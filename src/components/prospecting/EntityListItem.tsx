@@ -1,11 +1,11 @@
 import { MapPin, Phone, Globe, Check, Save } from 'lucide-react';
-import { Pharmacy, PharmacyStatus, STATUS_LABELS, STATUS_COLORS } from '@/types/pharmacy';
+import { BusinessEntity, EntityStatus, STATUS_LABELS, STATUS_COLORS } from '@/types/entity';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 
 interface EntityListItemProps {
-  pharmacy: Pharmacy;
+  pharmacy: BusinessEntity;
   isSelected: boolean;
   isChecked: boolean;
   onCheck: (checked: boolean) => void;
@@ -15,7 +15,7 @@ interface EntityListItemProps {
   isSaving?: boolean;
 }
 
-function StatusBadge({ status, isSaved }: { status: PharmacyStatus; isSaved: boolean }) {
+function StatusBadge({ status, isSaved }: { status: EntityStatus; isSaved: boolean }) {
   const colors = STATUS_COLORS[status];
   return (
     <div className="flex items-center gap-1">

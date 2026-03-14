@@ -3,7 +3,7 @@ import { RefreshCw, Building2, Leaf, MapPin, Search } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { useEntityOperations } from '@/hooks/useEntityOperations';
-import { OperationsFilters, SortField, SortDirection, PharmacyWithOrders, SavedSegment, RISK_REASON_LABELS } from '@/types/operations';
+import { OperationsFilters, SortField, SortDirection, EntityWithOrders, SavedSegment, RISK_REASON_LABELS } from '@/types/operations';
 import type { RiskReason, SmartSegmentKey } from '@/types/operations';
 import { filterBySmartSegment, useSmartSegmentCounts } from '@/hooks/useSmartSegments';
 import { OperationsTable } from '@/components/operations/OperationsTable';
@@ -22,13 +22,13 @@ import {
 } from '@/hooks/useSavedSegments';
 import { useCreateEntityActivity } from '@/hooks/useEntityActivities';
 import { toast } from 'sonner';
-import type { ClientType } from '@/types/pharmacy';
+import type { EntityTypeKey } from '@/types/entity';
 import { useEntityTypes, resolveEntityTypeLabel } from '@/hooks/useEntityTypes';
 import { useCurrentOrganization } from '@/hooks/useOrganizationContext';
 import { getIndustrySmartSegmentLabels } from '@/lib/industry-templates';
 
 interface Props {
-  clientType?: ClientType;
+  clientType?: EntityTypeKey;
 }
 
 const DERIVED_SORT_FIELDS = new Set(['totalRevenue', 'paymentStatus', 'lastOrderDate']);
@@ -46,7 +46,7 @@ export default function EntityOperations({ clientType = 'pharmacy' }: Props) {
   const [filters, setFilters] = useState<OperationsFilters>(initialFilters);
   const [sortField, setSortField] = useState<SortField>('name');
   const [sortDirection, setSortDirection] = useState<SortDirection>('asc');
-  const [selectedPharmacy, setSelectedPharmacy] = useState<PharmacyWithOrders | null>(null);
+  const [selectedPharmacy, setSelectedPharmacy] = useState<EntityWithOrders | null>(null);
   const [page, setPage] = useState(0);
   const pageSize = 50;
   const [searchDebounced, setSearchDebounced] = useState('');

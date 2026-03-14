@@ -6,8 +6,8 @@ describe('resolveEntityTypeLabel', () => {
     {
       id: '1',
       organizationId: null,
-      key: 'pharmacy',
-      label: 'Pharmacy',
+      key: 'business',
+      label: 'Business',
       color: '#334155',
       isDefault: true,
       createdAt: '2026-01-01T00:00:00.000Z',
@@ -16,7 +16,7 @@ describe('resolveEntityTypeLabel', () => {
   ];
 
   it('resolves configured label', () => {
-    expect(resolveEntityTypeLabel('pharmacy', types)).toBe('Pharmacy');
+    expect(resolveEntityTypeLabel('business', types)).toBe('Business');
   });
 
   it('falls back to key when type is unknown', () => {

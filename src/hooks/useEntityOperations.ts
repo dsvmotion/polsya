@@ -1,8 +1,8 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { DetailedOrder, PharmacyWithOrders, PharmacyDocument } from '@/types/operations';
+import { DetailedOrder, EntityWithOrders, EntityDocument } from '@/types/operations';
 import { type BusinessEntity } from '@/types/entity';
-import { type ClientType } from '@/types/pharmacy';
+import { type EntityTypeKey } from '@/types/entity';
 import { buildEdgeFunctionHeaders } from '@/lib/edge-function-headers';
 import { toBusinessEntities } from '@/services/entityService';
 import { logger } from '@/lib/logger';
@@ -44,7 +44,7 @@ export function useDetailedOrders() {
 export function useEntityDocuments() {
   return useQuery({
     queryKey: ['pharmacy-documents'],
-    queryFn: async (): Promise<PharmacyDocument[]> => {
+    queryFn: async (): Promise<EntityDocument[]> => {
       const { data, error } = await supabase
         .from('pharmacy_order_documents')
         .select('*')
@@ -59,7 +59,7 @@ export function useEntityDocuments() {
         id: doc.id,
         pharmacyId: doc.pharmacy_id,
         orderId: doc.order_id ?? null,
-        documentType: doc.document_type as PharmacyDocument['documentType'],
+        documentType: doc.document_type as EntityDocument['documentType'],
         filePath: doc.file_path,
         fileName: doc.file_name,
         uploadedAt: doc.uploaded_at,
@@ -69,14 +69,14 @@ export function useEntityDocuments() {
   });
 }
 
-type PharmacyOperationsFilters = {
+type EntityOperationsFilters = {
   country?: string;
   province?: string;
   city?: string;
   commercialStatus?: string;
   paymentStatus?: string;
   search?: string;
-  clientType?: ClientType;
+  clientType?: EntityTypeKey;
 };
 
 const DB_SORT_COLUMNS: Record<string, string> = {
@@ -96,7 +96,7 @@ const DB_SORT_COLUMNS: Record<string, string> = {
 };
 
 export function useEntityOperations(
-  filters?: PharmacyOperationsFilters,
+  filters?: EntityOperationsFilters,
   page: number = 0,
   pageSize: number = 50,
   sortField: string = 'name',
@@ -177,7 +177,7 @@ export function useEntityOperations(
     },
   });
 
-  let pharmaciesWithOrders: PharmacyWithOrders[] = pageData.pharmacies.map((pharmacy) => {
+  let pharmaciesWithOrders: EntityWithOrders[] = pageData.pharmacies.map((pharmacy) => {
     let pharmacyOrders: DetailedOrder[] = [];
 
     if (pharmacy.status === 'client') {
@@ -259,7 +259,7 @@ export function useEntityOperations(
   };
 }
 
-export function useEntitiesWithOrders(savedOnly: boolean = true, clientType?: ClientType) {
+export function useEntitiesWithOrders(savedOnly: boolean = true, clientType?: EntityTypeKey) {
   const { data: pharmacies = [], isLoading: pharmaciesLoading } = useQuery({
     queryKey: ['pharmacies', savedOnly ? 'saved' : 'all', clientType ?? 'all'],
     queryFn: async (): Promise<BusinessEntity[]> => {
@@ -307,7 +307,7 @@ export function useEntitiesWithOrders(savedOnly: boolean = true, clientType?: Cl
   const { data: orders = [], isLoading: ordersLoading } = useDetailedOrders();
   const { data: documents = [], isLoading: docsLoading } = useEntityDocuments();
 
-  const pharmaciesWithOrders: PharmacyWithOrders[] = pharmacies.map((pharmacy) => {
+  const pharmaciesWithOrders: EntityWithOrders[] = pharmacies.map((pharmacy) => {
     let pharmacyOrders: DetailedOrder[] = [];
     
     if (pharmacy.status === 'client') {
@@ -397,7 +397,7 @@ export function useUploadDocument() {
     }: {
       pharmacyId: string;
       orderId: string | null;
-      documentType: PharmacyDocument['documentType'];
+      documentType: EntityDocument['documentType'];
       file: File;
     }) => {
       if (!ALLOWED_UPLOAD_TYPES.has(file.type)) {

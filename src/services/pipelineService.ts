@@ -1,4 +1,4 @@
-import type { OpportunityStage } from '@/types/pharmacy';
+import type { OpportunityStage } from '@/types/entity';
 
 export interface OpportunityInput {
   amount: number;

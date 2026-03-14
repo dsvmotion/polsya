@@ -3,7 +3,7 @@ import { AlertTriangle, ShieldAlert, ShieldCheck, ExternalLink, ListTodo, Loader
 import { useRiskAlerts } from '@/hooks/useRiskAlerts';
 import { RISK_REASON_LABELS } from '@/types/operations';
 import type { RiskLevel, RiskAlert, RiskReason } from '@/types/operations';
-import type { ClientType } from '@/types/pharmacy';
+import type { EntityTypeKey } from '@/types/entity';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { EmptyState, LoadingState } from '@/components/ui/view-states';
@@ -74,7 +74,7 @@ function AlertRow({ alert, onOpen, onFollowUp }: AlertRowProps) {
 }
 
 interface RiskAlertsCardProps {
-  clientType?: ClientType;
+  clientType?: EntityTypeKey;
   onOpenPharmacy?: (pharmacyId: string, pharmacyName: string) => void;
   onCreateFollowUpTask?: (pharmacyId: string, pharmacyName: string, reasons: RiskReason[]) => Promise<void>;
 }

@@ -9,7 +9,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { SearchableSelect } from '@/components/ui/searchable-select';
-import { PharmacyFilters as Filters, PharmacyStatus, STATUS_LABELS } from '@/types/pharmacy';
+import { EntityFilters as Filters, EntityStatus, STATUS_LABELS } from '@/types/entity';
 
 interface EntityFiltersProps {
   filters: Filters;
@@ -92,7 +92,7 @@ export function EntityFilters({
       {/* Status filter */}
       <Select
         value={filters.status}
-        onValueChange={(value) => onFiltersChange({ ...filters, status: value as PharmacyStatus | 'all' })}
+        onValueChange={(value) => onFiltersChange({ ...filters, status: value as EntityStatus | 'all' })}
       >
         <SelectTrigger className="bg-background border-border text-foreground">
           <Filter className="h-4 w-4 mr-2 text-muted-foreground" />
@@ -100,7 +100,7 @@ export function EntityFilters({
         </SelectTrigger>
         <SelectContent className="bg-background border-border z-50">
           <SelectItem value="all">All Statuses</SelectItem>
-          {(Object.keys(STATUS_LABELS) as PharmacyStatus[]).map((status) => (
+          {(Object.keys(STATUS_LABELS) as EntityStatus[]).map((status) => (
             <SelectItem key={status} value={status}>
               {STATUS_LABELS[status]}
             </SelectItem>

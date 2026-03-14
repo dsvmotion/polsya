@@ -10,7 +10,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { SPANISH_CITIES } from '@/types/pharmacy';
+import { SPANISH_CITIES } from '@/types/entity';
 
 interface SearchLocationDialogProps {
   open: boolean;

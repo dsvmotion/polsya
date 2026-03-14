@@ -8,7 +8,7 @@ import EntityOperations from '../EntityOperations';
 
 vi.mock('@/hooks/useEntityOperations', () => ({
   useEntityOperations: vi.fn(() => ({
-    pharmacies: [{ id: 'p1', name: 'Test Pharmacy', totalRevenue: 0 }],
+    pharmacies: [{ id: 'p1', name: 'Test Account', totalRevenue: 0 }],
     totalCount: 1,
     isLoading: false,
     refetch: vi.fn(),

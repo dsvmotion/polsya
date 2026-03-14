@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import type { PharmacyWithOrders, SmartSegmentKey } from '@/types/operations';
+import type { EntityWithOrders, SmartSegmentKey } from '@/types/operations';
 
 export const STALE_THRESHOLD_DAYS = 60;
 
@@ -7,28 +7,28 @@ export function daysSince(dateStr: string): number {
   return Math.floor((Date.now() - new Date(dateStr).getTime()) / (1000 * 60 * 60 * 24));
 }
 
-export function isClient(p: PharmacyWithOrders): boolean {
+export function isClient(p: EntityWithOrders): boolean {
   return p.commercialStatus === 'client';
 }
 
-export function isNoOrdersClient(p: PharmacyWithOrders): boolean {
+export function isNoOrdersClient(p: EntityWithOrders): boolean {
   return isClient(p) && !p.lastOrder;
 }
 
-export function isPaymentFailed(p: PharmacyWithOrders): boolean {
+export function isPaymentFailed(p: EntityWithOrders): boolean {
   return isClient(p) && p.lastOrder?.paymentStatus === 'failed';
 }
 
-export function isNoRecentOrders(p: PharmacyWithOrders): boolean {
+export function isNoRecentOrders(p: EntityWithOrders): boolean {
   if (!isClient(p) || !p.lastOrder) return false;
   return daysSince(p.lastOrder.dateCreated) > STALE_THRESHOLD_DAYS;
 }
 
-export function isAtRisk(p: PharmacyWithOrders): boolean {
+export function isAtRisk(p: EntityWithOrders): boolean {
   return isNoOrdersClient(p) || isPaymentFailed(p) || isNoRecentOrders(p);
 }
 
-const MATCHERS: Record<Exclude<SmartSegmentKey, 'none'>, (p: PharmacyWithOrders) => boolean> = {
+const MATCHERS: Record<Exclude<SmartSegmentKey, 'none'>, (p: EntityWithOrders) => boolean> = {
   at_risk: isAtRisk,
   no_orders_client: isNoOrdersClient,
   payment_failed: isPaymentFailed,
@@ -36,9 +36,9 @@ const MATCHERS: Record<Exclude<SmartSegmentKey, 'none'>, (p: PharmacyWithOrders)
 };
 
 export function filterBySmartSegment(
-  pharmacies: PharmacyWithOrders[],
+  pharmacies: EntityWithOrders[],
   key: SmartSegmentKey,
-): PharmacyWithOrders[] {
+): EntityWithOrders[] {
   if (key === 'none') return pharmacies;
   const matcher = MATCHERS[key];
   return pharmacies.filter(matcher);
@@ -51,7 +51,7 @@ export interface SmartSegmentCounts {
   no_recent_orders_60d: number;
 }
 
-export function computeSmartSegmentCounts(pharmacies: PharmacyWithOrders[]): SmartSegmentCounts {
+export function computeSmartSegmentCounts(pharmacies: EntityWithOrders[]): SmartSegmentCounts {
   let atRisk = 0;
   let noOrders = 0;
   let payFailed = 0;
@@ -76,6 +76,6 @@ export function computeSmartSegmentCounts(pharmacies: PharmacyWithOrders[]): Sma
   };
 }
 
-export function useSmartSegmentCounts(pharmacies: PharmacyWithOrders[]): SmartSegmentCounts {
+export function useSmartSegmentCounts(pharmacies: EntityWithOrders[]): SmartSegmentCounts {
   return useMemo(() => computeSmartSegmentCounts(pharmacies), [pharmacies]);
 }

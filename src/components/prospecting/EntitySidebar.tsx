@@ -1,16 +1,16 @@
 import { useMemo } from 'react';
 import { Building2, Loader2, Filter } from 'lucide-react';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Pharmacy, PharmacyFilters as Filters } from '@/types/pharmacy';
+import { BusinessEntity, EntityFilters as Filters } from '@/types/entity';
 import { EntityFilters } from './EntityFilters';
 import { EntityListItem } from './EntityListItem';
 import { EntitySelectionBar } from './EntitySelectionBar';
 
 interface EntitySidebarProps {
-  pharmacies: Pharmacy[];
+  pharmacies: BusinessEntity[];
   isLoading: boolean;
   selectedPharmacyId: string | null;
-  onSelectPharmacy: (pharmacy: Pharmacy) => void;
+  onSelectPharmacy: (pharmacy: BusinessEntity) => void;
   filters: Filters;
   onFiltersChange: (filters: Filters) => void;
   onClearFilters: () => void;

@@ -20,7 +20,7 @@ import {
 } from '@/components/ui/select';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { supabase } from '@/integrations/supabase/client';
-import type { ClientType } from '@/types/pharmacy';
+import type { EntityTypeKey } from '@/types/entity';
 import { cn } from '@/lib/utils';
 import { sanitizeTextInput, buildDedupeKey } from '@/lib/import-utils';
 import { getIndustryImportAliases } from '@/lib/industry-templates';
@@ -51,7 +51,7 @@ const FIELDS = [
   { key: 'activity', label: 'Activity', required: false },
   { key: 'subsector', label: 'Subsector', required: false },
   { key: 'legal_form', label: 'Forma social', required: false },
-  { key: 'client_type', label: 'Type (pharmacy/herbalist)', required: false },
+  { key: 'client_type', label: 'Type', required: false },
 ] as const;
 
 type FieldKey = (typeof FIELDS)[number]['key'];
@@ -184,13 +184,13 @@ interface DryRunResult {
 }
 
 interface BulkImportDialogProps {
-  defaultClientType: ClientType;
+  defaultEntityTypeKey: EntityTypeKey;
   industryTemplateKey?: string | null;
   onSuccess?: () => void;
 }
 
 export function BulkImportDialog({
-  defaultClientType,
+  defaultEntityTypeKey,
   industryTemplateKey = null,
   onSuccess,
 }: BulkImportDialogProps) {
@@ -200,7 +200,7 @@ export function BulkImportDialog({
   const [headers, setHeaders] = useState<string[]>([]);
   const [rows, setRows] = useState<string[][]>([]);
   const [mapping, setMapping] = useState<Partial<Record<FieldKey, string>>>({});
-  const [defaultType, setDefaultType] = useState<ClientType>(defaultClientType);
+  const [defaultType, setDefaultType] = useState<EntityTypeKey>(defaultEntityTypeKey);
   const [importing, setImporting] = useState(false);
   const [progress, setProgress] = useState({ imported: 0, errors: 0 });
   const [result, setResult] = useState<{ imported: number; errors: number; skippedDuplicates: number; errorMessage?: string } | null>(null);
@@ -212,10 +212,10 @@ export function BulkImportDialog({
     setHeaders([]);
     setRows([]);
     setMapping({});
-    setDefaultType(defaultClientType);
+    setDefaultType(defaultEntityTypeKey);
     setResult(null);
     setDryRunResult(null);
-  }, [defaultClientType]);
+  }, [defaultEntityTypeKey]);
 
   const handleFile = useCallback(
     (f: File) => {
@@ -326,13 +326,13 @@ export function BulkImportDialog({
           if (!name) return null;
 
           const clientTypeRaw = (getVal(row, 'client_type') || getVal(row, 'activity') || getVal(row, 'subsector') || '').toLowerCase();
-          let clientType: ClientType = defaultType;
+          let clientType: EntityTypeKey = defaultType;
           const matched = entityTypesData.find((et) =>
             et.key.toLowerCase() === clientTypeRaw ||
             et.label.toLowerCase() === clientTypeRaw
           );
           if (matched) {
-            clientType = matched.key as ClientType;
+            clientType = matched.key as EntityTypeKey;
           }
           return {
             name,
@@ -578,7 +578,7 @@ export function BulkImportDialog({
             </div>
 
             <Label className="text-xs text-muted-foreground">Default type for unmapped rows</Label>
-            <Select value={defaultType} onValueChange={(v) => setDefaultType(v as ClientType)}>
+            <Select value={defaultType} onValueChange={(v) => setDefaultType(v as EntityTypeKey)}>
               <SelectTrigger className="w-40 bg-background border-border h-8">
                 <SelectValue />
               </SelectTrigger>
@@ -589,8 +589,8 @@ export function BulkImportDialog({
                   ))
                 ) : (
                   <>
-                    <SelectItem value="pharmacy">Pharmacy</SelectItem>
-                    <SelectItem value="herbalist">Herbalist</SelectItem>
+                    <SelectItem value="business">Business</SelectItem>
+                    <SelectItem value="agency">Agency</SelectItem>
                   </>
                 )}
               </SelectContent>

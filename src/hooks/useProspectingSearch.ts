@@ -1,7 +1,7 @@
 import { useState, useCallback, useRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import type { BusinessEntity } from '@/types/entity';
-import type { ClientType } from '@/types/pharmacy';
+import type { EntityTypeKey } from '@/types/entity';
 import { toBusinessEntity } from '@/services/entityService';
 import { toast } from 'sonner';
 import type { Json } from '@/integrations/supabase/types';
@@ -14,7 +14,7 @@ interface SearchFilters {
   country: string;
   province: string;
   city: string;
-  clientType?: ClientType;
+  clientType?: EntityTypeKey;
 }
 
 interface GooglePlaceBasic {

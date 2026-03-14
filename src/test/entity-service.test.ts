@@ -30,7 +30,7 @@ describe('entityService', () => {
     google_data: { source: 'google' },
     created_at: '2026-01-01T00:00:00.000Z',
     updated_at: '2026-01-02T00:00:00.000Z',
-    client_type: 'pharmacy',
+    client_type: 'business',
     saved_at: '2026-01-03T00:00:00.000Z',
     postal_code: '28001',
     autonomous_community: 'Comunidad de Madrid',
@@ -48,7 +48,7 @@ describe('entityService', () => {
     expect(entity.externalId).toBe('g-1');
     expect(entity.region).toBe('Madrid');
     expect(entity.status).toBe('client');
-    expect(entity.typeKey).toBe('pharmacy');
+    expect(entity.typeKey).toBe('business');
     expect(entity.attributes.postalCode).toBe('28001');
   });
 

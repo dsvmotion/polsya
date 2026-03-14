@@ -8,46 +8,41 @@ interface SaveResult {
 }
 
 /**
- * Hook for saving selected pharmacies to Operations.
+ * Hook for saving selected entities to Operations.
  * Sets the `saved_at` timestamp to mark them as explicitly saved.
- * @param clientType - 'herbalist' | 'pharmacy' for correct toast label
  */
-export function useSavePharmacies(clientType?: string) {
+export function useSaveEntities(entityLabel = 'accounts') {
   const queryClient = useQueryClient();
-  const label = clientType === 'herbalist' ? 'herbalists' : 'pharmacies';
 
   return useMutation({
-    mutationFn: async (pharmacyIds: string[]): Promise<SaveResult> => {
-      if (pharmacyIds.length === 0) {
-        throw new Error('No pharmacies selected');
+    mutationFn: async (entityIds: string[]): Promise<SaveResult> => {
+      if (entityIds.length === 0) {
+        throw new Error('No entities selected');
       }
 
-      // Check which pharmacies are already saved
       const { data: existing, error: fetchError } = await supabase
         .from('pharmacies')
         .select('id, saved_at')
-        .in('id', pharmacyIds);
+        .in('id', entityIds);
 
       if (fetchError) {
-        throw new Error(`Failed to check existing pharmacies: ${fetchError.message}`);
+        throw new Error(`Failed to check existing entities: ${fetchError.message}`);
       }
 
-      // Filter to only unsaved pharmacies
       const alreadySaved = (existing || []).filter(p => p.saved_at !== null);
-      const toSave = pharmacyIds.filter(id => !alreadySaved.some(p => p.id === id));
+      const toSave = entityIds.filter(id => !alreadySaved.some(p => p.id === id));
 
       if (toSave.length === 0) {
         return { saved: 0, skipped: alreadySaved.length };
       }
 
-      // Update saved_at for selected pharmacies
       const { error: updateError } = await supabase
         .from('pharmacies')
         .update({ saved_at: new Date().toISOString() })
         .in('id', toSave);
 
       if (updateError) {
-        throw new Error(`Failed to save pharmacies: ${updateError.message}`);
+        throw new Error(`Failed to save entities: ${updateError.message}`);
       }
 
       return {
@@ -60,11 +55,11 @@ export function useSavePharmacies(clientType?: string) {
       queryClient.invalidateQueries({ queryKey: ['saved-pharmacies'] });
 
       if (result.saved > 0 && result.skipped > 0) {
-        toast.success(`Saved ${result.saved} ${label} (${result.skipped} already saved)`);
+        toast.success(`Saved ${result.saved} ${entityLabel} (${result.skipped} already saved)`);
       } else if (result.saved > 0) {
-        toast.success(`Saved ${result.saved} ${label} to Operations`);
+        toast.success(`Saved ${result.saved} ${entityLabel} to Operations`);
       } else {
-        toast.info(`All selected ${label} were already saved`);
+        toast.info(`All selected ${entityLabel} were already saved`);
       }
     },
     onError: (error: Error) => {
@@ -72,3 +67,6 @@ export function useSavePharmacies(clientType?: string) {
     },
   });
 }
+
+/** @deprecated Use useSaveEntities instead */
+export const useSavePharmacies = useSaveEntities;

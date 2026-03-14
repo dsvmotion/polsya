@@ -1,14 +1,14 @@
 /// <reference types="@types/google.maps" />
 
 import { useEffect, useRef, useCallback, useState } from 'react';
-import { Pharmacy, STATUS_COLORS } from '@/types/pharmacy';
+import { BusinessEntity, STATUS_COLORS } from '@/types/entity';
 import { Filter } from 'lucide-react';
 import { logger } from '@/lib/logger';
 
 interface ProspectingMapProps {
-  pharmacies: Pharmacy[];
+  pharmacies: BusinessEntity[];
   selectedPharmacyId: string | null;
-  onSelectPharmacy: (pharmacy: Pharmacy) => void;
+  onSelectPharmacy: (pharmacy: BusinessEntity) => void;
   onMapReady?: (map: google.maps.Map) => void;
   center?: { lat: number; lng: number };
   hasActiveGeoFilter: boolean;
@@ -49,7 +49,7 @@ export function ProspectingMap({
 
   // Get marker icon using status colors (Yellow/Blue/Green)
   const getMarkerIcon = useCallback(
-    (pharmacy: Pharmacy, isSelected: boolean): google.maps.Symbol => {
+    (pharmacy: BusinessEntity, isSelected: boolean): google.maps.Symbol => {
       const color = STATUS_PIN_COLORS[pharmacy.status];
       return {
         path: google.maps.SymbolPath.BACKWARD_CLOSED_ARROW,

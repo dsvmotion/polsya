@@ -6,12 +6,12 @@ import { ProspectingMap } from '@/components/prospecting/ProspectingMap';
 import { EntityDetailPanel } from '@/components/prospecting/EntityDetailPanel';
 import { useGeographyOptions } from '@/hooks/useGeographyOptions';
 import { useProspectingSearch } from '@/hooks/useProspectingSearch';
-import { useSavePharmacies } from '@/hooks/useSavePharmacies';
-import { Pharmacy, PharmacyFilters as Filters, type ClientType } from '@/types/pharmacy';
+import { useSaveEntities } from '@/hooks/useSavePharmacies';
+import { BusinessEntity, EntityFilters as Filters, type EntityTypeKey } from '@/types/entity';
 import { useEntityTypes, resolveEntityTypeLabel } from '@/hooks/useEntityTypes';
 
 interface Props {
-  clientType?: ClientType;
+  clientType?: EntityTypeKey;
 }
 
 const initialFilters: Filters = {
@@ -30,12 +30,12 @@ function pluralizeEntityLabel(label: string): string {
   return `${trimmed}s`;
 }
 
-export default function EntityProspecting({ clientType = 'pharmacy' }: Props) {
+export default function EntityProspecting({ clientType = 'business' }: Props) {
   const { data: entityTypes = [] } = useEntityTypes();
   const singularLabel = resolveEntityTypeLabel(
     clientType,
     entityTypes,
-    clientType === 'herbalist' ? 'Herbalist' : 'Pharmacy',
+    'Account',
   );
   const pluralLabel = pluralizeEntityLabel(singularLabel);
 
@@ -48,7 +48,7 @@ export default function EntityProspecting({ clientType = 'pharmacy' }: Props) {
     foundCount: (n: number) => `Found ${n} ${pluralLabel.toLowerCase()}`,
   }), [pluralLabel, singularLabel]);
 
-  const [selectedPharmacy, setSelectedPharmacy] = useState<Pharmacy | null>(null);
+  const [selectedPharmacy, setSelectedPharmacy] = useState<BusinessEntity | null>(null);
   const [filters, setFilters] = useState<Filters>(initialFilters);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [savedIds, setSavedIds] = useState<Set<string>>(new Set());
@@ -78,8 +78,8 @@ export default function EntityProspecting({ clientType = 'pharmacy' }: Props) {
     }
   }, [detectedLocation, filters.country, filters.city]);
 
-  // Save pharmacies mutation
-  const savePharmacies = useSavePharmacies(clientType);
+  // Save entities mutation
+  const savePharmacies = useSaveEntities(pluralLabel.toLowerCase());
 
   // Filter displayed results by text search and status
   const displayedPharmacies = useMemo(() => {
@@ -101,7 +101,7 @@ export default function EntityProspecting({ clientType = 'pharmacy' }: Props) {
     });
   }, [searchResults, filters.search, filters.status]);
 
-  const handleSelectPharmacy = useCallback((pharmacy: Pharmacy) => {
+  const handleSelectPharmacy = useCallback((pharmacy: BusinessEntity) => {
     setSelectedPharmacy(pharmacy);
   }, []);
 

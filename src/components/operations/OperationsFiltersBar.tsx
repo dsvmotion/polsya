@@ -12,7 +12,7 @@ import {
 import { OperationsFilters, SMART_SEGMENT_LABELS } from '@/types/operations';
 import type { SavedSegment, SmartSegmentKey } from '@/types/operations';
 import type { SmartSegmentCounts } from '@/hooks/useSmartSegments';
-import { PharmacyStatus, STATUS_LABELS } from '@/types/pharmacy';
+import { EntityStatus, STATUS_LABELS } from '@/types/entity';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 
@@ -281,7 +281,7 @@ export function OperationsFiltersBar({
           </SelectTrigger>
           <SelectContent className="bg-background border-border z-50">
             <SelectItem value="all">All Statuses</SelectItem>
-            {(Object.keys(STATUS_LABELS) as PharmacyStatus[]).map((s) => (
+            {(Object.keys(STATUS_LABELS) as EntityStatus[]).map((s) => (
               <SelectItem key={s} value={s}>
                 {STATUS_LABELS[s]}
               </SelectItem>

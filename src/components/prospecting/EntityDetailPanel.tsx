@@ -17,12 +17,12 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import {
-  Pharmacy, PharmacyStatus, STATUS_LABELS, STATUS_COLORS,
+  BusinessEntity, EntityStatus, STATUS_LABELS, STATUS_COLORS,
   ContactRole, CONTACT_ROLE_LABELS,
   ActivityType, ACTIVITY_TYPE_LABELS, ACTIVITY_TYPE_ICONS,
   OpportunityStage, OPPORTUNITY_STAGE_LABELS, OPPORTUNITY_STAGE_COLORS,
-} from '@/types/pharmacy';
-import { useUpdatePharmacy } from '@/hooks/usePharmacies';
+} from '@/types/entity';
+import { useUpdateBusinessEntity } from '@/hooks/useBusinessEntities';
 import { useEntityPhoto } from '@/hooks/useEntityPhoto';
 import { useOrdersByPharmacy } from '@/hooks/useWooCommerceOrders';
 import {
@@ -805,7 +805,7 @@ function OpportunitiesSection({ pharmacyId }: { pharmacyId: string }) {
 }
 
 interface EntityDetailPanelProps {
-  pharmacy: Pharmacy;
+  pharmacy: BusinessEntity;
   onClose: () => void;
 }
 
@@ -818,10 +818,10 @@ export function EntityDetailPanel({ pharmacy, onClose }: EntityDetailPanelProps)
 
   const [notes, setNotes] = useState(pharmacy.notes || '');
   const [email, setEmail] = useState(pharmacy.email || '');
-  const [status, setStatus] = useState<PharmacyStatus>(pharmacy.status);
+  const [status, setStatus] = useState<EntityStatus>(pharmacy.status);
   const [hasChanges, setHasChanges] = useState(false);
 
-  const updatePharmacy = useUpdatePharmacy();
+  const updateEntity = useUpdatePharmacy();
   const { photoUrl, isLoading: photoLoading } = useEntityPhoto(pharmacy.id);
   
   // Get real WooCommerce orders for this pharmacy
@@ -842,7 +842,7 @@ export function EntityDetailPanel({ pharmacy, onClose }: EntityDetailPanelProps)
 
   const handleSave = async () => {
     try {
-      await updatePharmacy.mutateAsync({
+      await updateEntity.mutateAsync({
         id: pharmacy.id,
         updates: {
           commercial_status: status,
@@ -857,7 +857,7 @@ export function EntityDetailPanel({ pharmacy, onClose }: EntityDetailPanelProps)
     }
   };
 
-  const handleStatusChange = (newStatus: PharmacyStatus) => {
+  const handleStatusChange = (newStatus: EntityStatus) => {
     setStatus(newStatus);
     setHasChanges(true);
   };
@@ -1094,7 +1094,7 @@ export function EntityDetailPanel({ pharmacy, onClose }: EntityDetailPanelProps)
               <SelectValue />
             </SelectTrigger>
             <SelectContent className="bg-background border-border">
-              {(Object.keys(STATUS_LABELS) as PharmacyStatus[]).map((s) => (
+              {(Object.keys(STATUS_LABELS) as EntityStatus[]).map((s) => (
                 <SelectItem key={s} value={s}>
                   {STATUS_LABELS[s]}
                 </SelectItem>
@@ -1124,11 +1124,11 @@ export function EntityDetailPanel({ pharmacy, onClose }: EntityDetailPanelProps)
         <div className="p-4 border-t border-border">
           <Button
             onClick={handleSave}
-            disabled={updatePharmacy.isPending}
+            disabled={updateEntity.isPending}
             className="w-full bg-foreground hover:bg-foreground/90 text-background"
           >
             <Save className="h-4 w-4 mr-2" />
-            {updatePharmacy.isPending ? 'Saving...' : 'Save Changes'}
+            {updateEntity.isPending ? 'Saving...' : 'Save Changes'}
           </Button>
         </div>
       )}

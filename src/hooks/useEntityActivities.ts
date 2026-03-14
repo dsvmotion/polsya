@@ -1,6 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import type { PharmacyActivity, ActivityType } from '@/types/pharmacy';
+import type { AccountActivity, ActivityType } from '@/types/entity';
 import { toAccountActivity, toAccountActivities, type ActivityRow } from '@/services/activityService';
 
 function activitiesKey(pharmacyId: string) {
@@ -8,7 +8,7 @@ function activitiesKey(pharmacyId: string) {
 }
 
 export function useEntityActivities(pharmacyId: string | null) {
-  return useQuery<PharmacyActivity[]>({
+  return useQuery<AccountActivity[]>({
     queryKey: activitiesKey(pharmacyId ?? ''),
     enabled: !!pharmacyId,
     queryFn: async () => {

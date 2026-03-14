@@ -32,8 +32,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { PharmacyWithOrders, DetailedOrder, DocumentType, DOCUMENT_TYPE_LABELS } from '@/types/operations';
-import { PharmacyStatus, STATUS_LABELS, STATUS_COLORS, CONTACT_ROLE_LABELS } from '@/types/pharmacy';
+import { EntityWithOrders, DetailedOrder, DocumentType, DOCUMENT_TYPE_LABELS } from '@/types/operations';
+import { EntityStatus, STATUS_LABELS, STATUS_COLORS, CONTACT_ROLE_LABELS } from '@/types/entity';
 import { useEntityContacts } from '@/hooks/useEntityContacts';
 import { 
   useEntityDocuments, 
@@ -41,13 +41,13 @@ import {
   useDeleteDocument, 
   useDownloadDocument 
 } from '@/hooks/useEntityOperations';
-import { useUpdatePharmacyStatus } from '@/hooks/usePharmacies';
+import { useUpdateEntityStatus } from '@/hooks/usePharmacies';
 import { useEntityPhoto } from '@/hooks/useEntityPhoto';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 
 interface EntityOperationsDetailProps {
-  pharmacy: PharmacyWithOrders;
+  pharmacy: EntityWithOrders;
   onClose: () => void;
   onStatusUpdate?: () => void;
 }
@@ -448,15 +448,15 @@ function OrderCard({ order, pharmacyId }: { order: DetailedOrder; pharmacyId: st
 }
 
 export function EntityOperationsDetail({ pharmacy, onClose, onStatusUpdate }: EntityOperationsDetailProps) {
-  const [status, setStatus] = useState<PharmacyStatus>(pharmacy.commercialStatus);
+  const [status, setStatus] = useState<EntityStatus>(pharmacy.commercialStatus);
   const [notes, setNotes] = useState(pharmacy.notes || '');
   const [hasChanges, setHasChanges] = useState(false);
 
-  const updateStatus = useUpdatePharmacyStatus();
+  const updateStatus = useUpdateEntityStatus();
   const { photoUrl, isLoading: photoLoading } = useEntityPhoto(pharmacy.id);
   const { data: contacts = [] } = useEntityContacts(pharmacy.id);
 
-  const handleStatusChange = (newStatus: PharmacyStatus) => {
+  const handleStatusChange = (newStatus: EntityStatus) => {
     setStatus(newStatus);
     setHasChanges(true);
   };
@@ -537,7 +537,7 @@ export function EntityOperationsDetail({ pharmacy, onClose, onStatusUpdate }: En
                 <SelectValue />
               </SelectTrigger>
               <SelectContent className="bg-background border-border">
-                {(Object.keys(STATUS_LABELS) as PharmacyStatus[]).map((s) => (
+                {(Object.keys(STATUS_LABELS) as EntityStatus[]).map((s) => (
                   <SelectItem key={s} value={s}>
                     <div className="flex items-center gap-2">
                       <span className={cn('w-2 h-2 rounded-full', STATUS_COLORS[s].bg.replace('bg-', 'bg-'))} 
