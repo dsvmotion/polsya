@@ -74,9 +74,9 @@ export function AppSidebar({ open, onOpenChange, collapsed, onCollapsedChange, o
   ];
 
   const bottomItems: NavItem[] = [
-    { label: 'Integrations', href: '/integrations', icon: Plug, match: /^\/integrations(?!\/.*\/callback)/ },
-    { label: 'Billing', href: '/billing', icon: CreditCard, match: /^\/billing/ },
-    { label: 'Settings', href: '/profile', icon: Settings, match: /^\/profile/ },
+    { label: 'Integrations', href: '/app/integrations', icon: Plug, match: /^\/app\/integrations/ },
+    { label: 'Billing', href: '/app/billing', icon: CreditCard, match: /^\/app\/billing/ },
+    { label: 'Settings', href: '/app/settings', icon: Settings, match: /^\/app\/settings/ },
   ];
 
   const isActive = (item: NavItem) => {

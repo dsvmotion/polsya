@@ -16,8 +16,8 @@ const LEVEL_CONFIG: Record<RiskLevel, { bg: string; text: string; dot: string; l
 
 interface AlertRowProps {
   alert: RiskAlert;
-  onOpen: (pharmacyId: string, pharmacyName: string) => void;
-  onFollowUp: (pharmacyId: string, pharmacyName: string, reasons: RiskReason[]) => Promise<void>;
+  onOpen: (entityId: string, entityName: string) => void;
+  onFollowUp: (entityId: string, entityName: string, reasons: RiskReason[]) => Promise<void>;
 }
 
 function AlertRow({ alert, onOpen, onFollowUp }: AlertRowProps) {
@@ -51,7 +51,7 @@ function AlertRow({ alert, onOpen, onFollowUp }: AlertRowProps) {
           size="sm"
           className="h-6 w-6 p-0 text-muted-foreground hover:text-foreground"
           onClick={() => onOpen(alert.pharmacyId, alert.pharmacyName)}
-          title="Open pharmacy"
+          title="Open account"
         >
           <ExternalLink className="h-3 w-3" />
         </Button>
@@ -75,23 +75,23 @@ function AlertRow({ alert, onOpen, onFollowUp }: AlertRowProps) {
 
 interface RiskAlertsCardProps {
   clientType?: EntityTypeKey;
-  onOpenPharmacy?: (pharmacyId: string, pharmacyName: string) => void;
-  onCreateFollowUpTask?: (pharmacyId: string, pharmacyName: string, reasons: RiskReason[]) => Promise<void>;
+  onOpenEntity?: (entityId: string, entityName: string) => void;
+  onCreateFollowUpTask?: (entityId: string, entityName: string, reasons: RiskReason[]) => Promise<void>;
 }
 
 export function RiskAlertsCard({
-  clientType = 'pharmacy',
-  onOpenPharmacy,
+  clientType = 'business',
+  onOpenEntity,
   onCreateFollowUpTask,
 }: RiskAlertsCardProps) {
   const { alerts, summary, isLoading } = useRiskAlerts(clientType);
 
-  const handleOpen = (pharmacyId: string, pharmacyName: string) => {
-    onOpenPharmacy?.(pharmacyId, pharmacyName);
+  const handleOpen = (entityId: string, entityName: string) => {
+    onOpenEntity?.(entityId, entityName);
   };
 
-  const handleFollowUp = async (pharmacyId: string, pharmacyName: string, reasons: RiskReason[]) => {
-    await onCreateFollowUpTask?.(pharmacyId, pharmacyName, reasons);
+  const handleFollowUp = async (entityId: string, entityName: string, reasons: RiskReason[]) => {
+    await onCreateFollowUpTask?.(entityId, entityName, reasons);
   };
 
   const top5 = alerts.slice(0, 5);

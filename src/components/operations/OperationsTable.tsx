@@ -5,13 +5,13 @@ import { cn } from '@/lib/utils';
 import { EmptyState, LoadingState } from '@/components/ui/view-states';
 
 interface OperationsTableProps {
-  pharmacies: EntityWithOrders[];
+  entities: EntityWithOrders[];
   isLoading: boolean;
   sortField: SortField;
   sortDirection: SortDirection;
   onSort: (field: SortField) => void;
-  selectedPharmacyId: string | null;
-  onSelectPharmacy: (pharmacy: EntityWithOrders) => void;
+  selectedEntityId: string | null;
+  onSelectEntity: (entity: EntityWithOrders) => void;
 }
 
 function SortIcon({ field, currentField, direction }: { field: SortField; currentField: SortField; direction: SortDirection }) {
@@ -52,11 +52,11 @@ function PaymentBadge({ status }: { status: 'paid' | 'pending' | 'failed' | 'ref
 }
 
 interface DocCountCellProps {
-  pharmacy: EntityWithOrders;
+  entity: EntityWithOrders;
 }
 
-function DocCountCell({ pharmacy }: DocCountCellProps) {
-  const count = pharmacy.documentCount ?? 0;
+function DocCountCell({ entity }: DocCountCellProps) {
+  const count = entity.documentCount ?? 0;
 
   return (
     <div className="flex items-center justify-center">
@@ -72,13 +72,13 @@ function DocCountCell({ pharmacy }: DocCountCellProps) {
 }
 
 export function OperationsTable({
-  pharmacies,
+  entities,
   isLoading,
   sortField,
   sortDirection,
   onSort,
-  selectedPharmacyId,
-  onSelectPharmacy,
+  selectedEntityId,
+  onSelectEntity,
 }: OperationsTableProps) {
   if (isLoading) {
     return (
@@ -90,7 +90,7 @@ export function OperationsTable({
     );
   }
 
-  if (pharmacies.length === 0) {
+  if (entities.length === 0) {
     return (
       <EmptyState
         title="No accounts found"
@@ -135,37 +135,37 @@ export function OperationsTable({
           </button>
         </div>
 
-        {pharmacies.map((pharmacy) => (
+        {entities.map((entity) => (
           <button
-            key={pharmacy.id}
-            onClick={() => onSelectPharmacy(pharmacy)}
+            key={entity.id}
+            onClick={() => onSelectEntity(entity)}
             className={cn(
               'w-full text-left rounded-lg border p-3 bg-background',
-              selectedPharmacyId === pharmacy.id ? 'border-border text-foreground bg-muted' : 'border-border'
+              selectedEntityId === entity.id ? 'border-border text-foreground bg-muted' : 'border-border'
             )}
           >
             <div className="flex items-start justify-between gap-2">
               <div className="min-w-0">
-                <p className="font-medium text-foreground truncate">{pharmacy.name}</p>
+                <p className="font-medium text-foreground truncate">{entity.name}</p>
                 <p className="text-xs text-muted-foreground truncate">
-                  {[pharmacy.city, pharmacy.province].filter(Boolean).join(' · ') || '—'}
+                  {[entity.city, entity.province].filter(Boolean).join(' · ') || '—'}
                 </p>
               </div>
-              <StatusBadge status={pharmacy.commercialStatus} />
+              <StatusBadge status={entity.commercialStatus} />
             </div>
             <div className="mt-2 flex items-center justify-between text-xs">
               <span className="text-muted-foreground">
-                {pharmacy.lastOrder
-                  ? `Last: ${new Date(pharmacy.lastOrder.dateCreated).toLocaleDateString()}`
+                {entity.lastOrder
+                  ? `Last: ${new Date(entity.lastOrder.dateCreated).toLocaleDateString()}`
                   : 'No orders'}
               </span>
-              <PaymentBadge status={pharmacy.lastOrder?.paymentStatus || null} />
+              <PaymentBadge status={entity.lastOrder?.paymentStatus || null} />
             </div>
             <div className="mt-2 flex items-center justify-between text-sm">
               <span className="font-medium text-foreground">
-                €{pharmacy.totalRevenue.toLocaleString('es-ES', { minimumFractionDigits: 2 })}
+                €{entity.totalRevenue.toLocaleString('es-ES', { minimumFractionDigits: 2 })}
               </span>
-              <DocCountCell pharmacy={pharmacy} />
+              <DocCountCell entity={entity} />
             </div>
           </button>
         ))}
@@ -290,68 +290,68 @@ export function OperationsTable({
           </tr>
         </thead>
         <tbody>
-          {pharmacies.map((pharmacy) => (
+          {entities.map((entity) => (
             <tr
-              key={pharmacy.id}
-              onClick={() => onSelectPharmacy(pharmacy)}
+              key={entity.id}
+              onClick={() => onSelectEntity(entity)}
               className={cn(
                 'border-b border-border cursor-pointer transition-colors',
-                selectedPharmacyId === pharmacy.id
+                selectedEntityId === entity.id
                   ? 'bg-muted'
                   : 'hover:bg-muted/50'
               )}
             >
               <td className="px-4 py-3">
                 <div className="font-medium text-foreground truncate max-w-[180px]">
-                  {pharmacy.name}
+                  {entity.name}
                 </div>
               </td>
               <td className="px-4 py-3">
                 <div className="text-xs text-muted-foreground truncate max-w-[180px]">
-                  {pharmacy.address || '—'}
+                  {entity.address || '—'}
                 </div>
               </td>
               <td className="px-4 py-3 text-xs text-muted-foreground">
-                {pharmacy.postal_code || '—'}
+                {entity.postal_code || '—'}
               </td>
               <td className="px-4 py-3 text-muted-foreground">
-                {pharmacy.city || '—'}
+                {entity.city || '—'}
               </td>
               <td className="px-4 py-3 text-muted-foreground">
-                {pharmacy.province || '—'}
+                {entity.province || '—'}
               </td>
               <td className="px-4 py-3 text-xs text-muted-foreground">
-                {pharmacy.autonomous_community || '—'}
+                {entity.autonomous_community || '—'}
               </td>
               <td className="px-4 py-3 text-xs text-muted-foreground">
-                {pharmacy.phone || '—'}
+                {entity.phone || '—'}
               </td>
               <td className="px-4 py-3 text-xs text-muted-foreground">
-                {pharmacy.secondary_phone || '—'}
+                {entity.secondary_phone || '—'}
               </td>
               <td className="px-4 py-3">
                 <div className="text-xs text-muted-foreground truncate max-w-[150px]">
-                  {pharmacy.email || '—'}
+                  {entity.email || '—'}
                 </div>
               </td>
               <td className="px-4 py-3 text-xs text-muted-foreground">
-                {pharmacy.activity || '—'}
+                {entity.activity || '—'}
               </td>
               <td className="px-4 py-3 text-xs text-muted-foreground">
-                {pharmacy.subsector || '—'}
+                {entity.subsector || '—'}
               </td>
               <td className="px-4 py-3 text-xs text-muted-foreground">
-                {pharmacy.legal_form || '—'}
+                {entity.legal_form || '—'}
               </td>
               <td className="px-4 py-3">
-                <StatusBadge status={pharmacy.commercialStatus} />
+                <StatusBadge status={entity.commercialStatus} />
               </td>
               <td className="px-4 py-3">
-                {pharmacy.lastOrder ? (
+                {entity.lastOrder ? (
                   <div>
-                    <div className="text-muted-foreground">{pharmacy.lastOrder.orderId}</div>
+                    <div className="text-muted-foreground">{entity.lastOrder.orderId}</div>
                     <div className="text-xs text-muted-foreground">
-                      {new Date(pharmacy.lastOrder.dateCreated).toLocaleDateString()}
+                      {new Date(entity.lastOrder.dateCreated).toLocaleDateString()}
                     </div>
                   </div>
                 ) : (
@@ -360,14 +360,14 @@ export function OperationsTable({
               </td>
               <td className="px-4 py-3 text-right">
                 <span className="font-medium text-foreground">
-                  €{pharmacy.totalRevenue.toLocaleString('es-ES', { minimumFractionDigits: 2 })}
+                  €{entity.totalRevenue.toLocaleString('es-ES', { minimumFractionDigits: 2 })}
                 </span>
               </td>
               <td className="px-4 py-3">
-                <PaymentBadge status={pharmacy.lastOrder?.paymentStatus || null} />
+                <PaymentBadge status={entity.lastOrder?.paymentStatus || null} />
               </td>
               <td className="px-4 py-3">
-                <DocCountCell pharmacy={pharmacy} />
+                <DocCountCell entity={entity} />
               </td>
             </tr>
           ))}

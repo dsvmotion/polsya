@@ -47,7 +47,7 @@ import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 
 interface EntityOperationsDetailProps {
-  pharmacy: EntityWithOrders;
+  entity: EntityWithOrders;
   onClose: () => void;
   onStatusUpdate?: () => void;
 }
@@ -69,7 +69,7 @@ function PaymentBadge({ status }: { status: 'paid' | 'pending' | 'failed' | 'ref
 
 const ACCEPTED_DOC_EXTENSIONS = '.pdf,.jpg,.jpeg,.png,.doc,.docx,.xls,.xlsx';
 
-function DocumentsSection({ pharmacyId }: { pharmacyId: string }) {
+function DocumentsSection({ entityId }: { entityId: string }) {
   const [showUploadForm, setShowUploadForm] = useState(false);
   const [selectedType, setSelectedType] = useState<DocumentType>('other');
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -78,7 +78,7 @@ function DocumentsSection({ pharmacyId }: { pharmacyId: string }) {
   const deleteDocument = useDeleteDocument();
   const downloadDocument = useDownloadDocument();
 
-  const pharmacyDocs = allDocuments.filter((d) => d.pharmacyId === pharmacyId);
+  const entityDocs = allDocuments.filter((d) => d.pharmacyId === entityId);
 
   const handleUpload = async () => {
     const file = fileInputRef.current?.files?.[0];
@@ -88,7 +88,7 @@ function DocumentsSection({ pharmacyId }: { pharmacyId: string }) {
     }
     try {
       await uploadDocument.mutateAsync({
-        pharmacyId,
+        pharmacyId: entityId,
         orderId: null,
         documentType: selectedType,
         file,
@@ -180,10 +180,10 @@ function DocumentsSection({ pharmacyId }: { pharmacyId: string }) {
         </div>
       )}
       <div className="space-y-2 mt-3">
-        {pharmacyDocs.length === 0 ? (
+        {entityDocs.length === 0 ? (
           <p className="text-xs text-muted-foreground">No documents yet</p>
         ) : (
-          pharmacyDocs.map((doc) => (
+          entityDocs.map((doc) => (
             <div
               key={doc.id}
               className="flex items-center justify-between gap-2 p-2 rounded border border-border bg-background text-sm"
@@ -223,7 +223,7 @@ function DocumentsSection({ pharmacyId }: { pharmacyId: string }) {
   );
 }
 
-function OrderCard({ order, pharmacyId }: { order: DetailedOrder; pharmacyId: string }) {
+function OrderCard({ order, entityId }: { order: DetailedOrder; entityId: string }) {
   const invoiceInputRef = useRef<HTMLInputElement>(null);
   const receiptInputRef = useRef<HTMLInputElement>(null);
   const { data: allDocuments = [] } = useEntityDocuments();
@@ -231,14 +231,14 @@ function OrderCard({ order, pharmacyId }: { order: DetailedOrder; pharmacyId: st
   const deleteDocument = useDeleteDocument();
   const downloadDocument = useDownloadDocument();
 
-  const orderDocs = allDocuments.filter(d => d.pharmacyId === pharmacyId && d.orderId === order.orderId);
+  const orderDocs = allDocuments.filter(d => d.pharmacyId === entityId && d.orderId === order.orderId);
   const invoice = orderDocs.find(d => d.documentType === 'invoice');
   const receipt = orderDocs.find(d => d.documentType === 'receipt');
 
   const handleUpload = async (file: File, type: 'invoice' | 'receipt') => {
     try {
       await uploadDocument.mutateAsync({
-        pharmacyId,
+        pharmacyId: entityId,
         orderId: order.orderId,
         documentType: type,
         file,
@@ -447,14 +447,14 @@ function OrderCard({ order, pharmacyId }: { order: DetailedOrder; pharmacyId: st
   );
 }
 
-export function EntityOperationsDetail({ pharmacy, onClose, onStatusUpdate }: EntityOperationsDetailProps) {
-  const [status, setStatus] = useState<EntityStatus>(pharmacy.commercialStatus);
-  const [notes, setNotes] = useState(pharmacy.notes || '');
+export function EntityOperationsDetail({ entity, onClose, onStatusUpdate }: EntityOperationsDetailProps) {
+  const [status, setStatus] = useState<EntityStatus>(entity.commercialStatus);
+  const [notes, setNotes] = useState(entity.notes || '');
   const [hasChanges, setHasChanges] = useState(false);
 
   const updateStatus = useUpdateEntityStatus();
-  const { photoUrl, isLoading: photoLoading } = useEntityPhoto(pharmacy.id);
-  const { data: contacts = [] } = useEntityContacts(pharmacy.id);
+  const { photoUrl, isLoading: photoLoading } = useEntityPhoto(entity.id);
+  const { data: contacts = [] } = useEntityContacts(entity.id);
 
   const handleStatusChange = (newStatus: EntityStatus) => {
     setStatus(newStatus);
@@ -469,7 +469,7 @@ export function EntityOperationsDetail({ pharmacy, onClose, onStatusUpdate }: En
   const handleSave = async () => {
     try {
       await updateStatus.mutateAsync({
-        id: pharmacy.id,
+        id: entity.id,
         updates: {
           commercial_status: status,
           notes: notes || null,
@@ -477,9 +477,9 @@ export function EntityOperationsDetail({ pharmacy, onClose, onStatusUpdate }: En
       });
       setHasChanges(false);
       onStatusUpdate?.();
-      toast.success('Pharmacy updated');
+      toast.success('Account updated');
     } catch (error) {
-      toast.error('Failed to update pharmacy');
+      toast.error('Failed to update account');
     }
   };
 
@@ -494,7 +494,7 @@ export function EntityOperationsDetail({ pharmacy, onClose, onStatusUpdate }: En
           {photoUrl ? (
             <img 
               src={photoUrl} 
-              alt={pharmacy.name}
+              alt={entity.name}
               className="w-full h-full object-cover"
             />
           ) : (
@@ -516,7 +516,7 @@ export function EntityOperationsDetail({ pharmacy, onClose, onStatusUpdate }: En
         {/* Title and Status */}
         <div className="p-4 flex items-start justify-between">
           <div className="flex-1 min-w-0">
-            <h2 className="font-semibold text-foreground truncate">{pharmacy.name}</h2>
+            <h2 className="font-semibold text-foreground truncate">{entity.name}</h2>
             <span className={cn('inline-block px-2 py-0.5 rounded text-xs font-medium mt-1', statusColor.bg, statusColor.text)}>
               {STATUS_LABELS[status]}
             </span>
@@ -555,27 +555,27 @@ export function EntityOperationsDetail({ pharmacy, onClose, onStatusUpdate }: En
           {/* Contact Info */}
           <div className="space-y-2">
             <h3 className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Contact</h3>
-            {pharmacy.address && (
+            {entity.address && (
               <div className="flex items-start gap-2 text-sm text-muted-foreground">
                 <MapPin className="h-4 w-4 text-muted-foreground mt-0.5" />
                 <div>
-                  <div>{pharmacy.address}</div>
+                  <div>{entity.address}</div>
                   <div className="text-muted-foreground">
-                    {[pharmacy.city, pharmacy.province, pharmacy.country].filter(Boolean).join(', ')}
+                    {[entity.city, entity.province, entity.country].filter(Boolean).join(', ')}
                   </div>
                 </div>
               </div>
             )}
-            {pharmacy.phone && (
+            {entity.phone && (
               <div className="flex items-center gap-2 text-sm text-muted-foreground">
                 <Phone className="h-4 w-4 text-muted-foreground" />
-                <span>{pharmacy.phone}</span>
+                <span>{entity.phone}</span>
               </div>
             )}
-            {pharmacy.email && (
+            {entity.email && (
               <div className="flex items-center gap-2 text-sm text-muted-foreground">
                 <Mail className="h-4 w-4 text-muted-foreground" />
-                <span>{pharmacy.email}</span>
+                <span>{entity.email}</span>
               </div>
             )}
           </div>
@@ -624,7 +624,7 @@ export function EntityOperationsDetail({ pharmacy, onClose, onStatusUpdate }: En
           )}
 
           {/* Documents */}
-          <DocumentsSection pharmacyId={pharmacy.id} />
+          <DocumentsSection entityId={entity.id} />
 
           <Separator />
 
@@ -632,12 +632,12 @@ export function EntityOperationsDetail({ pharmacy, onClose, onStatusUpdate }: En
           <div className="grid grid-cols-2 gap-4">
             <div className="p-3 bg-muted rounded-lg">
               <p className="text-xs text-muted-foreground mb-1">Total Orders</p>
-              <p className="text-xl font-semibold text-foreground">{pharmacy.orders.length}</p>
+              <p className="text-xl font-semibold text-foreground">{entity.orders.length}</p>
             </div>
             <div className="p-3 bg-muted rounded-lg">
               <p className="text-xs text-muted-foreground mb-1">Total Revenue</p>
               <p className="text-xl font-semibold text-foreground">
-                €{pharmacy.totalRevenue.toLocaleString('es-ES', { minimumFractionDigits: 2 })}
+                €{entity.totalRevenue.toLocaleString('es-ES', { minimumFractionDigits: 2 })}
               </p>
             </div>
           </div>
@@ -652,7 +652,7 @@ export function EntityOperationsDetail({ pharmacy, onClose, onStatusUpdate }: En
             </Label>
             <Textarea
               id="notes"
-              placeholder="Add notes about this pharmacy..."
+              placeholder="Add notes about this account..."
               value={notes}
               onChange={(e) => handleNotesChange(e.target.value)}
               className="min-h-[80px] resize-none bg-background border-border text-sm"
@@ -664,18 +664,18 @@ export function EntityOperationsDetail({ pharmacy, onClose, onStatusUpdate }: En
           {/* Order History */}
           <div className="space-y-3">
             <h3 className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
-              Order History ({pharmacy.orders.length})
+              Order History ({entity.orders.length})
             </h3>
-            
-            {pharmacy.orders.length === 0 ? (
+
+            {entity.orders.length === 0 ? (
               <div className="text-center py-8 text-muted-foreground">
                 <Package className="h-8 w-8 mx-auto mb-2 opacity-50" />
                 <p className="text-sm">No orders yet</p>
               </div>
             ) : (
               <div className="space-y-3">
-                {pharmacy.orders.map((order) => (
-                  <OrderCard key={order.id} order={order} pharmacyId={pharmacy.id} />
+                {entity.orders.map((order) => (
+                  <OrderCard key={order.id} order={order} entityId={entity.id} />
                 ))}
               </div>
             )}

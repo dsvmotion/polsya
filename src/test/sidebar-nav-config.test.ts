@@ -62,12 +62,9 @@ describe('sidebar-nav-config (creative)', () => {
       expect(ops?.defaultOpen).toBe(false);
     });
 
-    it('future items are marked correctly', () => {
+    it('no future items remain visible', () => {
       const futureItems = navGroups.flatMap((g) => g.items.filter((i) => i.future));
-      expect(futureItems.length).toBeGreaterThan(0);
-      for (const item of futureItems) {
-        expect(item.future).toBe(true);
-      }
+      expect(futureItems.length).toBe(0);
     });
   });
 

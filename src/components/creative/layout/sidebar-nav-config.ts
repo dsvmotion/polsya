@@ -70,8 +70,6 @@ export const navGroups: NavGroup[] = [
     icon: Search,
     items: [
       { label: 'Local Businesses', icon: Search, path: '/app/discover' },
-      { label: 'Companies', icon: Building2, path: '/app/companies', future: true },
-      { label: 'People', icon: UserPlus, path: '/app/people', future: true },
     ],
   },
   {
@@ -89,7 +87,6 @@ export const navGroups: NavGroup[] = [
     items: [
       { label: 'Opportunities', icon: Briefcase, path: '/app/opportunities' },
       { label: 'Projects', icon: FolderKanban, path: '/app/projects' },
-      { label: 'Leads', icon: UserPlus, path: '/app/leads', future: true },
     ],
   },
   {
@@ -139,6 +136,6 @@ export const navGroups: NavGroup[] = [
 
 export const bottomNavItems: NavItem[] = [
   { label: 'Integrations', icon: Palette, path: '/app/integrations' },
-  { label: 'Billing', icon: CreditCard, path: '/billing' },
-  { label: 'Settings', icon: Settings, path: '/profile' },
+  { label: 'Billing', icon: CreditCard, path: '/app/billing' },
+  { label: 'Settings', icon: Settings, path: '/app/settings' },
 ];

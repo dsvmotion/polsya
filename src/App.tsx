@@ -172,12 +172,12 @@ const App = () => (
                     {/* Team */}
                     <Route path="team" element={<Team />} />
 
-                    {/* Integrations page */}
-                    <Route path="integrations" element={<IntegrationsPage />} />
+                    {/* Integrations — redirect to /app layout */}
+                    <Route path="integrations" element={<Navigate to="/app/integrations" replace />} />
 
-                    {/* Profile & Billing */}
-                    <Route path="profile" element={<Profile />} />
-                    <Route path="billing" element={<Billing />} />
+                    {/* Profile & Billing — redirect to /app layout */}
+                    <Route path="profile" element={<Navigate to="/app/settings" replace />} />
+                    <Route path="billing" element={<Navigate to="/app/billing" replace />} />
 
                     {/* OAuth callbacks */}
                     <Route path="integrations/gmail/callback" element={<GmailOAuthCallback />} />
@@ -227,6 +227,8 @@ const App = () => (
                     <Route path="integrations/outlook/callback" element={<OutlookOAuthCallback />} />
                     <Route path="integrations/notion/callback" element={<NotionOAuthCallback />} />
                     <Route path="integrations/google-drive/callback" element={<GoogleDriveOAuthCallback />} />
+                    <Route path="billing" element={<Billing />} />
+                    <Route path="settings" element={<Profile />} />
                   </Route>
 
                   {/* Admin Console routes (new) */}
