@@ -398,7 +398,7 @@ export default function EntityOperations({ clientType = 'pharmacy' }: Props) {
                 onSelectPharmacy={setSelectedPharmacy}
               />
               <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 p-4 border-t border-border">
-                <span className="text-xs sm:text-sm text-gray-500">
+                <span className="text-xs sm:text-sm text-muted-foreground">
                   {totalCount > 0
                     ? `Showing ${page * pageSize + 1}-${Math.min((page + 1) * pageSize, totalCount)} of ${totalCount}`
                     : 'Showing 0 of 0'}

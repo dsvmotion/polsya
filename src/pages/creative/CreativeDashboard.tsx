@@ -100,8 +100,8 @@ export default function CreativeDashboard() {
             {Object.entries(stageBreakdown).map(([stage, count]) => {
               const colors =
                 OPPORTUNITY_STAGE_COLORS[stage as OpportunityStage] ?? {
-                  bg: 'bg-gray-100',
-                  text: 'text-gray-800',
+                  bg: 'bg-muted',
+                  text: 'text-foreground',
                 };
               const label =
                 OPPORTUNITY_STAGE_LABELS[stage as OpportunityStage] ?? stage;
