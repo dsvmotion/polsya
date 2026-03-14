@@ -113,7 +113,12 @@ export function useWooCommerceOrders() {
     },
     staleTime: 5 * 60 * 1000, // 5 minutes
     gcTime: 10 * 60 * 1000, // 10 minutes
-    retry: 2,
+    retry: (failureCount, error) => {
+      // Don't retry auth, permission, or config errors
+      const msg = error instanceof Error ? error.message : '';
+      if (/401|403|session|organization|configured|credentials/i.test(msg)) return false;
+      return failureCount < 2;
+    },
   });
 }
 

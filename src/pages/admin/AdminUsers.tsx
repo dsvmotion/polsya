@@ -41,20 +41,36 @@ const columns: AdminColumn<AdminUser>[] = [
     label: 'Created',
     render: (row) => new Date(row.created_at).toLocaleDateString(),
   },
+  {
+    key: 'last_sign_in_at',
+    label: 'Last Sign In',
+    render: (row) => row.last_sign_in_at ? new Date(row.last_sign_in_at).toLocaleDateString() : '—',
+  },
 ];
 
 export default function AdminUsers() {
   const { data: users = [], isLoading, error } = useQuery({
     queryKey: ['admin', 'users'],
     queryFn: async () => {
+      // Try admin RPC first — returns email + name from auth.users via security definer
+      const { data: rpcData, error: rpcError } = await supabase.rpc('admin_list_org_members');
+      if (!rpcError && rpcData) {
+        return (rpcData as Array<Record<string, unknown>>).map((m) => ({
+          id: (m.user_id as string),
+          email: (m.email as string) ?? (m.user_id as string),
+          full_name: (m.full_name as string) ?? null,
+          organization_name: (m.organization_name as string) ?? null,
+          role: (m.role as string) ?? null,
+          status: (m.status as string) ?? 'active',
+          created_at: (m.member_created_at as string),
+          last_sign_in_at: (m.last_sign_in_at as string) ?? null,
+        }));
+      }
+
+      // Fallback: direct query (shows UUID instead of email for non-platform-owners)
       const { data, error } = await supabase
         .from('organization_members')
-        .select(`
-          user_id,
-          role,
-          created_at,
-          organizations (name)
-        `)
+        .select(`user_id, role, created_at, organizations (name)`)
         .limit(200);
       if (error) throw error;
       return (data ?? []).map((m) => {

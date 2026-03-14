@@ -12,7 +12,20 @@ export function useAiUsage() {
     queryKey: ['ai-usage', orgId],
     queryFn: async () => {
       const { data, error } = await rpcCall('get_org_ai_budget', { p_org_id: orgId });
-      if (error) throw error;
+      // Gracefully handle missing RPC or permission errors — return defaults
+      if (error) {
+        const msg = error.message ?? '';
+        if (msg.includes('Forbidden') || msg.includes('not a member') || msg.includes('does not exist')) {
+          return {
+            monthlyCredits: null,
+            creditsUsed: 0,
+            creditsPurchased: 0,
+            aiFeatures: ['chat', 'rag', 'documents'],
+            remaining: null,
+          } as AiBudget;
+        }
+        throw error;
+      }
 
       const row = Array.isArray(data) ? data[0] : data;
       if (!row) {

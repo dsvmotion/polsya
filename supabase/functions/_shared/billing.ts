@@ -49,7 +49,9 @@ function evaluateBillingAccess(
   nowMs: number = Date.now(),
 ): BillingAccessDecision {
   if (!subscription) {
-    return { hasAccess: false, reason: 'no_subscription', graceEndsAt: null };
+    // No subscription = free tier / trial — allow access by default.
+    // When billing is enforced, create a subscription record with the appropriate status.
+    return { hasAccess: true, reason: 'no_subscription', graceEndsAt: null };
   }
 
   if (subscription.status === 'active') {

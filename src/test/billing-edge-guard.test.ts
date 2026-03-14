@@ -109,7 +109,7 @@ describe('requireBillingAccessForOrg', () => {
     }
   });
 
-  it('blocks when there is no subscription', async () => {
+  it('allows access when there is no subscription (free tier)', async () => {
     const supabase = makeSupabaseMock({
       data: [],
       error: null,
@@ -120,11 +120,10 @@ describe('requireBillingAccessForOrg', () => {
       corsHeaders: {},
     });
 
-    expect(result.ok).toBe(false);
-    if ('response' in result) {
-      expect(result.response.status).toBe(402);
-      const body = await result.response.json() as { billingReason?: string };
-      expect(body.billingReason).toBe('no_subscription');
+    expect(result.ok).toBe(true);
+    if (result.ok) {
+      expect(result.decision.reason).toBe('no_subscription');
+      expect(result.decision.hasAccess).toBe(true);
     }
   });
 
