@@ -309,7 +309,7 @@ function IntegrationRow({
               <span className="text-[10px] font-medium">Configure</span>
             </Button>
           )}
-          {authType === 'api_key' && providerDef?.category === 'email' && (
+          {authType === 'api_key' && (
             <Button
               variant="ghost"
               size="sm"
@@ -569,6 +569,7 @@ export function IntegrationsCard() {
   const createIntegration = useCreateIntegration();
   const deleteIntegration = useDeleteIntegration();
   const toggleEnabled = useToggleIntegrationEnabled();
+  const startOAuth = useStartOAuth();
 
   const [showForm, setShowForm] = useState(false);
   const [newProvider, setNewProvider] = useState<string>(providerOptions[0]?.value ?? 'woocommerce');
@@ -621,13 +622,29 @@ export function IntegrationsCard() {
 
     const sanitized = sanitizeIntegrationMetadata(castProvider, newMeta);
     try {
-      await createIntegration.mutateAsync({
+      const created = await createIntegration.mutateAsync({
         provider: castProvider,
         displayName: trimmed,
         metadata: sanitized,
       });
-      toast.success('Integration added');
       resetForm();
+
+      // Auto-trigger OAuth for OAuth providers
+      const providerDef = getProviderDefinition(castProvider);
+      if (providerDef?.authType === 'oauth2') {
+        toast.success('Integration added — redirecting to authorize...');
+        try {
+          const result = await startOAuth.mutateAsync({
+            integrationId: created.id,
+            provider: castProvider,
+          });
+          window.location.assign(result.authUrl);
+        } catch {
+          toast.error(`Integration added but OAuth failed. Click "Connect" to retry.`);
+        }
+      } else {
+        toast.success('Integration added — click "Configure" to enter credentials');
+      }
     } catch {
       toast.error('Failed to add integration');
     }

@@ -136,22 +136,36 @@ export function useProspectingSearch() {
     try {
       // Build search query for Google Places
       const locationParts = [filters.city, filters.province, filters.country].filter(Boolean);
+      // Use entity type label as search term for Google Places
+      // For industry-specific types, use localized terms; for generic types, use the label
+      const entityLabel = filters.clientType || 'business';
       let searchTerm: string;
       const country = filters.country?.toLowerCase() || '';
-      if (filters.clientType === 'herbalist') {
-        if (country === 'spain' || country === 'españa') searchTerm = 'herbolario';
-        else if (country === 'france' || country === 'francia') searchTerm = 'herboristerie';
-        else if (country === 'germany' || country === 'alemania') searchTerm = 'kräuterladen';
-        else if (country === 'italy' || country === 'italia') searchTerm = 'erboristeria';
-        else if (country === 'portugal') searchTerm = 'ervanária';
-        else searchTerm = 'herbalist';
+
+      // Industry-specific localized search terms
+      const LOCALIZED_TERMS: Record<string, Record<string, string>> = {
+        pharmacy: {
+          spain: 'farmacia', españa: 'farmacia',
+          france: 'pharmacie', francia: 'pharmacie',
+          germany: 'apotheke', alemania: 'apotheke',
+          italy: 'farmacia', italia: 'farmacia',
+          portugal: 'farmácia',
+        },
+        herbalist: {
+          spain: 'herbolario', españa: 'herbolario',
+          france: 'herboristerie', francia: 'herboristerie',
+          germany: 'kräuterladen', alemania: 'kräuterladen',
+          italy: 'erboristeria', italia: 'erboristeria',
+          portugal: 'ervanária',
+        },
+      };
+
+      const localizedMap = LOCALIZED_TERMS[entityLabel];
+      if (localizedMap && country && localizedMap[country]) {
+        searchTerm = localizedMap[country];
       } else {
-        if (country === 'spain' || country === 'españa') searchTerm = 'farmacia';
-        else if (country === 'france' || country === 'francia') searchTerm = 'pharmacie';
-        else if (country === 'germany' || country === 'alemania') searchTerm = 'apotheke';
-        else if (country === 'italy' || country === 'italia') searchTerm = 'farmacia';
-        else if (country === 'portugal') searchTerm = 'farmácia';
-        else searchTerm = 'pharmacy';
+        // Generic: use the entity type label directly (e.g., "business", "agency", "clinic")
+        searchTerm = entityLabel;
       }
       const searchQuery = `${searchTerm} in ${locationParts.join(', ')}`;
 
