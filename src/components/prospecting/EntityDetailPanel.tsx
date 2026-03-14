@@ -386,7 +386,7 @@ function ActivitiesSection({ pharmacyId }: { pharmacyId: string }) {
               <div
                 key={act.id}
                 className={cn(
-                  'flex items-start gap-2 p-2 rounded border bg-white',
+                  'flex items-start gap-2 p-2 rounded border bg-background',
                   isDone ? 'border-border opacity-60' : isOverdue ? 'border-red-200' : 'border-border'
                 )}
               >
@@ -560,7 +560,7 @@ function OpportunityRow({ opp, pharmacyId, onDelete }: {
   return (
     <div
       className={cn(
-        'p-2 rounded border bg-white',
+        'p-2 rounded border bg-background',
         isClosed ? 'border-border opacity-70' : 'border-border'
       )}
     >

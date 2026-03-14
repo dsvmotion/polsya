@@ -61,7 +61,7 @@ export function ActivityTimeline({ entityType, entityId, onAddClick }: ActivityT
     <div className="space-y-1">
       {activities.map((activity) => {
         const Icon = ACTIVITY_ICONS[activity.activityType] ?? FileText;
-        const colors = ACTIVITY_TYPE_COLORS[activity.activityType] ?? { bg: 'bg-gray-100', text: 'text-gray-800' };
+        const colors = ACTIVITY_TYPE_COLORS[activity.activityType] ?? { bg: 'bg-muted', text: 'text-foreground' };
         return (
           <div key={activity.id} className="flex items-start gap-3 py-2 group">
             {activity.activityType === 'task' && (

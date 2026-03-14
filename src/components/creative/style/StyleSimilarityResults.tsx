@@ -8,7 +8,7 @@ interface StyleSimilarityResultsProps {
 function matchBadgeClass(pct: number): string {
   if (pct >= 80) return 'bg-green-100 text-green-800';
   if (pct >= 50) return 'bg-amber-100 text-amber-800';
-  return 'bg-gray-100 text-gray-800';
+  return 'bg-muted text-foreground';
 }
 
 function resultLabel(clientId: string | null, portfolioId: string | null): string {

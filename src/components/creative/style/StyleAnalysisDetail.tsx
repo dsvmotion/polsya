@@ -37,7 +37,7 @@ export function StyleAnalysisDetail({ analysis, onClose, onFindSimilar }: StyleA
       <div className="flex items-start justify-between">
         <div>
           <h2 className="text-lg font-semibold">{analysis.sourceUrl || 'Manual Analysis'}</h2>
-          <Badge variant="secondary" className={`mt-1 border-0 ${pct >= 80 ? 'bg-green-100 text-green-800' : pct >= 50 ? 'bg-amber-100 text-amber-800' : 'bg-gray-100 text-gray-800'}`}>
+          <Badge variant="secondary" className={`mt-1 border-0 ${pct >= 80 ? 'bg-green-100 text-green-800' : pct >= 50 ? 'bg-amber-100 text-amber-800' : 'bg-muted text-foreground'}`}>
             {pct}% Confidence
           </Badge>
         </div>

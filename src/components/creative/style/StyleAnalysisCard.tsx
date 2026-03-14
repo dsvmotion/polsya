@@ -34,7 +34,7 @@ export function StyleAnalysisCard({ analysis, onClick }: StyleAnalysisCardProps)
           <span className="font-medium truncate text-sm">
             {analysis.sourceUrl || 'Manual Analysis'}
           </span>
-          <Badge variant="secondary" className={`shrink-0 ml-2 border-0 ${pct >= 80 ? 'bg-green-100 text-green-800' : pct >= 50 ? 'bg-amber-100 text-amber-800' : 'bg-gray-100 text-gray-800'}`}>
+          <Badge variant="secondary" className={`shrink-0 ml-2 border-0 ${pct >= 80 ? 'bg-green-100 text-green-800' : pct >= 50 ? 'bg-amber-100 text-amber-800' : 'bg-muted text-foreground'}`}>
             {pct}%
           </Badge>
         </div>

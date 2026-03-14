@@ -35,7 +35,7 @@ export const ruleColumns: ColumnDef<SignalRule, unknown>[] = [
       row.original.isActive ? (
         <Badge variant="secondary" className="bg-green-100 text-green-800 border-0">Active</Badge>
       ) : (
-        <Badge variant="secondary" className="bg-gray-100 text-gray-600 border-0">Inactive</Badge>
+        <Badge variant="secondary" className="bg-muted text-muted-foreground border-0">Inactive</Badge>
       ),
   },
   {
