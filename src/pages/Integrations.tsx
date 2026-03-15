@@ -12,6 +12,7 @@ import { ErrorBoundary } from '@/components/layout/ErrorBoundary';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
 import { getProviderDefinition } from '@/lib/provider-registry';
+import { CheckCircle2 } from 'lucide-react';
 
 const CATEGORIES: Array<{ key: ProviderCategory | 'all'; label: string }> = [
   { key: 'all', label: 'All' },
@@ -47,12 +48,11 @@ export default function IntegrationsPage() {
     [integrations],
   );
 
-  const availableProviders = useMemo(() => {
+  const filteredProviders = useMemo(() => {
     return allProviders
-      .filter((p) => !connectedProviderKeys.has(p.key as IntegrationProvider))
       .filter((p) => activeCategory === 'all' || p.category === activeCategory)
       .filter((p) => !search || p.label.toLowerCase().includes(search.toLowerCase()));
-  }, [connectedProviderKeys, activeCategory, search]);
+  }, [activeCategory, search]);
 
   const handleConnect = async (providerKey: string) => {
     const def = getProviderDefinition(providerKey);
@@ -123,57 +123,70 @@ export default function IntegrationsPage() {
         </div>
       </div>
 
-      {/* Available section */}
+      {/* Integrations catalog */}
       <div className="rounded-lg border border-border bg-card">
         <div className="px-4 py-3 border-b border-border flex items-center justify-between">
           <span className="text-sm font-semibold">
-            Available {availableProviders.length}
+            Integrations {filteredProviders.length}
           </span>
           <span className="text-[10px] text-muted-foreground uppercase tracking-wider">
-            Action
+            Status
           </span>
         </div>
         <div className="divide-y divide-border">
-          {availableProviders.map((provider) => (
-            <div
-              key={provider.key}
-              className="px-4 py-3 flex items-center justify-between gap-4"
-            >
-              <div className="flex items-center gap-3 min-w-0">
-                <ProviderIcon provider={provider.key} size={28} />
-                <div className="min-w-0">
-                  <div className="flex items-center gap-2">
-                    <span className="text-sm font-medium">{provider.label}</span>
-                    <span
-                      className={cn(
-                        'text-[10px] px-1.5 py-0.5 rounded font-medium',
-                        CATEGORY_COLORS[provider.category] ?? CATEGORY_COLORS.custom,
-                      )}
-                    >
-                      {provider.category.charAt(0).toUpperCase() +
-                        provider.category.slice(1)}
-                    </span>
-                  </div>
-                  <p className="text-xs text-muted-foreground truncate">
-                    {provider.description}
-                  </p>
-                </div>
-              </div>
-              <Button
-                size="sm"
-                onClick={() => handleConnect(provider.key)}
-                disabled={createIntegration.isPending}
-                className="shrink-0"
+          {filteredProviders.map((provider) => {
+            const isConnected = connectedProviderKeys.has(provider.key as IntegrationProvider);
+            return (
+              <div
+                key={provider.key}
+                className="px-4 py-3 flex items-center justify-between gap-4"
               >
-                Connect
-              </Button>
-            </div>
-          ))}
-          {availableProviders.length === 0 && (
+                <div className="flex items-center gap-3 min-w-0">
+                  <ProviderIcon provider={provider.key} size={28} />
+                  <div className="min-w-0">
+                    <div className="flex items-center gap-2">
+                      <span className="text-sm font-medium">{provider.label}</span>
+                      <span
+                        className={cn(
+                          'text-[10px] px-1.5 py-0.5 rounded font-medium',
+                          CATEGORY_COLORS[provider.category] ?? CATEGORY_COLORS.custom,
+                        )}
+                      >
+                        {provider.category.charAt(0).toUpperCase() +
+                          provider.category.slice(1)}
+                      </span>
+                      {isConnected && (
+                        <span className="inline-flex items-center gap-1 text-[10px] px-1.5 py-0.5 rounded font-medium bg-emerald-100 text-emerald-700">
+                          <CheckCircle2 className="h-3 w-3" />
+                          Connected
+                        </span>
+                      )}
+                    </div>
+                    <p className="text-xs text-muted-foreground truncate">
+                      {provider.description}
+                    </p>
+                  </div>
+                </div>
+                {isConnected ? (
+                  <span className="text-xs text-emerald-600 font-medium shrink-0">
+                    Active
+                  </span>
+                ) : (
+                  <Button
+                    size="sm"
+                    onClick={() => handleConnect(provider.key)}
+                    disabled={createIntegration.isPending}
+                    className="shrink-0"
+                  >
+                    Connect
+                  </Button>
+                )}
+              </div>
+            );
+          })}
+          {filteredProviders.length === 0 && (
             <div className="px-4 py-8 text-center text-sm text-muted-foreground">
-              {search
-                ? 'No matching integrations found.'
-                : 'All integrations are connected!'}
+              No matching integrations found.
             </div>
           )}
         </div>
