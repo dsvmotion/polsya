@@ -20,7 +20,7 @@ import { useIntegrationRuns } from '@/hooks/useIntegrationRuns';
 import { useIntegrationJobs, useEnqueueIntegrationJob, useProcessIntegrationJob, createJobIdempotencyKey } from '@/hooks/useIntegrationJobs';
 import { useStartOAuth } from '@/hooks/useOAuth';
 import { useUpsertEmailImapCredentials } from '@/hooks/useEmailImapCredentials';
-import { useUpsertEmailMarketingCredentials } from '@/hooks/useEmailMarketingCredentials';
+import { useUpsertApiKeyCredentials } from '@/hooks/useEmailMarketingCredentials';
 import {
   IntegrationProvider,
   IntegrationConnection,
@@ -98,7 +98,7 @@ function IntegrationRow({
   const processJob = useProcessIntegrationJob();
   const startOAuth = useStartOAuth();
   const upsertEmailImap = useUpsertEmailImapCredentials();
-  const upsertEmailMarketing = useUpsertEmailMarketingCredentials();
+  const upsertApiKey = useUpsertApiKeyCredentials();
   const updateIntegration = useUpdateIntegration();
 
   const [editing, setEditing] = useState(false);
@@ -107,6 +107,7 @@ function IntegrationRow({
   const [configuringCredentials, setConfiguringCredentials] = useState(false);
   const [configuringApiKey, setConfiguringApiKey] = useState(false);
   const [apiKeyValue, setApiKeyValue] = useState('');
+  const [apiSecretValue, setApiSecretValue] = useState('');
   const [imapForm, setImapForm] = useState({
     accountEmail: '',
     username: '',
@@ -181,9 +182,12 @@ function IntegrationRow({
     setConfiguringCredentials(true);
   };
 
+  const isDualKeyProvider = intg.provider === 'woocommerce';
+
   const startApiKeyConfig = () => {
     setConfiguringCredentials(false);
     setApiKeyValue('');
+    setApiSecretValue('');
     setConfiguringApiKey(true);
   };
 
@@ -212,15 +216,25 @@ function IntegrationRow({
 
   const handleSaveApiKey = async () => {
     try {
-      await upsertEmailMarketing.mutateAsync({
+      // Pull base_url from integration metadata if available (e.g., WooCommerce store_url)
+      const meta = intg.metadata as Record<string, unknown>;
+      const baseUrl =
+        (typeof meta.store_url === 'string' ? meta.store_url : undefined) ??
+        (typeof meta.store_domain === 'string' ? meta.store_domain : undefined) ??
+        (typeof meta.base_url === 'string' ? meta.base_url : undefined);
+
+      await upsertApiKey.mutateAsync({
         integrationId: intg.id,
         apiKey: apiKeyValue.trim(),
+        ...(isDualKeyProvider && apiSecretValue.trim() ? { apiSecret: apiSecretValue.trim() } : {}),
+        ...(baseUrl ? { baseUrl } : {}),
       });
-      toast.success(`${providerLabel} API key saved`);
+      toast.success(`${providerLabel} credentials saved`);
       setConfiguringApiKey(false);
       setApiKeyValue('');
+      setApiSecretValue('');
     } catch (error) {
-      const message = error instanceof Error ? error.message : `Failed to save ${providerLabel} API key`;
+      const message = error instanceof Error ? error.message : `Failed to save ${providerLabel} credentials`;
       toast.error(message);
     }
   };
@@ -455,16 +469,39 @@ function IntegrationRow({
 
       {configuringApiKey && authType === 'api_key' && (
         <div className="pl-6 pt-1 space-y-2">
-          <Input
-            placeholder={`${providerLabel} API key *`}
-            value={apiKeyValue}
-            onChange={(e) => setApiKeyValue(e.target.value)}
-            className="h-8 text-sm"
-            type="password"
-          />
+          {isDualKeyProvider ? (
+            <>
+              <Input
+                placeholder="Consumer Key *"
+                value={apiKeyValue}
+                onChange={(e) => setApiKeyValue(e.target.value)}
+                className="h-8 text-sm"
+                type="password"
+              />
+              <Input
+                placeholder="Consumer Secret *"
+                value={apiSecretValue}
+                onChange={(e) => setApiSecretValue(e.target.value)}
+                className="h-8 text-sm"
+                type="password"
+              />
+            </>
+          ) : (
+            <Input
+              placeholder={`${providerLabel} API key *`}
+              value={apiKeyValue}
+              onChange={(e) => setApiKeyValue(e.target.value)}
+              className="h-8 text-sm"
+              type="password"
+            />
+          )}
           <div className="flex items-center gap-2">
-            <Button size="sm" onClick={handleSaveApiKey} disabled={upsertEmailMarketing.isPending}>
-              {upsertEmailMarketing.isPending ? 'Saving...' : 'Save key'}
+            <Button
+              size="sm"
+              onClick={handleSaveApiKey}
+              disabled={upsertApiKey.isPending || !apiKeyValue.trim() || (isDualKeyProvider && !apiSecretValue.trim())}
+            >
+              {upsertApiKey.isPending ? 'Saving...' : 'Save credentials'}
             </Button>
             <Button
               size="sm"
@@ -472,6 +509,7 @@ function IntegrationRow({
               onClick={() => {
                 setConfiguringApiKey(false);
                 setApiKeyValue('');
+                setApiSecretValue('');
               }}
             >
               Cancel
