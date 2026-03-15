@@ -15,7 +15,12 @@ export type IntegrationProvider =
   | 'pipedrive'
   | 'prestashop'
   | 'whatsapp'
-  | 'slack';
+  | 'slack'
+  | 'sendgrid'
+  | 'mailchimp'
+  | 'google_sheets'
+  | 'zapier'
+  | 'intercom';
 
 export type IntegrationStatus = 'connected' | 'disconnected' | 'error';
 
@@ -51,6 +56,11 @@ export const PROVIDER_LABELS: Record<IntegrationProvider, string> = {
   prestashop: 'PrestaShop',
   whatsapp: 'WhatsApp',
   slack: 'Slack',
+  sendgrid: 'SendGrid',
+  mailchimp: 'Mailchimp',
+  google_sheets: 'Google Sheets',
+  zapier: 'Zapier',
+  intercom: 'Intercom',
 };
 
 export const PROVIDER_ICONS: Record<IntegrationProvider, string> = {
@@ -71,6 +81,11 @@ export const PROVIDER_ICONS: Record<IntegrationProvider, string> = {
   prestashop: '🛍️',
   whatsapp: '💬',
   slack: '💼',
+  sendgrid: '📤',
+  mailchimp: '🐒',
+  google_sheets: '📊',
+  zapier: '⚡',
+  intercom: '💬',
 };
 
 export const STATUS_COLORS: Record<IntegrationStatus, { bg: string; text: string; dot: string }> = {
@@ -96,6 +111,11 @@ export interface PipedriveMetadata { api_key: string }
 export interface PrestaShopMetadata { store_url: string; api_key: string }
 export interface WhatsAppMetadata { access_token: string; phone_number_id: string }
 export interface SlackMetadata { slack_access_token?: string; channel_id?: string }
+export interface SendGridMetadata { sender_email?: string; sender_name?: string }
+export interface MailchimpMetadata { mailchimp_access_token?: string }
+export interface GoogleSheetsMetadata { spreadsheet_id?: string }
+export interface ZapierMetadata { webhook_url?: string }
+export interface IntercomMetadata { intercom_access_token?: string }
 
 export interface IntegrationMetadataByProvider {
   woocommerce: WooCommerceMetadata;
@@ -115,6 +135,11 @@ export interface IntegrationMetadataByProvider {
   prestashop: PrestaShopMetadata;
   whatsapp: WhatsAppMetadata;
   slack: SlackMetadata;
+  sendgrid: SendGridMetadata;
+  mailchimp: MailchimpMetadata;
+  google_sheets: GoogleSheetsMetadata;
+  zapier: ZapierMetadata;
+  intercom: IntercomMetadata;
 }
 
 export type IntegrationMetadata = IntegrationMetadataByProvider[IntegrationProvider];

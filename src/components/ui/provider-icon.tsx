@@ -13,6 +13,11 @@ import {
   SiPrestashop,
   SiWhatsapp,
   SiSlack,
+  SiSendgrid,
+  SiMailchimp,
+  SiGooglesheets,
+  SiZapier,
+  SiIntercom,
 } from 'react-icons/si';
 import { Mail, CircleDot, Plug, Mailbox } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -41,6 +46,11 @@ const PROVIDER_ICON_MAP: Record<string, ComponentType<IconProps>> = {
   prestashop: SiPrestashop,
   whatsapp: SiWhatsapp,
   slack: SiSlack,
+  sendgrid: SiSendgrid,
+  mailchimp: SiMailchimp,
+  google_sheets: SiGooglesheets,
+  zapier: SiZapier,
+  intercom: SiIntercom,
   custom_api: Plug,
 };
 
@@ -62,6 +72,11 @@ const PROVIDER_COLORS: Record<string, string> = {
   prestashop: '#DF0067',
   whatsapp: '#25D366',
   slack: '#4A154B',
+  sendgrid: '#1A82E2',
+  mailchimp: '#FFE01B',
+  google_sheets: '#0F9D58',
+  zapier: '#FF4A00',
+  intercom: '#286EFA',
   custom_api: '#6B7280',
 };
 

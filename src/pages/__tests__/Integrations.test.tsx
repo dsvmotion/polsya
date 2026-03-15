@@ -40,10 +40,10 @@ describe('IntegrationsPage', () => {
     expect(screen.getByText(/Connect your tools/)).toBeInTheDocument();
   });
 
-  it('renders the integrations card and available section', () => {
+  it('renders the integrations card and catalog section', () => {
     render(<IntegrationsPage />, { wrapper: createWrapper() });
     expect(screen.getByTestId('integrations-card')).toBeInTheDocument();
-    expect(screen.getByText(/Available/)).toBeInTheDocument();
+    expect(screen.getByText(/Integrations \d+/)).toBeInTheDocument();
   });
 
   it('renders category filter buttons', () => {
