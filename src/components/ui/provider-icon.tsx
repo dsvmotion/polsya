@@ -18,8 +18,12 @@ import {
   SiGooglesheets,
   SiZapier,
   SiIntercom,
+  SiZoom,
+  SiMailgun,
+  SiAirtable,
+  SiZendesk,
 } from 'react-icons/si';
-import { Mail, CircleDot, Plug, Mailbox } from 'lucide-react';
+import { Mail, CircleDot, Plug, Mailbox, TrendingUp, Split } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 type IconProps = { className?: string; style?: React.CSSProperties };
@@ -51,6 +55,12 @@ const PROVIDER_ICON_MAP: Record<string, ComponentType<IconProps>> = {
   google_sheets: SiGooglesheets,
   zapier: SiZapier,
   intercom: SiIntercom,
+  zoom: SiZoom,
+  mailgun: SiMailgun,
+  klaviyo: TrendingUp,      // No SI icon; TrendingUp with brand color
+  airtable: SiAirtable,
+  zendesk: SiZendesk,
+  segment: Split,           // No SI icon; Split with brand color
   custom_api: Plug,
 };
 
@@ -77,6 +87,12 @@ const PROVIDER_COLORS: Record<string, string> = {
   google_sheets: '#0F9D58',
   zapier: '#FF4A00',
   intercom: '#286EFA',
+  zoom: '#2D8CFF',
+  mailgun: '#F06B66',
+  klaviyo: '#24BE74',
+  airtable: '#18BFFF',
+  zendesk: '#03363D',
+  segment: '#52BD94',
   custom_api: '#6B7280',
 };
 
