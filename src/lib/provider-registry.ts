@@ -26,6 +26,7 @@ export interface OAuthConfig {
 export interface ProviderDefinition {
   key: string;
   label: string;
+  description: string;
   icon: string;
   category: ProviderCategory;
   authType: AuthType;
@@ -39,6 +40,7 @@ export const PROVIDER_REGISTRY: Record<string, ProviderDefinition> = {
   woocommerce: {
     key: 'woocommerce',
     label: 'WooCommerce',
+    description: 'Sync orders, products, and inventory from your WooCommerce store',
     icon: '🛒',
     category: 'ecommerce',
     authType: 'api_key',
@@ -51,6 +53,7 @@ export const PROVIDER_REGISTRY: Record<string, ProviderDefinition> = {
   shopify: {
     key: 'shopify',
     label: 'Shopify',
+    description: 'Sync orders, products, and inventory from your Shopify store',
     icon: '🏪',
     category: 'ecommerce',
     authType: 'api_key',
@@ -63,6 +66,7 @@ export const PROVIDER_REGISTRY: Record<string, ProviderDefinition> = {
   gmail: {
     key: 'gmail',
     label: 'Gmail',
+    description: 'Connect Gmail to sync contacts and email communications',
     icon: '✉️',
     category: 'email',
     authType: 'oauth2',
@@ -83,6 +87,7 @@ export const PROVIDER_REGISTRY: Record<string, ProviderDefinition> = {
   outlook: {
     key: 'outlook',
     label: 'Outlook',
+    description: 'Connect Outlook to sync contacts and email communications',
     icon: '📧',
     category: 'email',
     authType: 'oauth2',
@@ -107,6 +112,7 @@ export const PROVIDER_REGISTRY: Record<string, ProviderDefinition> = {
   email_imap: {
     key: 'email_imap',
     label: 'IMAP/SMTP',
+    description: 'Connect any email via IMAP/SMTP for contact sync and messaging',
     icon: '📮',
     category: 'email',
     authType: 'credentials',
@@ -122,6 +128,7 @@ export const PROVIDER_REGISTRY: Record<string, ProviderDefinition> = {
   brevo: {
     key: 'brevo',
     label: 'Brevo',
+    description: 'Sync contacts, campaigns, and email marketing data from Brevo',
     icon: '📣',
     category: 'email',
     authType: 'api_key',
@@ -135,6 +142,7 @@ export const PROVIDER_REGISTRY: Record<string, ProviderDefinition> = {
   notion: {
     key: 'notion',
     label: 'Notion',
+    description: 'Connect Notion to sync workspace data and documents',
     icon: '📓',
     category: 'ai',
     authType: 'oauth2',
@@ -154,6 +162,7 @@ export const PROVIDER_REGISTRY: Record<string, ProviderDefinition> = {
   google_drive: {
     key: 'google_drive',
     label: 'Google Drive',
+    description: 'Connect Google Drive to import files and spreadsheet data',
     icon: '📁',
     category: 'ai',
     authType: 'oauth2',
@@ -174,6 +183,7 @@ export const PROVIDER_REGISTRY: Record<string, ProviderDefinition> = {
   openai: {
     key: 'openai',
     label: 'OpenAI',
+    description: 'Connect OpenAI for AI-powered features and document processing',
     icon: '🤖',
     category: 'ai',
     authType: 'api_key',
@@ -186,6 +196,7 @@ export const PROVIDER_REGISTRY: Record<string, ProviderDefinition> = {
   anthropic: {
     key: 'anthropic',
     label: 'Anthropic',
+    description: 'Connect Anthropic Claude for AI-powered features and analysis',
     icon: '🧠',
     category: 'ai',
     authType: 'api_key',
@@ -198,6 +209,7 @@ export const PROVIDER_REGISTRY: Record<string, ProviderDefinition> = {
   custom_api: {
     key: 'custom_api',
     label: 'Custom API',
+    description: 'Connect any REST API with custom configuration',
     icon: '🔌',
     category: 'custom',
     authType: 'api_key',
@@ -210,6 +222,7 @@ export const PROVIDER_REGISTRY: Record<string, ProviderDefinition> = {
   hubspot: {
     key: 'hubspot',
     label: 'HubSpot',
+    description: 'Sync contacts, deals, and CRM data from HubSpot',
     icon: '🟠',
     category: 'crm',
     authType: 'oauth2',
@@ -226,6 +239,7 @@ export const PROVIDER_REGISTRY: Record<string, ProviderDefinition> = {
   salesforce: {
     key: 'salesforce',
     label: 'Salesforce',
+    description: 'Sync contacts, deals, and CRM data from Salesforce',
     icon: '☁️',
     category: 'crm',
     authType: 'oauth2',
@@ -244,6 +258,7 @@ export const PROVIDER_REGISTRY: Record<string, ProviderDefinition> = {
   pipedrive: {
     key: 'pipedrive',
     label: 'Pipedrive',
+    description: 'Sync contacts, deals, and pipeline data from Pipedrive',
     icon: '🔵',
     category: 'crm',
     authType: 'api_key',
@@ -256,6 +271,7 @@ export const PROVIDER_REGISTRY: Record<string, ProviderDefinition> = {
   prestashop: {
     key: 'prestashop',
     label: 'PrestaShop',
+    description: 'Sync orders, products, and inventory from PrestaShop',
     icon: '🛍️',
     category: 'ecommerce',
     authType: 'api_key',
@@ -268,6 +284,7 @@ export const PROVIDER_REGISTRY: Record<string, ProviderDefinition> = {
   whatsapp: {
     key: 'whatsapp',
     label: 'WhatsApp',
+    description: 'Send and receive WhatsApp messages via Business API',
     icon: '💬',
     category: 'communication',
     authType: 'api_key',
@@ -281,6 +298,7 @@ export const PROVIDER_REGISTRY: Record<string, ProviderDefinition> = {
   slack: {
     key: 'slack',
     label: 'Slack',
+    description: 'Receive alerts and notifications directly in Slack',
     icon: '💼',
     category: 'communication',
     authType: 'oauth2',

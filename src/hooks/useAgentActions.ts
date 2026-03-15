@@ -19,7 +19,13 @@ export function useAgentActions(limit = 20) {
         .order('created_at', { ascending: false })
         .limit(limit);
 
-      if (error) throw new Error(error.message);
+      if (error) {
+        const msg = (error.message ?? '').toLowerCase();
+        if (error.code === '42P01' || msg.includes('does not exist') || msg.includes('schema cache')) {
+          return [];
+        }
+        throw new Error(error.message);
+      }
       return (data ?? []) as unknown as AgentActionLog[];
     },
   });

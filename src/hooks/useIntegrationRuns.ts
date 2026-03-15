@@ -18,7 +18,13 @@ export function useIntegrationRuns(integrationId: string | null, limit = 5) {
         .order('started_at', { ascending: false })
         .limit(limit);
 
-      if (error) throw new Error(error.message);
+      if (error) {
+        const msg = (error.message ?? '').toLowerCase();
+        if (error.code === '42P01' || msg.includes('does not exist') || msg.includes('schema cache')) {
+          return [];
+        }
+        throw new Error(error.message);
+      }
       return (data ?? []) as IntegrationSyncRun[];
     },
   });

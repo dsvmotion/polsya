@@ -1,4 +1,5 @@
 import { useState, useMemo } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
 import { Plug, Plus, Trash2, RotateCw, Pencil } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -40,6 +41,7 @@ import { EmptyState, LoadingState } from '@/components/ui/view-states';
 import { ProviderIcon } from '@/components/ui/provider-icon';
 import { decideSyncToast } from '@/services/integrationJobResultService';
 import { timeAgo } from '@/lib/time-utils';
+import { useCredentialStatus } from '@/hooks/useCredentialStatus';
 
 const providerOptions = Object.values(PROVIDER_REGISTRY).map((p) => ({
   value: p.key,
@@ -101,6 +103,7 @@ function IntegrationRow({
   const upsertEmailImap = useUpsertEmailImapCredentials();
   const upsertApiKey = useUpsertApiKeyCredentials();
   const updateIntegration = useUpdateIntegration();
+  const queryClient = useQueryClient();
 
   const [editing, setEditing] = useState(false);
   const [editMeta, setEditMeta] = useState<Record<string, string>>({});
@@ -132,6 +135,11 @@ function IntegrationRow({
   // providerIcon kept for fallback; ProviderIcon component renders brand icons
   const providerLabel = providerDef?.label ?? intg.provider;
   const authType = providerDef?.authType ?? 'none';
+
+  const credentialStatus = useCredentialStatus(
+    authType === 'api_key' ? intg.id : null,
+    authType === 'api_key' ? intg.provider : null,
+  );
 
   const handleConnectOAuth = async () => {
     try {
@@ -231,6 +239,7 @@ function IntegrationRow({
         ...(baseUrl ? { baseUrl } : {}),
       });
       toast.success(`${providerLabel} credentials saved`);
+      queryClient.invalidateQueries({ queryKey: ['credential-status', intg.id, intg.provider] });
       setConfiguringApiKey(false);
       setApiKeyValue('');
       setApiSecretValue('');
@@ -287,6 +296,11 @@ function IntegrationRow({
           <span className={cn('text-[10px] px-1.5 py-0.5 rounded font-medium shrink-0', statusColor.bg, statusColor.text)}>
             {intg.status}
           </span>
+          {authType === 'api_key' && credentialStatus.data?.hasCredentials && (
+            <span className="text-[10px] px-1.5 py-0.5 rounded font-medium bg-green-100 text-green-700 shrink-0">
+              Key saved
+            </span>
+          )}
         </div>
         <div className="flex items-center gap-1 shrink-0">
           <Button
@@ -325,15 +339,27 @@ function IntegrationRow({
             </Button>
           )}
           {authType === 'api_key' && (
-            <Button
-              variant="ghost"
-              size="sm"
-              className="h-7 px-1.5 text-muted-foreground hover:text-primary"
-              onClick={startApiKeyConfig}
-              title={`Configure ${providerLabel} API key`}
-            >
-              <span className="text-[10px] font-medium">Configure</span>
-            </Button>
+            credentialStatus.data?.hasCredentials ? (
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-7 px-1.5 text-muted-foreground hover:text-primary"
+                onClick={startApiKeyConfig}
+                title={`Update ${providerLabel} credentials`}
+              >
+                <span className="text-[10px] font-medium">Update</span>
+              </Button>
+            ) : (
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-7 px-1.5 text-muted-foreground hover:text-primary"
+                onClick={startApiKeyConfig}
+                title={`Configure ${providerLabel} API key`}
+              >
+                <span className="text-[10px] font-medium">Configure</span>
+              </Button>
+            )
           )}
           {schema.length > 0 && (
             <Button

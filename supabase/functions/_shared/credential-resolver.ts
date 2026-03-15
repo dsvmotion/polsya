@@ -241,37 +241,40 @@ async function resolveApiKeyCredentials(
   integrationId: string,
   baseMetadata: Record<string, unknown>,
 ): Promise<ResolvedCredentials> {
-  if (provider === 'brevo') {
-    const organizationId = baseMetadata._organization_id as string | undefined;
+  const organizationId = baseMetadata._organization_id as string | undefined;
 
-    const query = supabaseClient
-      .from('integration_api_credentials')
-      .select('api_key')
-      .eq('integration_id', integrationId)
-      .eq('provider', 'brevo');
+  const query = supabaseClient
+    .from('integration_api_credentials')
+    .select('api_key, api_secret, base_url')
+    .eq('integration_id', integrationId)
+    .eq('provider', provider);
 
-    if (organizationId) {
-      query.eq('organization_id', organizationId);
-    }
-
-    const { data: credsRow, error: credsError } = await query.maybeSingle();
-
-    if (credsError) {
-      throw new Error(`Failed to load Brevo API credentials: ${credsError.message}`);
-    }
-    if (!credsRow) {
-      throw new Error('Brevo API key not found. Configure Brevo credentials first.');
-    }
-
-    return {
-      metadata: {
-        ...baseMetadata,
-        brevo_api_key: (credsRow as Record<string, unknown>).api_key,
-      },
-    };
+  if (organizationId) {
+    query.eq('organization_id', organizationId);
   }
 
-  return { metadata: baseMetadata };
+  const { data: credsRow, error: credsError } = await query.maybeSingle();
+
+  if (credsError) {
+    const msg = (credsError.message ?? '').toLowerCase();
+    if (msg.includes('schema cache') || msg.includes('does not exist') || credsError.code === '42P01') {
+      return { metadata: baseMetadata };
+    }
+    throw new Error(`Failed to load ${provider} API credentials: ${credsError.message}`);
+  }
+  if (!credsRow) {
+    throw new Error(`${provider} API credentials not found. Configure ${provider} credentials first.`);
+  }
+
+  const creds = credsRow as Record<string, unknown>;
+  return {
+    metadata: {
+      ...baseMetadata,
+      [`${provider}_api_key`]: creds.api_key,
+      ...(creds.api_secret ? { [`${provider}_api_secret`]: creds.api_secret } : {}),
+      ...(creds.base_url ? { [`${provider}_base_url`]: creds.base_url } : {}),
+    },
+  };
 }
 
 async function resolveCustomCredentials(

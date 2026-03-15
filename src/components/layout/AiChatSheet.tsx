@@ -220,6 +220,7 @@ export function AiChatSheet({ open, onOpenChange }: AiChatSheetProps) {
       <SheetContent
         side="right"
         className="flex flex-col w-full sm:max-w-md p-0 gap-0"
+        aria-describedby={undefined}
       >
         <SheetHeader className="px-4 py-3 border-b bg-gradient-cta text-white shrink-0 rounded-t-lg">
           <div className="flex items-center justify-between w-full">
