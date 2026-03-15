@@ -94,6 +94,8 @@ function MessageBubble({ message }: { message: ChatMessage }) {
   );
 }
 
+const EMPTY_MESSAGES: ChatMessage[] = [];
+
 const SUGGESTED_PROMPTS = [
   'What does my sales pipeline look like?',
   'Which leads should I prioritize this week?',
@@ -108,7 +110,8 @@ interface AiChatSheetProps {
 
 export function AiChatSheet({ open, onOpenChange }: AiChatSheetProps) {
   const location = useLocation();
-  const { data: messages = [], isLoading: messagesLoading } = useAiChatMessages();
+  const { data: messagesData, isLoading: messagesLoading } = useAiChatMessages();
+  const messages = messagesData ?? EMPTY_MESSAGES;
   const { sendMessage, clearHistory, isLoading: isSending, error } = useAiChat();
   const { data: budget } = useAiUsage();
 
@@ -122,9 +125,10 @@ export function AiChatSheet({ open, onOpenChange }: AiChatSheetProps) {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   const allMessages = [...messages, ...localMessages];
+  const messageCount = messages.length + localMessages.length;
 
   useEffect(() => {
-    setLocalMessages([]);
+    setLocalMessages((prev) => (prev.length > 0 ? [] : prev));
   }, [messages]);
 
   const scrollToBottom = useCallback(() => {
@@ -143,7 +147,7 @@ export function AiChatSheet({ open, onOpenChange }: AiChatSheetProps) {
       scrollToBottom();
       textareaRef.current?.focus();
     }
-  }, [open, allMessages.length, scrollToBottom]);
+  }, [open, messageCount, scrollToBottom]);
 
   const handleSend = async () => {
     const text = input.trim();

@@ -18,6 +18,8 @@ const routeMap: Record<string, string> = {
   billing: 'Billing',
 };
 
+const LAYOUT_PREFIXES = new Set(['app', 'admin', 'dashboard']);
+
 function buildCrumbs(pathname: string): Crumb[] {
   const segments = pathname.split('/').filter(Boolean);
   if (segments.length === 0) return [{ label: 'Dashboard' }];
@@ -29,6 +31,10 @@ function buildCrumbs(pathname: string): Crumb[] {
   for (let i = 0; i < segments.length; i++) {
     const segment = segments[i];
     path += `/${segment}`;
+
+    // Skip layout prefix segments (app, admin, dashboard) — already covered by home crumb
+    if (LAYOUT_PREFIXES.has(segment)) continue;
+
     const isLast = i === segments.length - 1;
     const label = routeMap[segment] ?? segment.charAt(0).toUpperCase() + segment.slice(1);
     crumbs.push({ label, href: isLast ? undefined : path });
@@ -44,7 +50,7 @@ export function Breadcrumbs() {
   return (
     <nav aria-label="breadcrumb" className="flex items-center gap-1 text-sm min-w-0">
       {crumbs.map((crumb, i) => (
-        <span key={crumb.href ?? crumb.label} className="flex items-center gap-1 min-w-0">
+        <span key={`${i}-${crumb.label}`} className="flex items-center gap-1 min-w-0">
           {i > 0 && <ChevronRight className="h-3.5 w-3.5 text-muted-foreground shrink-0" />}
           {i === 0 && crumbs.length > 1 ? (
             <Link to={crumbs[0]?.href ?? '/app'} className="text-muted-foreground hover:text-foreground transition-colors shrink-0">
