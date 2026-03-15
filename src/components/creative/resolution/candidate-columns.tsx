@@ -37,7 +37,7 @@ export function createCandidateColumns(
         const score = row.original.confidenceScore;
         const pct = Math.round(score * 100);
         return (
-          <Badge variant="secondary" className={`border-0 ${pct >= 80 ? 'bg-green-100 text-green-800' : pct >= 50 ? 'bg-amber-100 text-amber-800' : 'bg-gray-100 text-gray-800'}`}>
+          <Badge variant="secondary" className={`border-0 ${pct >= 80 ? 'bg-green-100 text-green-800' : pct >= 50 ? 'bg-amber-100 text-amber-800' : 'bg-muted text-foreground'}`}>
             {pct}%
           </Badge>
         );

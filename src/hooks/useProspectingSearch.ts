@@ -1,7 +1,7 @@
 import { useState, useCallback, useRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import type { BusinessEntity } from '@/types/entity';
-import type { ClientType } from '@/types/pharmacy';
+import type { EntityTypeKey } from '@/types/entity';
 import { toBusinessEntity } from '@/services/entityService';
 import { toast } from 'sonner';
 import type { Json } from '@/integrations/supabase/types';
@@ -14,7 +14,7 @@ interface SearchFilters {
   country: string;
   province: string;
   city: string;
-  clientType?: ClientType;
+  clientType?: EntityTypeKey;
 }
 
 interface GooglePlaceBasic {
@@ -136,22 +136,36 @@ export function useProspectingSearch() {
     try {
       // Build search query for Google Places
       const locationParts = [filters.city, filters.province, filters.country].filter(Boolean);
+      // Use entity type label as search term for Google Places
+      // For industry-specific types, use localized terms; for generic types, use the label
+      const entityLabel = filters.clientType || 'business';
       let searchTerm: string;
       const country = filters.country?.toLowerCase() || '';
-      if (filters.clientType === 'herbalist') {
-        if (country === 'spain' || country === 'españa') searchTerm = 'herbolario';
-        else if (country === 'france' || country === 'francia') searchTerm = 'herboristerie';
-        else if (country === 'germany' || country === 'alemania') searchTerm = 'kräuterladen';
-        else if (country === 'italy' || country === 'italia') searchTerm = 'erboristeria';
-        else if (country === 'portugal') searchTerm = 'ervanária';
-        else searchTerm = 'herbalist';
+
+      // Industry-specific localized search terms
+      const LOCALIZED_TERMS: Record<string, Record<string, string>> = {
+        pharmacy: {
+          spain: 'farmacia', españa: 'farmacia',
+          france: 'pharmacie', francia: 'pharmacie',
+          germany: 'apotheke', alemania: 'apotheke',
+          italy: 'farmacia', italia: 'farmacia',
+          portugal: 'farmácia',
+        },
+        herbalist: {
+          spain: 'herbolario', españa: 'herbolario',
+          france: 'herboristerie', francia: 'herboristerie',
+          germany: 'kräuterladen', alemania: 'kräuterladen',
+          italy: 'erboristeria', italia: 'erboristeria',
+          portugal: 'ervanária',
+        },
+      };
+
+      const localizedMap = LOCALIZED_TERMS[entityLabel];
+      if (localizedMap && country && localizedMap[country]) {
+        searchTerm = localizedMap[country];
       } else {
-        if (country === 'spain' || country === 'españa') searchTerm = 'farmacia';
-        else if (country === 'france' || country === 'francia') searchTerm = 'pharmacie';
-        else if (country === 'germany' || country === 'alemania') searchTerm = 'apotheke';
-        else if (country === 'italy' || country === 'italia') searchTerm = 'farmacia';
-        else if (country === 'portugal') searchTerm = 'farmácia';
-        else searchTerm = 'pharmacy';
+        // Generic: use the entity type label directly (e.g., "business", "agency", "clinic")
+        searchTerm = entityLabel;
       }
       const searchQuery = `${searchTerm} in ${locationParts.join(', ')}`;
 
@@ -229,7 +243,7 @@ export function useProspectingSearch() {
           if (existingError) logger.warn('Pharmacy lookup failed:', existingError.message);
 
           if (existing) {
-            cachedPharmacies.push(toBusinessEntity(existing as never));
+            cachedPharmacies.push(toBusinessEntity(existing));
             processed++;
             flushProgress();
             return;
@@ -266,7 +280,7 @@ export function useProspectingSearch() {
           if (placeIdError) logger.warn('Pharmacy place-id lookup failed:', placeIdError.message);
 
           if (existingByPlaceId) {
-            cachedPharmacies.push(toBusinessEntity(existingByPlaceId as never));
+            cachedPharmacies.push(toBusinessEntity(existingByPlaceId));
             processed++;
             flushProgress();
             return;
@@ -313,7 +327,7 @@ export function useProspectingSearch() {
               .single();
             if (updateError) logger.warn('Pharmacy update failed:', updateError.message);
 
-            cachedPharmacies.push(toBusinessEntity((updated ?? existingByName) as never));
+            cachedPharmacies.push(toBusinessEntity(updated ?? existingByName));
           } else {
             let insertGoogleData: Json = null;
             try {
@@ -352,12 +366,12 @@ export function useProspectingSearch() {
                 .maybeSingle();
               if (refetchError) logger.warn('Pharmacy refetch failed:', refetchError.message);
               if (refetched) {
-                cachedPharmacies.push(toBusinessEntity(refetched as never));
+                cachedPharmacies.push(toBusinessEntity(refetched));
               } else {
                 failed++;
               }
             } else if (inserted) {
-              cachedPharmacies.push(toBusinessEntity(inserted as never));
+              cachedPharmacies.push(toBusinessEntity(inserted));
             }
           }
 

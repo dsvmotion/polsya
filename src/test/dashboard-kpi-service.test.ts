@@ -14,7 +14,7 @@ import {
 } from '@/services/dashboardKpiService';
 
 function makePharmacy(overrides: Partial<PharmacyRow> = {}): PharmacyRow {
-  return { id: 'p1', commercial_status: 'client', client_type: 'pharmacy', ...overrides };
+  return { id: 'p1', commercial_status: 'client', client_type: 'business', ...overrides };
 }
 
 function makeOpp(overrides: Partial<OpportunityRow> = {}): OpportunityRow {
@@ -40,23 +40,23 @@ function daysAgoIso(n: number): string {
 // ---------------------------------------------------------------------------
 describe('filterPharmaciesByClientType', () => {
   const pharmacies = [
-    makePharmacy({ id: 'p1', client_type: 'pharmacy' }),
-    makePharmacy({ id: 'p2', client_type: 'herbalist' }),
-    makePharmacy({ id: 'p3', client_type: 'pharmacy' }),
+    makePharmacy({ id: 'p1', client_type: 'business' }),
+    makePharmacy({ id: 'p2', client_type: 'agency' }),
+    makePharmacy({ id: 'p3', client_type: 'business' }),
   ];
 
   it('returns all when clientType is "all"', () => {
     expect(filterPharmaciesByClientType(pharmacies, 'all')).toHaveLength(3);
   });
 
-  it('filters to pharmacy only', () => {
-    const result = filterPharmaciesByClientType(pharmacies, 'pharmacy');
+  it('filters to business only', () => {
+    const result = filterPharmaciesByClientType(pharmacies, 'business');
     expect(result).toHaveLength(2);
-    expect(result.every((p) => p.client_type === 'pharmacy')).toBe(true);
+    expect(result.every((p) => p.client_type === 'business')).toBe(true);
   });
 
-  it('filters to herbalist only', () => {
-    const result = filterPharmaciesByClientType(pharmacies, 'herbalist');
+  it('filters to agency only', () => {
+    const result = filterPharmaciesByClientType(pharmacies, 'agency');
     expect(result).toHaveLength(1);
     expect(result[0].id).toBe('p2');
   });
@@ -241,18 +241,18 @@ describe('computeDashboardKpis', () => {
     expect(result.weightedForecast).toBe(1000 * 0.5 + 2000 * 0.8);
   });
 
-  it('filters opportunities by entityTypeKey=pharmacy', () => {
+  it('filters opportunities by entityTypeKey=business', () => {
     const result = computeDashboardKpis({
       pharmacies: [
-        makePharmacy({ id: 'p1', client_type: 'pharmacy' }),
-        makePharmacy({ id: 'p2', client_type: 'herbalist' }),
+        makePharmacy({ id: 'p1', client_type: 'business' }),
+        makePharmacy({ id: 'p2', client_type: 'agency' }),
       ],
       opportunities: [
         makeOpp({ id: 'o1', pharmacy_id: 'p1', amount: 1000, probability: 50, stage: 'qualified' }),
         makeOpp({ id: 'o2', pharmacy_id: 'p2', amount: 2000, probability: 80, stage: 'qualified' }),
       ],
       documents: [],
-      entityTypeKey: 'pharmacy',
+      entityTypeKey: 'business',
       cutoffIso: null,
     });
     expect(result.pipelineTotal).toBe(1000);
@@ -294,13 +294,13 @@ describe('computeDashboardKpis', () => {
   it('computes conversion rate scoped by entityTypeKey', () => {
     const result = computeDashboardKpis({
       pharmacies: [
-        makePharmacy({ id: 'p1', commercial_status: 'contacted', client_type: 'pharmacy' }),
-        makePharmacy({ id: 'p2', commercial_status: 'client', client_type: 'pharmacy' }),
-        makePharmacy({ id: 'p3', commercial_status: 'contacted', client_type: 'herbalist' }),
+        makePharmacy({ id: 'p1', commercial_status: 'contacted', client_type: 'business' }),
+        makePharmacy({ id: 'p2', commercial_status: 'client', client_type: 'business' }),
+        makePharmacy({ id: 'p3', commercial_status: 'contacted', client_type: 'agency' }),
       ],
       opportunities: [],
       documents: [],
-      entityTypeKey: 'pharmacy',
+      entityTypeKey: 'business',
       cutoffIso: null,
     });
     expect(result.conversionRate).toBe(50);
@@ -311,15 +311,15 @@ describe('computeDashboardKpis', () => {
     const now = Date.now();
     const result = computeDashboardKpis({
       pharmacies: [
-        makePharmacy({ id: 'p1', commercial_status: 'client', client_type: 'pharmacy' }),
-        makePharmacy({ id: 'p2', commercial_status: 'contacted', client_type: 'herbalist' }),
+        makePharmacy({ id: 'p1', commercial_status: 'client', client_type: 'business' }),
+        makePharmacy({ id: 'p2', commercial_status: 'contacted', client_type: 'agency' }),
       ],
       opportunities: [
         makeOpp({ id: 'o1', pharmacy_id: 'p1', amount: 500, probability: 60, stage: 'proposal', created_at: daysAgoIso(5) }),
         makeOpp({ id: 'o2', pharmacy_id: 'p2', amount: 800, probability: 40, stage: 'qualified', created_at: daysAgoIso(5) }),
       ],
       documents: [],
-      entityTypeKey: 'pharmacy',
+      entityTypeKey: 'business',
       cutoffIso: daysAgoIso(30),
       nowMs: now,
     });

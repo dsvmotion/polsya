@@ -25,7 +25,7 @@ vi.mock('@/hooks/useProspectingSearch', () => ({
 }));
 
 vi.mock('@/hooks/useSavePharmacies', () => ({
-  useSavePharmacies: vi.fn(() => ({
+  useSaveEntities: vi.fn(() => ({
     mutateAsync: vi.fn(),
     isPending: false,
   })),

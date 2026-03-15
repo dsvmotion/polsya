@@ -51,8 +51,8 @@ vi.mock('@/hooks/useEntityOperations', () => ({
 vi.mock('@/hooks/useEntityTypes', () => ({
   useEntityTypes: vi.fn(() => ({
     data: [
-      { key: 'pharmacy', label: 'Pharmacies', color: '#22c55e' },
-      { key: 'herbalist', label: 'Herbalists', color: '#eab308' },
+      { key: 'business', label: 'Businesses', color: '#22c55e' },
+      { key: 'agency', label: 'Agencies', color: '#eab308' },
     ],
   })),
   resolveEntityTypeLabel: vi.fn((_key: string, _types: unknown[], fallback: string) => fallback),

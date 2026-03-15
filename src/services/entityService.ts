@@ -1,5 +1,13 @@
 import type { BusinessEntity } from '@/types/entity';
 
+/**
+ * Loose row shape accepted by toBusinessEntity.
+ * Intentionally uses Record<string, unknown> so that both the hand-typed
+ * EntityRow and Supabase-generated row types satisfy it without `as never`.
+ */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type EntityRowLike = Record<string, any>;
+
 interface EntityRow {
   id: string;
   organization_id?: string;
@@ -32,7 +40,7 @@ interface EntityRow {
   sub_locality?: string | null;
 }
 
-export function toBusinessEntity(row: EntityRow): BusinessEntity {
+export function toBusinessEntity(row: EntityRow | EntityRowLike): BusinessEntity {
   return {
     id: row.id,
     entityTypeId: row.entity_type_id ?? null,
@@ -67,7 +75,7 @@ export function toBusinessEntity(row: EntityRow): BusinessEntity {
   };
 }
 
-export function toBusinessEntities(rows: readonly EntityRow[]): BusinessEntity[] {
+export function toBusinessEntities(rows: readonly (EntityRow | EntityRowLike)[]): BusinessEntity[] {
   return rows.map(toBusinessEntity);
 }
 

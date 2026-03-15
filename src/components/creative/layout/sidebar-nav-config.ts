@@ -57,7 +57,7 @@ export interface NavGroup {
 export const dashboardItem: NavItem = {
   label: 'Dashboard',
   icon: LayoutDashboard,
-  path: '/creative',
+  path: '/app',
 };
 
 // ---------------------------------------------------------------------------
@@ -69,55 +69,52 @@ export const navGroups: NavGroup[] = [
     label: 'Discover',
     icon: Search,
     items: [
-      { label: 'Local Businesses', icon: Search, path: '/creative/discover' },
-      { label: 'Companies', icon: Building2, path: '/creative/companies', future: true },
-      { label: 'People', icon: UserPlus, path: '/creative/people', future: true },
+      { label: 'Local Businesses', icon: Search, path: '/app/discover' },
     ],
   },
   {
     label: 'Entities',
     icon: Building2,
     items: [
-      { label: 'Clients', icon: Users, path: '/creative/clients' },
-      { label: 'Contacts', icon: UserRound, path: '/creative/contacts' },
-      { label: 'Portfolios', icon: Image, path: '/creative/portfolios' },
+      { label: 'Clients', icon: Users, path: '/app/clients' },
+      { label: 'Contacts', icon: UserRound, path: '/app/contacts' },
+      { label: 'Portfolios', icon: Image, path: '/app/portfolios' },
     ],
   },
   {
     label: 'Pipeline',
     icon: Kanban,
     items: [
-      { label: 'Opportunities', icon: Briefcase, path: '/creative/opportunities' },
-      { label: 'Projects', icon: FolderKanban, path: '/creative/projects' },
-      { label: 'Leads', icon: UserPlus, path: '/creative/leads', future: true },
+      { label: 'Opportunities', icon: Briefcase, path: '/app/opportunities' },
+      { label: 'Projects', icon: FolderKanban, path: '/app/projects' },
     ],
   },
   {
     label: 'Intelligence',
     icon: Sparkles,
     items: [
-      { label: 'Signals', icon: Zap, path: '/creative/signals' },
-      { label: 'Style Engine', icon: Sparkles, path: '/creative/style' },
-      { label: 'Enrichment', icon: Layers, path: '/creative/enrichment' },
+      { label: 'Signals', icon: Zap, path: '/app/signals' },
+      { label: 'Style Engine', icon: Sparkles, path: '/app/style' },
+      { label: 'Enrichment', icon: Layers, path: '/app/enrichment' },
     ],
   },
   {
     label: 'Communication',
     icon: MessageCircle,
     items: [
-      { label: 'Email', icon: Mail, path: '/creative/inbox' },
-      { label: 'Calendar', icon: Calendar, path: '/creative/calendar' },
+      { label: 'Email', icon: Mail, path: '/app/inbox' },
+      { label: 'Calendar', icon: Calendar, path: '/app/calendar' },
     ],
   },
   {
     label: 'Analytics',
     icon: TrendingUp,
-    path: '/creative/analytics',
+    path: '/app/analytics',
     items: [
-      { label: 'Overview', icon: TrendingUp, path: '/creative/analytics' },
-      { label: 'Reports', icon: BarChart3, path: '/creative/reports' },
-      { label: 'Pipeline', icon: LineChart, path: '/creative/analytics/pipeline' },
-      { label: 'AI Insights', icon: BrainCircuit, path: '/creative/analytics/ai-insights' },
+      { label: 'Overview', icon: TrendingUp, path: '/app/analytics' },
+      { label: 'Reports', icon: BarChart3, path: '/app/reports' },
+      { label: 'Pipeline', icon: LineChart, path: '/app/analytics/pipeline' },
+      { label: 'AI Insights', icon: BrainCircuit, path: '/app/analytics/insights' },
     ],
   },
   {
@@ -125,10 +122,10 @@ export const navGroups: NavGroup[] = [
     icon: GitBranch,
     defaultOpen: false,
     items: [
-      { label: 'Workflows', icon: GitBranch, path: '/creative/workflows' },
-      { label: 'Ingestion', icon: Download, path: '/creative/ingestion' },
-      { label: 'Resolution', icon: GitMerge, path: '/creative/resolution' },
-      { label: 'Knowledge Base', icon: BookOpen, path: '/creative/knowledge-base' },
+      { label: 'Workflows', icon: GitBranch, path: '/app/workflows' },
+      { label: 'Ingestion', icon: Download, path: '/app/ingestion' },
+      { label: 'Resolution', icon: GitMerge, path: '/app/resolution' },
+      { label: 'Knowledge Base', icon: BookOpen, path: '/app/knowledge-base' },
     ],
   },
 ];
@@ -138,7 +135,7 @@ export const navGroups: NavGroup[] = [
 // ---------------------------------------------------------------------------
 
 export const bottomNavItems: NavItem[] = [
-  { label: 'Integrations', icon: Palette, path: '/integrations' },
-  { label: 'Billing', icon: CreditCard, path: '/billing' },
-  { label: 'Settings', icon: Settings, path: '/profile' },
+  { label: 'Integrations', icon: Palette, path: '/app/integrations' },
+  { label: 'Billing', icon: CreditCard, path: '/app/billing' },
+  { label: 'Settings', icon: Settings, path: '/app/settings' },
 ];

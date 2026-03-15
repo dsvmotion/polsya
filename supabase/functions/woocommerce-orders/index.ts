@@ -180,14 +180,33 @@ serve(async (req) => {
   if (!billing.ok) return billing.response;
 
   try {
-    const wooUrl = Deno.env.get('WOOCOMMERCE_URL');
-    const consumerKey = Deno.env.get('WOOCOMMERCE_CONSUMER_KEY');
-    const consumerSecret = Deno.env.get('WOOCOMMERCE_CONSUMER_SECRET');
+    // 1. Try per-org credentials from integration_api_credentials table
+    let wooUrl: string | undefined;
+    let consumerKey: string | undefined;
+    let consumerSecret: string | undefined;
+
+    const { data: creds } = await supabaseAdmin
+      .from('integration_api_credentials')
+      .select('api_key, api_secret, base_url')
+      .eq('organization_id', auth.organizationId)
+      .eq('provider', 'woocommerce')
+      .maybeSingle();
+
+    if (creds?.api_key && creds?.api_secret && creds?.base_url) {
+      wooUrl = creds.base_url;
+      consumerKey = creds.api_key;
+      consumerSecret = creds.api_secret;
+    } else {
+      // 2. Fall back to env vars (legacy / global config)
+      wooUrl = Deno.env.get('WOOCOMMERCE_URL');
+      consumerKey = Deno.env.get('WOOCOMMERCE_CONSUMER_KEY');
+      consumerSecret = Deno.env.get('WOOCOMMERCE_CONSUMER_SECRET');
+    }
 
     if (!wooUrl || !consumerKey || !consumerSecret) {
       return new Response(
-        JSON.stringify({ error: 'WooCommerce credentials not configured' }),
-        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        JSON.stringify({ error: 'WooCommerce credentials not configured. Go to Integrations → WooCommerce → Configure to add your store URL, consumer key, and consumer secret.' }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 

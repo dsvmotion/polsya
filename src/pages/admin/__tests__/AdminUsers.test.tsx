@@ -7,6 +7,8 @@ import AdminUsers from '../AdminUsers';
 
 const mockQueryResult = vi.fn();
 
+const mockRpcResult = vi.fn();
+
 vi.mock('@/integrations/supabase/client', () => {
   const builder = {
     select: vi.fn().mockReturnThis(),
@@ -15,6 +17,7 @@ vi.mock('@/integrations/supabase/client', () => {
   return {
     supabase: {
       from: vi.fn(() => builder),
+      rpc: vi.fn(() => mockRpcResult()),
     },
   };
 });
@@ -24,6 +27,8 @@ vi.mock('@/integrations/supabase/client', () => {
 describe('AdminUsers', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    // Default: RPC fails (not platform owner) so fallback to from() query
+    mockRpcResult.mockResolvedValue({ data: null, error: { message: 'permission denied' } });
   });
 
   it('renders the page heading', async () => {

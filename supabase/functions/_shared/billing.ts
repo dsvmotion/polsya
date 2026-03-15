@@ -49,7 +49,9 @@ function evaluateBillingAccess(
   nowMs: number = Date.now(),
 ): BillingAccessDecision {
   if (!subscription) {
-    return { hasAccess: false, reason: 'no_subscription', graceEndsAt: null };
+    // No subscription = free tier / trial — allow access by default.
+    // When billing is enforced, create a subscription record with the appropriate status.
+    return { hasAccess: true, reason: 'no_subscription', graceEndsAt: null };
   }
 
   if (subscription.status === 'active') {
@@ -93,6 +95,26 @@ export async function requireBillingAccessForOrg(
     .limit(1);
 
   if (error) {
+    // If the billing table doesn't exist yet (schema cache miss or table not created),
+    // treat as "no subscription" and allow access (free tier / pre-billing setup).
+    const isSchemaError = error.message?.includes('schema cache')
+      || error.message?.includes('relation')
+      || error.code === 'PGRST204'
+      || error.code === '42P01';
+
+    if (isSchemaError) {
+      console.warn(
+        JSON.stringify({
+          action,
+          organization_id: organizationId,
+          allowed: true,
+          reason: 'billing_table_unavailable',
+          error: error.message,
+        }),
+      );
+      return { ok: true, decision: { hasAccess: true, reason: 'no_subscription' as BillingAccessReason, graceEndsAt: null } };
+    }
+
     console.error(
       JSON.stringify({
         action,

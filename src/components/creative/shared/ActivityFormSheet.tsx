@@ -158,7 +158,7 @@ export function ActivityFormSheet({ open, onOpenChange, entityType, entityId }: 
                           type="checkbox"
                           checked={field.value}
                           onChange={field.onChange}
-                          className="h-4 w-4 rounded border-gray-300"
+                          className="h-4 w-4 rounded border-border"
                         />
                       </FormControl>
                       <FormLabel className="!mt-0">Remind 1 hour before due date</FormLabel>

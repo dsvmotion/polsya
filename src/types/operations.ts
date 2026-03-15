@@ -1,4 +1,4 @@
-import type { ClientType, PharmacyStatus } from '@/types/pharmacy';
+import type { EntityTypeKey, EntityStatus } from '@/types/entity';
 
 export interface DetailedOrder {
   id: string;
@@ -29,17 +29,17 @@ export interface DetailedOrder {
   paymentLinkUrl: string | null;
 }
 
-export interface PharmacyWithOrders {
+export interface EntityWithOrders {
   id: string;
   name: string;
   address: string | null;
   city: string | null;
   province: string | null;
   country: string | null;
-  clientType: ClientType;
+  clientType: EntityTypeKey;
   phone: string | null;
   email: string | null;
-  commercialStatus: PharmacyStatus;
+  commercialStatus: EntityStatus;
   notes: string | null;
   orders: DetailedOrder[];
   lastOrder: DetailedOrder | null;
@@ -63,7 +63,7 @@ export interface OperationsFilters {
   country: string;
   province: string;
   city: string;
-  commercialStatus: 'all' | PharmacyStatus;
+  commercialStatus: 'all' | EntityStatus;
   paymentStatus: 'all' | 'paid' | 'pending' | 'failed' | 'refunded';
 }
 
@@ -133,7 +133,7 @@ export const SMART_SEGMENT_LABELS: Record<SmartSegmentKey, string> = {
   no_recent_orders_60d: 'No orders 60+ days',
 };
 
-export interface PharmacyDocument {
+export interface EntityDocument {
   id: string;
   pharmacyId: string;
   orderId: string | null;

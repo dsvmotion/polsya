@@ -48,7 +48,7 @@ export function AppSidebar({ open, onOpenChange, collapsed, onCollapsedChange, o
   const { organization } = useCurrentOrganization();
 
   const navItems: NavItem[] = [
-    { label: 'Dashboard', href: '/dashboard', icon: LayoutDashboard, match: /^\/dashboard\/?$/ },
+    { label: 'Dashboard', href: '/app', icon: LayoutDashboard, match: /^\/app\/?$/ },
     {
       label: 'Prospecting',
       href: '/prospecting/entities',
@@ -74,9 +74,9 @@ export function AppSidebar({ open, onOpenChange, collapsed, onCollapsedChange, o
   ];
 
   const bottomItems: NavItem[] = [
-    { label: 'Integrations', href: '/integrations', icon: Plug, match: /^\/integrations(?!\/.*\/callback)/ },
-    { label: 'Billing', href: '/billing', icon: CreditCard, match: /^\/billing/ },
-    { label: 'Settings', href: '/profile', icon: Settings, match: /^\/profile/ },
+    { label: 'Integrations', href: '/app/integrations', icon: Plug, match: /^\/app\/integrations/ },
+    { label: 'Billing', href: '/app/billing', icon: CreditCard, match: /^\/app\/billing/ },
+    { label: 'Settings', href: '/app/settings', icon: Settings, match: /^\/app\/settings/ },
   ];
 
   const isActive = (item: NavItem) => {
@@ -91,7 +91,7 @@ export function AppSidebar({ open, onOpenChange, collapsed, onCollapsedChange, o
       {/* Logo */}
       <div className={cn('flex items-center h-14 border-b border-sidebar-border px-3 shrink-0', collapsed && 'justify-center')}>
         {!collapsed && (
-          <Link to="/dashboard" className="flex items-center gap-2.5 min-w-0">
+          <Link to="/app" className="flex items-center gap-2.5 min-w-0">
             {logoUrl ? (
               <img src={logoUrl} alt="" className="h-8 w-8 rounded-lg object-cover" />
             ) : (
@@ -106,7 +106,7 @@ export function AppSidebar({ open, onOpenChange, collapsed, onCollapsedChange, o
           </Link>
         )}
         {collapsed && (
-          <Link to="/dashboard">
+          <Link to="/app">
             {logoUrl ? (
               <img src={logoUrl} alt="" className="h-8 w-8 rounded-lg object-cover" />
             ) : (

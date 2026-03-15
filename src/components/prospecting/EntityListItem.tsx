@@ -1,11 +1,11 @@
 import { MapPin, Phone, Globe, Check, Save } from 'lucide-react';
-import { Pharmacy, PharmacyStatus, STATUS_LABELS, STATUS_COLORS } from '@/types/pharmacy';
+import { BusinessEntity, EntityStatus, STATUS_LABELS, STATUS_COLORS } from '@/types/entity';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 
 interface EntityListItemProps {
-  pharmacy: Pharmacy;
+  pharmacy: BusinessEntity;
   isSelected: boolean;
   isChecked: boolean;
   onCheck: (checked: boolean) => void;
@@ -15,12 +15,12 @@ interface EntityListItemProps {
   isSaving?: boolean;
 }
 
-function StatusBadge({ status, isSaved }: { status: PharmacyStatus; isSaved: boolean }) {
+function StatusBadge({ status, isSaved }: { status: EntityStatus; isSaved: boolean }) {
   const colors = STATUS_COLORS[status];
   return (
     <div className="flex items-center gap-1">
       {isSaved && (
-        <span className="px-1.5 py-0.5 rounded text-[10px] font-medium bg-gray-200 text-gray-700 flex items-center gap-0.5">
+        <span className="px-1.5 py-0.5 rounded text-[10px] font-medium bg-muted text-muted-foreground flex items-center gap-0.5">
           <Check className="h-2.5 w-2.5" />
           Saved
         </span>
@@ -48,9 +48,9 @@ export function EntityListItem({
     <div
       className={cn(
         'p-3 rounded-lg border cursor-pointer transition-all',
-        isSelected 
-          ? 'border-gray-400 bg-gray-100' 
-          : 'border-gray-200 bg-white hover:bg-gray-50'
+        isSelected
+          ? 'border-border bg-muted'
+          : 'border-border bg-background hover:bg-muted/50'
       )}
     >
       <div className="flex items-start gap-2">
@@ -75,7 +75,7 @@ export function EntityListItem({
           onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onClick(); } }}
         >
           <div className="flex items-start justify-between gap-2 mb-2">
-            <h3 className="font-semibold text-sm leading-tight truncate flex-1 text-gray-900">
+            <h3 className="font-semibold text-sm leading-tight truncate flex-1 text-foreground">
               {pharmacy.name}
             </h3>
             <StatusBadge status={pharmacy.status} isSaved={isSaved} />
@@ -83,13 +83,13 @@ export function EntityListItem({
           
           <div className="space-y-1">
             {pharmacy.address && (
-              <div className="flex items-start gap-2 text-xs text-gray-500">
+              <div className="flex items-start gap-2 text-xs text-muted-foreground">
                 <MapPin className="h-3 w-3 mt-0.5 shrink-0" />
                 <span className="truncate">{pharmacy.address}</span>
               </div>
             )}
             
-            <div className="flex items-center gap-3 text-xs text-gray-500">
+            <div className="flex items-center gap-3 text-xs text-muted-foreground">
               {pharmacy.city && (
                 <span className="truncate">{pharmacy.city}</span>
               )}
@@ -102,7 +102,7 @@ export function EntityListItem({
             </div>
             
             {pharmacy.website && (
-              <div className="flex items-center gap-1 text-xs text-gray-600">
+              <div className="flex items-center gap-1 text-xs text-muted-foreground">
                 <Globe className="h-3 w-3" />
                 <span className="truncate">Website</span>
               </div>
@@ -116,7 +116,7 @@ export function EntityListItem({
                 type="button"
                 variant="outline"
                 size="sm"
-                className="w-full h-7 text-xs border-gray-300"
+                className="w-full h-7 text-xs border-border"
                 disabled={isSavedToOperations || isSaving}
                 onClick={() => onSaveOne(pharmacy.id)}
               >

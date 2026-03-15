@@ -7,8 +7,8 @@ import {
 
 describe('sidebar-nav-config (creative)', () => {
   describe('dashboardItem', () => {
-    it('points to /creative', () => {
-      expect(dashboardItem.path).toBe('/creative');
+    it('points to /app', () => {
+      expect(dashboardItem.path).toBe('/app');
     });
 
     it('has Dashboard label', () => {
@@ -34,7 +34,7 @@ describe('sidebar-nav-config (creative)', () => {
         for (const item of group.items) {
           expect(item.label).toBeTruthy();
           expect(item.icon).toBeDefined();
-          expect(item.path).toMatch(/^\/creative/);
+          expect(item.path).toMatch(/^\/app/);
         }
       }
     });
@@ -62,12 +62,9 @@ describe('sidebar-nav-config (creative)', () => {
       expect(ops?.defaultOpen).toBe(false);
     });
 
-    it('future items are marked correctly', () => {
+    it('no future items remain visible', () => {
       const futureItems = navGroups.flatMap((g) => g.items.filter((i) => i.future));
-      expect(futureItems.length).toBeGreaterThan(0);
-      for (const item of futureItems) {
-        expect(item.future).toBe(true);
-      }
+      expect(futureItems.length).toBe(0);
     });
   });
 

@@ -1,6 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { Pharmacy, type ClientType } from '@/types/pharmacy';
+import { type BusinessEntity, type EntityTypeKey } from '@/types/entity';
 import type { Json } from '@/integrations/supabase/types';
 import { buildEdgeFunctionHeaders } from '@/lib/edge-function-headers';
 import { toBusinessEntity, toBusinessEntities } from '@/services/entityService';
@@ -8,10 +8,11 @@ import { logger } from '@/lib/logger';
 
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
 
-export function usePharmacies(clientType?: ClientType, entityTypeId?: string) {
+/** @deprecated Use useBusinessEntities from useBusinessEntities.ts instead */
+export function usePharmacies(clientType?: EntityTypeKey, entityTypeId?: string) {
   return useQuery({
     queryKey: ['pharmacies', clientType ?? 'all', entityTypeId ?? 'all'],
-    queryFn: async (): Promise<Pharmacy[]> => {
+    queryFn: async (): Promise<BusinessEntity[]> => {
       let query = supabase
         .from('pharmacies')
         .select('*')
@@ -20,17 +21,17 @@ export function usePharmacies(clientType?: ClientType, entityTypeId?: string) {
       if (entityTypeId) {
         query = query.eq('entity_type_id', entityTypeId);
       } else if (clientType) {
-        query = query.eq('client_type', clientType as never);
+        query = query.eq('client_type', clientType);
       }
       
       const { data, error } = await query;
       
       if (error) {
-        logger.error('Error fetching pharmacies:', error);
+        logger.error('Error fetching entities:', error);
         throw error;
       }
       
-      return toBusinessEntities((data || []) as never[]);
+      return toBusinessEntities(data || []);
     },
   });
 }
@@ -38,7 +39,7 @@ export function usePharmacies(clientType?: ClientType, entityTypeId?: string) {
 export function usePharmacy(id: string | null) {
   return useQuery({
     queryKey: ['pharmacy', id],
-    queryFn: async (): Promise<Pharmacy | null> => {
+    queryFn: async (): Promise<BusinessEntity | null> => {
       if (!id) return null;
       
       const { data, error } = await supabase
@@ -48,11 +49,11 @@ export function usePharmacy(id: string | null) {
         .single();
       
       if (error) {
-        logger.error('Error fetching pharmacy:', error);
+        logger.error('Error fetching entity:', error);
         throw error;
       }
       
-      return toBusinessEntity(data as never);
+      return toBusinessEntity(data);
     },
     enabled: !!id,
   });
@@ -77,7 +78,7 @@ export function useUpdatePharmacy() {
         .single();
       
       if (error) throw error;
-      return toBusinessEntity(data as never);
+      return toBusinessEntity(data);
     },
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ['pharmacies'] });
@@ -87,7 +88,7 @@ export function useUpdatePharmacy() {
 }
 
 // Separate hook for updating status from Operations view
-export function useUpdatePharmacyStatus() {
+export function useUpdateEntityStatus() {
   const queryClient = useQueryClient();
 
   return useMutation({
@@ -106,10 +107,10 @@ export function useUpdatePharmacyStatus() {
         .single();
       
       if (error) throw error;
-      return toBusinessEntity(data as never);
+      return toBusinessEntity(data);
     },
     onSuccess: (data) => {
-      // Invalidate all pharmacy-related queries to ensure UI updates everywhere
+      // Invalidate all entity-related queries to ensure UI updates everywhere
       queryClient.invalidateQueries({ queryKey: ['pharmacies'] });
       queryClient.setQueryData(['pharmacy', data.id], data);
     },
@@ -163,7 +164,7 @@ export function useCachePharmacy() {
           .single();
         
         if (error) throw error;
-        return toBusinessEntity(data as never);
+        return toBusinessEntity(data);
       }
       
       // Insert new
@@ -188,7 +189,7 @@ export function useCachePharmacy() {
         .single();
       
       if (error) throw error;
-      return toBusinessEntity(data as never);
+      return toBusinessEntity(data);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['pharmacies'] });

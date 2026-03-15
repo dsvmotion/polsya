@@ -63,9 +63,15 @@ export function useWooCommerceOrders() {
   return useQuery({
     queryKey: ['woocommerce-orders'],
     queryFn: async (): Promise<Sale[]> => {
+      let headers: Record<string, string>;
       try {
-        const headers = await buildEdgeFunctionHeaders({ 'Content-Type': 'application/json' });
-        
+        headers = await buildEdgeFunctionHeaders({ 'Content-Type': 'application/json' });
+      } catch {
+        // No org membership yet — return empty (WooCommerce requires org context)
+        return [];
+      }
+
+      try {
         const response = await fetch(`${SUPABASE_URL}/functions/v1/woocommerce-orders`, {
           method: 'POST',
           headers,
@@ -113,7 +119,12 @@ export function useWooCommerceOrders() {
     },
     staleTime: 5 * 60 * 1000, // 5 minutes
     gcTime: 10 * 60 * 1000, // 10 minutes
-    retry: 2,
+    retry: (failureCount, error) => {
+      // Don't retry auth, permission, or config errors
+      const msg = error instanceof Error ? error.message : '';
+      if (/401|403|session|organization|configured|credentials/i.test(msg)) return false;
+      return failureCount < 2;
+    },
   });
 }
 

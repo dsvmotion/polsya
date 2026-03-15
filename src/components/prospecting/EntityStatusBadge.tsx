@@ -1,8 +1,8 @@
-import { PharmacyStatus, STATUS_LABELS, STATUS_COLORS } from '@/types/pharmacy';
+import { EntityStatus, STATUS_LABELS, STATUS_COLORS } from '@/types/entity';
 import { cn } from '@/lib/utils';
 
 interface EntityStatusBadgeProps {
-  status: PharmacyStatus;
+  status: EntityStatus;
   size?: 'sm' | 'md';
 }
 

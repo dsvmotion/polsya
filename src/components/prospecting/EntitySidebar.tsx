@@ -1,16 +1,16 @@
 import { useMemo } from 'react';
 import { Building2, Loader2, Filter } from 'lucide-react';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Pharmacy, PharmacyFilters as Filters } from '@/types/pharmacy';
+import { BusinessEntity, EntityFilters as Filters } from '@/types/entity';
 import { EntityFilters } from './EntityFilters';
 import { EntityListItem } from './EntityListItem';
 import { EntitySelectionBar } from './EntitySelectionBar';
 
 interface EntitySidebarProps {
-  pharmacies: Pharmacy[];
+  pharmacies: BusinessEntity[];
   isLoading: boolean;
   selectedPharmacyId: string | null;
-  onSelectPharmacy: (pharmacy: Pharmacy) => void;
+  onSelectPharmacy: (pharmacy: BusinessEntity) => void;
   filters: Filters;
   onFiltersChange: (filters: Filters) => void;
   onClearFilters: () => void;
@@ -115,14 +115,14 @@ export function EntitySidebar({
   const displayedSelectedCount = displayedPharmacies.filter(p => selectedIds.has(p.id)).length;
 
   return (
-    <div className="flex flex-col h-full bg-white">
+    <div className="flex flex-col h-full bg-background">
       {/* Header */}
-      <div className="p-4 border-b border-gray-200">
+      <div className="p-4 border-b border-border">
         <div className="flex items-center gap-2 mb-3">
-          <Building2 className="h-5 w-5 text-gray-600" />
-          <h2 className="font-semibold text-gray-900">{sidebarTitle}</h2>
+          <Building2 className="h-5 w-5 text-muted-foreground" />
+          <h2 className="font-semibold text-foreground">{sidebarTitle}</h2>
           {hasSearched && (
-            <span className="text-xs text-gray-500 ml-auto">{stats.displayed} shown</span>
+            <span className="text-xs text-muted-foreground ml-auto">{stats.displayed} shown</span>
           )}
         </div>
 
@@ -141,8 +141,8 @@ export function EntitySidebar({
 
       {/* Progress indicator during search */}
       {isSearching && (
-        <div className="px-4 py-2 border-b border-gray-200 bg-gray-50">
-          <div className="flex items-center gap-2 text-xs text-gray-600">
+        <div className="px-4 py-2 border-b border-border bg-muted">
+          <div className="flex items-center gap-2 text-xs text-muted-foreground">
             <Loader2 className="h-3 w-3 animate-spin" />
             <span>
               Found {progress.found} • Cached {progress.cached}
@@ -153,18 +153,18 @@ export function EntitySidebar({
 
       {/* Stats Bar - only show when we have results */}
       {hasSearched && !isSearching && pharmacies.length > 0 && (
-        <div className="px-4 py-2 border-b border-gray-200 flex items-center gap-4 text-xs bg-gray-50">
+        <div className="px-4 py-2 border-b border-border flex items-center gap-4 text-xs bg-muted">
           <div className="flex items-center gap-1.5">
             <span className="w-2 h-2 rounded-full bg-yellow-500" />
-            <span className="text-gray-600">{stats.notContacted}</span>
+            <span className="text-muted-foreground">{stats.notContacted}</span>
           </div>
           <div className="flex items-center gap-1.5">
             <span className="w-2 h-2 rounded-full bg-blue-500" />
-            <span className="text-gray-600">{stats.contacted}</span>
+            <span className="text-muted-foreground">{stats.contacted}</span>
           </div>
           <div className="flex items-center gap-1.5">
             <span className="w-2 h-2 rounded-full bg-green-500" />
-            <span className="text-gray-600">{stats.client}</span>
+            <span className="text-muted-foreground">{stats.client}</span>
           </div>
         </div>
       )}
@@ -187,21 +187,21 @@ export function EntitySidebar({
         <div className="p-3 space-y-2">
           {isLoading || isSearching ? (
             <div className="flex items-center justify-center py-8">
-              <Loader2 className="h-6 w-6 animate-spin text-gray-400" />
+              <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
             </div>
           ) : !hasSearched ? (
-            <div className="text-center py-8 text-gray-500 text-sm">
+            <div className="text-center py-8 text-muted-foreground text-sm">
               <Filter className="h-8 w-8 mx-auto mb-2 opacity-50" />
-              <p className="font-medium text-gray-700">Select filters and click Search</p>
-              <p className="text-xs mt-1 text-gray-400">
+              <p className="font-medium text-foreground">Select filters and click Search</p>
+              <p className="text-xs mt-1 text-muted-foreground">
                 Choose Country → Province → City, then click &quot;{searchButtonLabel}&quot;
               </p>
             </div>
           ) : displayedPharmacies.length === 0 ? (
-            <div className="text-center py-8 text-gray-500 text-sm">
+            <div className="text-center py-8 text-muted-foreground text-sm">
               <Building2 className="h-8 w-8 mx-auto mb-2 opacity-50" />
-              <p className="text-gray-600">{noFoundLabel}</p>
-              <p className="text-xs mt-1 text-gray-400">Try adjusting your filters</p>
+              <p className="text-muted-foreground">{noFoundLabel}</p>
+              <p className="text-xs mt-1 text-muted-foreground">Try adjusting your filters</p>
             </div>
           ) : (
             displayedPharmacies.map((pharmacy) => (

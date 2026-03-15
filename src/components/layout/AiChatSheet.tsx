@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect, useCallback, type KeyboardEvent } from 'react';
+import { logger } from '@/lib/logger';
 import { useLocation } from 'react-router-dom';
 import {
   Send,
@@ -93,6 +94,8 @@ function MessageBubble({ message }: { message: ChatMessage }) {
   );
 }
 
+const EMPTY_MESSAGES: ChatMessage[] = [];
+
 const SUGGESTED_PROMPTS = [
   'What does my sales pipeline look like?',
   'Which leads should I prioritize this week?',
@@ -107,7 +110,8 @@ interface AiChatSheetProps {
 
 export function AiChatSheet({ open, onOpenChange }: AiChatSheetProps) {
   const location = useLocation();
-  const { data: messages = [], isLoading: messagesLoading } = useAiChatMessages();
+  const { data: messagesData, isLoading: messagesLoading } = useAiChatMessages();
+  const messages = messagesData ?? EMPTY_MESSAGES;
   const { sendMessage, clearHistory, isLoading: isSending, error } = useAiChat();
   const { data: budget } = useAiUsage();
 
@@ -121,9 +125,10 @@ export function AiChatSheet({ open, onOpenChange }: AiChatSheetProps) {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   const allMessages = [...messages, ...localMessages];
+  const messageCount = messages.length + localMessages.length;
 
   useEffect(() => {
-    setLocalMessages([]);
+    setLocalMessages((prev) => (prev.length > 0 ? [] : prev));
   }, [messages]);
 
   const scrollToBottom = useCallback(() => {
@@ -142,7 +147,7 @@ export function AiChatSheet({ open, onOpenChange }: AiChatSheetProps) {
       scrollToBottom();
       textareaRef.current?.focus();
     }
-  }, [open, allMessages.length, scrollToBottom]);
+  }, [open, messageCount, scrollToBottom]);
 
   const handleSend = async () => {
     const text = input.trim();
@@ -204,8 +209,8 @@ export function AiChatSheet({ open, onOpenChange }: AiChatSheetProps) {
     setLatestSources(null);
     try {
       await clearHistory();
-    } catch {
-      // Silently ignore — UI is already cleared optimistically
+    } catch (err) {
+      logger.warn('[AiChat] Failed to clear history:', err);
     }
   };
 
@@ -219,6 +224,7 @@ export function AiChatSheet({ open, onOpenChange }: AiChatSheetProps) {
       <SheetContent
         side="right"
         className="flex flex-col w-full sm:max-w-md p-0 gap-0"
+        aria-describedby={undefined}
       >
         <SheetHeader className="px-4 py-3 border-b bg-gradient-cta text-white shrink-0 rounded-t-lg">
           <div className="flex items-center justify-between w-full">

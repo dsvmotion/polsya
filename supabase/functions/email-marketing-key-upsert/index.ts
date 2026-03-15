@@ -20,6 +20,25 @@ function maskKey(value: string): string {
   return `${value.slice(0, 4)}...${value.slice(-4)}`;
 }
 
+// All providers that use API key authentication
+const API_KEY_PROVIDERS = new Set([
+  'brevo',
+  'woocommerce',
+  'shopify',
+  'prestashop',
+  'openai',
+  'anthropic',
+  'pipedrive',
+  'whatsapp',
+  'custom_api',
+]);
+
+// Providers that require both key + secret
+const DUAL_KEY_PROVIDERS = new Set(['woocommerce']);
+
+// Providers that require a base URL (store URL)
+const URL_REQUIRED_PROVIDERS = new Set(['woocommerce', 'shopify', 'prestashop']);
+
 serve(async (req) => {
   const corsResponse = handleCors(req);
   if (corsResponse) return corsResponse;
@@ -32,7 +51,7 @@ serve(async (req) => {
   }
 
   const auth = await requireOrgRoleAccess(req, {
-    action: 'email_marketing_key_upsert',
+    action: 'api_key_upsert',
     allowedRoles: ['admin', 'manager', 'ops'],
     allowlistEnvKey: 'EMAIL_MARKETING_ALLOWED_USER_IDS',
     corsHeaders,
@@ -47,7 +66,7 @@ serve(async (req) => {
 
   const supabaseAdmin = createClient(supabaseUrl, serviceRoleKey);
   const billing = await requireBillingAccessForOrg(supabaseAdmin, auth.organizationId, {
-    action: 'email_marketing_key_upsert',
+    action: 'api_key_upsert',
     corsHeaders,
   });
   if (!billing.ok) return billing.response;
@@ -56,12 +75,14 @@ serve(async (req) => {
     const body = await req.json().catch(() => ({}));
     const integrationId = toTrimmedString(body.integrationId);
     const apiKey = toTrimmedString(body.apiKey);
+    const apiSecret = toTrimmedString(body.apiSecret);
+    const baseUrl = toTrimmedString(body.baseUrl);
 
     if (!integrationId) {
       return jsonResponse({ error: 'integrationId is required' }, 400, corsHeaders);
     }
-    if (!apiKey || apiKey.length < 12) {
-      return jsonResponse({ error: 'apiKey is required and must be valid' }, 400, corsHeaders);
+    if (!apiKey || apiKey.length < 8) {
+      return jsonResponse({ error: 'API key is required and must be at least 8 characters' }, 400, corsHeaders);
     }
 
     const { data: integration, error: integrationError } = await supabaseAdmin
@@ -75,26 +96,39 @@ serve(async (req) => {
       return jsonResponse({ error: 'Integration not found for this organization' }, 404, corsHeaders);
     }
 
-    if (integration.provider !== 'brevo') {
-      return jsonResponse({ error: 'Integration provider must be brevo' }, 400, corsHeaders);
+    if (!API_KEY_PROVIDERS.has(integration.provider)) {
+      return jsonResponse({ error: `Provider "${integration.provider}" does not use API key authentication` }, 400, corsHeaders);
     }
+
+    // Validate dual-key providers (WooCommerce needs consumer key + consumer secret)
+    if (DUAL_KEY_PROVIDERS.has(integration.provider) && !apiSecret) {
+      return jsonResponse({ error: 'Consumer secret is required for this provider' }, 400, corsHeaders);
+    }
+
+    // Validate URL-required providers (WooCommerce, Shopify, PrestaShop need store URL)
+    if (URL_REQUIRED_PROVIDERS.has(integration.provider) && !baseUrl) {
+      return jsonResponse({ error: 'Store URL is required for this provider' }, 400, corsHeaders);
+    }
+
+    // Build upsert payload
+    const upsertData: Record<string, unknown> = {
+      organization_id: auth.organizationId,
+      integration_id: integrationId,
+      provider: integration.provider,
+      api_key: apiKey,
+    };
+    if (apiSecret) upsertData.api_secret = apiSecret;
+    if (baseUrl) upsertData.base_url = baseUrl;
 
     const { error: upsertError } = await supabaseAdmin
       .from('integration_api_credentials')
-      .upsert(
-        {
-          organization_id: auth.organizationId,
-          integration_id: integrationId,
-          provider: 'brevo',
-          api_key: apiKey,
-        },
-        { onConflict: 'organization_id,integration_id,provider' },
-      );
+      .upsert(upsertData, { onConflict: 'organization_id,integration_id,provider' });
 
     if (upsertError) {
-      return jsonResponse({ error: `Failed to save API key: ${upsertError.message}` }, 500, corsHeaders);
+      return jsonResponse({ error: `Failed to save credentials: ${upsertError.message}` }, 500, corsHeaders);
     }
 
+    // Mark integration as connected
     await supabaseAdmin
       .from('integration_connections')
       .update({
@@ -109,7 +143,7 @@ serve(async (req) => {
       {
         saved: true,
         integrationId,
-        provider: 'brevo',
+        provider: integration.provider,
         keyMasked: maskKey(apiKey),
       },
       200,

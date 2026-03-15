@@ -45,7 +45,7 @@ export const styleColumns: ColumnDef<StyleAnalysis, unknown>[] = [
       const score = row.original.confidenceScore;
       const pct = Math.round(score * 100);
       return (
-        <Badge variant="secondary" className={pct >= 80 ? 'bg-green-100 text-green-800 border-0' : pct >= 50 ? 'bg-amber-100 text-amber-800 border-0' : 'bg-gray-100 text-gray-800 border-0'}>
+        <Badge variant="secondary" className={pct >= 80 ? 'bg-green-100 text-green-800 border-0' : pct >= 50 ? 'bg-amber-100 text-amber-800 border-0' : 'bg-muted text-foreground border-0'}>
           {pct}%
         </Badge>
       );

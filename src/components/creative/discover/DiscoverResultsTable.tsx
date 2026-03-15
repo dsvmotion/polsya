@@ -92,7 +92,7 @@ export function DiscoverResultsTable({
 
           return (
             <TableRow
-              key={place.placeId || idx}
+              key={place.placeId ?? `place-${idx}`}
               className={cn(
                 'cursor-pointer transition-colors',
                 isHighlighted && 'bg-accent',

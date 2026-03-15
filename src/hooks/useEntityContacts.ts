@@ -1,6 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import type { PharmacyContact, ContactRole } from '@/types/pharmacy';
+import type { AccountContact, ContactRole } from '@/types/entity';
 import { toAccountContact, toAccountContacts, type ContactRow } from '@/services/contactService';
 
 function contactsKey(pharmacyId: string) {
@@ -8,7 +8,7 @@ function contactsKey(pharmacyId: string) {
 }
 
 export function useEntityContacts(pharmacyId: string | null) {
-  return useQuery<PharmacyContact[]>({
+  return useQuery<AccountContact[]>({
     queryKey: contactsKey(pharmacyId ?? ''),
     enabled: !!pharmacyId,
     queryFn: async () => {

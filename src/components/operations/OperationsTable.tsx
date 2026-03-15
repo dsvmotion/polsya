@@ -1,29 +1,29 @@
 import { ArrowUpDown, ArrowUp, ArrowDown, FileText } from 'lucide-react';
-import { PharmacyWithOrders, SortField, SortDirection } from '@/types/operations';
-import { PharmacyStatus, STATUS_LABELS, STATUS_COLORS } from '@/types/pharmacy';
+import { EntityWithOrders, SortField, SortDirection } from '@/types/operations';
+import { EntityStatus, STATUS_LABELS, STATUS_COLORS } from '@/types/entity';
 import { cn } from '@/lib/utils';
 import { EmptyState, LoadingState } from '@/components/ui/view-states';
 
 interface OperationsTableProps {
-  pharmacies: PharmacyWithOrders[];
+  entities: EntityWithOrders[];
   isLoading: boolean;
   sortField: SortField;
   sortDirection: SortDirection;
   onSort: (field: SortField) => void;
-  selectedPharmacyId: string | null;
-  onSelectPharmacy: (pharmacy: PharmacyWithOrders) => void;
+  selectedEntityId: string | null;
+  onSelectEntity: (entity: EntityWithOrders) => void;
 }
 
 function SortIcon({ field, currentField, direction }: { field: SortField; currentField: SortField; direction: SortDirection }) {
   if (field !== currentField) {
-    return <ArrowUpDown className="h-3 w-3 text-gray-400" />;
+    return <ArrowUpDown className="h-3 w-3 text-muted-foreground" />;
   }
-  return direction === 'asc' 
-    ? <ArrowUp className="h-3 w-3 text-gray-700" />
-    : <ArrowDown className="h-3 w-3 text-gray-700" />;
+  return direction === 'asc'
+    ? <ArrowUp className="h-3 w-3 text-foreground" />
+    : <ArrowDown className="h-3 w-3 text-foreground" />;
 }
 
-function StatusBadge({ status }: { status: PharmacyStatus }) {
+function StatusBadge({ status }: { status: EntityStatus }) {
   const colors = STATUS_COLORS[status];
   return (
     <span className={cn('px-2 py-0.5 rounded text-xs font-medium', colors?.bg, colors?.text)}>
@@ -34,14 +34,14 @@ function StatusBadge({ status }: { status: PharmacyStatus }) {
 
 function PaymentBadge({ status }: { status: 'paid' | 'pending' | 'failed' | 'refunded' | null }) {
   if (!status) {
-    return <span className="text-xs text-gray-400">—</span>;
+    return <span className="text-xs text-muted-foreground">—</span>;
   }
 
   const styles = {
-    paid: 'bg-gray-100 text-gray-800',
-    pending: 'bg-gray-50 text-gray-600 border border-gray-200',
-    failed: 'bg-gray-200 text-gray-600',
-    refunded: 'bg-gray-100 text-gray-500',
+    paid: 'bg-muted text-foreground',
+    pending: 'bg-muted/50 text-muted-foreground border border-border',
+    failed: 'bg-muted text-muted-foreground',
+    refunded: 'bg-muted text-muted-foreground',
   };
 
   return (
@@ -52,33 +52,33 @@ function PaymentBadge({ status }: { status: 'paid' | 'pending' | 'failed' | 'ref
 }
 
 interface DocCountCellProps {
-  pharmacy: PharmacyWithOrders;
+  entity: EntityWithOrders;
 }
 
-function DocCountCell({ pharmacy }: DocCountCellProps) {
-  const count = pharmacy.documentCount ?? 0;
+function DocCountCell({ entity }: DocCountCellProps) {
+  const count = entity.documentCount ?? 0;
 
   return (
     <div className="flex items-center justify-center">
       {count > 0 ? (
-        <span className="inline-flex items-center justify-center min-w-[1.5rem] px-1.5 py-0.5 rounded text-xs font-medium bg-gray-200 text-gray-800">
+        <span className="inline-flex items-center justify-center min-w-[1.5rem] px-1.5 py-0.5 rounded text-xs font-medium bg-muted text-foreground">
           {count}
         </span>
       ) : (
-        <FileText className="h-4 w-4 text-gray-300" />
+        <FileText className="h-4 w-4 text-muted-foreground/50" />
       )}
     </div>
   );
 }
 
 export function OperationsTable({
-  pharmacies,
+  entities,
   isLoading,
   sortField,
   sortDirection,
   onSort,
-  selectedPharmacyId,
-  onSelectPharmacy,
+  selectedEntityId,
+  onSelectEntity,
 }: OperationsTableProps) {
   if (isLoading) {
     return (
@@ -90,7 +90,7 @@ export function OperationsTable({
     );
   }
 
-  if (pharmacies.length === 0) {
+  if (entities.length === 0) {
     return (
       <EmptyState
         title="No accounts found"
@@ -104,13 +104,13 @@ export function OperationsTable({
   return (
     <>
       <div className="lg:hidden p-3 space-y-2">
-        <div className="flex flex-wrap items-center gap-2 text-xs text-gray-500">
+        <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
           <span className="font-medium">Sort:</span>
           <button
             onClick={() => onSort('name')}
             className={cn(
               'px-2 py-1 rounded border',
-              sortField === 'name' ? 'border-gray-400 text-gray-900 bg-gray-50' : 'border-gray-200'
+              sortField === 'name' ? 'border-border text-foreground bg-muted' : 'border-border'
             )}
           >
             Name {sortField === 'name' ? (sortDirection === 'asc' ? '↑' : '↓') : ''}
@@ -119,7 +119,7 @@ export function OperationsTable({
             onClick={() => onSort('totalRevenue')}
             className={cn(
               'px-2 py-1 rounded border',
-              sortField === 'totalRevenue' ? 'border-gray-400 text-gray-900 bg-gray-50' : 'border-gray-200'
+              sortField === 'totalRevenue' ? 'border-border text-foreground bg-muted' : 'border-border'
             )}
           >
             Revenue {sortField === 'totalRevenue' ? (sortDirection === 'asc' ? '↑' : '↓') : ''}
@@ -128,44 +128,44 @@ export function OperationsTable({
             onClick={() => onSort('lastOrderDate')}
             className={cn(
               'px-2 py-1 rounded border',
-              sortField === 'lastOrderDate' ? 'border-gray-400 text-gray-900 bg-gray-50' : 'border-gray-200'
+              sortField === 'lastOrderDate' ? 'border-border text-foreground bg-muted' : 'border-border'
             )}
           >
             Last order {sortField === 'lastOrderDate' ? (sortDirection === 'asc' ? '↑' : '↓') : ''}
           </button>
         </div>
 
-        {pharmacies.map((pharmacy) => (
+        {entities.map((entity) => (
           <button
-            key={pharmacy.id}
-            onClick={() => onSelectPharmacy(pharmacy)}
+            key={entity.id}
+            onClick={() => onSelectEntity(entity)}
             className={cn(
-              'w-full text-left rounded-lg border p-3 bg-white',
-              selectedPharmacyId === pharmacy.id ? 'border-gray-400 bg-gray-50' : 'border-gray-200'
+              'w-full text-left rounded-lg border p-3 bg-background',
+              selectedEntityId === entity.id ? 'border-border text-foreground bg-muted' : 'border-border'
             )}
           >
             <div className="flex items-start justify-between gap-2">
               <div className="min-w-0">
-                <p className="font-medium text-gray-900 truncate">{pharmacy.name}</p>
-                <p className="text-xs text-gray-500 truncate">
-                  {[pharmacy.city, pharmacy.province].filter(Boolean).join(' · ') || '—'}
+                <p className="font-medium text-foreground truncate">{entity.name}</p>
+                <p className="text-xs text-muted-foreground truncate">
+                  {[entity.city, entity.province].filter(Boolean).join(' · ') || '—'}
                 </p>
               </div>
-              <StatusBadge status={pharmacy.commercialStatus} />
+              <StatusBadge status={entity.commercialStatus} />
             </div>
             <div className="mt-2 flex items-center justify-between text-xs">
-              <span className="text-gray-500">
-                {pharmacy.lastOrder
-                  ? `Last: ${new Date(pharmacy.lastOrder.dateCreated).toLocaleDateString()}`
+              <span className="text-muted-foreground">
+                {entity.lastOrder
+                  ? `Last: ${new Date(entity.lastOrder.dateCreated).toLocaleDateString()}`
                   : 'No orders'}
               </span>
-              <PaymentBadge status={pharmacy.lastOrder?.paymentStatus || null} />
+              <PaymentBadge status={entity.lastOrder?.paymentStatus || null} />
             </div>
             <div className="mt-2 flex items-center justify-between text-sm">
-              <span className="font-medium text-gray-900">
-                €{pharmacy.totalRevenue.toLocaleString('es-ES', { minimumFractionDigits: 2 })}
+              <span className="font-medium text-foreground">
+                €{entity.totalRevenue.toLocaleString('es-ES', { minimumFractionDigits: 2 })}
               </span>
-              <DocCountCell pharmacy={pharmacy} />
+              <DocCountCell entity={entity} />
             </div>
           </button>
         ))}
@@ -174,200 +174,200 @@ export function OperationsTable({
       <div className="hidden lg:block overflow-x-auto">
       <table className="w-full text-sm min-w-[1600px]">
         <thead>
-          <tr className="border-b border-gray-200 bg-gray-50">
-            <th className="text-left px-4 py-3 font-medium text-gray-600">
+          <tr className="border-b border-border bg-muted">
+            <th className="text-left px-4 py-3 font-medium text-muted-foreground">
               <button 
                 onClick={() => onSort('name')} 
-                className="flex items-center gap-1 hover:text-gray-900"
+                className="flex items-center gap-1 hover:text-foreground"
               >
                 Name
                 <SortIcon field="name" currentField={sortField} direction={sortDirection} />
               </button>
             </th>
-            <th className="text-left px-4 py-3 font-medium text-gray-600">
-              <button onClick={() => onSort('address')} className="flex items-center gap-1 hover:text-gray-900">
+            <th className="text-left px-4 py-3 font-medium text-muted-foreground">
+              <button onClick={() => onSort('address')} className="flex items-center gap-1 hover:text-foreground">
                 Address
                 <SortIcon field="address" currentField={sortField} direction={sortDirection} />
               </button>
             </th>
-            <th className="text-left px-4 py-3 font-medium text-gray-600">
-              <button onClick={() => onSort('postal_code')} className="flex items-center gap-1 hover:text-gray-900">
+            <th className="text-left px-4 py-3 font-medium text-muted-foreground">
+              <button onClick={() => onSort('postal_code')} className="flex items-center gap-1 hover:text-foreground">
                 CP
                 <SortIcon field="postal_code" currentField={sortField} direction={sortDirection} />
               </button>
             </th>
-            <th className="text-left px-4 py-3 font-medium text-gray-600">
-              <button onClick={() => onSort('city')} className="flex items-center gap-1 hover:text-gray-900">
+            <th className="text-left px-4 py-3 font-medium text-muted-foreground">
+              <button onClick={() => onSort('city')} className="flex items-center gap-1 hover:text-foreground">
                 City
                 <SortIcon field="city" currentField={sortField} direction={sortDirection} />
               </button>
             </th>
-            <th className="text-left px-4 py-3 font-medium text-gray-600">
-              <button onClick={() => onSort('province')} className="flex items-center gap-1 hover:text-gray-900">
+            <th className="text-left px-4 py-3 font-medium text-muted-foreground">
+              <button onClick={() => onSort('province')} className="flex items-center gap-1 hover:text-foreground">
                 Province
                 <SortIcon field="province" currentField={sortField} direction={sortDirection} />
               </button>
             </th>
-            <th className="text-left px-4 py-3 font-medium text-gray-600">
-              <button onClick={() => onSort('autonomous_community')} className="flex items-center gap-1 hover:text-gray-900">
+            <th className="text-left px-4 py-3 font-medium text-muted-foreground">
+              <button onClick={() => onSort('autonomous_community')} className="flex items-center gap-1 hover:text-foreground">
                 Autonomous Community
                 <SortIcon field="autonomous_community" currentField={sortField} direction={sortDirection} />
               </button>
             </th>
-            <th className="text-left px-4 py-3 font-medium text-gray-600">
-              <button onClick={() => onSort('phone')} className="flex items-center gap-1 hover:text-gray-900">
+            <th className="text-left px-4 py-3 font-medium text-muted-foreground">
+              <button onClick={() => onSort('phone')} className="flex items-center gap-1 hover:text-foreground">
                 Phone
                 <SortIcon field="phone" currentField={sortField} direction={sortDirection} />
               </button>
             </th>
-            <th className="text-left px-4 py-3 font-medium text-gray-600">
-              <button onClick={() => onSort('secondary_phone')} className="flex items-center gap-1 hover:text-gray-900">
+            <th className="text-left px-4 py-3 font-medium text-muted-foreground">
+              <button onClick={() => onSort('secondary_phone')} className="flex items-center gap-1 hover:text-foreground">
                 Tel. Adicional
                 <SortIcon field="secondary_phone" currentField={sortField} direction={sortDirection} />
               </button>
             </th>
-            <th className="text-left px-4 py-3 font-medium text-gray-600">
-              <button onClick={() => onSort('email')} className="flex items-center gap-1 hover:text-gray-900">
+            <th className="text-left px-4 py-3 font-medium text-muted-foreground">
+              <button onClick={() => onSort('email')} className="flex items-center gap-1 hover:text-foreground">
                 Email
                 <SortIcon field="email" currentField={sortField} direction={sortDirection} />
               </button>
             </th>
-            <th className="text-left px-4 py-3 font-medium text-gray-600">
-              <button onClick={() => onSort('activity')} className="flex items-center gap-1 hover:text-gray-900">
+            <th className="text-left px-4 py-3 font-medium text-muted-foreground">
+              <button onClick={() => onSort('activity')} className="flex items-center gap-1 hover:text-foreground">
                 Activity
                 <SortIcon field="activity" currentField={sortField} direction={sortDirection} />
               </button>
             </th>
-            <th className="text-left px-4 py-3 font-medium text-gray-600">
-              <button onClick={() => onSort('subsector')} className="flex items-center gap-1 hover:text-gray-900">
+            <th className="text-left px-4 py-3 font-medium text-muted-foreground">
+              <button onClick={() => onSort('subsector')} className="flex items-center gap-1 hover:text-foreground">
                 Subsector
                 <SortIcon field="subsector" currentField={sortField} direction={sortDirection} />
               </button>
             </th>
-            <th className="text-left px-4 py-3 font-medium text-gray-600">
-              <button onClick={() => onSort('legal_form')} className="flex items-center gap-1 hover:text-gray-900">
+            <th className="text-left px-4 py-3 font-medium text-muted-foreground">
+              <button onClick={() => onSort('legal_form')} className="flex items-center gap-1 hover:text-foreground">
                 Legal Form
                 <SortIcon field="legal_form" currentField={sortField} direction={sortDirection} />
               </button>
             </th>
-            <th className="text-left px-4 py-3 font-medium text-gray-600">
+            <th className="text-left px-4 py-3 font-medium text-muted-foreground">
               <button 
                 onClick={() => onSort('commercialStatus')} 
-                className="flex items-center gap-1 hover:text-gray-900"
+                className="flex items-center gap-1 hover:text-foreground"
               >
                 Status
                 <SortIcon field="commercialStatus" currentField={sortField} direction={sortDirection} />
               </button>
             </th>
-            <th className="text-left px-4 py-3 font-medium text-gray-600">
+            <th className="text-left px-4 py-3 font-medium text-muted-foreground">
               <button 
                 onClick={() => onSort('lastOrderDate')} 
-                className="flex items-center gap-1 hover:text-gray-900"
+                className="flex items-center gap-1 hover:text-foreground"
               >
                 Last Order
                 <SortIcon field="lastOrderDate" currentField={sortField} direction={sortDirection} />
               </button>
             </th>
-            <th className="text-right px-4 py-3 font-medium text-gray-600">
+            <th className="text-right px-4 py-3 font-medium text-muted-foreground">
               <button 
                 onClick={() => onSort('totalRevenue')} 
-                className="flex items-center gap-1 hover:text-gray-900 ml-auto"
+                className="flex items-center gap-1 hover:text-foreground ml-auto"
               >
                 Revenue
                 <SortIcon field="totalRevenue" currentField={sortField} direction={sortDirection} />
               </button>
             </th>
-            <th className="text-left px-4 py-3 font-medium text-gray-600">
+            <th className="text-left px-4 py-3 font-medium text-muted-foreground">
               <button 
                 onClick={() => onSort('paymentStatus')} 
-                className="flex items-center gap-1 hover:text-gray-900"
+                className="flex items-center gap-1 hover:text-foreground"
               >
                 Payment
                 <SortIcon field="paymentStatus" currentField={sortField} direction={sortDirection} />
               </button>
             </th>
-            <th className="text-center px-4 py-3 font-medium text-gray-600">Docs</th>
+            <th className="text-center px-4 py-3 font-medium text-muted-foreground">Docs</th>
           </tr>
         </thead>
         <tbody>
-          {pharmacies.map((pharmacy) => (
+          {entities.map((entity) => (
             <tr
-              key={pharmacy.id}
-              onClick={() => onSelectPharmacy(pharmacy)}
+              key={entity.id}
+              onClick={() => onSelectEntity(entity)}
               className={cn(
-                'border-b border-gray-100 cursor-pointer transition-colors',
-                selectedPharmacyId === pharmacy.id
-                  ? 'bg-gray-100'
-                  : 'hover:bg-gray-50'
+                'border-b border-border cursor-pointer transition-colors',
+                selectedEntityId === entity.id
+                  ? 'bg-muted'
+                  : 'hover:bg-muted/50'
               )}
             >
               <td className="px-4 py-3">
-                <div className="font-medium text-gray-900 truncate max-w-[180px]">
-                  {pharmacy.name}
+                <div className="font-medium text-foreground truncate max-w-[180px]">
+                  {entity.name}
                 </div>
               </td>
               <td className="px-4 py-3">
-                <div className="text-xs text-gray-700 truncate max-w-[180px]">
-                  {pharmacy.address || '—'}
+                <div className="text-xs text-muted-foreground truncate max-w-[180px]">
+                  {entity.address || '—'}
                 </div>
               </td>
-              <td className="px-4 py-3 text-xs text-gray-700">
-                {pharmacy.postal_code || '—'}
+              <td className="px-4 py-3 text-xs text-muted-foreground">
+                {entity.postal_code || '—'}
               </td>
-              <td className="px-4 py-3 text-gray-700">
-                {pharmacy.city || '—'}
+              <td className="px-4 py-3 text-muted-foreground">
+                {entity.city || '—'}
               </td>
-              <td className="px-4 py-3 text-gray-700">
-                {pharmacy.province || '—'}
+              <td className="px-4 py-3 text-muted-foreground">
+                {entity.province || '—'}
               </td>
-              <td className="px-4 py-3 text-xs text-gray-700">
-                {pharmacy.autonomous_community || '—'}
+              <td className="px-4 py-3 text-xs text-muted-foreground">
+                {entity.autonomous_community || '—'}
               </td>
-              <td className="px-4 py-3 text-xs text-gray-700">
-                {pharmacy.phone || '—'}
+              <td className="px-4 py-3 text-xs text-muted-foreground">
+                {entity.phone || '—'}
               </td>
-              <td className="px-4 py-3 text-xs text-gray-700">
-                {pharmacy.secondary_phone || '—'}
+              <td className="px-4 py-3 text-xs text-muted-foreground">
+                {entity.secondary_phone || '—'}
               </td>
               <td className="px-4 py-3">
-                <div className="text-xs text-gray-700 truncate max-w-[150px]">
-                  {pharmacy.email || '—'}
+                <div className="text-xs text-muted-foreground truncate max-w-[150px]">
+                  {entity.email || '—'}
                 </div>
               </td>
-              <td className="px-4 py-3 text-xs text-gray-700">
-                {pharmacy.activity || '—'}
+              <td className="px-4 py-3 text-xs text-muted-foreground">
+                {entity.activity || '—'}
               </td>
-              <td className="px-4 py-3 text-xs text-gray-700">
-                {pharmacy.subsector || '—'}
+              <td className="px-4 py-3 text-xs text-muted-foreground">
+                {entity.subsector || '—'}
               </td>
-              <td className="px-4 py-3 text-xs text-gray-700">
-                {pharmacy.legal_form || '—'}
-              </td>
-              <td className="px-4 py-3">
-                <StatusBadge status={pharmacy.commercialStatus} />
+              <td className="px-4 py-3 text-xs text-muted-foreground">
+                {entity.legal_form || '—'}
               </td>
               <td className="px-4 py-3">
-                {pharmacy.lastOrder ? (
+                <StatusBadge status={entity.commercialStatus} />
+              </td>
+              <td className="px-4 py-3">
+                {entity.lastOrder ? (
                   <div>
-                    <div className="text-gray-700">{pharmacy.lastOrder.orderId}</div>
-                    <div className="text-xs text-gray-500">
-                      {new Date(pharmacy.lastOrder.dateCreated).toLocaleDateString()}
+                    <div className="text-muted-foreground">{entity.lastOrder.orderId}</div>
+                    <div className="text-xs text-muted-foreground">
+                      {new Date(entity.lastOrder.dateCreated).toLocaleDateString()}
                     </div>
                   </div>
                 ) : (
-                  <span className="text-gray-400">No orders</span>
+                  <span className="text-muted-foreground">No orders</span>
                 )}
               </td>
               <td className="px-4 py-3 text-right">
-                <span className="font-medium text-gray-900">
-                  €{pharmacy.totalRevenue.toLocaleString('es-ES', { minimumFractionDigits: 2 })}
+                <span className="font-medium text-foreground">
+                  €{entity.totalRevenue.toLocaleString('es-ES', { minimumFractionDigits: 2 })}
                 </span>
               </td>
               <td className="px-4 py-3">
-                <PaymentBadge status={pharmacy.lastOrder?.paymentStatus || null} />
+                <PaymentBadge status={entity.lastOrder?.paymentStatus || null} />
               </td>
               <td className="px-4 py-3">
-                <DocCountCell pharmacy={pharmacy} />
+                <DocCountCell entity={entity} />
               </td>
             </tr>
           ))}

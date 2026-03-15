@@ -112,6 +112,20 @@ export default function Billing() {
     );
   }
 
+  if (!organization) {
+    return (
+      <div className="flex items-center justify-center min-h-[60vh]">
+        <div className="flex flex-col items-center gap-3 text-center max-w-md">
+          <CreditCard className="h-10 w-10 text-muted-foreground" />
+          <h2 className="text-lg font-semibold">No workspace found</h2>
+          <p className="text-sm text-muted-foreground">
+            Create or join a workspace to manage billing and subscriptions. If you just signed up, try refreshing the page.
+          </p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="p-4 md:p-6">
       <main className="max-w-5xl mx-auto space-y-6">

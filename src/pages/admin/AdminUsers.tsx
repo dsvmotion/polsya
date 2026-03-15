@@ -1,5 +1,6 @@
+import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { Users } from 'lucide-react';
+import { Users, Info } from 'lucide-react';
 import { AdminStatsCard } from '@/components/admin/AdminStatsCard';
 import { AdminDataTable, type AdminColumn } from '@/components/admin/AdminDataTable';
 import { Badge } from '@/components/ui/badge';
@@ -41,27 +42,48 @@ const columns: AdminColumn<AdminUser>[] = [
     label: 'Created',
     render: (row) => new Date(row.created_at).toLocaleDateString(),
   },
+  {
+    key: 'last_sign_in_at',
+    label: 'Last Sign In',
+    render: (row) => row.last_sign_in_at ? new Date(row.last_sign_in_at).toLocaleDateString() : '—',
+  },
 ];
 
 export default function AdminUsers() {
+  const [isLimitedView, setIsLimitedView] = useState(false);
+
   const { data: users = [], isLoading, error } = useQuery({
     queryKey: ['admin', 'users'],
     queryFn: async () => {
+      // Try admin RPC first — returns email + name from auth.users via security definer
+      const { data: rpcData, error: rpcError } = await supabase.rpc('admin_list_org_members');
+      if (!rpcError && rpcData) {
+        setIsLimitedView(false);
+        return (rpcData as Array<Record<string, unknown>>).map((m) => ({
+          id: (m.user_id as string),
+          email: (m.email as string) ?? (m.user_id as string),
+          full_name: (m.full_name as string) ?? null,
+          organization_name: (m.organization_name as string) ?? null,
+          role: (m.role as string) ?? null,
+          status: (m.status as string) ?? 'active',
+          created_at: (m.member_created_at as string),
+          last_sign_in_at: (m.last_sign_in_at as string) ?? null,
+        }));
+      }
+
+      // Fallback: direct query (limited view for non-platform-owners)
+      setIsLimitedView(true);
       const { data, error } = await supabase
         .from('organization_members')
-        .select(`
-          user_id,
-          role,
-          created_at,
-          organizations (name)
-        `)
+        .select(`user_id, role, created_at, organizations (name)`)
         .limit(200);
       if (error) throw error;
       return (data ?? []).map((m) => {
         const org = m.organizations as { name: string } | null;
+        const truncatedId = `user-${m.user_id.slice(0, 7)}...`;
         return {
           id: m.user_id,
-          email: m.user_id,
+          email: truncatedId,
           full_name: null,
           organization_name: org?.name ?? null,
           role: m.role,
@@ -81,6 +103,15 @@ export default function AdminUsers() {
           Manage platform users and their roles.
         </p>
       </div>
+
+      {isLimitedView && (
+        <div className="flex items-center gap-2 rounded-md border border-border bg-muted/50 px-4 py-3 text-sm text-muted-foreground">
+          <Info className="h-4 w-4 shrink-0" />
+          <span>
+            Limited view — platform owner access is required to display full user details (email, name, last sign-in).
+          </span>
+        </div>
+      )}
 
       {error && (
         <p className="text-sm text-destructive">

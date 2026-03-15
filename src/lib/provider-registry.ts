@@ -26,6 +26,7 @@ export interface OAuthConfig {
 export interface ProviderDefinition {
   key: string;
   label: string;
+  description: string;
   icon: string;
   category: ProviderCategory;
   authType: AuthType;
@@ -39,6 +40,7 @@ export const PROVIDER_REGISTRY: Record<string, ProviderDefinition> = {
   woocommerce: {
     key: 'woocommerce',
     label: 'WooCommerce',
+    description: 'Sync orders, products, and inventory from your WooCommerce store',
     icon: '🛒',
     category: 'ecommerce',
     authType: 'api_key',
@@ -51,6 +53,7 @@ export const PROVIDER_REGISTRY: Record<string, ProviderDefinition> = {
   shopify: {
     key: 'shopify',
     label: 'Shopify',
+    description: 'Sync orders, products, and inventory from your Shopify store',
     icon: '🏪',
     category: 'ecommerce',
     authType: 'api_key',
@@ -63,6 +66,7 @@ export const PROVIDER_REGISTRY: Record<string, ProviderDefinition> = {
   gmail: {
     key: 'gmail',
     label: 'Gmail',
+    description: 'Connect Gmail to sync contacts and email communications',
     icon: '✉️',
     category: 'email',
     authType: 'oauth2',
@@ -83,6 +87,7 @@ export const PROVIDER_REGISTRY: Record<string, ProviderDefinition> = {
   outlook: {
     key: 'outlook',
     label: 'Outlook',
+    description: 'Connect Outlook to sync contacts and email communications',
     icon: '📧',
     category: 'email',
     authType: 'oauth2',
@@ -107,6 +112,7 @@ export const PROVIDER_REGISTRY: Record<string, ProviderDefinition> = {
   email_imap: {
     key: 'email_imap',
     label: 'IMAP/SMTP',
+    description: 'Connect any email via IMAP/SMTP for contact sync and messaging',
     icon: '📮',
     category: 'email',
     authType: 'credentials',
@@ -122,6 +128,7 @@ export const PROVIDER_REGISTRY: Record<string, ProviderDefinition> = {
   brevo: {
     key: 'brevo',
     label: 'Brevo',
+    description: 'Sync contacts, campaigns, and email marketing data from Brevo',
     icon: '📣',
     category: 'email',
     authType: 'api_key',
@@ -135,6 +142,7 @@ export const PROVIDER_REGISTRY: Record<string, ProviderDefinition> = {
   notion: {
     key: 'notion',
     label: 'Notion',
+    description: 'Connect Notion to sync workspace data and documents',
     icon: '📓',
     category: 'ai',
     authType: 'oauth2',
@@ -154,6 +162,7 @@ export const PROVIDER_REGISTRY: Record<string, ProviderDefinition> = {
   google_drive: {
     key: 'google_drive',
     label: 'Google Drive',
+    description: 'Connect Google Drive to import files and spreadsheet data',
     icon: '📁',
     category: 'ai',
     authType: 'oauth2',
@@ -174,6 +183,7 @@ export const PROVIDER_REGISTRY: Record<string, ProviderDefinition> = {
   openai: {
     key: 'openai',
     label: 'OpenAI',
+    description: 'Connect OpenAI for AI-powered features and document processing',
     icon: '🤖',
     category: 'ai',
     authType: 'api_key',
@@ -186,18 +196,20 @@ export const PROVIDER_REGISTRY: Record<string, ProviderDefinition> = {
   anthropic: {
     key: 'anthropic',
     label: 'Anthropic',
+    description: 'Connect Anthropic Claude for AI-powered features and analysis',
     icon: '🧠',
     category: 'ai',
     authType: 'api_key',
     syncTargets: [],
     defaultTargets: [],
     metadataSchema: [
-      { key: 'workspace_id', label: 'Workspace ID', type: 'text', required: false },
+      { key: 'organization_id', label: 'Organization ID', type: 'text', required: false, placeholder: 'org-...' },
     ],
   },
   custom_api: {
     key: 'custom_api',
     label: 'Custom API',
+    description: 'Connect any REST API with custom configuration',
     icon: '🔌',
     category: 'custom',
     authType: 'api_key',
@@ -210,6 +222,7 @@ export const PROVIDER_REGISTRY: Record<string, ProviderDefinition> = {
   hubspot: {
     key: 'hubspot',
     label: 'HubSpot',
+    description: 'Sync contacts, deals, and CRM data from HubSpot',
     icon: '🟠',
     category: 'crm',
     authType: 'oauth2',
@@ -226,6 +239,7 @@ export const PROVIDER_REGISTRY: Record<string, ProviderDefinition> = {
   salesforce: {
     key: 'salesforce',
     label: 'Salesforce',
+    description: 'Sync contacts, deals, and CRM data from Salesforce',
     icon: '☁️',
     category: 'crm',
     authType: 'oauth2',
@@ -244,18 +258,20 @@ export const PROVIDER_REGISTRY: Record<string, ProviderDefinition> = {
   pipedrive: {
     key: 'pipedrive',
     label: 'Pipedrive',
+    description: 'Sync contacts, deals, and pipeline data from Pipedrive',
     icon: '🔵',
     category: 'crm',
     authType: 'api_key',
     syncTargets: ['contacts', 'deals'],
     defaultTargets: ['contacts'],
     metadataSchema: [
-      { key: 'api_key', label: 'API Token', type: 'text', required: true },
+      { key: 'company_domain', label: 'Company Domain', type: 'text', required: false, placeholder: 'yourcompany.pipedrive.com' },
     ],
   },
   prestashop: {
     key: 'prestashop',
     label: 'PrestaShop',
+    description: 'Sync orders, products, and inventory from PrestaShop',
     icon: '🛍️',
     category: 'ecommerce',
     authType: 'api_key',
@@ -263,25 +279,26 @@ export const PROVIDER_REGISTRY: Record<string, ProviderDefinition> = {
     defaultTargets: ['orders'],
     metadataSchema: [
       { key: 'store_url', label: 'Store URL', type: 'url', required: true },
-      { key: 'api_key', label: 'API Key', type: 'text', required: true },
     ],
   },
   whatsapp: {
     key: 'whatsapp',
     label: 'WhatsApp',
+    description: 'Send and receive WhatsApp messages via Business API',
     icon: '💬',
     category: 'communication',
     authType: 'api_key',
     syncTargets: ['messages'],
     defaultTargets: ['messages'],
     metadataSchema: [
-      { key: 'access_token', label: 'Access Token', type: 'text', required: true },
       { key: 'phone_number_id', label: 'Phone Number ID', type: 'text', required: true },
+      { key: 'business_account_id', label: 'Business Account ID', type: 'text', required: false },
     ],
   },
   slack: {
     key: 'slack',
     label: 'Slack',
+    description: 'Receive alerts and notifications directly in Slack',
     icon: '💼',
     category: 'communication',
     authType: 'oauth2',
@@ -296,6 +313,179 @@ export const PROVIDER_REGISTRY: Record<string, ProviderDefinition> = {
       scopes: ['channels:history', 'channels:read'],
       envPrefix: 'SLACK',
     },
+  },
+  sendgrid: {
+    key: 'sendgrid',
+    label: 'SendGrid',
+    description: 'Send transactional emails and track delivery with SendGrid',
+    icon: '📤',
+    category: 'email',
+    authType: 'api_key',
+    syncTargets: ['messages', 'contacts'],
+    defaultTargets: ['messages'],
+    metadataSchema: [
+      { key: 'sender_email', label: 'Sender Email', type: 'email', required: false },
+      { key: 'sender_name', label: 'Sender Name', type: 'text', required: false },
+    ],
+  },
+  mailchimp: {
+    key: 'mailchimp',
+    label: 'Mailchimp',
+    description: 'Sync audiences, campaigns, and email marketing data from Mailchimp',
+    icon: '🐒',
+    category: 'email',
+    authType: 'oauth2',
+    syncTargets: ['contacts', 'campaigns'],
+    defaultTargets: ['contacts'],
+    metadataSchema: [],
+    oauthConfig: {
+      authUrl: 'https://login.mailchimp.com/oauth2/authorize',
+      tokenUrl: 'https://login.mailchimp.com/oauth2/token',
+      scopes: [],
+      envPrefix: 'MAILCHIMP',
+    },
+  },
+  google_sheets: {
+    key: 'google_sheets',
+    label: 'Google Sheets',
+    description: 'Import and export data with Google Sheets spreadsheets',
+    icon: '📊',
+    category: 'custom',
+    authType: 'oauth2',
+    syncTargets: ['entities'],
+    defaultTargets: ['entities'],
+    metadataSchema: [
+      { key: 'spreadsheet_id', label: 'Spreadsheet ID', type: 'text', required: false, placeholder: 'From the spreadsheet URL' },
+    ],
+    oauthConfig: {
+      authUrl: 'https://accounts.google.com/o/oauth2/v2/auth',
+      tokenUrl: 'https://oauth2.googleapis.com/token',
+      scopes: [
+        'https://www.googleapis.com/auth/spreadsheets',
+      ],
+      envPrefix: 'GOOGLE_SHEETS',
+      extraAuthParams: { access_type: 'offline', prompt: 'consent' },
+    },
+  },
+  zapier: {
+    key: 'zapier',
+    label: 'Zapier',
+    description: 'Automate workflows by connecting Polsya with 5,000+ apps via Zapier',
+    icon: '⚡',
+    category: 'custom',
+    authType: 'api_key',
+    syncTargets: ['entities'],
+    defaultTargets: ['entities'],
+    metadataSchema: [
+      { key: 'webhook_url', label: 'Webhook URL', type: 'url', required: false, placeholder: 'https://hooks.zapier.com/...' },
+    ],
+  },
+  intercom: {
+    key: 'intercom',
+    label: 'Intercom',
+    description: 'Sync customer conversations and contact data from Intercom',
+    icon: '💬',
+    category: 'communication',
+    authType: 'oauth2',
+    syncTargets: ['contacts', 'messages'],
+    defaultTargets: ['contacts'],
+    metadataSchema: [],
+    oauthConfig: {
+      authUrl: 'https://app.intercom.com/oauth',
+      tokenUrl: 'https://api.intercom.io/auth/eagle/token',
+      scopes: [],
+      envPrefix: 'INTERCOM',
+    },
+  },
+  zoom: {
+    key: 'zoom',
+    label: 'Zoom',
+    description: 'Sync meeting recordings and enrich contacts from Zoom calls',
+    icon: '📹',
+    category: 'communication',
+    authType: 'oauth2',
+    syncTargets: ['contacts', 'events'],
+    defaultTargets: ['contacts'],
+    metadataSchema: [],
+    oauthConfig: {
+      authUrl: 'https://zoom.us/oauth/authorize',
+      tokenUrl: 'https://zoom.us/oauth/token',
+      scopes: ['meeting:read', 'user:read', 'recording:read'],
+      envPrefix: 'ZOOM',
+    },
+  },
+  mailgun: {
+    key: 'mailgun',
+    label: 'Mailgun',
+    description: 'Send transactional and bulk email with Mailgun delivery tracking',
+    icon: '📬',
+    category: 'email',
+    authType: 'api_key',
+    syncTargets: ['messages'],
+    defaultTargets: ['messages'],
+    metadataSchema: [
+      { key: 'domain', label: 'Sending Domain', type: 'text', required: true, placeholder: 'mg.yourdomain.com' },
+      { key: 'region', label: 'Region', type: 'select', required: false, options: [
+        { value: 'us', label: 'US' },
+        { value: 'eu', label: 'EU' },
+      ]},
+    ],
+  },
+  klaviyo: {
+    key: 'klaviyo',
+    label: 'Klaviyo',
+    description: 'Sync ecommerce email marketing lists, campaigns, and metrics from Klaviyo',
+    icon: '📈',
+    category: 'email',
+    authType: 'api_key',
+    syncTargets: ['contacts', 'campaigns'],
+    defaultTargets: ['contacts'],
+    metadataSchema: [],
+  },
+  airtable: {
+    key: 'airtable',
+    label: 'Airtable',
+    description: 'Import and sync structured data from Airtable bases and tables',
+    icon: '📋',
+    category: 'custom',
+    authType: 'api_key',
+    syncTargets: ['entities'],
+    defaultTargets: ['entities'],
+    metadataSchema: [
+      { key: 'base_id', label: 'Base ID', type: 'text', required: false, placeholder: 'appXXXXXXXXXXXXXX' },
+    ],
+  },
+  zendesk: {
+    key: 'zendesk',
+    label: 'Zendesk',
+    description: 'Sync support tickets and customer data from Zendesk',
+    icon: '🎫',
+    category: 'crm',
+    authType: 'oauth2',
+    syncTargets: ['contacts', 'tickets'],
+    defaultTargets: ['contacts'],
+    metadataSchema: [
+      { key: 'subdomain', label: 'Subdomain', type: 'text', required: true, placeholder: 'yourcompany.zendesk.com' },
+    ],
+    oauthConfig: {
+      authUrl: 'https://{subdomain}.zendesk.com/oauth/authorizations/new',
+      tokenUrl: 'https://{subdomain}.zendesk.com/oauth/tokens',
+      scopes: ['read', 'tickets:read', 'users:read'],
+      envPrefix: 'ZENDESK',
+    },
+  },
+  segment: {
+    key: 'segment',
+    label: 'Segment',
+    description: 'Route customer data to and from Polsya via Segment CDP',
+    icon: '🔀',
+    category: 'custom',
+    authType: 'api_key',
+    syncTargets: ['entities', 'events'],
+    defaultTargets: ['entities'],
+    metadataSchema: [
+      { key: 'write_key', label: 'Write Key', type: 'text', required: false, placeholder: 'For sending events to Segment' },
+    ],
   },
 };
 

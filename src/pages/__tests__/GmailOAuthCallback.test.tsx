@@ -10,8 +10,8 @@ const { mockMutate } = vi.hoisted(() => ({
   mockMutate: vi.fn(),
 }));
 
-vi.mock('@/hooks/useGmailOAuth', () => ({
-  useExchangeGmailOAuth: vi.fn(() => ({
+vi.mock('@/hooks/useOAuth', () => ({
+  useExchangeOAuth: vi.fn(() => ({
     mutate: mockMutate,
     isPending: false,
     isError: false,
@@ -52,30 +52,30 @@ describe('GmailOAuthCallback', () => {
   });
 
   it('shows loading state when exchange is pending', async () => {
-    const { useExchangeGmailOAuth } = await import('@/hooks/useGmailOAuth');
-    vi.mocked(useExchangeGmailOAuth).mockReturnValue({
+    const { useExchangeOAuth } = await import('@/hooks/useOAuth');
+    vi.mocked(useExchangeOAuth).mockReturnValue({
       mutate: mockMutate,
       isPending: true,
       isError: false,
       isSuccess: false,
       error: null,
       data: null,
-    } as unknown as ReturnType<typeof useExchangeGmailOAuth>);
+    } as unknown as ReturnType<typeof useExchangeOAuth>);
 
     renderWith('?code=abc&state=xyz');
     expect(screen.getByText('Connecting Gmail')).toBeInTheDocument();
   });
 
   it('shows error state when exchange fails', async () => {
-    const { useExchangeGmailOAuth } = await import('@/hooks/useGmailOAuth');
-    vi.mocked(useExchangeGmailOAuth).mockReturnValue({
+    const { useExchangeOAuth } = await import('@/hooks/useOAuth');
+    vi.mocked(useExchangeOAuth).mockReturnValue({
       mutate: mockMutate,
       isPending: false,
       isError: true,
       isSuccess: false,
       error: new Error('Token exchange failed'),
       data: null,
-    } as unknown as ReturnType<typeof useExchangeGmailOAuth>);
+    } as unknown as ReturnType<typeof useExchangeOAuth>);
 
     renderWith('?code=abc&state=xyz');
     expect(screen.getByText('Gmail connection failed')).toBeInTheDocument();
@@ -83,15 +83,15 @@ describe('GmailOAuthCallback', () => {
   });
 
   it('shows success state when exchange succeeds', async () => {
-    const { useExchangeGmailOAuth } = await import('@/hooks/useGmailOAuth');
-    vi.mocked(useExchangeGmailOAuth).mockReturnValue({
+    const { useExchangeOAuth } = await import('@/hooks/useOAuth');
+    vi.mocked(useExchangeOAuth).mockReturnValue({
       mutate: mockMutate,
       isPending: false,
       isError: false,
       isSuccess: true,
       error: null,
       data: { accountEmail: 'user@gmail.com' },
-    } as unknown as ReturnType<typeof useExchangeGmailOAuth>);
+    } as unknown as ReturnType<typeof useExchangeOAuth>);
 
     renderWith('?code=abc&state=xyz');
     expect(screen.getByText('Gmail connected')).toBeInTheDocument();

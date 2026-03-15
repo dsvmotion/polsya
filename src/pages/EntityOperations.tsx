@@ -1,9 +1,9 @@
 import { useState, useMemo, useCallback, useEffect } from 'react';
-import { RefreshCw, Building2, Leaf, MapPin, Search } from 'lucide-react';
+import { RefreshCw, Building2, MapPin, Search } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { useEntityOperations } from '@/hooks/useEntityOperations';
-import { OperationsFilters, SortField, SortDirection, PharmacyWithOrders, SavedSegment, RISK_REASON_LABELS } from '@/types/operations';
+import { OperationsFilters, SortField, SortDirection, EntityWithOrders, SavedSegment, RISK_REASON_LABELS } from '@/types/operations';
 import type { RiskReason, SmartSegmentKey } from '@/types/operations';
 import { filterBySmartSegment, useSmartSegmentCounts } from '@/hooks/useSmartSegments';
 import { OperationsTable } from '@/components/operations/OperationsTable';
@@ -22,13 +22,13 @@ import {
 } from '@/hooks/useSavedSegments';
 import { useCreateEntityActivity } from '@/hooks/useEntityActivities';
 import { toast } from 'sonner';
-import type { ClientType } from '@/types/pharmacy';
+import type { EntityTypeKey } from '@/types/entity';
 import { useEntityTypes, resolveEntityTypeLabel } from '@/hooks/useEntityTypes';
 import { useCurrentOrganization } from '@/hooks/useOrganizationContext';
 import { getIndustrySmartSegmentLabels } from '@/lib/industry-templates';
 
 interface Props {
-  clientType?: ClientType;
+  clientType?: EntityTypeKey;
 }
 
 const DERIVED_SORT_FIELDS = new Set(['totalRevenue', 'paymentStatus', 'lastOrderDate']);
@@ -42,16 +42,16 @@ const initialFilters: OperationsFilters = {
   paymentStatus: 'all',
 };
 
-export default function EntityOperations({ clientType = 'pharmacy' }: Props) {
+export default function EntityOperations({ clientType = 'business' }: Props) {
   const [filters, setFilters] = useState<OperationsFilters>(initialFilters);
   const [sortField, setSortField] = useState<SortField>('name');
   const [sortDirection, setSortDirection] = useState<SortDirection>('asc');
-  const [selectedPharmacy, setSelectedPharmacy] = useState<PharmacyWithOrders | null>(null);
+  const [selectedEntity, setSelectedEntity] = useState<EntityWithOrders | null>(null);
   const [page, setPage] = useState(0);
   const pageSize = 50;
   const [searchDebounced, setSearchDebounced] = useState('');
   const [selectedSegmentId, setSelectedSegmentId] = useState<string | null>(null);
-  const [pendingOpenPharmacyId, setPendingOpenPharmacyId] = useState<string | null>(null);
+  const [pendingOpenEntityId, setPendingOpenEntityId] = useState<string | null>(null);
   const [smartSegment, setSmartSegment] = useState<SmartSegmentKey>('none');
   const { organization } = useCurrentOrganization();
 
@@ -87,8 +87,8 @@ export default function EntityOperations({ clientType = 'pharmacy' }: Props) {
     ]
   );
 
-  // Server-side filtered pharmacies with pagination and sorting
-  const { pharmacies = [], totalCount = 0, isLoading, refetch } = useEntityOperations(
+  // Server-side filtered entities with pagination and sorting
+  const { pharmacies: entities = [], totalCount = 0, isLoading, refetch } = useEntityOperations(
     serverFilters,
     page,
     pageSize,
@@ -100,10 +100,10 @@ export default function EntityOperations({ clientType = 'pharmacy' }: Props) {
   // Geography options from unified normalized tables
   const { countries, provinces, cities } = useGeographyOptions(filters.country, filters.province);
 
-  const displayedPharmacies = useMemo(() => {
-    if (!DERIVED_SORT_FIELDS.has(sortField)) return pharmacies;
+  const displayedEntities = useMemo(() => {
+    if (!DERIVED_SORT_FIELDS.has(sortField)) return entities;
 
-    const result = [...pharmacies];
+    const result = [...entities];
     result.sort((a, b) => {
       let comparison = 0;
       switch (sortField) {
@@ -126,14 +126,14 @@ export default function EntityOperations({ clientType = 'pharmacy' }: Props) {
       return sortDirection === 'asc' ? comparison : -comparison;
     });
     return result;
-  }, [pharmacies, sortField, sortDirection]);
+  }, [entities, sortField, sortDirection]);
 
   const smartFiltered = useMemo(
-    () => filterBySmartSegment(displayedPharmacies, smartSegment),
-    [displayedPharmacies, smartSegment],
+    () => filterBySmartSegment(displayedEntities, smartSegment),
+    [displayedEntities, smartSegment],
   );
 
-  const smartSegmentCounts = useSmartSegmentCounts(displayedPharmacies);
+  const smartSegmentCounts = useSmartSegmentCounts(displayedEntities);
   const smartSegmentLabels = useMemo(
     () => getIndustrySmartSegmentLabels(organization?.industry_template_key),
     [organization?.industry_template_key],
@@ -141,7 +141,7 @@ export default function EntityOperations({ clientType = 'pharmacy' }: Props) {
   const entityLabelSingular = resolveEntityTypeLabel(
     clientType,
     entityTypes,
-    clientType === 'pharmacy' ? 'Pharmacy' : 'Herbalist',
+    'Account',
   );
   const entityLabelPlural = entityLabelSingular.toLowerCase().endsWith('s')
     ? entityLabelSingular
@@ -221,34 +221,34 @@ export default function EntityOperations({ clientType = 'pharmacy' }: Props) {
 
   const createActivity = useCreateEntityActivity();
 
-  const handleOpenFromAlert = useCallback((pharmacyId: string, pharmacyName: string) => {
-    const found = smartFiltered.find((p) => p.id === pharmacyId)
-      ?? pharmacies.find((p) => p.id === pharmacyId);
+  const handleOpenFromAlert = useCallback((entityId: string, entityName: string) => {
+    const found = smartFiltered.find((p) => p.id === entityId)
+      ?? entities.find((p) => p.id === entityId);
     if (found) {
-      setSelectedPharmacy(found);
-      setPendingOpenPharmacyId(null);
+      setSelectedEntity(found);
+      setPendingOpenEntityId(null);
       return;
     }
     // Not in current dataset — search by name so the server returns the right page
-    setPendingOpenPharmacyId(pharmacyId);
+    setPendingOpenEntityId(entityId);
     setSmartSegment('none');
-    setFilters({ ...initialFilters, search: pharmacyName });
+    setFilters({ ...initialFilters, search: entityName });
     setPage(0);
-  }, [smartFiltered, pharmacies]);
+  }, [smartFiltered, entities]);
 
   useEffect(() => {
-    if (!pendingOpenPharmacyId) return;
-    const match = smartFiltered.find((p) => p.id === pendingOpenPharmacyId)
-      ?? pharmacies.find((p) => p.id === pendingOpenPharmacyId);
+    if (!pendingOpenEntityId) return;
+    const match = smartFiltered.find((p) => p.id === pendingOpenEntityId)
+      ?? entities.find((p) => p.id === pendingOpenEntityId);
     if (match) {
-      setSelectedPharmacy(match);
-      setPendingOpenPharmacyId(null);
+      setSelectedEntity(match);
+      setPendingOpenEntityId(null);
     }
-  }, [pendingOpenPharmacyId, smartFiltered, pharmacies]);
+  }, [pendingOpenEntityId, smartFiltered, entities]);
 
   const handleCreateFollowUpTask = useCallback(async (
-    pharmacyId: string,
-    pharmacyName: string,
+    entityId: string,
+    entityName: string,
     reasons: RiskReason[],
   ) => {
     const reasonText = reasons.map((r) => RISK_REASON_LABELS[r]).join(', ');
@@ -257,13 +257,13 @@ export default function EntityOperations({ clientType = 'pharmacy' }: Props) {
 
     try {
       await createActivity.mutateAsync({
-        pharmacyId,
+        pharmacyId: entityId,
         activityType: 'task',
         title: 'Follow-up: At-risk account',
         description: `Risk reasons: ${reasonText}.\nGenerated on ${new Date().toLocaleDateString()}.`,
         dueAt: dueAt.toISOString(),
       });
-      toast.success(`Follow-up task created for ${pharmacyName}`);
+      toast.success(`Follow-up task created for ${entityName}`);
     } catch {
       toast.error('Failed to create follow-up task');
     }
@@ -277,7 +277,7 @@ export default function EntityOperations({ clientType = 'pharmacy' }: Props) {
     queryClient.invalidateQueries({ queryKey: ['pharmacy-documents'] });
   }, [queryClient, refetch]);
 
-  // Empty state when no saved pharmacies
+  // Empty state when no saved entities
   const showEmptyState = !isLoading && totalCount === 0;
 
   return (
@@ -285,11 +285,7 @@ export default function EntityOperations({ clientType = 'pharmacy' }: Props) {
       {/* Sub-header */}
       <div className="flex items-center justify-between px-3 md:px-6 py-2 border-b border-border bg-card shrink-0">
         <div className="flex items-center gap-2 md:gap-4 min-w-0">
-          {clientType === 'pharmacy' ? (
-            <Building2 className="h-5 w-5 text-muted-foreground" />
-          ) : (
-            <Leaf className="h-5 w-5 text-muted-foreground" />
-          )}
+          <Building2 className="h-5 w-5 text-muted-foreground" />
           <h1 className="font-semibold text-sm md:text-base truncate">
             {`Saved ${entityLabelPlural}`}
           </h1>
@@ -306,7 +302,7 @@ export default function EntityOperations({ clientType = 'pharmacy' }: Props) {
             industryTemplateKey={organization?.industry_template_key}
             onSuccess={handleRefresh}
           />
-          <Link to={clientType === 'pharmacy' ? '/prospecting/entities' : '/prospecting/entities/herbalists'}>
+          <Link to="/prospecting/entities">
             <Button variant="outline" size="sm">
               <MapPin className="h-4 w-4 mr-2" />
               <span className="hidden md:inline">{`Search ${entityLabelPlural}`}</span>
@@ -328,11 +324,7 @@ export default function EntityOperations({ clientType = 'pharmacy' }: Props) {
       {showEmptyState ? (
         <div className="flex flex-col items-center justify-center py-24 px-4">
           <div className="bg-muted rounded-full p-6 mb-6">
-            {clientType === 'pharmacy' ? (
-              <Building2 className="h-12 w-12 text-muted-foreground" />
-            ) : (
-              <Leaf className="h-12 w-12 text-muted-foreground" />
-            )}
+            <Building2 className="h-12 w-12 text-muted-foreground" />
           </div>
           <h2 className="text-xl font-semibold mb-2">
             {`No Saved ${entityLabelPlural}`}
@@ -340,7 +332,7 @@ export default function EntityOperations({ clientType = 'pharmacy' }: Props) {
           <p className="text-muted-foreground text-center max-w-md mb-6">
             {`You haven't saved any ${entityLabelPlural.toLowerCase()} yet. Use Search ${entityLabelPlural} to discover and save them here for management.`}
           </p>
-          <Link to={clientType === 'pharmacy' ? '/prospecting/entities' : '/prospecting/entities/herbalists'}>
+          <Link to="/prospecting/entities">
             <Button>
               <Search className="h-4 w-4 mr-2" />
               {`Go to Search ${entityLabelPlural}`}
@@ -354,7 +346,7 @@ export default function EntityOperations({ clientType = 'pharmacy' }: Props) {
             <PipelineSummaryCards />
             <RiskAlertsCard
               clientType={clientType}
-              onOpenPharmacy={handleOpenFromAlert}
+              onOpenEntity={handleOpenFromAlert}
               onCreateFollowUpTask={handleCreateFollowUpTask}
             />
           </div>
@@ -389,16 +381,16 @@ export default function EntityOperations({ clientType = 'pharmacy' }: Props) {
             {/* Table */}
             <div className="w-full flex-1 overflow-auto">
               <OperationsTable
-                pharmacies={smartFiltered}
+                entities={smartFiltered}
                 isLoading={isLoading}
                 sortField={sortField}
                 sortDirection={sortDirection}
                 onSort={handleSort}
-                selectedPharmacyId={selectedPharmacy?.id || null}
-                onSelectPharmacy={setSelectedPharmacy}
+                selectedEntityId={selectedEntity?.id || null}
+                onSelectEntity={setSelectedEntity}
               />
               <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 p-4 border-t border-border">
-                <span className="text-xs sm:text-sm text-gray-500">
+                <span className="text-xs sm:text-sm text-muted-foreground">
                   {totalCount > 0
                     ? `Showing ${page * pageSize + 1}-${Math.min((page + 1) * pageSize, totalCount)} of ${totalCount}`
                     : 'Showing 0 of 0'}
@@ -425,11 +417,11 @@ export default function EntityOperations({ clientType = 'pharmacy' }: Props) {
             </div>
 
             {/* Detail Panel */}
-            {selectedPharmacy && (
+            {selectedEntity && (
               <div className="w-full xl:w-[380px] 2xl:w-[420px] border-t xl:border-t-0 xl:border-l border-border bg-muted/50">
                 <EntityOperationsDetail
-                  pharmacy={selectedPharmacy}
-                  onClose={() => setSelectedPharmacy(null)}
+                  entity={selectedEntity}
+                  onClose={() => setSelectedEntity(null)}
                   onStatusUpdate={handleRefresh}
                 />
               </div>

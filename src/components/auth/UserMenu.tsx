@@ -34,51 +34,51 @@ export function UserMenu() {
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <Button variant="ghost" className="relative h-9 w-9 rounded-full">
-          <Avatar className="h-9 w-9 border border-gray-200">
-            <AvatarFallback className="bg-gray-100 text-gray-700 text-sm font-medium">
+          <Avatar className="h-9 w-9 border border-border">
+            <AvatarFallback className="bg-muted text-muted-foreground text-sm font-medium">
               {initials}
             </AvatarFallback>
           </Avatar>
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent className="w-56 bg-white border-gray-200" align="end" forceMount>
+      <DropdownMenuContent className="w-56 bg-background border-border" align="end" forceMount>
         <DropdownMenuLabel className="font-normal">
           <div className="flex flex-col space-y-1">
-            <p className="text-sm font-medium text-gray-900">
+            <p className="text-sm font-medium text-foreground">
               {user.user_metadata?.full_name || 'User'}
             </p>
-            <p className="text-xs text-gray-500 truncate">
+            <p className="text-xs text-muted-foreground truncate">
               {user.email}
             </p>
             {organization?.name && (
-              <p className="text-[11px] text-gray-400 truncate">
+              <p className="text-[11px] text-muted-foreground truncate">
                 {organization.name}{membership?.role ? ` · ${membership.role}` : ''}
               </p>
             )}
           </div>
         </DropdownMenuLabel>
-        <DropdownMenuSeparator className="bg-gray-100" />
+        <DropdownMenuSeparator className="bg-muted" />
         {platformOwner && (
-          <DropdownMenuItem asChild className="cursor-pointer text-gray-700 focus:bg-gray-100 focus:text-gray-900">
-            <Link to="/platform" className="flex items-center">
+          <DropdownMenuItem asChild className="cursor-pointer text-foreground focus:bg-accent focus:text-accent-foreground">
+            <Link to="/admin" className="flex items-center">
               <Shield className="mr-2 h-4 w-4" />
               <span>Platform Admin</span>
             </Link>
           </DropdownMenuItem>
         )}
-        <DropdownMenuItem asChild className="cursor-pointer text-gray-700 focus:bg-gray-100 focus:text-gray-900">
+        <DropdownMenuItem asChild className="cursor-pointer text-foreground focus:bg-accent focus:text-accent-foreground">
           <Link to="/profile" className="flex items-center">
             <User className="mr-2 h-4 w-4" />
             <span>Profile</span>
           </Link>
         </DropdownMenuItem>
-        <DropdownMenuItem asChild className="cursor-pointer text-gray-700 focus:bg-gray-100 focus:text-gray-900">
+        <DropdownMenuItem asChild className="cursor-pointer text-foreground focus:bg-accent focus:text-accent-foreground">
           <Link to="/billing" className="flex items-center">
             <CreditCard className="mr-2 h-4 w-4" />
             <span>Billing</span>
           </Link>
         </DropdownMenuItem>
-        <DropdownMenuSeparator className="bg-gray-100" />
+        <DropdownMenuSeparator className="bg-muted" />
         <DropdownMenuItem 
           className="cursor-pointer text-red-600 focus:bg-red-50 focus:text-red-700"
           onClick={() => signOut()}

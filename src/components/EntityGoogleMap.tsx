@@ -1,10 +1,10 @@
 import { forwardRef, useCallback, useMemo, useRef, useEffect, useState } from 'react';
 import { GoogleMap, useJsApiLoader, MarkerF, InfoWindowF } from '@react-google-maps/api';
-import { Pharmacy, STATUS_COLORS } from '@/types/pharmacy';
+import { BusinessEntity, STATUS_COLORS } from '@/types/entity';
 
 interface EntityGoogleMapProps {
-  pharmacies: Pharmacy[];
-  onPharmacySelect?: (pharmacy: Pharmacy) => void;
+  pharmacies: BusinessEntity[];
+  onPharmacySelect?: (pharmacy: BusinessEntity) => void;
   selectedPharmacyId?: string | null;
 }
 
@@ -123,14 +123,14 @@ export const EntityGoogleMap = forwardRef<google.maps.Map | null, EntityGoogleMa
     );
 
     const handleMarkerClick = useCallback(
-      (pharmacy: Pharmacy) => {
+      (pharmacy: BusinessEntity) => {
         setActiveInfoWindow(pharmacy.id);
         onPharmacySelect?.(pharmacy);
       },
       [onPharmacySelect]
     );
 
-    const getMarkerIcon = useCallback((status: Pharmacy['status']) => {
+    const getMarkerIcon = useCallback((status: BusinessEntity['status']) => {
       const color = STATUS_COLORS[status].pin;
       return {
         path: google.maps.SymbolPath.CIRCLE,
@@ -185,9 +185,9 @@ export const EntityGoogleMap = forwardRef<google.maps.Map | null, EntityGoogleMa
                 position={{ lat: pharmacy.lat, lng: pharmacy.lng }}
                 onCloseClick={() => setActiveInfoWindow(null)}
               >
-                <div className="min-w-[200px] p-2 text-gray-900">
+                <div className="min-w-[200px] p-2 text-foreground">
                   <h3 className="font-semibold text-base mb-1">{pharmacy.name}</h3>
-                  <p className="text-sm text-gray-600 mb-2">
+                  <p className="text-sm text-muted-foreground mb-2">
                     {pharmacy.address && `${pharmacy.address}, `}
                     {pharmacy.city}
                   </p>
@@ -199,7 +199,7 @@ export const EntityGoogleMap = forwardRef<google.maps.Map | null, EntityGoogleMa
                     </span>
                   </div>
                   {pharmacy.phone && (
-                    <p className="text-xs text-gray-500 mt-2">{pharmacy.phone}</p>
+                    <p className="text-xs text-muted-foreground mt-2">{pharmacy.phone}</p>
                   )}
                 </div>
               </InfoWindowF>

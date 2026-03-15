@@ -45,7 +45,7 @@ export default function Signup() {
   // Redirect if already logged in (unless we're showing post-signup confirmation)
   useEffect(() => {
     if (!user || showConfirmation) return;
-    navigate(isPlatformOwner(user) ? '/platform' : '/dashboard', { replace: true });
+    navigate(isPlatformOwner(user) ? '/admin' : '/app', { replace: true });
   }, [user, navigate, showConfirmation]);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -79,28 +79,28 @@ export default function Signup() {
 
   if (showConfirmation) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50 p-4">
-        <Card className="w-full max-w-md border-gray-200 bg-white">
+      <div className="min-h-screen flex items-center justify-center bg-muted/50 p-4">
+        <Card className="w-full max-w-md border-border bg-card">
           <CardHeader className="space-y-1">
             <div className="flex items-center justify-center mb-4">
               <div className="p-3 rounded-full bg-green-100">
                 <CheckCircle className="h-8 w-8 text-green-600" />
               </div>
             </div>
-            <CardTitle className="text-2xl font-bold text-gray-900 text-center">Check your email</CardTitle>
-            <CardDescription className="text-gray-500 text-center">
+            <CardTitle className="text-2xl font-bold text-foreground text-center">Check your email</CardTitle>
+            <CardDescription className="text-muted-foreground text-center">
               We've sent a verification link to <strong>{email}</strong>
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4 text-center">
-            <p className="text-sm text-gray-600">
+            <p className="text-sm text-muted-foreground">
               Click the link in the email to verify your account. If you don't see it, check your spam folder.
             </p>
           </CardContent>
           <CardFooter>
             <Button
               variant="outline"
-              className="w-full border-gray-300 text-gray-700"
+              className="w-full border-border text-foreground"
               onClick={() => navigate('/login')}
             >
               Back to login
@@ -112,14 +112,14 @@ export default function Signup() {
   }
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-gray-50 p-4">
-      <Link to="/" className="absolute left-4 top-4 text-sm text-gray-500 hover:text-gray-900">
+    <div className="min-h-screen flex flex-col items-center justify-center bg-muted/50 p-4">
+      <Link to="/" className="absolute left-4 top-4 text-sm text-muted-foreground hover:text-foreground">
         ← Back to home
       </Link>
-      <Card className="w-full max-w-md border-gray-200 bg-white">
+      <Card className="w-full max-w-md border-border bg-card">
         <CardHeader className="space-y-1">
-          <CardTitle className="text-2xl font-bold text-gray-900">Create an account</CardTitle>
-          <CardDescription className="text-gray-500">
+          <CardTitle className="text-2xl font-bold text-foreground">Create an account</CardTitle>
+          <CardDescription className="text-muted-foreground">
             Enter your information to get started
           </CardDescription>
         </CardHeader>
@@ -133,16 +133,16 @@ export default function Signup() {
             )}
             
             <div className="space-y-2">
-              <Label htmlFor="fullName" className="text-gray-700">Full Name</Label>
+              <Label htmlFor="fullName" className="text-foreground">Full Name</Label>
               <div className="relative">
-                <User className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+                <User className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground/60" />
                 <Input
                   id="fullName"
                   type="text"
                   placeholder="John Doe"
                   value={fullName}
                   onChange={(e) => setFullName(e.target.value)}
-                  className="pl-10 bg-white border-gray-300 text-gray-900 placeholder:text-gray-400"
+                  className="pl-10 bg-background border-border text-foreground placeholder:text-muted-foreground/60"
                   disabled={isLoading}
                   required
                 />
@@ -150,16 +150,16 @@ export default function Signup() {
             </div>
             
             <div className="space-y-2">
-              <Label htmlFor="email" className="text-gray-700">Email</Label>
+              <Label htmlFor="email" className="text-foreground">Email</Label>
               <div className="relative">
-                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground/60" />
                 <Input
                   id="email"
                   type="email"
                   placeholder="name@example.com"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="pl-10 bg-white border-gray-300 text-gray-900 placeholder:text-gray-400"
+                  className="pl-10 bg-background border-border text-foreground placeholder:text-muted-foreground/60"
                   disabled={isLoading}
                   required
                 />
@@ -167,16 +167,16 @@ export default function Signup() {
             </div>
             
             <div className="space-y-2">
-              <Label htmlFor="password" className="text-gray-700">Password</Label>
+              <Label htmlFor="password" className="text-foreground">Password</Label>
               <div className="relative">
-                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground/60" />
                 <Input
                   id="password"
                   type="password"
                   placeholder="••••••••"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="pl-10 bg-white border-gray-300 text-gray-900 placeholder:text-gray-400"
+                  className="pl-10 bg-background border-border text-foreground placeholder:text-muted-foreground/60"
                   disabled={isLoading}
                   required
                 />
@@ -184,16 +184,16 @@ export default function Signup() {
             </div>
             
             <div className="space-y-2">
-              <Label htmlFor="confirmPassword" className="text-gray-700">Confirm Password</Label>
+              <Label htmlFor="confirmPassword" className="text-foreground">Confirm Password</Label>
               <div className="relative">
-                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground/60" />
                 <Input
                   id="confirmPassword"
                   type="password"
                   placeholder="••••••••"
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
-                  className="pl-10 bg-white border-gray-300 text-gray-900 placeholder:text-gray-400"
+                  className="pl-10 bg-background border-border text-foreground placeholder:text-muted-foreground/60"
                   disabled={isLoading}
                   required
                 />
@@ -204,7 +204,7 @@ export default function Signup() {
           <CardFooter className="flex flex-col space-y-4">
             <Button
               type="submit"
-              className="w-full bg-gray-900 text-white hover:bg-gray-800"
+              className="w-full bg-foreground text-background hover:bg-foreground/90"
               disabled={isLoading}
             >
               {isLoading ? (
@@ -217,9 +217,9 @@ export default function Signup() {
               )}
             </Button>
             
-            <p className="text-sm text-gray-500 text-center">
+            <p className="text-sm text-muted-foreground text-center">
               Already have an account?{' '}
-              <Link to="/login" className="text-gray-900 font-medium hover:underline">
+              <Link to="/login" className="text-foreground font-medium hover:underline">
                 Sign in
               </Link>
             </p>

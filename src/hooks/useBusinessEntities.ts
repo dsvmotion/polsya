@@ -13,13 +13,13 @@ export function useBusinessEntities(entityTypeKey?: EntityTypeKey) {
         .order('name');
 
       if (entityTypeKey) {
-        query = query.eq('client_type', entityTypeKey as never);
+        query = query.eq('client_type', entityTypeKey);
       }
 
       const { data, error } = await query;
       if (error) throw error;
 
-      return toBusinessEntities((data ?? []) as never[]);
+      return toBusinessEntities(data ?? []);
     },
   });
 }
@@ -38,7 +38,7 @@ export function useBusinessEntity(id: string | null) {
         .single();
 
       if (error) throw error;
-      return toBusinessEntity(data as never);
+      return toBusinessEntity(data);
     },
   });
 }
@@ -61,7 +61,7 @@ export function useUpdateBusinessEntity() {
         .single();
 
       if (error) throw error;
-      return toBusinessEntity(data as never);
+      return toBusinessEntity(data);
     },
     onSuccess: (entity) => {
       queryClient.invalidateQueries({ queryKey: ['business-entities'] });

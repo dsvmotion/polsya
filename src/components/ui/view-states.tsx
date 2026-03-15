@@ -31,9 +31,9 @@ export function LoadingState({
 }: Omit<BaseStateProps, 'tone' | 'action'>) {
   return (
     <div className={cn('state-panel state-panel-neutral', className)}>
-      <Loader2 className="mx-auto h-5 w-5 animate-spin text-gray-400" />
-      <p className="mt-2 text-sm font-medium text-gray-800">{title}</p>
-      {description ? <p className="mt-1 text-xs text-gray-500">{description}</p> : null}
+      <Loader2 className="mx-auto h-5 w-5 animate-spin text-muted-foreground" />
+      <p className="mt-2 text-sm font-medium text-foreground">{title}</p>
+      {description ? <p className="mt-1 text-xs text-muted-foreground">{description}</p> : null}
     </div>
   );
 }
@@ -48,9 +48,9 @@ export function EmptyState({
 }: EmptyStateProps) {
   return (
     <div className={cn('state-panel', TONE_CLASS[tone], className)}>
-      <Icon className="mx-auto h-5 w-5 text-gray-400" />
-      <p className="mt-2 text-sm font-medium text-gray-800">{title}</p>
-      {description ? <p className="mt-1 text-xs text-gray-500">{description}</p> : null}
+      <Icon className="mx-auto h-5 w-5 text-muted-foreground" />
+      <p className="mt-2 text-sm font-medium text-foreground">{title}</p>
+      {description ? <p className="mt-1 text-xs text-muted-foreground">{description}</p> : null}
       {action ? <div className="mt-3 flex justify-center">{action}</div> : null}
     </div>
   );
@@ -64,9 +64,9 @@ export function ErrorState({
 }: Omit<BaseStateProps, 'tone'>) {
   return (
     <div className={cn('state-panel state-panel-danger', className)}>
-      <AlertCircle className="mx-auto h-5 w-5 text-red-500" />
-      <p className="mt-2 text-sm font-medium text-gray-900">{title}</p>
-      {description ? <p className="mt-1 text-xs text-gray-600">{description}</p> : null}
+      <AlertCircle className="mx-auto h-5 w-5 text-destructive" />
+      <p className="mt-2 text-sm font-medium text-foreground">{title}</p>
+      {description ? <p className="mt-1 text-xs text-muted-foreground">{description}</p> : null}
       {action ? <div className="mt-3 flex justify-center">{action}</div> : null}
     </div>
   );

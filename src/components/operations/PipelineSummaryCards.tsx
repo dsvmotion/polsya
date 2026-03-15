@@ -10,8 +10,8 @@ export function PipelineSummaryCards() {
       <div className="grid grid-cols-2 gap-3">
         {Array.from({ length: 4 }).map((_, i) => (
           <div key={i} className="metric-card animate-pulse">
-            <div className="h-3 w-20 bg-gray-200 rounded mb-2" />
-            <div className="h-6 w-24 bg-gray-200 rounded" />
+            <div className="h-3 w-20 bg-muted rounded mb-2" />
+            <div className="h-6 w-24 bg-muted rounded" />
           </div>
         ))}
       </div>
@@ -75,8 +75,8 @@ export function PipelineSummaryCards() {
         >
           <card.icon className={`h-5 w-5 shrink-0 ${card.iconColor}`} />
           <div className="min-w-0">
-            <p className="text-[11px] text-gray-500 truncate">{card.label}</p>
-            <p className="text-lg font-bold text-gray-900 leading-tight">{card.value}</p>
+            <p className="text-[11px] text-muted-foreground truncate">{card.label}</p>
+            <p className="text-lg font-bold text-foreground leading-tight">{card.value}</p>
           </div>
         </div>
       ))}

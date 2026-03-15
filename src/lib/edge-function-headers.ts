@@ -1,6 +1,6 @@
 import { supabase } from '@/integrations/supabase/client';
 
-const ORG_CACHE_TTL_MS = 60_000;
+const ORG_CACHE_TTL_MS = 300_000; // 5 minutes — org membership rarely changes mid-session
 
 type OrgCache = {
   userId: string;

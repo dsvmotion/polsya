@@ -32,8 +32,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { PharmacyWithOrders, DetailedOrder, DocumentType, DOCUMENT_TYPE_LABELS } from '@/types/operations';
-import { PharmacyStatus, STATUS_LABELS, STATUS_COLORS, CONTACT_ROLE_LABELS } from '@/types/pharmacy';
+import { EntityWithOrders, DetailedOrder, DocumentType, DOCUMENT_TYPE_LABELS } from '@/types/operations';
+import { EntityStatus, STATUS_LABELS, STATUS_COLORS, CONTACT_ROLE_LABELS } from '@/types/entity';
 import { useEntityContacts } from '@/hooks/useEntityContacts';
 import { 
   useEntityDocuments, 
@@ -41,23 +41,23 @@ import {
   useDeleteDocument, 
   useDownloadDocument 
 } from '@/hooks/useEntityOperations';
-import { useUpdatePharmacyStatus } from '@/hooks/usePharmacies';
+import { useUpdateEntityStatus } from '@/hooks/usePharmacies';
 import { useEntityPhoto } from '@/hooks/useEntityPhoto';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 
 interface EntityOperationsDetailProps {
-  pharmacy: PharmacyWithOrders;
+  entity: EntityWithOrders;
   onClose: () => void;
   onStatusUpdate?: () => void;
 }
 
 function PaymentBadge({ status }: { status: 'paid' | 'pending' | 'failed' | 'refunded' }) {
   const styles = {
-    paid: 'bg-gray-100 text-gray-800',
-    pending: 'bg-gray-50 text-gray-600 border border-gray-200',
-    failed: 'bg-gray-200 text-gray-600',
-    refunded: 'bg-gray-100 text-gray-500',
+    paid: 'bg-muted text-foreground',
+    pending: 'bg-muted/50 text-muted-foreground border border-border',
+    failed: 'bg-muted text-muted-foreground',
+    refunded: 'bg-muted text-muted-foreground',
   };
 
   return (
@@ -69,7 +69,7 @@ function PaymentBadge({ status }: { status: 'paid' | 'pending' | 'failed' | 'ref
 
 const ACCEPTED_DOC_EXTENSIONS = '.pdf,.jpg,.jpeg,.png,.doc,.docx,.xls,.xlsx';
 
-function DocumentsSection({ pharmacyId }: { pharmacyId: string }) {
+function DocumentsSection({ entityId }: { entityId: string }) {
   const [showUploadForm, setShowUploadForm] = useState(false);
   const [selectedType, setSelectedType] = useState<DocumentType>('other');
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -78,7 +78,7 @@ function DocumentsSection({ pharmacyId }: { pharmacyId: string }) {
   const deleteDocument = useDeleteDocument();
   const downloadDocument = useDownloadDocument();
 
-  const pharmacyDocs = allDocuments.filter((d) => d.pharmacyId === pharmacyId);
+  const entityDocs = allDocuments.filter((d) => d.pharmacyId === entityId);
 
   const handleUpload = async () => {
     const file = fileInputRef.current?.files?.[0];
@@ -88,7 +88,7 @@ function DocumentsSection({ pharmacyId }: { pharmacyId: string }) {
     }
     try {
       await uploadDocument.mutateAsync({
-        pharmacyId,
+        pharmacyId: entityId,
         orderId: null,
         documentType: selectedType,
         file,
@@ -127,14 +127,14 @@ function DocumentsSection({ pharmacyId }: { pharmacyId: string }) {
 
   const DocIcon = ({ type }: { type: DocumentType }) =>
     type === 'receipt' ? (
-      <Receipt className="h-4 w-4 text-gray-500" />
+      <Receipt className="h-4 w-4 text-muted-foreground" />
     ) : (
-      <FileText className="h-4 w-4 text-gray-500" />
+      <FileText className="h-4 w-4 text-muted-foreground" />
     );
 
   return (
     <div className="space-y-2">
-      <h3 className="text-xs font-medium text-gray-500 uppercase tracking-wide flex items-center gap-1">
+      <h3 className="text-xs font-medium text-muted-foreground uppercase tracking-wide flex items-center gap-1">
         <FileText className="h-3.5 w-3.5" />
         Documents
       </h3>
@@ -143,18 +143,18 @@ function DocumentsSection({ pharmacyId }: { pharmacyId: string }) {
           variant="outline"
           size="sm"
           onClick={() => setShowUploadForm(true)}
-          className="border-gray-300 text-gray-700"
+          className="border-border text-muted-foreground"
         >
           <Upload className="h-3.5 w-3.5 mr-1" />
           Upload Document
         </Button>
       ) : (
-        <div className="p-3 border border-gray-200 rounded-lg bg-gray-50 space-y-3">
+        <div className="p-3 border border-border rounded-lg bg-muted space-y-3">
           <Select value={selectedType} onValueChange={(v) => setSelectedType(v as DocumentType)}>
-            <SelectTrigger className="bg-white border-gray-300 h-8 text-sm">
+            <SelectTrigger className="bg-background border-border h-8 text-sm">
               <SelectValue placeholder="Document type" />
             </SelectTrigger>
-            <SelectContent className="bg-white border-gray-200">
+            <SelectContent className="bg-background border-border">
               {(Object.keys(DOCUMENT_TYPE_LABELS) as DocumentType[]).map((t) => (
                 <SelectItem key={t} value={t}>
                   {DOCUMENT_TYPE_LABELS[t]}
@@ -166,7 +166,7 @@ function DocumentsSection({ pharmacyId }: { pharmacyId: string }) {
             ref={fileInputRef}
             type="file"
             accept={ACCEPTED_DOC_EXTENSIONS}
-            className="text-xs text-gray-600 file:mr-2 file:py-1 file:px-2 file:rounded file:border-0 file:bg-gray-200 file:text-gray-700"
+            className="text-xs text-muted-foreground file:mr-2 file:py-1 file:px-2 file:rounded file:border-0 file:bg-muted file:text-muted-foreground"
             onChange={() => {}}
           />
           <div className="flex items-center gap-2">
@@ -180,19 +180,19 @@ function DocumentsSection({ pharmacyId }: { pharmacyId: string }) {
         </div>
       )}
       <div className="space-y-2 mt-3">
-        {pharmacyDocs.length === 0 ? (
-          <p className="text-xs text-gray-500">No documents yet</p>
+        {entityDocs.length === 0 ? (
+          <p className="text-xs text-muted-foreground">No documents yet</p>
         ) : (
-          pharmacyDocs.map((doc) => (
+          entityDocs.map((doc) => (
             <div
               key={doc.id}
-              className="flex items-center justify-between gap-2 p-2 rounded border border-gray-100 bg-white text-sm"
+              className="flex items-center justify-between gap-2 p-2 rounded border border-border bg-background text-sm"
             >
               <div className="flex items-center gap-2 min-w-0 flex-1">
                 <DocIcon type={doc.documentType} />
                 <div className="min-w-0">
-                  <p className="truncate text-gray-900 font-medium">{doc.fileName}</p>
-                  <p className="text-xs text-gray-500">
+                  <p className="truncate text-foreground font-medium">{doc.fileName}</p>
+                  <p className="text-xs text-muted-foreground">
                     {DOCUMENT_TYPE_LABELS[doc.documentType]} · {new Date(doc.uploadedAt).toLocaleDateString()}
                   </p>
                 </div>
@@ -201,7 +201,7 @@ function DocumentsSection({ pharmacyId }: { pharmacyId: string }) {
                 <Button
                   variant="ghost"
                   size="sm"
-                  className="h-7 px-2 text-gray-600"
+                  className="h-7 px-2 text-muted-foreground"
                   onClick={() => handleDownload(doc.filePath, doc.fileName)}
                 >
                   <Download className="h-3.5 w-3.5" />
@@ -209,7 +209,7 @@ function DocumentsSection({ pharmacyId }: { pharmacyId: string }) {
                 <Button
                   variant="ghost"
                   size="sm"
-                  className="h-7 px-2 text-gray-600 hover:text-red-600"
+                  className="h-7 px-2 text-muted-foreground hover:text-red-600"
                   onClick={() => handleDelete(doc.id, doc.filePath, DOCUMENT_TYPE_LABELS[doc.documentType])}
                 >
                   <Trash2 className="h-3.5 w-3.5" />
@@ -223,7 +223,7 @@ function DocumentsSection({ pharmacyId }: { pharmacyId: string }) {
   );
 }
 
-function OrderCard({ order, pharmacyId }: { order: DetailedOrder; pharmacyId: string }) {
+function OrderCard({ order, entityId }: { order: DetailedOrder; entityId: string }) {
   const invoiceInputRef = useRef<HTMLInputElement>(null);
   const receiptInputRef = useRef<HTMLInputElement>(null);
   const { data: allDocuments = [] } = useEntityDocuments();
@@ -231,14 +231,14 @@ function OrderCard({ order, pharmacyId }: { order: DetailedOrder; pharmacyId: st
   const deleteDocument = useDeleteDocument();
   const downloadDocument = useDownloadDocument();
 
-  const orderDocs = allDocuments.filter(d => d.pharmacyId === pharmacyId && d.orderId === order.orderId);
+  const orderDocs = allDocuments.filter(d => d.pharmacyId === entityId && d.orderId === order.orderId);
   const invoice = orderDocs.find(d => d.documentType === 'invoice');
   const receipt = orderDocs.find(d => d.documentType === 'receipt');
 
   const handleUpload = async (file: File, type: 'invoice' | 'receipt') => {
     try {
       await uploadDocument.mutateAsync({
-        pharmacyId,
+        pharmacyId: entityId,
         orderId: order.orderId,
         documentType: type,
         file,
@@ -273,31 +273,31 @@ function OrderCard({ order, pharmacyId }: { order: DetailedOrder; pharmacyId: st
   };
 
   return (
-    <div className="border border-gray-200 rounded-lg p-3 bg-white">
+    <div className="border border-border rounded-lg p-3 bg-background">
       {/* Order Header */}
       <div className="flex items-center justify-between mb-2">
         <div className="flex items-center gap-2">
-          <span className="font-medium text-gray-900">{order.orderId}</span>
+          <span className="font-medium text-foreground">{order.orderId}</span>
           <PaymentBadge status={order.paymentStatus} />
         </div>
-        <span className="text-sm text-gray-500">
+        <span className="text-sm text-muted-foreground">
           {new Date(order.dateCreated).toLocaleDateString()}
         </span>
       </div>
 
       {/* Order Details */}
       <div className="space-y-1 text-sm mb-3">
-        <div className="flex items-center gap-2 text-gray-600">
+        <div className="flex items-center gap-2 text-muted-foreground">
           <Package className="h-3.5 w-3.5" />
           <span>{order.products.length} product(s)</span>
         </div>
-        <div className="flex items-center gap-2 text-gray-600">
+        <div className="flex items-center gap-2 text-muted-foreground">
           <CreditCard className="h-3.5 w-3.5" />
           <span>{order.paymentMethodTitle}</span>
         </div>
         <div className="flex items-center justify-between">
-          <span className="text-gray-600">Amount:</span>
-          <span className="font-semibold text-gray-900">
+          <span className="text-muted-foreground">Amount:</span>
+          <span className="font-semibold text-foreground">
             €{order.amount.toLocaleString('es-ES', { minimumFractionDigits: 2 })}
           </span>
         </div>
@@ -305,13 +305,13 @@ function OrderCard({ order, pharmacyId }: { order: DetailedOrder; pharmacyId: st
 
       {/* Payment Link */}
       {order.paymentLinkUrl && (
-        <div className="mb-3 p-2 bg-gray-50 rounded text-xs flex items-center gap-2">
-          <ExternalLink className="h-3.5 w-3.5 text-gray-500" />
-          <a 
-            href={order.paymentLinkUrl} 
-            target="_blank" 
+        <div className="mb-3 p-2 bg-muted rounded text-xs flex items-center gap-2">
+          <ExternalLink className="h-3.5 w-3.5 text-muted-foreground" />
+          <a
+            href={order.paymentLinkUrl}
+            target="_blank"
             rel="noopener noreferrer"
-            className="text-gray-600 hover:text-gray-900 truncate flex-1"
+            className="text-muted-foreground hover:text-foreground truncate flex-1"
           >
             {order.paymentLinkUrl}
           </a>
@@ -320,12 +320,12 @@ function OrderCard({ order, pharmacyId }: { order: DetailedOrder; pharmacyId: st
 
       {/* Products */}
       <div className="mb-3">
-        <p className="text-xs text-gray-500 mb-1">Products:</p>
+        <p className="text-xs text-muted-foreground mb-1">Products:</p>
         <div className="space-y-1">
           {order.products.map((product, idx) => (
-            <div key={`${product.name}-${idx}`} className="text-xs text-gray-700 flex justify-between">
+            <div key={`${product.name}-${idx}`} className="text-xs text-muted-foreground flex justify-between">
               <span className="truncate max-w-[200px]">{product.name}</span>
-              <span className="text-gray-500">×{product.quantity}</span>
+              <span className="text-muted-foreground">×{product.quantity}</span>
             </div>
           ))}
         </div>
@@ -338,8 +338,8 @@ function OrderCard({ order, pharmacyId }: { order: DetailedOrder; pharmacyId: st
         {/* Invoice - RED when missing */}
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <FileText className="h-4 w-4 text-gray-500" />
-            <span className="text-sm text-gray-700">Invoice</span>
+            <FileText className="h-4 w-4 text-muted-foreground" />
+            <span className="text-sm text-muted-foreground">Invoice</span>
           </div>
           {invoice ? (
             <div className="flex items-center gap-1">
@@ -348,7 +348,7 @@ function OrderCard({ order, pharmacyId }: { order: DetailedOrder; pharmacyId: st
                 variant="ghost"
                 size="sm"
                 onClick={() => handleDownload(invoice.filePath, invoice.fileName)}
-                className="h-7 px-2 text-gray-600"
+                className="h-7 px-2 text-muted-foreground"
               >
                 <Download className="h-3.5 w-3.5" />
               </Button>
@@ -356,7 +356,7 @@ function OrderCard({ order, pharmacyId }: { order: DetailedOrder; pharmacyId: st
                 variant="ghost"
                 size="sm"
                 onClick={() => handleDelete(invoice.id, invoice.filePath, 'Invoice')}
-                className="h-7 px-2 text-gray-600 hover:text-red-600"
+                className="h-7 px-2 text-muted-foreground hover:text-red-600"
               >
                 <Trash2 className="h-3.5 w-3.5" />
               </Button>
@@ -390,8 +390,8 @@ function OrderCard({ order, pharmacyId }: { order: DetailedOrder; pharmacyId: st
         {/* Receipt - GREEN when invoice uploaded but no receipt */}
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <Receipt className="h-4 w-4 text-gray-500" />
-            <span className="text-sm text-gray-700">Receipt</span>
+            <Receipt className="h-4 w-4 text-muted-foreground" />
+            <span className="text-sm text-muted-foreground">Receipt</span>
           </div>
           {receipt ? (
             <div className="flex items-center gap-1">
@@ -400,7 +400,7 @@ function OrderCard({ order, pharmacyId }: { order: DetailedOrder; pharmacyId: st
                 variant="ghost"
                 size="sm"
                 onClick={() => handleDownload(receipt.filePath, receipt.fileName)}
-                className="h-7 px-2 text-gray-600"
+                className="h-7 px-2 text-muted-foreground"
               >
                 <Download className="h-3.5 w-3.5" />
               </Button>
@@ -408,7 +408,7 @@ function OrderCard({ order, pharmacyId }: { order: DetailedOrder; pharmacyId: st
                 variant="ghost"
                 size="sm"
                 onClick={() => handleDelete(receipt.id, receipt.filePath, 'Receipt')}
-                className="h-7 px-2 text-gray-600 hover:text-red-600"
+                className="h-7 px-2 text-muted-foreground hover:text-red-600"
               >
                 <Trash2 className="h-3.5 w-3.5" />
               </Button>
@@ -439,7 +439,7 @@ function OrderCard({ order, pharmacyId }: { order: DetailedOrder; pharmacyId: st
             </>
           ) : (
             // Invoice not uploaded yet - receipt button disabled
-            <span className="text-xs text-gray-400">Upload invoice first</span>
+            <span className="text-xs text-muted-foreground">Upload invoice first</span>
           )}
         </div>
       </div>
@@ -447,16 +447,16 @@ function OrderCard({ order, pharmacyId }: { order: DetailedOrder; pharmacyId: st
   );
 }
 
-export function EntityOperationsDetail({ pharmacy, onClose, onStatusUpdate }: EntityOperationsDetailProps) {
-  const [status, setStatus] = useState<PharmacyStatus>(pharmacy.commercialStatus);
-  const [notes, setNotes] = useState(pharmacy.notes || '');
+export function EntityOperationsDetail({ entity, onClose, onStatusUpdate }: EntityOperationsDetailProps) {
+  const [status, setStatus] = useState<EntityStatus>(entity.commercialStatus);
+  const [notes, setNotes] = useState(entity.notes || '');
   const [hasChanges, setHasChanges] = useState(false);
 
-  const updateStatus = useUpdatePharmacyStatus();
-  const { photoUrl, isLoading: photoLoading } = useEntityPhoto(pharmacy.id);
-  const { data: contacts = [] } = useEntityContacts(pharmacy.id);
+  const updateStatus = useUpdateEntityStatus();
+  const { photoUrl, isLoading: photoLoading } = useEntityPhoto(entity.id);
+  const { data: contacts = [] } = useEntityContacts(entity.id);
 
-  const handleStatusChange = (newStatus: PharmacyStatus) => {
+  const handleStatusChange = (newStatus: EntityStatus) => {
     setStatus(newStatus);
     setHasChanges(true);
   };
@@ -469,7 +469,7 @@ export function EntityOperationsDetail({ pharmacy, onClose, onStatusUpdate }: En
   const handleSave = async () => {
     try {
       await updateStatus.mutateAsync({
-        id: pharmacy.id,
+        id: entity.id,
         updates: {
           commercial_status: status,
           notes: notes || null,
@@ -477,36 +477,36 @@ export function EntityOperationsDetail({ pharmacy, onClose, onStatusUpdate }: En
       });
       setHasChanges(false);
       onStatusUpdate?.();
-      toast.success('Pharmacy updated');
+      toast.success('Account updated');
     } catch (error) {
-      toast.error('Failed to update pharmacy');
+      toast.error('Failed to update account');
     }
   };
 
   const statusColor = STATUS_COLORS[status];
 
   return (
-    <div className="h-[calc(100vh-56px)] flex flex-col surface-card rounded-none border-0 2xl:border-l 2xl:border-gray-200">
+    <div className="h-[calc(100vh-56px)] flex flex-col surface-card rounded-none border-0 2xl:border-l 2xl:border-border">
       {/* Header with Photo */}
-      <div className="border-b border-gray-200 bg-white">
+      <div className="border-b border-border bg-background">
         {/* Photo Section */}
-        <div className="h-32 bg-gray-100 relative overflow-hidden">
+        <div className="h-32 bg-muted relative overflow-hidden">
           {photoUrl ? (
             <img 
               src={photoUrl} 
-              alt={pharmacy.name}
+              alt={entity.name}
               className="w-full h-full object-cover"
             />
           ) : (
             <div className="w-full h-full flex items-center justify-center">
               {photoLoading ? (
                 <div className="animate-pulse">
-                  <ImageIcon className="h-10 w-10 text-gray-300" />
+                  <ImageIcon className="h-10 w-10 text-muted-foreground/50" />
                 </div>
               ) : (
                 <div className="text-center">
-                  <Building2 className="h-10 w-10 text-gray-300 mx-auto" />
-                  <p className="text-xs text-gray-400 mt-1">No photo available</p>
+                  <Building2 className="h-10 w-10 text-muted-foreground/50 mx-auto" />
+                  <p className="text-xs text-muted-foreground mt-1">No photo available</p>
                 </div>
               )}
             </div>
@@ -516,12 +516,12 @@ export function EntityOperationsDetail({ pharmacy, onClose, onStatusUpdate }: En
         {/* Title and Status */}
         <div className="p-4 flex items-start justify-between">
           <div className="flex-1 min-w-0">
-            <h2 className="font-semibold text-gray-900 truncate">{pharmacy.name}</h2>
+            <h2 className="font-semibold text-foreground truncate">{entity.name}</h2>
             <span className={cn('inline-block px-2 py-0.5 rounded text-xs font-medium mt-1', statusColor.bg, statusColor.text)}>
               {STATUS_LABELS[status]}
             </span>
           </div>
-          <Button variant="ghost" size="sm" onClick={onClose} className="text-gray-500 -mr-2">
+          <Button variant="ghost" size="sm" onClick={onClose} className="text-muted-foreground -mr-2">
             <X className="h-4 w-4" />
           </Button>
         </div>
@@ -531,13 +531,13 @@ export function EntityOperationsDetail({ pharmacy, onClose, onStatusUpdate }: En
         <div className="p-4 space-y-6">
           {/* Commercial Status - EDITABLE */}
           <div className="space-y-2">
-            <h3 className="text-xs font-medium text-gray-500 uppercase tracking-wide">Commercial Status</h3>
+            <h3 className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Commercial Status</h3>
             <Select value={status} onValueChange={handleStatusChange}>
-              <SelectTrigger className="bg-white border-gray-300">
+              <SelectTrigger className="bg-background border-border">
                 <SelectValue />
               </SelectTrigger>
-              <SelectContent className="bg-white border-gray-200">
-                {(Object.keys(STATUS_LABELS) as PharmacyStatus[]).map((s) => (
+              <SelectContent className="bg-background border-border">
+                {(Object.keys(STATUS_LABELS) as EntityStatus[]).map((s) => (
                   <SelectItem key={s} value={s}>
                     <div className="flex items-center gap-2">
                       <span className={cn('w-2 h-2 rounded-full', STATUS_COLORS[s].bg.replace('bg-', 'bg-'))} 
@@ -554,28 +554,28 @@ export function EntityOperationsDetail({ pharmacy, onClose, onStatusUpdate }: En
 
           {/* Contact Info */}
           <div className="space-y-2">
-            <h3 className="text-xs font-medium text-gray-500 uppercase tracking-wide">Contact</h3>
-            {pharmacy.address && (
-              <div className="flex items-start gap-2 text-sm text-gray-700">
-                <MapPin className="h-4 w-4 text-gray-400 mt-0.5" />
+            <h3 className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Contact</h3>
+            {entity.address && (
+              <div className="flex items-start gap-2 text-sm text-muted-foreground">
+                <MapPin className="h-4 w-4 text-muted-foreground mt-0.5" />
                 <div>
-                  <div>{pharmacy.address}</div>
-                  <div className="text-gray-500">
-                    {[pharmacy.city, pharmacy.province, pharmacy.country].filter(Boolean).join(', ')}
+                  <div>{entity.address}</div>
+                  <div className="text-muted-foreground">
+                    {[entity.city, entity.province, entity.country].filter(Boolean).join(', ')}
                   </div>
                 </div>
               </div>
             )}
-            {pharmacy.phone && (
-              <div className="flex items-center gap-2 text-sm text-gray-700">
-                <Phone className="h-4 w-4 text-gray-400" />
-                <span>{pharmacy.phone}</span>
+            {entity.phone && (
+              <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                <Phone className="h-4 w-4 text-muted-foreground" />
+                <span>{entity.phone}</span>
               </div>
             )}
-            {pharmacy.email && (
-              <div className="flex items-center gap-2 text-sm text-gray-700">
-                <Mail className="h-4 w-4 text-gray-400" />
-                <span>{pharmacy.email}</span>
+            {entity.email && (
+              <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                <Mail className="h-4 w-4 text-muted-foreground" />
+                <span>{entity.email}</span>
               </div>
             )}
           </div>
@@ -586,7 +586,7 @@ export function EntityOperationsDetail({ pharmacy, onClose, onStatusUpdate }: En
           {contacts.length > 0 && (
             <>
               <div className="space-y-2">
-                <h3 className="text-xs font-medium text-gray-500 uppercase tracking-wide flex items-center gap-1">
+                <h3 className="text-xs font-medium text-muted-foreground uppercase tracking-wide flex items-center gap-1">
                   <Users className="h-3.5 w-3.5" />
                   Contacts ({contacts.length})
                 </h3>
@@ -594,25 +594,25 @@ export function EntityOperationsDetail({ pharmacy, onClose, onStatusUpdate }: En
                   {contacts.map((contact) => (
                     <div
                       key={contact.id}
-                      className="flex items-start gap-2 p-2 rounded border border-gray-100 bg-white text-sm"
+                      className="flex items-start gap-2 p-2 rounded border border-border bg-background text-sm"
                     >
                       <div className="min-w-0 flex-1">
                         <div className="flex items-center gap-1.5">
-                          <span className="font-medium text-gray-900 truncate">{contact.name}</span>
+                          <span className="font-medium text-foreground truncate">{contact.name}</span>
                           {contact.isPrimary && (
                             <Star className="h-3 w-3 text-yellow-500 fill-yellow-500 shrink-0" />
                           )}
                           {contact.role && (
-                            <span className="text-[10px] px-1.5 py-0.5 rounded bg-gray-100 text-gray-600 shrink-0">
+                            <span className="text-[10px] px-1.5 py-0.5 rounded bg-muted text-muted-foreground shrink-0">
                               {CONTACT_ROLE_LABELS[contact.role as keyof typeof CONTACT_ROLE_LABELS] ?? contact.role}
                             </span>
                           )}
                         </div>
                         {contact.email && (
-                          <p className="text-xs text-gray-500 truncate">{contact.email}</p>
+                          <p className="text-xs text-muted-foreground truncate">{contact.email}</p>
                         )}
                         {contact.phone && (
-                          <p className="text-xs text-gray-500">{contact.phone}</p>
+                          <p className="text-xs text-muted-foreground">{contact.phone}</p>
                         )}
                       </div>
                     </div>
@@ -624,20 +624,20 @@ export function EntityOperationsDetail({ pharmacy, onClose, onStatusUpdate }: En
           )}
 
           {/* Documents */}
-          <DocumentsSection pharmacyId={pharmacy.id} />
+          <DocumentsSection entityId={entity.id} />
 
           <Separator />
 
           {/* Summary */}
           <div className="grid grid-cols-2 gap-4">
-            <div className="p-3 bg-gray-50 rounded-lg">
-              <p className="text-xs text-gray-500 mb-1">Total Orders</p>
-              <p className="text-xl font-semibold text-gray-900">{pharmacy.orders.length}</p>
+            <div className="p-3 bg-muted rounded-lg">
+              <p className="text-xs text-muted-foreground mb-1">Total Orders</p>
+              <p className="text-xl font-semibold text-foreground">{entity.orders.length}</p>
             </div>
-            <div className="p-3 bg-gray-50 rounded-lg">
-              <p className="text-xs text-gray-500 mb-1">Total Revenue</p>
-              <p className="text-xl font-semibold text-gray-900">
-                €{pharmacy.totalRevenue.toLocaleString('es-ES', { minimumFractionDigits: 2 })}
+            <div className="p-3 bg-muted rounded-lg">
+              <p className="text-xs text-muted-foreground mb-1">Total Revenue</p>
+              <p className="text-xl font-semibold text-foreground">
+                €{entity.totalRevenue.toLocaleString('es-ES', { minimumFractionDigits: 2 })}
               </p>
             </div>
           </div>
@@ -646,16 +646,16 @@ export function EntityOperationsDetail({ pharmacy, onClose, onStatusUpdate }: En
 
           {/* Notes - EDITABLE */}
           <div className="space-y-2">
-            <Label htmlFor="notes" className="text-xs font-medium text-gray-500 uppercase tracking-wide flex items-center gap-1">
+            <Label htmlFor="notes" className="text-xs font-medium text-muted-foreground uppercase tracking-wide flex items-center gap-1">
               <StickyNote className="h-3.5 w-3.5" />
               Internal Notes
             </Label>
             <Textarea
               id="notes"
-              placeholder="Add notes about this pharmacy..."
+              placeholder="Add notes about this account..."
               value={notes}
               onChange={(e) => handleNotesChange(e.target.value)}
-              className="min-h-[80px] resize-none bg-white border-gray-300 text-sm"
+              className="min-h-[80px] resize-none bg-background border-border text-sm"
             />
           </div>
 
@@ -663,19 +663,19 @@ export function EntityOperationsDetail({ pharmacy, onClose, onStatusUpdate }: En
 
           {/* Order History */}
           <div className="space-y-3">
-            <h3 className="text-xs font-medium text-gray-500 uppercase tracking-wide">
-              Order History ({pharmacy.orders.length})
+            <h3 className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
+              Order History ({entity.orders.length})
             </h3>
-            
-            {pharmacy.orders.length === 0 ? (
-              <div className="text-center py-8 text-gray-400">
+
+            {entity.orders.length === 0 ? (
+              <div className="text-center py-8 text-muted-foreground">
                 <Package className="h-8 w-8 mx-auto mb-2 opacity-50" />
                 <p className="text-sm">No orders yet</p>
               </div>
             ) : (
               <div className="space-y-3">
-                {pharmacy.orders.map((order) => (
-                  <OrderCard key={order.id} order={order} pharmacyId={pharmacy.id} />
+                {entity.orders.map((order) => (
+                  <OrderCard key={order.id} order={order} entityId={entity.id} />
                 ))}
               </div>
             )}
@@ -685,11 +685,11 @@ export function EntityOperationsDetail({ pharmacy, onClose, onStatusUpdate }: En
 
       {/* Save Button */}
       {hasChanges && (
-        <div className="p-4 border-t border-gray-200">
+        <div className="p-4 border-t border-border">
           <Button
             onClick={handleSave}
             disabled={updateStatus.isPending}
-            className="w-full bg-gray-900 hover:bg-gray-800 text-white"
+            className="w-full bg-foreground hover:bg-foreground/90 text-background"
           >
             <Save className="h-4 w-4 mr-2" />
             {updateStatus.isPending ? 'Saving...' : 'Save Changes'}

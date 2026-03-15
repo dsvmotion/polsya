@@ -6,6 +6,7 @@ import { useUpdateSignalStatus } from '@/hooks/useSignals';
 import { useToast } from '@/hooks/use-toast';
 import { Eye, CheckCircle2, XCircle } from 'lucide-react';
 import { getErrorMessage } from '@/lib/utils';
+import { timeAgo } from '@/lib/time-utils';
 
 interface SignalCardProps {
   signal: Signal;
@@ -17,7 +18,7 @@ export function SignalCard({ signal }: SignalCardProps) {
   const severityColors = SIGNAL_SEVERITY_COLORS[signal.severity];
   const statusColors = SIGNAL_STATUS_COLORS[signal.status];
 
-  const timeAgo = getTimeAgo(signal.createdAt);
+  const timeAgo = timeAgo(signal.createdAt);
 
   return (
     <div className="flex gap-3 rounded-lg border bg-card p-4">
@@ -88,15 +89,4 @@ export function SignalCard({ signal }: SignalCardProps) {
       </div>
     </div>
   );
-}
-
-function getTimeAgo(dateStr: string): string {
-  const seconds = Math.floor((Date.now() - new Date(dateStr).getTime()) / 1000);
-  if (seconds < 60) return 'just now';
-  const minutes = Math.floor(seconds / 60);
-  if (minutes < 60) return `${minutes}m ago`;
-  const hours = Math.floor(minutes / 60);
-  if (hours < 24) return `${hours}h ago`;
-  const days = Math.floor(hours / 24);
-  return `${days}d ago`;
 }

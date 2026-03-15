@@ -6,6 +6,7 @@ import { useToast } from '@/hooks/use-toast';
 import { ACTIVITY_TYPE_LABELS, ACTIVITY_TYPE_COLORS } from '@/types/creative-activity';
 import type { ActivityType } from '@/types/creative-activity';
 import { cn, getErrorMessage } from '@/lib/utils';
+import { timeAgo } from '@/lib/time-utils';
 
 const ACTIVITY_ICONS: Record<ActivityType, typeof Phone> = {
   call: Phone,
@@ -14,17 +15,6 @@ const ACTIVITY_ICONS: Record<ActivityType, typeof Phone> = {
   note: FileText,
   task: CheckSquare,
 };
-
-function timeAgo(dateStr: string): string {
-  const diff = Date.now() - new Date(dateStr).getTime();
-  const mins = Math.floor(diff / 60000);
-  if (mins < 60) return `${mins}m ago`;
-  const hours = Math.floor(mins / 60);
-  if (hours < 24) return `${hours}h ago`;
-  const days = Math.floor(hours / 24);
-  if (days < 30) return `${days}d ago`;
-  return new Date(dateStr).toLocaleDateString();
-}
 
 interface ActivityTimelineProps {
   entityType: string;
@@ -71,7 +61,7 @@ export function ActivityTimeline({ entityType, entityId, onAddClick }: ActivityT
     <div className="space-y-1">
       {activities.map((activity) => {
         const Icon = ACTIVITY_ICONS[activity.activityType] ?? FileText;
-        const colors = ACTIVITY_TYPE_COLORS[activity.activityType] ?? { bg: 'bg-gray-100', text: 'text-gray-800' };
+        const colors = ACTIVITY_TYPE_COLORS[activity.activityType] ?? { bg: 'bg-muted', text: 'text-foreground' };
         return (
           <div key={activity.id} className="flex items-start gap-3 py-2 group">
             {activity.activityType === 'task' && (

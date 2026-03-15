@@ -120,7 +120,7 @@ export function DiscoverMap({
         >
           <div className="max-w-[240px] p-1">
             <p className="font-medium text-sm">{activeInfo.name}</p>
-            <p className="text-xs text-gray-500 mt-0.5">{activeInfo.address}</p>
+            <p className="text-xs text-muted-foreground mt-0.5">{activeInfo.address}</p>
             {activeInfo.phone && <p className="text-xs mt-0.5">{activeInfo.phone}</p>}
           </div>
         </InfoWindowF>

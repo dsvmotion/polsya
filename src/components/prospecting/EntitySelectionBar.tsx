@@ -24,11 +24,11 @@ export function EntitySelectionBar({
   const hasSelection = selectedCount > 0;
 
   return (
-    <div className="flex items-center justify-between gap-2 p-2 bg-gray-100 border-b border-gray-200">
+    <div className="flex items-center justify-between gap-2 p-2 bg-muted border-b border-border">
       {/* Select All / Deselect All */}
       <button
         onClick={allSelected ? onDeselectAll : onSelectAll}
-        className="flex items-center gap-2 text-sm text-gray-700 hover:text-gray-900 transition-colors"
+        className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
         disabled={totalCount === 0}
       >
         {allSelected ? (
@@ -45,7 +45,7 @@ export function EntitySelectionBar({
       {/* Selection count and Save button */}
       <div className="flex items-center gap-2">
         {hasSelection && (
-          <span className="text-xs text-gray-500">
+          <span className="text-xs text-muted-foreground">
             {selectedCount} selected
           </span>
         )}
@@ -57,7 +57,7 @@ export function EntitySelectionBar({
             'transition-all',
             hasSelection
               ? 'bg-green-600 hover:bg-green-700 text-white'
-              : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+              : 'bg-muted text-muted-foreground cursor-not-allowed'
           )}
         >
           {isSaving ? (

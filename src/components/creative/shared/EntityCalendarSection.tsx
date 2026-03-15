@@ -29,7 +29,7 @@ export function EntityCalendarSection({ entityType, entityId }: EntityCalendarSe
       ) : (
         <div className="space-y-2">
           {events.map((evt) => {
-            const statusColors = CALENDAR_STATUS_COLORS[evt.status] ?? { bg: 'bg-gray-100', text: 'text-gray-800' };
+            const statusColors = CALENDAR_STATUS_COLORS[evt.status] ?? { bg: 'bg-muted', text: 'text-foreground' };
             return (
               <div key={evt.id} className="border rounded p-2">
                 <div className="flex items-center gap-2">

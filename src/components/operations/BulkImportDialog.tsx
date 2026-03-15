@@ -20,7 +20,7 @@ import {
 } from '@/components/ui/select';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { supabase } from '@/integrations/supabase/client';
-import type { ClientType } from '@/types/pharmacy';
+import type { EntityTypeKey } from '@/types/entity';
 import { cn } from '@/lib/utils';
 import { sanitizeTextInput, buildDedupeKey } from '@/lib/import-utils';
 import { getIndustryImportAliases } from '@/lib/industry-templates';
@@ -51,7 +51,7 @@ const FIELDS = [
   { key: 'activity', label: 'Activity', required: false },
   { key: 'subsector', label: 'Subsector', required: false },
   { key: 'legal_form', label: 'Forma social', required: false },
-  { key: 'client_type', label: 'Type (pharmacy/herbalist)', required: false },
+  { key: 'client_type', label: 'Type', required: false },
 ] as const;
 
 type FieldKey = (typeof FIELDS)[number]['key'];
@@ -184,13 +184,13 @@ interface DryRunResult {
 }
 
 interface BulkImportDialogProps {
-  defaultClientType: ClientType;
+  defaultEntityTypeKey: EntityTypeKey;
   industryTemplateKey?: string | null;
   onSuccess?: () => void;
 }
 
 export function BulkImportDialog({
-  defaultClientType,
+  defaultEntityTypeKey,
   industryTemplateKey = null,
   onSuccess,
 }: BulkImportDialogProps) {
@@ -200,7 +200,7 @@ export function BulkImportDialog({
   const [headers, setHeaders] = useState<string[]>([]);
   const [rows, setRows] = useState<string[][]>([]);
   const [mapping, setMapping] = useState<Partial<Record<FieldKey, string>>>({});
-  const [defaultType, setDefaultType] = useState<ClientType>(defaultClientType);
+  const [defaultType, setDefaultType] = useState<EntityTypeKey>(defaultEntityTypeKey);
   const [importing, setImporting] = useState(false);
   const [progress, setProgress] = useState({ imported: 0, errors: 0 });
   const [result, setResult] = useState<{ imported: number; errors: number; skippedDuplicates: number; errorMessage?: string } | null>(null);
@@ -212,10 +212,10 @@ export function BulkImportDialog({
     setHeaders([]);
     setRows([]);
     setMapping({});
-    setDefaultType(defaultClientType);
+    setDefaultType(defaultEntityTypeKey);
     setResult(null);
     setDryRunResult(null);
-  }, [defaultClientType]);
+  }, [defaultEntityTypeKey]);
 
   const handleFile = useCallback(
     (f: File) => {
@@ -299,8 +299,8 @@ export function BulkImportDialog({
         setImporting(false);
         return;
       }
-    } catch {
-      // If the idempotency check fails, proceed with import rather than blocking
+    } catch (err) {
+      logger.warn('[BulkImport] Idempotency check failed, proceeding:', err);
     }
 
     let imported = 0;
@@ -326,13 +326,13 @@ export function BulkImportDialog({
           if (!name) return null;
 
           const clientTypeRaw = (getVal(row, 'client_type') || getVal(row, 'activity') || getVal(row, 'subsector') || '').toLowerCase();
-          let clientType: ClientType = defaultType;
+          let clientType: EntityTypeKey = defaultType;
           const matched = entityTypesData.find((et) =>
             et.key.toLowerCase() === clientTypeRaw ||
             et.label.toLowerCase() === clientTypeRaw
           );
           if (matched) {
-            clientType = matched.key as ClientType;
+            clientType = matched.key as EntityTypeKey;
           }
           return {
             name,
@@ -391,8 +391,8 @@ export function BulkImportDialog({
         if (existing) {
           dbKeys = new Set(existing.map(r => buildDedupeKey(r.name, r.city, r.address)));
         }
-      } catch {
-        // If DB check fails, proceed without dedup to avoid blocking import
+      } catch (err) {
+        logger.warn('[BulkImport] DB dedup check failed, proceeding:', err);
       }
 
       const toInsert = uniqueInBatch.filter(p => {
@@ -409,7 +409,8 @@ export function BulkImportDialog({
         continue;
       }
 
-      const { error } = await supabase.from('pharmacies').insert(toInsert as never);
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const { error } = await supabase.from('pharmacies').insert(toInsert as any);
       if (error) {
         errors += toInsert.length;
       } else {
@@ -430,8 +431,8 @@ export function BulkImportDialog({
         skipped_duplicates: skippedDuplicates,
         status: imported > 0 ? 'success' : 'failed',
       });
-    } catch {
-      // Best-effort logging — do not block the user
+    } catch (err) {
+      logger.warn('[BulkImport] Failed to record import run:', err);
     }
 
     // saved_at is set per-row in the insert payload — never do a global update here
@@ -528,14 +529,14 @@ export function BulkImportDialog({
       }}
     >
       <DialogTrigger asChild>
-        <Button variant="outline" size="sm" className="border-gray-300">
+        <Button variant="outline" size="sm" className="border-border">
           <Upload className="h-4 w-4 mr-2" />
           Import CSV/Excel
         </Button>
       </DialogTrigger>
-      <DialogContent className="max-w-2xl max-h-[90vh] overflow-hidden flex flex-col bg-white border-gray-200 text-gray-900" aria-describedby={undefined}>
+      <DialogContent className="max-w-2xl max-h-[90vh] overflow-hidden flex flex-col bg-background border-border text-foreground" aria-describedby={undefined}>
         <DialogHeader>
-          <DialogTitle className="text-gray-900">Bulk import</DialogTitle>
+          <DialogTitle className="text-foreground">Bulk import</DialogTitle>
         </DialogHeader>
 
         {!file ? (
@@ -544,12 +545,12 @@ export function BulkImportDialog({
             onDrop={handleDrop}
             className={cn(
               'border-2 border-dashed rounded-lg p-8 text-center transition-colors',
-              'border-gray-300 bg-gray-50 hover:border-gray-400 hover:bg-gray-100'
+              'border-border bg-muted hover:border-muted-foreground/30 hover:bg-muted/80'
             )}
           >
-            <FileSpreadsheet className="h-10 w-10 mx-auto text-gray-400 mb-2" />
-            <p className="text-sm text-gray-600 mb-2">Drag & drop a file or click to select</p>
-            <p className="text-xs text-gray-500 mb-4">Accepted: .csv, .xlsx, .xls</p>
+            <FileSpreadsheet className="h-10 w-10 mx-auto text-muted-foreground mb-2" />
+            <p className="text-sm text-muted-foreground mb-2">Drag & drop a file or click to select</p>
+            <p className="text-xs text-muted-foreground mb-4">Accepted: .csv, .xlsx, .xls</p>
             <input
               type="file"
               accept=".csv,.xlsx,.xls"
@@ -565,21 +566,21 @@ export function BulkImportDialog({
               variant="outline"
               size="sm"
               onClick={() => document.getElementById('bulk-import-file')?.click()}
-              className="border-gray-300"
+              className="border-border"
             >
               Select file
             </Button>
           </div>
         ) : (
           <>
-            <div className="flex items-center justify-between text-sm text-gray-600">
+            <div className="flex items-center justify-between text-sm text-muted-foreground">
               <span>{file.name}</span>
               <span>{rows.length} rows</span>
             </div>
 
-            <Label className="text-xs text-gray-500">Default type for unmapped rows</Label>
-            <Select value={defaultType} onValueChange={(v) => setDefaultType(v as ClientType)}>
-              <SelectTrigger className="w-40 bg-white border-gray-300 h-8">
+            <Label className="text-xs text-muted-foreground">Default type for unmapped rows</Label>
+            <Select value={defaultType} onValueChange={(v) => setDefaultType(v as EntityTypeKey)}>
+              <SelectTrigger className="w-40 bg-background border-border h-8">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
@@ -589,25 +590,25 @@ export function BulkImportDialog({
                   ))
                 ) : (
                   <>
-                    <SelectItem value="pharmacy">Pharmacy</SelectItem>
-                    <SelectItem value="herbalist">Herbalist</SelectItem>
+                    <SelectItem value="business">Business</SelectItem>
+                    <SelectItem value="agency">Agency</SelectItem>
                   </>
                 )}
               </SelectContent>
             </Select>
 
-            <Label className="text-xs font-medium text-gray-700">Column mapping</Label>
+            <Label className="text-xs font-medium text-foreground">Column mapping</Label>
             <div className="grid grid-cols-2 gap-2">
               {FIELDS.map(({ key, label, required }) => (
                 <div key={key} className="flex items-center gap-2">
-                  <Label className="w-28 text-xs text-gray-600 shrink-0">
+                  <Label className="w-28 text-xs text-muted-foreground shrink-0">
                     {label} {required && '*'}
                   </Label>
                   <Select
                     value={mapping[key] ?? '__skip__'}
                     onValueChange={(v) => { setMapping((m) => ({ ...m, [key]: v === '__skip__' ? undefined : v })); setDryRunResult(null); }}
                   >
-                    <SelectTrigger className="flex-1 h-8 bg-white border-gray-300 text-xs">
+                    <SelectTrigger className="flex-1 h-8 bg-background border-border text-xs">
                       <SelectValue placeholder={required ? 'Select column' : '—'} />
                     </SelectTrigger>
                     <SelectContent>
@@ -623,14 +624,14 @@ export function BulkImportDialog({
               ))}
             </div>
 
-            <Label className="text-xs font-medium text-gray-700">Preview (first 5 rows)</Label>
-            <ScrollArea className="border border-gray-200 rounded-md">
+            <Label className="text-xs font-medium text-foreground">Preview (first 5 rows)</Label>
+            <ScrollArea className="border border-border rounded-md">
               <div className="max-h-40 overflow-auto">
                 <table className="w-full text-xs">
                   <thead>
-                    <tr className="bg-gray-50 border-b border-gray-200">
+                    <tr className="bg-muted border-b border-border">
                       {headers.map((h) => (
-                        <th key={h} className="text-left px-2 py-1.5 font-medium text-gray-700 truncate max-w-[120px]">
+                        <th key={h} className="text-left px-2 py-1.5 font-medium text-muted-foreground truncate max-w-[120px]">
                           {h}
                         </th>
                       ))}
@@ -638,9 +639,9 @@ export function BulkImportDialog({
                   </thead>
                   <tbody>
                     {previewRows.map((row, i) => (
-                      <tr key={i} className="border-b border-gray-100">
+                      <tr key={i} className="border-b border-border">
                         {row.map((cell, j) => (
-                          <td key={j} className="px-2 py-1 text-gray-600 truncate max-w-[120px]">
+                          <td key={j} className="px-2 py-1 text-muted-foreground truncate max-w-[120px]">
                             {cell}
                           </td>
                         ))}
@@ -668,7 +669,7 @@ export function BulkImportDialog({
             )}
 
             {result && (
-              <p className={cn('text-sm', result.errorMessage ? 'text-red-700' : 'text-gray-700')}>
+              <p className={cn('text-sm', result.errorMessage ? 'text-red-700' : 'text-foreground')}>
                 {result.errorMessage
                   ? result.errorMessage
                   : <>Done: {result.imported} imported, {result.errors} errors{result.skippedDuplicates > 0 && `, ${result.skippedDuplicates} duplicates skipped`}.</>
@@ -676,9 +677,9 @@ export function BulkImportDialog({
               </p>
             )}
 
-            <div className="flex items-center justify-end gap-2 pt-2 border-t border-gray-200">
+            <div className="flex items-center justify-end gap-2 pt-2 border-t border-border">
               {(importing || isDryRunning) && (
-                <span className="text-xs text-gray-500">
+                <span className="text-xs text-muted-foreground">
                   {isDryRunning ? 'Validating...' : `Importing... ${progress.imported + progress.errors}/${rows.length} rows`}
                 </span>
               )}
@@ -686,7 +687,7 @@ export function BulkImportDialog({
                 variant="outline"
                 onClick={handleDryRun}
                 disabled={!canImport || isDryRunning}
-                className="border-gray-300"
+                className="border-border"
               >
                 {isDryRunning ? (
                   <>
@@ -700,7 +701,7 @@ export function BulkImportDialog({
               <Button
                 onClick={handleImport}
                 disabled={!canImport || (dryRunResult !== null && dryRunResult.wouldInsert === 0)}
-                className="bg-gray-900 hover:bg-gray-800 text-white"
+                className="bg-foreground hover:bg-foreground/90 text-background"
               >
                 {importing ? (
                   <>
@@ -720,7 +721,7 @@ export function BulkImportDialog({
                     onSuccess?.();
                     setOpen(false);
                   }}
-                  className="border-gray-300"
+                  className="border-border"
                 >
                   Close
                 </Button>

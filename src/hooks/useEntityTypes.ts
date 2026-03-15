@@ -26,8 +26,8 @@ function mapEntityTypeRow(row: {
 }
 
 const DEFAULT_ENTITY_TYPES: EntityTypeDefinition[] = [
-  { id: 'default-pharmacy', organizationId: null, key: 'pharmacy', label: 'Pharmacy', color: '#334155', isDefault: true, createdAt: '', updatedAt: '' },
-  { id: 'default-herbalist', organizationId: null, key: 'herbalist', label: 'Herbalist', color: '#7c3aed', isDefault: false, createdAt: '', updatedAt: '' },
+  { id: 'default-business', organizationId: null, key: 'business', label: 'Business', color: '#334155', isDefault: true, createdAt: '', updatedAt: '' },
+  { id: 'default-agency', organizationId: null, key: 'agency', label: 'Agency', color: '#7c3aed', isDefault: false, createdAt: '', updatedAt: '' },
 ];
 
 export function useEntityTypes() {

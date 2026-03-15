@@ -1,8 +1,8 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { DetailedOrder, PharmacyWithOrders, PharmacyDocument } from '@/types/operations';
+import { DetailedOrder, EntityWithOrders, EntityDocument } from '@/types/operations';
 import { type BusinessEntity } from '@/types/entity';
-import { type ClientType } from '@/types/pharmacy';
+import { type EntityTypeKey } from '@/types/entity';
 import { buildEdgeFunctionHeaders } from '@/lib/edge-function-headers';
 import { toBusinessEntities } from '@/services/entityService';
 import { logger } from '@/lib/logger';
@@ -13,7 +13,12 @@ export function useDetailedOrders() {
   return useQuery({
     queryKey: ['detailed-orders'],
     queryFn: async (): Promise<DetailedOrder[]> => {
-      const headers = await buildEdgeFunctionHeaders({ 'Content-Type': 'application/json' });
+      let headers: Record<string, string>;
+      try {
+        headers = await buildEdgeFunctionHeaders({ 'Content-Type': 'application/json' });
+      } catch {
+        return []; // No org membership — silently return empty
+      }
       const response = await fetch(`${SUPABASE_URL}/functions/v1/woocommerce-orders-detailed`, {
         method: 'GET',
         headers,
@@ -44,7 +49,7 @@ export function useDetailedOrders() {
 export function useEntityDocuments() {
   return useQuery({
     queryKey: ['pharmacy-documents'],
-    queryFn: async (): Promise<PharmacyDocument[]> => {
+    queryFn: async (): Promise<EntityDocument[]> => {
       const { data, error } = await supabase
         .from('pharmacy_order_documents')
         .select('*')
@@ -59,7 +64,7 @@ export function useEntityDocuments() {
         id: doc.id,
         pharmacyId: doc.pharmacy_id,
         orderId: doc.order_id ?? null,
-        documentType: doc.document_type as PharmacyDocument['documentType'],
+        documentType: doc.document_type as EntityDocument['documentType'],
         filePath: doc.file_path,
         fileName: doc.file_name,
         uploadedAt: doc.uploaded_at,
@@ -69,14 +74,14 @@ export function useEntityDocuments() {
   });
 }
 
-type PharmacyOperationsFilters = {
+type EntityOperationsFilters = {
   country?: string;
   province?: string;
   city?: string;
   commercialStatus?: string;
   paymentStatus?: string;
   search?: string;
-  clientType?: ClientType;
+  clientType?: EntityTypeKey;
 };
 
 const DB_SORT_COLUMNS: Record<string, string> = {
@@ -96,7 +101,7 @@ const DB_SORT_COLUMNS: Record<string, string> = {
 };
 
 export function useEntityOperations(
-  filters?: PharmacyOperationsFilters,
+  filters?: EntityOperationsFilters,
   page: number = 0,
   pageSize: number = 50,
   sortField: string = 'name',
@@ -106,24 +111,24 @@ export function useEntityOperations(
   const dbColumn = DB_SORT_COLUMNS[sortField];
 
   const {
-    data: pageData = { pharmacies: [] as BusinessEntity[], totalCount: 0 },
-    isLoading: pharmaciesLoading,
+    data: pageData = { entities: [] as BusinessEntity[], totalCount: 0 },
+    isLoading: entitiesLoading,
     error,
     refetch,
   } = useQuery({
     queryKey: ['pharmacy-operations', filters ?? {}, page, pageSize, sortField, sortDirection],
-    queryFn: async (): Promise<{ pharmacies: BusinessEntity[]; totalCount: number }> => {
+    queryFn: async (): Promise<{ entities: BusinessEntity[]; totalCount: number }> => {
       let query = supabase
         .from('pharmacies')
         .select('*', { count: 'exact' })
         .not('saved_at', 'is', null);
 
-      if (filters?.clientType) query = query.eq('client_type', filters.clientType as never);
+      if (filters?.clientType) query = query.eq('client_type', filters.clientType);
       if (filters?.country) query = query.ilike('country', filters.country);
       if (filters?.province) query = query.ilike('province', filters.province);
       if (filters?.city) query = query.ilike('city', filters.city);
       if (filters?.commercialStatus && filters.commercialStatus !== 'all') {
-        query = query.eq('commercial_status', filters.commercialStatus as never);
+        query = query.eq('commercial_status', filters.commercialStatus);
       }
       if (filters?.search) {
         const escaped = filters.search.replace(/[%_.(),"\\]/g, '\\$&');
@@ -144,7 +149,7 @@ export function useEntityOperations(
       if (error) throw error;
 
       return {
-        pharmacies: toBusinessEntities((data || []) as never[]),
+        entities: toBusinessEntities(data || []),
         totalCount: count ?? 0,
       };
     },
@@ -152,7 +157,7 @@ export function useEntityOperations(
 
   const { data: orders = [], isLoading: ordersLoading } = useDetailedOrders();
 
-  const pageIds = pageData.pharmacies.map(p => p.id);
+  const pageIds = pageData.entities.map(p => p.id);
 
   const { data: docSummaryMap = new Map<string, { count: number; hasInvoice: boolean; hasReceipt: boolean }>(), isLoading: docsLoading } = useQuery({
     queryKey: ['pharmacy-doc-summary', pageIds],
@@ -177,90 +182,90 @@ export function useEntityOperations(
     },
   });
 
-  let pharmaciesWithOrders: PharmacyWithOrders[] = pageData.pharmacies.map((pharmacy) => {
-    let pharmacyOrders: DetailedOrder[] = [];
+  let entitiesWithOrders: EntityWithOrders[] = pageData.entities.map((entity) => {
+    let entityOrders: DetailedOrder[] = [];
 
-    if (pharmacy.status === 'client') {
-      pharmacyOrders = orders.filter(order => {
+    if (entity.status === 'client') {
+      entityOrders = orders.filter(order => {
         const orderName = order.customerName.toLowerCase().trim();
-        const pharmacyName = pharmacy.name.toLowerCase().trim();
+        const entityName = entity.name.toLowerCase().trim();
 
-        if (orderName === pharmacyName) return true;
+        if (orderName === entityName) return true;
 
-        const minLength = Math.min(orderName.length, pharmacyName.length);
-        const maxLength = Math.max(orderName.length, pharmacyName.length);
+        const minLength = Math.min(orderName.length, entityName.length);
+        const maxLength = Math.max(orderName.length, entityName.length);
         if (minLength / maxLength < 0.8) return false;
 
-        return orderName.includes(pharmacyName) || pharmacyName.includes(orderName);
+        return orderName.includes(entityName) || entityName.includes(orderName);
       });
     }
 
-    const sortedOrders = [...pharmacyOrders].sort(
+    const sortedOrders = [...entityOrders].sort(
       (a, b) => new Date(b.dateCreated).getTime() - new Date(a.dateCreated).getTime()
     );
 
     const lastOrder = sortedOrders.length > 0 ? sortedOrders[0] : null;
-    const totalRevenue = pharmacyOrders.reduce((sum, o) => sum + o.amount, 0);
+    const totalRevenue = entityOrders.reduce((sum, o) => sum + o.amount, 0);
 
-    const docInfo = docSummaryMap.get(pharmacy.id);
+    const docInfo = docSummaryMap.get(entity.id);
     const documentCount = docInfo?.count ?? 0;
     const hasInvoice = docInfo?.hasInvoice ?? false;
     const hasReceipt = docInfo?.hasReceipt ?? false;
 
     return {
-      id: pharmacy.id,
-      name: pharmacy.name,
-      address: pharmacy.address,
-      city: pharmacy.city,
-      province: pharmacy.region,
-      country: pharmacy.country,
-      clientType: pharmacy.typeKey || 'pharmacy',
-      phone: pharmacy.phone,
-      email: pharmacy.email,
-      commercialStatus: pharmacy.status,
-      notes: pharmacy.notes,
+      id: entity.id,
+      name: entity.name,
+      address: entity.address,
+      city: entity.city,
+      province: entity.region,
+      country: entity.country,
+      clientType: entity.typeKey || 'pharmacy',
+      phone: entity.phone,
+      email: entity.email,
+      commercialStatus: entity.status,
+      notes: entity.notes,
       orders: sortedOrders,
       lastOrder,
       totalRevenue,
       hasInvoice,
       hasReceipt,
       documentCount,
-      lat: pharmacy.lat,
-      lng: pharmacy.lng,
-      savedAt: pharmacy.savedAt ?? null,
-      postal_code: pharmacy.attributes.postalCode ?? null,
-      autonomous_community: pharmacy.attributes.autonomousCommunity ?? null,
-      secondary_phone: pharmacy.attributes.secondaryPhone ?? null,
-      activity: pharmacy.attributes.activity ?? null,
-      subsector: pharmacy.attributes.subsector ?? null,
-      legal_form: pharmacy.attributes.legalForm ?? null,
+      lat: entity.lat,
+      lng: entity.lng,
+      savedAt: entity.savedAt ?? null,
+      postal_code: entity.attributes.postalCode ?? null,
+      autonomous_community: entity.attributes.autonomousCommunity ?? null,
+      secondary_phone: entity.attributes.secondaryPhone ?? null,
+      activity: entity.attributes.activity ?? null,
+      subsector: entity.attributes.subsector ?? null,
+      legal_form: entity.attributes.legalForm ?? null,
     };
   });
 
   if (hasPaymentFilter) {
-    pharmaciesWithOrders = pharmaciesWithOrders.filter(
-      (pharmacy) => pharmacy.lastOrder?.paymentStatus === filters!.paymentStatus
+    entitiesWithOrders = entitiesWithOrders.filter(
+      (entity) => entity.lastOrder?.paymentStatus === filters!.paymentStatus
     );
   }
 
   // When paymentStatus is active the full set was fetched (no SQL range), so
   // totalCount and pagination must be computed from the filtered result.
-  const finalTotalCount = hasPaymentFilter ? pharmaciesWithOrders.length : pageData.totalCount;
-  const finalPharmacies = hasPaymentFilter
-    ? pharmaciesWithOrders.slice(page * pageSize, (page + 1) * pageSize)
-    : pharmaciesWithOrders;
+  const finalTotalCount = hasPaymentFilter ? entitiesWithOrders.length : pageData.totalCount;
+  const finalEntities = hasPaymentFilter
+    ? entitiesWithOrders.slice(page * pageSize, (page + 1) * pageSize)
+    : entitiesWithOrders;
 
   return {
-    pharmacies: finalPharmacies,
+    pharmacies: finalEntities,
     totalCount: finalTotalCount,
-    isLoading: pharmaciesLoading || ordersLoading || docsLoading,
+    isLoading: entitiesLoading || ordersLoading || docsLoading,
     error,
     refetch,
   };
 }
 
-export function useEntitiesWithOrders(savedOnly: boolean = true, clientType?: ClientType) {
-  const { data: pharmacies = [], isLoading: pharmaciesLoading } = useQuery({
+export function useEntitiesWithOrders(savedOnly: boolean = true, clientType?: EntityTypeKey) {
+  const { data: allEntities = [], isLoading: entitiesLoading } = useQuery({
     queryKey: ['pharmacies', savedOnly ? 'saved' : 'all', clientType ?? 'all'],
     queryFn: async (): Promise<BusinessEntity[]> => {
       const allData: BusinessEntity[] = [];
@@ -281,18 +286,18 @@ export function useEntitiesWithOrders(savedOnly: boolean = true, clientType?: Cl
           query = query.not('saved_at', 'is', null);
         }
         if (clientType) {
-          query = query.eq('client_type', clientType as never);
+          query = query.eq('client_type', clientType);
         }
 
         const { data, error } = await query;
 
         if (error) {
-          logger.error('Error fetching pharmacies:', error);
+          logger.error('Error fetching entities:', error);
           break;
         }
 
         if (data && data.length > 0) {
-          allData.push(...toBusinessEntities(data as never[]));
+          allData.push(...toBusinessEntities(data));
           from += pageSize;
           hasMore = data.length === pageSize;
         } else {
@@ -307,70 +312,70 @@ export function useEntitiesWithOrders(savedOnly: boolean = true, clientType?: Cl
   const { data: orders = [], isLoading: ordersLoading } = useDetailedOrders();
   const { data: documents = [], isLoading: docsLoading } = useEntityDocuments();
 
-  const pharmaciesWithOrders: PharmacyWithOrders[] = pharmacies.map((pharmacy) => {
-    let pharmacyOrders: DetailedOrder[] = [];
-    
-    if (pharmacy.status === 'client') {
-      pharmacyOrders = orders.filter(order => {
+  const entitiesWithOrders: EntityWithOrders[] = allEntities.map((entity) => {
+    let entityOrders: DetailedOrder[] = [];
+
+    if (entity.status === 'client') {
+      entityOrders = orders.filter(order => {
         const orderName = order.customerName.toLowerCase().trim();
-        const pharmacyName = pharmacy.name.toLowerCase().trim();
-        
-        if (orderName === pharmacyName) return true;
-        
-        const minLength = Math.min(orderName.length, pharmacyName.length);
-        const maxLength = Math.max(orderName.length, pharmacyName.length);
-        
+        const entityName = entity.name.toLowerCase().trim();
+
+        if (orderName === entityName) return true;
+
+        const minLength = Math.min(orderName.length, entityName.length);
+        const maxLength = Math.max(orderName.length, entityName.length);
+
         if (minLength / maxLength < 0.8) return false;
-        
-        return orderName.includes(pharmacyName) || pharmacyName.includes(orderName);
+
+        return orderName.includes(entityName) || entityName.includes(orderName);
       });
     }
 
-    const sortedOrders = [...pharmacyOrders].sort(
+    const sortedOrders = [...entityOrders].sort(
       (a, b) => new Date(b.dateCreated).getTime() - new Date(a.dateCreated).getTime()
     );
 
     const lastOrder = sortedOrders.length > 0 ? sortedOrders[0] : null;
-    const totalRevenue = pharmacyOrders.reduce((sum, o) => sum + o.amount, 0);
+    const totalRevenue = entityOrders.reduce((sum, o) => sum + o.amount, 0);
 
-    const pharmacyDocs = documents.filter(d => d.pharmacyId === pharmacy.id);
-    const hasInvoice = pharmacyDocs.some(d => d.documentType === 'invoice');
-    const hasReceipt = pharmacyDocs.some(d => d.documentType === 'receipt');
-    const documentCount = pharmacyDocs.length;
+    const entityDocs = documents.filter(d => d.pharmacyId === entity.id);
+    const hasInvoice = entityDocs.some(d => d.documentType === 'invoice');
+    const hasReceipt = entityDocs.some(d => d.documentType === 'receipt');
+    const documentCount = entityDocs.length;
 
     return {
-      id: pharmacy.id,
-      name: pharmacy.name,
-      address: pharmacy.address,
-      city: pharmacy.city,
-      province: pharmacy.region,
-      country: pharmacy.country,
-      clientType: pharmacy.typeKey || 'pharmacy',
-      phone: pharmacy.phone,
-      email: pharmacy.email,
-      commercialStatus: pharmacy.status,
-      notes: pharmacy.notes,
+      id: entity.id,
+      name: entity.name,
+      address: entity.address,
+      city: entity.city,
+      province: entity.region,
+      country: entity.country,
+      clientType: entity.typeKey || 'pharmacy',
+      phone: entity.phone,
+      email: entity.email,
+      commercialStatus: entity.status,
+      notes: entity.notes,
       orders: sortedOrders,
       lastOrder,
       totalRevenue,
       hasInvoice,
       hasReceipt,
       documentCount,
-      lat: pharmacy.lat,
-      lng: pharmacy.lng,
-      savedAt: pharmacy.savedAt ?? null,
-      postal_code: pharmacy.attributes.postalCode ?? null,
-      autonomous_community: pharmacy.attributes.autonomousCommunity ?? null,
-      secondary_phone: pharmacy.attributes.secondaryPhone ?? null,
-      activity: pharmacy.attributes.activity ?? null,
-      subsector: pharmacy.attributes.subsector ?? null,
-      legal_form: pharmacy.attributes.legalForm ?? null,
+      lat: entity.lat,
+      lng: entity.lng,
+      savedAt: entity.savedAt ?? null,
+      postal_code: entity.attributes.postalCode ?? null,
+      autonomous_community: entity.attributes.autonomousCommunity ?? null,
+      secondary_phone: entity.attributes.secondaryPhone ?? null,
+      activity: entity.attributes.activity ?? null,
+      subsector: entity.attributes.subsector ?? null,
+      legal_form: entity.attributes.legalForm ?? null,
     };
   });
 
   return {
-    data: pharmaciesWithOrders,
-    isLoading: pharmaciesLoading || ordersLoading || docsLoading,
+    data: entitiesWithOrders,
+    isLoading: entitiesLoading || ordersLoading || docsLoading,
   };
 }
 
@@ -397,7 +402,7 @@ export function useUploadDocument() {
     }: {
       pharmacyId: string;
       orderId: string | null;
-      documentType: PharmacyDocument['documentType'];
+      documentType: EntityDocument['documentType'];
       file: File;
     }) => {
       if (!ALLOWED_UPLOAD_TYPES.has(file.type)) {

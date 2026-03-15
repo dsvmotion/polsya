@@ -50,7 +50,7 @@ export function NotificationPanel({ open, onOpenChange }: NotificationPanelProps
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent side="right" className="w-full sm:w-[400px] p-0 flex flex-col">
+      <SheetContent side="right" className="w-full sm:w-[400px] p-0 flex flex-col" aria-describedby={undefined}>
         <SheetHeader className="px-4 py-3 border-b">
           <div className="flex items-center justify-between">
             <SheetTitle>Notifications</SheetTitle>

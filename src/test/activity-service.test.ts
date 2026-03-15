@@ -46,7 +46,7 @@ describe('activityService', () => {
       expect(result.owner).toBeNull();
     });
 
-    it('maps pharmacy_id to entityId', () => {
+    it('maps pharmacy_id column to entityId', () => {
       const result = toAccountActivity(makeRow({ pharmacy_id: 'xyz' }));
       expect(result.entityId).toBe('xyz');
     });

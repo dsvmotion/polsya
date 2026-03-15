@@ -99,7 +99,7 @@ export default function Profile() {
   if (isLoading) {
     return (
       <div className="app-shell flex items-center justify-center">
-        <div className="flex flex-col items-center gap-3 text-gray-500">
+        <div className="flex flex-col items-center gap-3 text-muted-foreground">
           <Loader2 className="h-8 w-8 animate-spin" />
           <span>Loading...</span>
         </div>
