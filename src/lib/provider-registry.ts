@@ -192,7 +192,7 @@ export const PROVIDER_REGISTRY: Record<string, ProviderDefinition> = {
     syncTargets: [],
     defaultTargets: [],
     metadataSchema: [
-      { key: 'workspace_id', label: 'Workspace ID', type: 'text', required: false },
+      { key: 'organization_id', label: 'Organization ID', type: 'text', required: false, placeholder: 'org-...' },
     ],
   },
   custom_api: {
@@ -250,7 +250,7 @@ export const PROVIDER_REGISTRY: Record<string, ProviderDefinition> = {
     syncTargets: ['contacts', 'deals'],
     defaultTargets: ['contacts'],
     metadataSchema: [
-      { key: 'api_key', label: 'API Token', type: 'text', required: true },
+      { key: 'company_domain', label: 'Company Domain', type: 'text', required: false, placeholder: 'yourcompany.pipedrive.com' },
     ],
   },
   prestashop: {
@@ -263,7 +263,6 @@ export const PROVIDER_REGISTRY: Record<string, ProviderDefinition> = {
     defaultTargets: ['orders'],
     metadataSchema: [
       { key: 'store_url', label: 'Store URL', type: 'url', required: true },
-      { key: 'api_key', label: 'API Key', type: 'text', required: true },
     ],
   },
   whatsapp: {
@@ -275,8 +274,8 @@ export const PROVIDER_REGISTRY: Record<string, ProviderDefinition> = {
     syncTargets: ['messages'],
     defaultTargets: ['messages'],
     metadataSchema: [
-      { key: 'access_token', label: 'Access Token', type: 'text', required: true },
       { key: 'phone_number_id', label: 'Phone Number ID', type: 'text', required: true },
+      { key: 'business_account_id', label: 'Business Account ID', type: 'text', required: false },
     ],
   },
   slack: {

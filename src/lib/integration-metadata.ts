@@ -46,7 +46,7 @@ export const PROVIDER_METADATA_SCHEMA: Record<IntegrationProvider, MetadataField
     { key: 'project_id', label: 'Project ID', placeholder: 'proj_abc123', required: false, type: 'text' },
   ],
   anthropic: [
-    { key: 'workspace_id', label: 'Workspace ID', placeholder: 'ws_abc123', required: false, type: 'text' },
+    { key: 'organization_id', label: 'Organization ID', placeholder: 'org-...', required: false, type: 'text' },
   ],
   custom_api: [
     { key: 'base_url', label: 'Base URL', placeholder: 'https://api.example.com', required: true, type: 'url' },
@@ -55,12 +55,15 @@ export const PROVIDER_METADATA_SCHEMA: Record<IntegrationProvider, MetadataField
   salesforce: [
     { key: 'instance_url', label: 'Instance URL', placeholder: 'https://yourorg.my.salesforce.com', required: false, type: 'url' },
   ],
-  pipedrive: [],
+  pipedrive: [
+    { key: 'company_domain', label: 'Company Domain', placeholder: 'yourcompany.pipedrive.com', required: false, type: 'text' },
+  ],
   prestashop: [
     { key: 'store_url', label: 'Store URL', placeholder: 'https://myshop.com', required: true, type: 'url' },
   ],
   whatsapp: [
     { key: 'phone_number_id', label: 'Phone Number ID', placeholder: '1234567890', required: true, type: 'text' },
+    { key: 'business_account_id', label: 'Business Account ID', placeholder: '1234567890', required: false, type: 'text' },
   ],
   slack: [
     { key: 'channel_id', label: 'Channel ID', placeholder: 'C01234ABCDE', required: false, type: 'text' },

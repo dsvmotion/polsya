@@ -37,6 +37,7 @@ import { PROVIDER_REGISTRY, getProviderDefinition } from '@/lib/provider-registr
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 import { EmptyState, LoadingState } from '@/components/ui/view-states';
+import { ProviderIcon } from '@/components/ui/provider-icon';
 import { decideSyncToast } from '@/services/integrationJobResultService';
 import { timeAgo } from '@/lib/time-utils';
 
@@ -128,7 +129,7 @@ function IntegrationRow({
   const isSyncing = enqueueJob.isPending || processJob.isPending;
   const isConnectingOAuth = startOAuth.isPending;
 
-  const providerIcon = providerDef?.icon ?? '🔌';
+  // providerIcon kept for fallback; ProviderIcon component renders brand icons
   const providerLabel = providerDef?.label ?? intg.provider;
   const authType = providerDef?.authType ?? 'none';
 
@@ -281,7 +282,7 @@ function IntegrationRow({
     <div className="px-2 py-2 rounded border border-border bg-card space-y-1">
       <div className="flex items-center justify-between gap-2">
         <div className="flex items-center gap-2 min-w-0 flex-1">
-          <span className="text-sm shrink-0">{providerIcon}</span>
+          <ProviderIcon provider={intg.provider} size={16} />
           <span className="text-sm text-foreground truncate">{intg.display_name}</span>
           <span className={cn('text-[10px] px-1.5 py-0.5 rounded font-medium shrink-0', statusColor.bg, statusColor.text)}>
             {intg.status}
@@ -754,7 +755,10 @@ export function IntegrationsCard() {
               <SelectContent className="bg-background border-border">
                 {providerOptions.map((p) => (
                   <SelectItem key={p.value} value={p.value}>
-                    {p.icon} {p.label}
+                    <span className="inline-flex items-center gap-2">
+                      <ProviderIcon provider={p.value} size={14} />
+                      {p.label}
+                    </span>
                   </SelectItem>
                 ))}
               </SelectContent>
