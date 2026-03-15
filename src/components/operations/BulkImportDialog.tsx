@@ -409,7 +409,8 @@ export function BulkImportDialog({
         continue;
       }
 
-      const { error } = await supabase.from('pharmacies').insert(toInsert as never);
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const { error } = await supabase.from('pharmacies').insert(toInsert as any);
       if (error) {
         errors += toInsert.length;
       } else {

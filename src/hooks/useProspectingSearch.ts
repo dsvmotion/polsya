@@ -243,7 +243,7 @@ export function useProspectingSearch() {
           if (existingError) logger.warn('Pharmacy lookup failed:', existingError.message);
 
           if (existing) {
-            cachedPharmacies.push(toBusinessEntity(existing as never));
+            cachedPharmacies.push(toBusinessEntity(existing));
             processed++;
             flushProgress();
             return;
@@ -280,7 +280,7 @@ export function useProspectingSearch() {
           if (placeIdError) logger.warn('Pharmacy place-id lookup failed:', placeIdError.message);
 
           if (existingByPlaceId) {
-            cachedPharmacies.push(toBusinessEntity(existingByPlaceId as never));
+            cachedPharmacies.push(toBusinessEntity(existingByPlaceId));
             processed++;
             flushProgress();
             return;
@@ -327,7 +327,7 @@ export function useProspectingSearch() {
               .single();
             if (updateError) logger.warn('Pharmacy update failed:', updateError.message);
 
-            cachedPharmacies.push(toBusinessEntity((updated ?? existingByName) as never));
+            cachedPharmacies.push(toBusinessEntity(updated ?? existingByName));
           } else {
             let insertGoogleData: Json = null;
             try {
@@ -366,12 +366,12 @@ export function useProspectingSearch() {
                 .maybeSingle();
               if (refetchError) logger.warn('Pharmacy refetch failed:', refetchError.message);
               if (refetched) {
-                cachedPharmacies.push(toBusinessEntity(refetched as never));
+                cachedPharmacies.push(toBusinessEntity(refetched));
               } else {
                 failed++;
               }
             } else if (inserted) {
-              cachedPharmacies.push(toBusinessEntity(inserted as never));
+              cachedPharmacies.push(toBusinessEntity(inserted));
             }
           }
 

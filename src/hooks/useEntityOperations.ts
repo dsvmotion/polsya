@@ -123,12 +123,12 @@ export function useEntityOperations(
         .select('*', { count: 'exact' })
         .not('saved_at', 'is', null);
 
-      if (filters?.clientType) query = query.eq('client_type', filters.clientType as never);
+      if (filters?.clientType) query = query.eq('client_type', filters.clientType);
       if (filters?.country) query = query.ilike('country', filters.country);
       if (filters?.province) query = query.ilike('province', filters.province);
       if (filters?.city) query = query.ilike('city', filters.city);
       if (filters?.commercialStatus && filters.commercialStatus !== 'all') {
-        query = query.eq('commercial_status', filters.commercialStatus as never);
+        query = query.eq('commercial_status', filters.commercialStatus);
       }
       if (filters?.search) {
         const escaped = filters.search.replace(/[%_.(),"\\]/g, '\\$&');
@@ -149,7 +149,7 @@ export function useEntityOperations(
       if (error) throw error;
 
       return {
-        entities: toBusinessEntities((data || []) as never[]),
+        entities: toBusinessEntities(data || []),
         totalCount: count ?? 0,
       };
     },
@@ -286,7 +286,7 @@ export function useEntitiesWithOrders(savedOnly: boolean = true, clientType?: En
           query = query.not('saved_at', 'is', null);
         }
         if (clientType) {
-          query = query.eq('client_type', clientType as never);
+          query = query.eq('client_type', clientType);
         }
 
         const { data, error } = await query;
@@ -297,7 +297,7 @@ export function useEntitiesWithOrders(savedOnly: boolean = true, clientType?: En
         }
 
         if (data && data.length > 0) {
-          allData.push(...toBusinessEntities(data as never[]));
+          allData.push(...toBusinessEntities(data));
           from += pageSize;
           hasMore = data.length === pageSize;
         } else {

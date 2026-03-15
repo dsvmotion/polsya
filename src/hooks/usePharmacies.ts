@@ -21,7 +21,7 @@ export function usePharmacies(clientType?: EntityTypeKey, entityTypeId?: string)
       if (entityTypeId) {
         query = query.eq('entity_type_id', entityTypeId);
       } else if (clientType) {
-        query = query.eq('client_type', clientType as never);
+        query = query.eq('client_type', clientType);
       }
       
       const { data, error } = await query;
@@ -31,7 +31,7 @@ export function usePharmacies(clientType?: EntityTypeKey, entityTypeId?: string)
         throw error;
       }
       
-      return toBusinessEntities((data || []) as never[]);
+      return toBusinessEntities(data || []);
     },
   });
 }
@@ -53,7 +53,7 @@ export function usePharmacy(id: string | null) {
         throw error;
       }
       
-      return toBusinessEntity(data as never);
+      return toBusinessEntity(data);
     },
     enabled: !!id,
   });
@@ -78,7 +78,7 @@ export function useUpdatePharmacy() {
         .single();
       
       if (error) throw error;
-      return toBusinessEntity(data as never);
+      return toBusinessEntity(data);
     },
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ['pharmacies'] });
@@ -107,7 +107,7 @@ export function useUpdateEntityStatus() {
         .single();
       
       if (error) throw error;
-      return toBusinessEntity(data as never);
+      return toBusinessEntity(data);
     },
     onSuccess: (data) => {
       // Invalidate all entity-related queries to ensure UI updates everywhere
@@ -164,7 +164,7 @@ export function useCachePharmacy() {
           .single();
         
         if (error) throw error;
-        return toBusinessEntity(data as never);
+        return toBusinessEntity(data);
       }
       
       // Insert new
@@ -189,7 +189,7 @@ export function useCachePharmacy() {
         .single();
       
       if (error) throw error;
-      return toBusinessEntity(data as never);
+      return toBusinessEntity(data);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['pharmacies'] });
