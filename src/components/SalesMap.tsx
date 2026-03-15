@@ -20,6 +20,17 @@ const defaultCenter = {
   lng: -3.7, // Center of Spain
 };
 
+// Extracted InfoWindow styles to avoid inline object recreation on each render
+const infoStyles = {
+  container: { padding: '8px', maxWidth: '280px', fontFamily: 'system-ui, sans-serif' } as const,
+  title: { margin: '0 0 4px', fontSize: '14px', fontWeight: 600 } as const,
+  subtitle: { margin: '0 0 4px', fontSize: '12px', color: '#666' } as const,
+  detail: { margin: '0 0 2px', fontSize: '12px', color: '#444' } as const,
+  detailSpaced: { margin: '0 0 4px', fontSize: '12px', color: '#444' } as const,
+  badgeRow: { display: 'flex', gap: '8px', alignItems: 'center', marginTop: '6px' } as const,
+  amount: { fontSize: '12px', fontWeight: 600 } as const,
+} as const;
+
 // Light mode map styles
 const mapOptions: google.maps.MapOptions = {
   disableDefaultUI: false,
@@ -306,19 +317,19 @@ export const SalesMap = forwardRef<google.maps.Map | null, SalesMapProps>(functi
           position={{ lat: selectedSale.lat, lng: selectedSale.lng }}
           onCloseClick={() => setSelectedSale(null)}
         >
-          <div style={{ padding: '8px', maxWidth: '280px', fontFamily: 'system-ui, sans-serif' }}>
-            <h3 style={{ margin: '0 0 4px', fontSize: '14px', fontWeight: 600 }}>{selectedSale.customerName}</h3>
-            <p style={{ margin: '0 0 4px', fontSize: '12px', color: '#666' }}>{selectedSale.address || ''}</p>
-            <p style={{ margin: '0 0 4px', fontSize: '12px', color: '#666' }}>
+          <div style={infoStyles.container}>
+            <h3 style={infoStyles.title}>{selectedSale.customerName}</h3>
+            <p style={infoStyles.subtitle}>{selectedSale.address || ''}</p>
+            <p style={infoStyles.subtitle}>
               {[selectedSale.city, selectedSale.province, selectedSale.country].filter(Boolean).join(', ')}
             </p>
             {selectedSale.phone && (
-              <p style={{ margin: '0 0 2px', fontSize: '12px', color: '#444' }}>📞 {selectedSale.phone}</p>
+              <p style={infoStyles.detail}>📞 {selectedSale.phone}</p>
             )}
             {selectedSale.email && (
-              <p style={{ margin: '0 0 4px', fontSize: '12px', color: '#444' }}>✉️ {selectedSale.email}</p>
+              <p style={infoStyles.detailSpaced}>✉️ {selectedSale.email}</p>
             )}
-            <div style={{ display: 'flex', gap: '8px', alignItems: 'center', marginTop: '6px' }}>
+            <div style={infoStyles.badgeRow}>
               <span style={{
                 background: selectedSale.commercialStatus === 'client' ? '#f97316' : selectedSale.commercialStatus === 'contacted' ? '#3b82f6' : '#9333ea',
                 color: 'white', padding: '2px 8px', borderRadius: '4px', fontSize: '11px'
@@ -326,7 +337,7 @@ export const SalesMap = forwardRef<google.maps.Map | null, SalesMapProps>(functi
                 {selectedSale.commercialStatus || (selectedSale.customerType === 'client' ? 'WooCommerce' : 'Not contacted')}
               </span>
               {selectedSale.amount > 0 && (
-                <span style={{ fontSize: '12px', fontWeight: 600 }}>€{selectedSale.amount.toFixed(2)}</span>
+                <span style={infoStyles.amount}>€{selectedSale.amount.toFixed(2)}</span>
               )}
             </div>
           </div>
